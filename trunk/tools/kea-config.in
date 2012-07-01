@@ -1,0 +1,47 @@
+#!/bin/sh
+
+usage()
+{
+    cat <<EOF
+Usage: spd-config [OPTIONS]
+Options:
+     [--prefix]
+     [--version]
+     [--libs]
+     [--cflags]
+     [--ldflags]
+     [--includes]
+EOF
+    exit $1
+}
+if test $# -eq 0; then
+  usage 1 1>&2
+fi
+while test $# -gt 0; do
+case "$1" in
+    -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+    *) optarg= ;;
+esac
+case $1 in
+    --prefix)
+    echo @CMAKE_INSTALL_PREFIX@
+     ;;
+    --version)
+    echo @LIBKEA_VERSION@
+     ;;
+    --cflags)
+    echo -I@CMAKE_INSTALL_PREFIX@/@PROJECT_HEADER_DIR@ 
+      ;;
+    --libs)
+      echo -L@CMAKE_INSTALL_PREFIX@/@PROJECT_LIBRARY_DIR@ -l@LIBKEA_LIB_NAME@ -l@LIBKEA_MITLIB_NAME@
+      ;;
+    --ldflags)
+      echo @CMAKE_INSTALL_PREFIX@/@PROJECT_LIBRARY_DIR@
+      ;;
+    --includes)
+      echo @CMAKE_INSTALL_PREFIX@/@PROJECT_HEADER_DIR@
+      ;;
+  esac
+  shift
+done
+
