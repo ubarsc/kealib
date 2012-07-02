@@ -28,6 +28,15 @@
  *
  */
 
+#include "libkea/KEAReader.h"
+
+namespace libkea{
+    
+    
+    
+    
+    
+}
 
 
 

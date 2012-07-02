@@ -28,9 +28,32 @@
  *
  */
 
+#ifndef KEAWriter_H
+#define KEAWriter_H
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+#include "H5Cpp.h"
+
+#include "libkea/KEACommon.h"
+#include "libkea/KEAException.h"
+
+namespace libkea{
+        
+    class KEAWriter
+    {
+    public:
+        KEAWriter();
+        H5::H5File* createKEAImage(std::string fileName, KEADataType dataType, unsigned int xSize, unsigned int ySize, unsigned int numImgBands, std::vector<std::string> *bandDescrips=NULL, KEAImageSpatialInfo *spatialInfo=NULL, unsigned int blockSize=KEA_WRITE_CHUNK_SIZE)throw(KEAIOException);
+        virtual ~KEAWriter();
+    };
+    
+}
 
 
-
+#endif
 
 
 

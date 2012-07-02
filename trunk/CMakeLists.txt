@@ -79,7 +79,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ./cmake/modules/)
 
 ###############################################################################
 # Setup configure file
-configure_file ( "${PROJECT_HEADER_DIR}/kea-config.h.in" "${PROJECT_HEADER_DIR}/kea/kea-config.h" )
+configure_file ( "${PROJECT_HEADER_DIR}/kea-config.h.in" "${PROJECT_HEADER_DIR}/libkea/kea-config.h" )
 configure_file ( "${PROJECT_TOOLS_DIR}/kea-config.in" "${PROJECT_BINARY_DIR}/kea-config" )
 ###############################################################################
 
@@ -166,15 +166,15 @@ add_subdirectory ("${PROJECT_SOURCE_DIR}")
 ###############################################################################
 # Build executables
 if (LIBKEA_WITH_UTILITIES)
-#	add_executable(spdtranslate ${PROJECT_SOURCE_DIR}/exe/spdtranslate/main.cpp)
-#	target_link_libraries (spdtranslate ${LIBKEA_MITLIB_NAME} ${LIBKEA_LIB_NAME} )
+	add_executable(createkeaimg ${PROJECT_SOURCE_DIR}/exe/createkeaimg/main.cpp)
+	target_link_libraries (createkeaimg ${LIBKEA_LIB_NAME} )
 endif(LIBKEA_WITH_UTILITIES)
 ###############################################################################
 
 ###############################################################################
 # Installation
 if (LIBKEA_WITH_UTILITIES)
-#	install (TARGETS spdtranslate DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+	install (TARGETS createkeaimg DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 endif(LIBKEA_WITH_UTILITIES)
 
 install (FILES "${PROJECT_BINARY_DIR}/kea-config" DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)

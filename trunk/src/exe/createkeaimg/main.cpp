@@ -1,5 +1,5 @@
 /*
- *  KEAReader.h
+ *  main.cpp
  *  LibKEA
  *
  *  Created by Pete Bunting on 02/07/2012.
@@ -28,22 +28,30 @@
  *
  */
 
-#ifndef KEAReader_H
-#define KEAReader_H
-
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include "H5Cpp.h"
 
-namespace libkea{
-        
-    
+#include "libkea/KEACommon.h"
+#include "libkea/KEAException.h"
+#include "libkea/KEAWriter.h"
+
+int main (int argc, char * const argv[]) 
+{
+    try 
+    {
+        libkea::KEAWriter writer;
+        H5::H5File *keaImgFile = writer.createKEAImage("/Users/pete/Desktop/TestImage.kea", libkea::kea_32float, 1000, 2000, 3);
+        keaImgFile->close();
+    } 
+    catch (libkea::KEAException &e) 
+    {
+        std::cerr << "ERROR: " << e.what() << std::endl;
+    }
     
 }
-
-
-#endif
 
 
 

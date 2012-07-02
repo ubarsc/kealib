@@ -6,12 +6,14 @@ set(LIBKEA_HEADERS_DIR ../include/libkea)
 
 
 set(LIBKEA_H
-	${LIBKEA_HEADERS_DIR}/KEAWriter.h
-	${LIBKEA_HEADERS_DIR}/KEAReader.h )
+	${LIBKEA_HEADERS_DIR}/KEACommon.h
+	${LIBKEA_HEADERS_DIR}/KEAException.h
+	${LIBKEA_HEADERS_DIR}/KEAReader.h
+	${LIBKEA_HEADERS_DIR}/KEAWriter.h )
 
 set(LIBKEA_CPP
-	${LIBKEA_SRC_DIR}/KEAWriter.cpp
-	${LIBKEA_SRC_DIR}/KEAReader.cpp )
+	${LIBKEA_SRC_DIR}/KEAReader.cpp 
+	${LIBKEA_SRC_DIR}/KEAWriter.cpp )
 
 ###############################################################################
 
