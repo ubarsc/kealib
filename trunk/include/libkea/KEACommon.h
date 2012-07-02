@@ -45,6 +45,7 @@ namespace libkea{
     static const std::string KEA_DATASETNAME_HEADER_RES( "/HEADER/RES" );
     static const std::string KEA_DATASETNAME_HEADER_TL( "/HEADER/TL" );
     static const std::string KEA_DATASETNAME_HEADER_ROT( "/HEADER/ROT" );
+    static const std::string KEA_DATASETNAME_HEADER_SIZE( "/HEADER/SIZE" );
     static const std::string KEA_DATASETNAME_HEADER_WKT( "/HEADER/WKT" );
 	static const std::string KEA_DATASETNAME_METADATA( "/METADATA" );
     static const std::string KEA_DATASETNAME_BAND( "/BAND" );
@@ -52,10 +53,16 @@ namespace libkea{
     static const std::string KEA_BANDNAME_DATA( "/DATA" );
     static const std::string KEA_BANDNAME_DESCRIP( "/DESCRIPTION" );
     static const std::string KEA_BANDNAME_METADATA( "/METADATA" );
-    static const std::string KEA_BANDNAME_METADATA_MIN( "/METADATA/MIN" );
-    static const std::string KEA_BANDNAME_METADATA_MAX( "/METADATA/MAX" );
-    static const std::string KEA_BANDNAME_METADATA_MEAN( "/METADATA/MEAN" );
-    static const std::string KEA_BANDNAME_METADATA_STDDEV( "/METADATA/STDDEV" );
+    static const std::string KEA_BANDNAME_METADATA_MIN( "/METADATA/STATISTICS_MINIMUM" );
+    static const std::string KEA_BANDNAME_METADATA_MAX( "/METADATA/STATISTICS_MAXIMUM" );
+    static const std::string KEA_BANDNAME_METADATA_MEAN( "/METADATA/STATISTICS_MEAN" );
+    static const std::string KEA_BANDNAME_METADATA_STDDEV( "/METADATA/STATISTICS_STDDEV" );
+    static const std::string KEA_BANDNAME_METADATA_MODE( "/METADATA/STATISTICS_MODE" );
+    static const std::string KEA_BANDNAME_METADATA_HISTOMIN( "/METADATA/STATISTICS_HISTOMIN" );
+    static const std::string KEA_BANDNAME_METADATA_HISTOMAX( "/METADATA/STATISTICS_HISTOMAX" );
+    static const std::string KEA_BANDNAME_METADATA_HISTONUMBINS( "/METADATA/STATISTICS_HISTONUMBINS" );
+    static const std::string KEA_BANDNAME_METADATA_HISTOBINVALUES( "/METADATA/STATISTICS_HISTOBINVALUES" );
+    static const std::string KEA_BANDNAME_METADATA_HISTOBINFUNCTION( "/METADATA/STATISTICS_HISTOBINFUNCTION" );
     static const std::string KEA_BANDNAME_METADATA_WAVELENGTH( "/METADATA/WAVELENGTH" );
     static const std::string KEA_BANDNAME_METADATA_FWHM( "/METADATA/FWHM" );
     
@@ -119,6 +126,8 @@ namespace libkea{
         float yRes;
         float xRot;
         float yRot;
+        unsigned int xSize;
+        unsigned int ySize;
     };
     
     std::string int2Str(int num)

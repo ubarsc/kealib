@@ -46,8 +46,20 @@ namespace libkea{
     {
     public:
         KEAWriter();
-        H5::H5File* createKEAImage(std::string fileName, KEADataType dataType, unsigned int xSize, unsigned int ySize, unsigned int numImgBands, std::vector<std::string> *bandDescrips=NULL, KEAImageSpatialInfo *spatialInfo=NULL, unsigned int blockSize=KEA_WRITE_CHUNK_SIZE)throw(KEAIOException);
+        void openKEAImage(H5::H5File *keaImgH5File)throw(KEAIOException);
+        void writeImageBlock2Band(unsigned int band, void **data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType)throw(KEAIOException);
+        void close()throw(KEAIOException);
+        static H5::H5File* createKEAImage(std::string fileName, KEADataType dataType, unsigned int xSize, unsigned int ySize, unsigned int numImgBands, std::vector<std::string> *bandDescrips=NULL, KEAImageSpatialInfo *spatialInfo=NULL, unsigned int blockSize=KEA_WRITE_CHUNK_SIZE)throw(KEAIOException);
+        static H5::H5File* openKEAImage(std::string fileName)throw(KEAIOException);
         virtual ~KEAWriter();
+    protected:
+        H5::H5File *keaImgFile;
+        KEADataType dataType;
+        std::vector<std::string> *bandDescrips;
+        KEAImageSpatialInfo *spatialInfo;
+        unsigned int xSize;
+        unsigned int ySize;
+        unsigned int numImgBands;
     };
     
 }
