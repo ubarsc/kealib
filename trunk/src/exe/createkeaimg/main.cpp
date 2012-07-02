@@ -42,8 +42,31 @@ int main (int argc, char * const argv[])
 {
     try 
     {
+        H5::H5File *keaImgFile = libkea::KEAWriter::createKEAImage("/Users/pete/Desktop/TestImage.kea", libkea::kea_32float, 1000, 2000, 3);
+        
         libkea::KEAWriter writer;
-        H5::H5File *keaImgFile = writer.createKEAImage("/Users/pete/Desktop/TestImage.kea", libkea::kea_32float, 1000, 2000, 3);
+        writer.openKEAImage(keaImgFile);
+        
+                
+        float *data = new float[100*200];
+        for(unsigned int i = 0; i < 200; ++i)
+        {
+            //data[i] = i;
+            for(unsigned int j = 0; j < 100; ++j)
+            {
+                data[(i*100)+j] = j; 
+            }
+        }
+        
+        std::cout << "Write Image data\n";
+        writer.writeImageBlock2Band(1, data, 0, 0, 100, 200, libkea::kea_32float);
+        writer.writeImageBlock2Band(2, data, 100, 200, 100, 200, libkea::kea_32float);
+        writer.writeImageBlock2Band(3, data, 200, 400, 100, 200, libkea::kea_32float);
+        std::cout << "Written Image data\n";
+        delete[] data;
+        
+        writer.close();
+        
         keaImgFile->close();
     } 
     catch (libkea::KEAException &e) 
