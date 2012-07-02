@@ -174,10 +174,11 @@ namespace libkea{
         }
     }
     
-    void KEAWriter::writeImageBlock2Band(unsigned int band, void **data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType)throw(KEAIOException)
+    void KEAWriter::writeImageBlock2Band(unsigned int band, void *data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType)throw(KEAIOException)
     {
         try 
         {
+            // CHECK PARAMETERS PROVIDED FIT WITHIN IMAGE
             if(band == 0)
             {
                 throw KEAIOException("KEA Image Bands start at 1.");
@@ -210,47 +211,52 @@ namespace libkea{
                 throw KEAIOException("End Y Pixel is not within image.");  
             }
             
+            //std::cout << "Band: " << band << std::endl;
+            //std::cout << "Start: [" << xPxl << "," << yPxl << "]\n";
+            //std::cout << "End: [" << endXPxl << "," << endYPxl << "]\n";
+            //std::cout << "Size: [" << xSize << "," << ySize << "]\n";
             
-            H5::DataType imgBandDT = H5::PredType::IEEE_F32LE;
+            // GET NATIVE DATASET
+            H5::DataType imgBandDT = H5::PredType::NATIVE_FLOAT;
             if(inDataType == kea_8int)
             {
-                imgBandDT = H5::PredType::STD_I8LE;
+                imgBandDT = H5::PredType::NATIVE_INT;
             }
             else if(inDataType == kea_16int)
             {
-                imgBandDT = H5::PredType::STD_I16LE;
+                imgBandDT = H5::PredType::NATIVE_INT;
             }
             else if(inDataType == kea_32int)
             {
-                imgBandDT = H5::PredType::STD_I32LE;
+                imgBandDT = H5::PredType::NATIVE_INT;
             }
             else if(inDataType == kea_64int)
             {
-                imgBandDT = H5::PredType::STD_I64LE;
+                imgBandDT = H5::PredType::NATIVE_LONG;
             }
             else if(inDataType == kea_8uint)
             {
-                imgBandDT = H5::PredType::STD_U8LE;
+                imgBandDT = H5::PredType::NATIVE_UINT;
             }
             else if(inDataType == kea_16uint)
             {
-                imgBandDT = H5::PredType::STD_U16LE;
+                imgBandDT = H5::PredType::NATIVE_UINT;
             }
             else if(inDataType == kea_32uint)
             {
-                imgBandDT = H5::PredType::STD_U32LE;
+                imgBandDT = H5::PredType::NATIVE_UINT;
             }
             else if(inDataType == kea_64uint)
             {
-                imgBandDT = H5::PredType::STD_U64LE;
+                imgBandDT = H5::PredType::NATIVE_ULONG;
             }
             else if(inDataType == kea_32float)
             {
-                imgBandDT = H5::PredType::IEEE_F32LE;
+                imgBandDT = H5::PredType::NATIVE_FLOAT;
             }
             else if(inDataType == kea_64float)
             {
-                imgBandDT = H5::PredType::IEEE_F64LE;
+                imgBandDT = H5::PredType::NATIVE_DOUBLE;
             }
             else
             {
@@ -260,7 +266,7 @@ namespace libkea{
             // OPEN BAND DATASET AND WRITE IMAGE DATA
             try 
             {
-                std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band+1);
+                std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band);
                 H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( imageBandPath + KEA_BANDNAME_DATA );
                 H5::DataSpace imgBandDataspace = imgBandDataset.getSpace();                
                 
@@ -521,6 +527,13 @@ namespace libkea{
             initParamsImgBand.setDeflate(KEA_DEFLATE);
 			initParamsImgBand.setFillValue( H5::PredType::NATIVE_INT, &initFillVal);
             
+            H5::StrType strdatatypeLen6(H5::PredType::C_S1, 6);
+            H5::StrType strdatatypeLen4(H5::PredType::C_S1, 4);
+            const H5std_string strClassVal ("IMAGE");
+            const H5std_string strImgVerVal ("1.2");
+            H5::DataSpace attr_dataspace = H5::DataSpace(H5S_SCALAR);
+            
+            
             std::string zeroChar = "0";
             std::string bandName = "";
             std::string bandDescrip = "";
@@ -534,6 +547,13 @@ namespace libkea{
                 
                 // CREATE THE IMAGE DATA ARRAY
                 H5::DataSet imgBandDataSet = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_DATA), imgBandDT, imgBandDataSpace, initParamsImgBand);
+                H5::Attribute classAttribute = imgBandDataSet.createAttribute(KEA_ATTRIBUTENAME_CLASS, strdatatypeLen6, attr_dataspace);
+                classAttribute.write(strdatatypeLen6, strClassVal); 
+                classAttribute.close();
+                
+                H5::Attribute imgVerAttribute = imgBandDataSet.createAttribute(KEA_ATTRIBUTENAME_IMAGE_VERSION, strdatatypeLen4, attr_dataspace);
+                imgVerAttribute.write(strdatatypeLen4, strImgVerVal);
+                imgVerAttribute.close();
                 imgBandDataSet.close();
                 
                 // SET BAND NAME / DESCRIPTION
@@ -666,6 +686,7 @@ namespace libkea{
                 attSizeDataSpace.close();
             }
             dataspaceStrAll.close();
+            attr_dataspace.close();
             //////////// CREATED IMAGE BANDS ////////////////
         
             

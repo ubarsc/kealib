@@ -85,6 +85,9 @@ namespace libkea{
     static const std::string KEA_BANDNAME_OVERVIEWS( "/OVERVIEWS" );
     static const std::string KEA_OVERVIEWSNAME_OVERVIEW( "/OVERVIEWS/OVERVIEW" );
     
+    static const std::string KEA_ATTRIBUTENAME_CLASS( "CLASS" );
+	static const std::string KEA_ATTRIBUTENAME_IMAGE_VERSION( "IMAGE_VERSION" );
+    
     static const int KEA_READ_MDC_NELMTS( 0 ); // 0
     static const hsize_t KEA_READ_RDCC_NELMTS( 512 ); // 512
     static const hsize_t KEA_READ_RDCC_NBYTES( 1048576 ); // 1048576
