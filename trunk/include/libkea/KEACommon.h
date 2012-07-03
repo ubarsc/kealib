@@ -34,6 +34,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "H5Cpp.h"
 
@@ -131,6 +132,31 @@ namespace libkea{
         float yRot;
         unsigned int xSize;
         unsigned int ySize;
+    };
+    
+    
+    struct KEAATTFeature
+    {
+        size_t fid;
+        std::vector<bool> *boolFields;
+        std::vector<long> *intFields;
+        std::vector<double> *floatFields;
+        std::vector<size_t> *neighbours;
+    };
+    
+    enum KEAAttributeDataType
+    {
+        rsgis_na = 0,
+        rsgis_bool = 1,
+        rsgis_int = 2,
+        rsgis_float = 3,
+    };
+    
+    struct KEAATTAttribute
+    {
+        std::string name;
+        KEAAttributeDataType dataType;
+        unsigned int idx;
     };
     
     std::string int2Str(int num)

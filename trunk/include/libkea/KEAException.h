@@ -58,6 +58,15 @@ namespace libkea
         ~KEAIOException() throw() {};
 	};
     
+    class KEAATTException : public KEAException
+	{
+    public:
+        KEAATTException() : KEAException("KEAATTException has been created."){};
+        KEAATTException(const char* message) : KEAException(message){};
+        KEAATTException(std::string message) : KEAException(message){};
+        ~KEAATTException() throw() {};
+	};
+    
     
 }
 

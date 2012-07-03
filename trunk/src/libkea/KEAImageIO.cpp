@@ -1,5 +1,5 @@
 /*
- *  KEAWriter.cpp
+ *  KEAImageIO.cpp
  *  LibKEA
  *
  *  Created by Pete Bunting on 02/07/2012.
@@ -28,16 +28,16 @@
  *
  */
 
-#include "libkea/KEAWriter.h"
+#include "libkea/KEAImageIO.h"
 
 namespace libkea{
     
-    KEAWriter::KEAWriter()
+    KEAImageIO::KEAImageIO()
     {
         
     }
     
-    void KEAWriter::openKEAImage(H5::H5File *keaImgH5File)throw(KEAIOException)
+    void KEAImageIO::openKEAImage(H5::H5File *keaImgH5File)throw(KEAIOException)
     {
         try 
         {
@@ -174,7 +174,7 @@ namespace libkea{
         }
     }
     
-    void KEAWriter::writeImageBlock2Band(unsigned int band, void *data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType)throw(KEAIOException)
+    void KEAImageIO::writeImageBlock2Band(unsigned int band, void *data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType)throw(KEAIOException)
     {
         try 
         {
@@ -314,7 +314,124 @@ namespace libkea{
 		}
     }
     
-    void KEAWriter::close() throw(KEAIOException)
+    void KEAImageIO::readImageBlock2Band(unsigned int band, void *data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType)throw(KEAIOException)
+    {
+        throw KEAIOException("Not Implmented yet!");
+    }
+    
+    void KEAImageIO::setImageMetaData(std::string name, std::string value)throw(KEAIOException)
+    {
+        throw KEAIOException("Not Implmented yet!");
+    }
+    
+    std::string KEAImageIO::getImageMetaData(std::string name)throw(KEAIOException)
+    {
+        throw KEAIOException("Not Implmented yet!");
+        return "";
+    }
+    
+    void KEAImageIO::setImageBandMetaData(unsigned int band, std::string name, std::string value)throw(KEAIOException)
+    {
+        throw KEAIOException("Not Implmented yet!");
+    }
+    
+    std::string KEAImageIO::getImageBandMetaData(unsigned int band, std::string name)throw(KEAIOException)
+    {
+        throw KEAIOException("Not Implmented yet!");
+        return "";
+    }
+    
+    void KEAImageIO::setImageBandDescription(unsigned int band, std::string description)throw(KEAIOException)
+    {
+        throw KEAIOException("Not Implmented yet!");
+    }
+    
+    std::string KEAImageIO::getImageBandDescription(unsigned int band)throw(KEAIOException)
+    {
+        throw KEAIOException("Not Implmented yet!");
+        return "";
+    }
+    
+    void KEAImageIO::initImageBandATT(unsigned int band, size_t numFeats)throw(KEAIOException)
+    {
+        throw KEAIOException("Not Implmented yet!");
+    }
+    
+    bool KEAImageIO::getATTBoolField(size_t fid, std::string name) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+        return false;
+    }
+    
+    long KEAImageIO::getATTIntField(size_t fid, std::string name) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+        return 0;
+    }
+    
+    double KEAImageIO::getATTDoubleField(size_t fid, std::string name) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+        return 0;
+    }
+    
+    void KEAImageIO::setATTBoolField(size_t fid, std::string name, bool value) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+    }
+    
+    void KEAImageIO::setATTIntField(size_t fid, std::string name, long value) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+    }
+    
+    void KEAImageIO::setATTDoubleField(size_t fid, std::string name, double value) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+    }
+    
+    void KEAImageIO::setATTBoolValue(std::string name, bool value) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+    }
+    
+    void KEAImageIO::setATTIntValue(std::string name, long value) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+    }
+    
+    void KEAImageIO::setATTFloatValue(std::string name, double value) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+    }
+    
+    KEAATTFeature* KEAImageIO::getFeature(size_t fid) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+        return NULL;
+    }
+    
+    void KEAImageIO::addAttBoolField(std::string name, bool val) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+    }
+    
+    void KEAImageIO::addAttIntField(std::string name, long val) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+    }
+    
+    void KEAImageIO::addAttFloatField(std::string name, double val) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+    }
+    
+    void KEAImageIO::addAttributes(std::vector<KEAATTAttribute*> *attributes) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+    }
+    
+    void KEAImageIO::close() throw(KEAIOException)
     {
         try 
         {
@@ -327,7 +444,7 @@ namespace libkea{
         }
     }
     
-    H5::H5File* KEAWriter::createKEAImage(std::string fileName, KEADataType dataType, unsigned int xSize, unsigned int ySize, unsigned int numImgBands, std::vector<std::string> *bandDescrips, KEAImageSpatialInfo * spatialInfo, unsigned int blockSize)throw(KEAIOException)
+    H5::H5File* KEAImageIO::createKEAImage(std::string fileName, KEADataType dataType, unsigned int xSize, unsigned int ySize, unsigned int numImgBands, std::vector<std::string> *bandDescrips, KEAImageSpatialInfo * spatialInfo, unsigned int blockSize)throw(KEAIOException)
     {
         H5::Exception::dontPrint();
         
@@ -715,7 +832,7 @@ namespace libkea{
         return keaImgH5File;
     }
     
-    H5::H5File* KEAWriter::openKEAImage(std::string fileName)throw(KEAIOException)
+    H5::H5File* KEAImageIO::openKEAImageRW(std::string fileName)throw(KEAIOException)
     {
         H5::Exception::dontPrint();
         
@@ -748,8 +865,42 @@ namespace libkea{
         
         return keaImgH5File;
     }
+    
+    H5::H5File* KEAImageIO::openKEAImageRDOnly(std::string fileName)throw(KEAIOException)
+    {
+        H5::Exception::dontPrint();
+        
+        H5::H5File *keaImgH5File = NULL;
+        try 
+        {
+            const H5std_string keaImgFilePath(fileName);
+            keaImgH5File = new H5::H5File(keaImgFilePath, H5F_ACC_RDONLY);
+        } 
+        catch (KEAIOException &e) 
+        {
+            throw e;
+        }
+        catch( H5::FileIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+		catch( H5::DataSetIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+		catch( H5::DataSpaceIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+		catch( H5::DataTypeIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+        
+        return keaImgH5File;
+    }
 
-    KEAWriter::~KEAWriter()
+    KEAImageIO::~KEAImageIO()
     {
         
     }

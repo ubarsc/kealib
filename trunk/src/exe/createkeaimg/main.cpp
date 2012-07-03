@@ -36,16 +36,16 @@
 
 #include "libkea/KEACommon.h"
 #include "libkea/KEAException.h"
-#include "libkea/KEAWriter.h"
+#include "libkea/KEAImageIO.h"
 
 int main (int argc, char * const argv[]) 
 {
     try 
     {
-        H5::H5File *keaImgFile = libkea::KEAWriter::createKEAImage("/Users/pete/Desktop/TestImage.kea", libkea::kea_32float, 1000, 2000, 3);
+        H5::H5File *keaImgFile = libkea::KEAImageIO::createKEAImage("/Users/pete/Desktop/TestImage.kea", libkea::kea_32float, 1000, 2000, 3);
         
-        libkea::KEAWriter writer;
-        writer.openKEAImage(keaImgFile);
+        libkea::KEAImageIO imageIO;
+        imageIO.openKEAImage(keaImgFile);
         
                 
         float *data = new float[100*200];
@@ -59,13 +59,13 @@ int main (int argc, char * const argv[])
         }
         
         std::cout << "Write Image data\n";
-        writer.writeImageBlock2Band(1, data, 0, 0, 100, 200, libkea::kea_32float);
-        writer.writeImageBlock2Band(2, data, 100, 200, 100, 200, libkea::kea_32float);
-        writer.writeImageBlock2Band(3, data, 200, 400, 100, 200, libkea::kea_32float);
+        imageIO.writeImageBlock2Band(1, data, 0, 0, 100, 200, libkea::kea_32float);
+        imageIO.writeImageBlock2Band(2, data, 100, 200, 100, 200, libkea::kea_32float);
+        imageIO.writeImageBlock2Band(3, data, 200, 400, 100, 200, libkea::kea_32float);
         std::cout << "Written Image data\n";
         delete[] data;
         
-        writer.close();
+        imageIO.close();
         
         keaImgFile->close();
     } 
