@@ -321,35 +321,182 @@ namespace libkea{
     
     void KEAImageIO::setImageMetaData(std::string name, std::string value)throw(KEAIOException)
     {
-        throw KEAIOException("Not Implmented yet!");
+        // FORM META-DATA PATH WITHIN THE H5 FILE 
+        std::string metaDataH5Path = KEA_DATASETNAME_METADATA + std::string("/") + name;
+        
+        // WRITE IMAGE META DATA
+        try 
+        {
+            // OPEN DATASET OR CREATE NEW DATASET IF IT DOES NOT EXIST
+            H5::StrType strTypeAll(0, H5T_VARIABLE);
+            H5::DataSet datasetMetaData;
+            try 
+            {
+                datasetMetaData = this->keaImgFile->openDataSet( metaDataH5Path );
+            }
+            catch (H5::Exception &e)
+            {
+                hsize_t	dimsForStr[1];
+                dimsForStr[0] = 1; // number of lines;
+                H5::DataSpace dataspaceStrAll(1, dimsForStr);
+                datasetMetaData = this->keaImgFile->createDataSet(metaDataH5Path, strTypeAll, dataspaceStrAll);
+
+            }
+            // WRITE DATA INTO THE DATASET
+            const char **wStrdata = new const char*[1];
+            wStrdata[0] = value.c_str();			
+            datasetMetaData.write((void*)wStrdata, strTypeAll);
+            datasetMetaData.close();
+            delete[] wStrdata;
+        }
+        catch (H5::Exception &e) 
+        {
+            throw KEAIOException("Could not set image band description.");
+        }
     }
     
     std::string KEAImageIO::getImageMetaData(std::string name)throw(KEAIOException)
     {
-        throw KEAIOException("Not Implmented yet!");
-        return "";
+        std::string metaDataH5Path = KEA_DATASETNAME_METADATA + std::string("/") + name;
+        std::string value = "";
+        // READ IMAGE META-DATA
+        try 
+        {
+            hid_t nativeStrType;
+            H5::DataSet datasetMetaData = this->keaImgFile->openDataSet( metaDataH5Path );
+            H5::DataType strDataType = datasetMetaData.getDataType();
+            char **strData = new char*[1];
+            if((nativeStrType=H5Tget_native_type(strDataType.getId(), H5T_DIR_DEFAULT))<0)
+            {
+                throw KEAIOException("Could not define a native string type");
+            }
+            datasetMetaData.read((void*)strData, strDataType);
+            value = std::string(strData[0]);
+            delete strData[0];
+            delete[] strData;
+            datasetMetaData.close();
+        } 
+        catch ( H5::Exception &e) 
+        {
+            throw KEAIOException("Meta-data variable was not accessable.");
+        }
+        
+        return value;
     }
     
     void KEAImageIO::setImageBandMetaData(unsigned int band, std::string name, std::string value)throw(KEAIOException)
     {
-        throw KEAIOException("Not Implmented yet!");
+        // FORM META-DATA PATH WITHIN THE H5 FILE 
+        std::string metaDataH5Path = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_METADATA + std::string("/") + name;
+        
+        // WRITE IMAGE BAND META DATA
+        try 
+        {
+            // OPEN DATASET OR CREATE NEW DATASET IF IT DOES NOT EXIST
+            H5::StrType strTypeAll(0, H5T_VARIABLE);
+            H5::DataSet datasetMetaData;
+            try 
+            {
+                datasetMetaData = this->keaImgFile->openDataSet( metaDataH5Path );
+            }
+            catch (H5::Exception &e)
+            {
+                hsize_t	dimsForStr[1];
+                dimsForStr[0] = 1; // number of lines;
+                H5::DataSpace dataspaceStrAll(1, dimsForStr);
+                datasetMetaData = this->keaImgFile->createDataSet(metaDataH5Path, strTypeAll, dataspaceStrAll);
+                
+            }
+            // WRITE DATA INTO THE DATASET
+            const char **wStrdata = new const char*[1];
+            wStrdata[0] = value.c_str();			
+            datasetMetaData.write((void*)wStrdata, strTypeAll);
+            datasetMetaData.close();
+            delete[] wStrdata;
+        }
+        catch (H5::Exception &e) 
+        {
+            throw KEAIOException("Could not set image band description.");
+        }
     }
     
     std::string KEAImageIO::getImageBandMetaData(unsigned int band, std::string name)throw(KEAIOException)
     {
-        throw KEAIOException("Not Implmented yet!");
-        return "";
+        std::string metaDataH5Path = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_METADATA + std::string("/") + name;
+        std::string value = "";
+        // READ IMAGE BAND META-DATA
+        try 
+        {
+            hid_t nativeStrType;
+            H5::DataSet datasetMetaData = this->keaImgFile->openDataSet( metaDataH5Path );
+            H5::DataType strDataType = datasetMetaData.getDataType();
+            char **strData = new char*[1];
+            if((nativeStrType=H5Tget_native_type(strDataType.getId(), H5T_DIR_DEFAULT))<0)
+            {
+                throw KEAIOException("Could not define a native string type");
+            }
+            datasetMetaData.read((void*)strData, strDataType);
+            value = std::string(strData[0]);
+            delete strData[0];
+            delete[] strData;
+            datasetMetaData.close();
+        } 
+        catch ( H5::Exception &e) 
+        {
+            throw KEAIOException("Meta-data variable was not accessable.");
+        }
+        
+        return value;
     }
     
     void KEAImageIO::setImageBandDescription(unsigned int band, std::string description)throw(KEAIOException)
     {
-        throw KEAIOException("Not Implmented yet!");
+        std::string bandName = KEA_DATASETNAME_BAND + uint2Str(band);
+        
+        // WRITE IMAGE BAND DESCRIPTION
+        try 
+        {
+            H5::StrType strTypeAll(0, H5T_VARIABLE);
+            H5::DataSet datasetBandDescription = this->keaImgFile->openDataSet( bandName+KEA_BANDNAME_DESCRIP );
+            const char **wStrdata = new const char*[1];
+            wStrdata[0] = description.c_str();			
+            datasetBandDescription.write((void*)wStrdata, strTypeAll);
+            datasetBandDescription.close();
+            delete[] wStrdata;
+        }
+        catch (H5::Exception &e) 
+        {
+            throw KEAIOException("Could not set image band description.");
+        }
     }
     
     std::string KEAImageIO::getImageBandDescription(unsigned int band)throw(KEAIOException)
     {
-        throw KEAIOException("Not Implmented yet!");
-        return "";
+        std::string bandName = KEA_DATASETNAME_BAND + uint2Str(band);
+        std::string description = "";
+        // READ IMAGE BAND DESCRIPTION
+        try 
+        {
+            hid_t nativeStrType;
+            H5::DataSet datasetBandDescription = this->keaImgFile->openDataSet( bandName );
+            H5::DataType strDataType = datasetBandDescription.getDataType();
+            char **strData = new char*[1];
+            if((nativeStrType=H5Tget_native_type(strDataType.getId(), H5T_DIR_DEFAULT))<0)
+            {
+                throw KEAIOException("Could not define a native string type");
+            }
+            datasetBandDescription.read((void*)strData, strDataType);
+            description = std::string(strData[0]);
+            delete strData[0];
+            delete[] strData;
+            datasetBandDescription.close();
+        } 
+        catch ( H5::Exception &e) 
+        {
+            throw KEAIOException("Could not read band description.");
+        }
+        
+        return description;
     }
     
     void KEAImageIO::initImageBandATT(unsigned int band, size_t numFeats)throw(KEAIOException)
@@ -357,76 +504,76 @@ namespace libkea{
         throw KEAIOException("Not Implmented yet!");
     }
     
-    bool KEAImageIO::getATTBoolField(size_t fid, std::string name) throw(KEAATTException)
+    bool KEAImageIO::getATTBoolField(unsigned int band, size_t fid, std::string name) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
         return false;
     }
     
-    long KEAImageIO::getATTIntField(size_t fid, std::string name) throw(KEAATTException)
+    long KEAImageIO::getATTIntField(unsigned int band, size_t fid, std::string name) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
         return 0;
     }
     
-    double KEAImageIO::getATTDoubleField(size_t fid, std::string name) throw(KEAATTException)
+    double KEAImageIO::getATTDoubleField(unsigned int band, size_t fid, std::string name) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
         return 0;
     }
     
-    void KEAImageIO::setATTBoolField(size_t fid, std::string name, bool value) throw(KEAATTException)
+    void KEAImageIO::setATTBoolField(unsigned int band, size_t fid, std::string name, bool value) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
     }
     
-    void KEAImageIO::setATTIntField(size_t fid, std::string name, long value) throw(KEAATTException)
+    void KEAImageIO::setATTIntField(unsigned int band, size_t fid, std::string name, long value) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
     }
     
-    void KEAImageIO::setATTDoubleField(size_t fid, std::string name, double value) throw(KEAATTException)
+    void KEAImageIO::setATTDoubleField(unsigned int band, size_t fid, std::string name, double value) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
     }
     
-    void KEAImageIO::setATTBoolValue(std::string name, bool value) throw(KEAATTException)
+    void KEAImageIO::setATTBoolValue(unsigned int band, std::string name, bool value) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
     }
     
-    void KEAImageIO::setATTIntValue(std::string name, long value) throw(KEAATTException)
+    void KEAImageIO::setATTIntValue(unsigned int band, std::string name, long value) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
     }
     
-    void KEAImageIO::setATTFloatValue(std::string name, double value) throw(KEAATTException)
+    void KEAImageIO::setATTFloatValue(unsigned int band, std::string name, double value) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
     }
     
-    KEAATTFeature* KEAImageIO::getFeature(size_t fid) throw(KEAATTException)
+    KEAATTFeature* KEAImageIO::getFeature(unsigned int band, size_t fid) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
         return NULL;
     }
     
-    void KEAImageIO::addAttBoolField(std::string name, bool val) throw(KEAATTException)
+    void KEAImageIO::addAttBoolField(unsigned int band, std::string name, bool val) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
     }
     
-    void KEAImageIO::addAttIntField(std::string name, long val) throw(KEAATTException)
+    void KEAImageIO::addAttIntField(unsigned int band, std::string name, long val) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
     }
     
-    void KEAImageIO::addAttFloatField(std::string name, double val) throw(KEAATTException)
+    void KEAImageIO::addAttFloatField(unsigned int band, std::string name, double val) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
     }
     
-    void KEAImageIO::addAttributes(std::vector<KEAATTAttribute*> *attributes) throw(KEAATTException)
+    void KEAImageIO::addAttributes(unsigned int band, std::vector<KEAATTAttribute*> *attributes) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
     }
