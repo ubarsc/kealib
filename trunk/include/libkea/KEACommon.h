@@ -48,6 +48,11 @@ namespace libkea{
     static const std::string KEA_DATASETNAME_HEADER_ROT( "/HEADER/ROT" );
     static const std::string KEA_DATASETNAME_HEADER_SIZE( "/HEADER/SIZE" );
     static const std::string KEA_DATASETNAME_HEADER_WKT( "/HEADER/WKT" );
+    
+    static const std::string KEA_DATASETNAME_HEADER_FILETYPE( "/HEADER/FILETYPE" );
+    static const std::string KEA_DATASETNAME_HEADER_GENERATOR( "/HEADER/GENERATOR" );
+    static const std::string KEA_DATASETNAME_HEADER_VERSION( "/HEADER/VERSION" );
+    
 	static const std::string KEA_DATASETNAME_METADATA( "/METADATA" );
     static const std::string KEA_DATASETNAME_BAND( "/BAND" );
     

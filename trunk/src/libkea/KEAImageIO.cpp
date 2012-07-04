@@ -472,7 +472,7 @@ namespace libkea{
     
     std::string KEAImageIO::getImageBandDescription(unsigned int band)throw(KEAIOException)
     {
-        std::string bandName = KEA_DATASETNAME_BAND + uint2Str(band);
+        std::string bandName = KEA_DATASETNAME_BAND + uint2Str(band) + std::string("/") + KEA_BANDNAME_DESCRIP;
         std::string description = "";
         // READ IMAGE BAND DESCRIPTION
         try 
@@ -708,6 +708,33 @@ namespace libkea{
 			wStrdata[0] = spatialInfo->wktString.c_str();			
 			datasetSpatialReference.write((void*)wStrdata, strTypeAll);
 			datasetSpatialReference.close();
+			delete[] wStrdata;
+            
+            // SET THE FILE TYPE IN GLOBAL HEADER
+            H5::DataSet datasetFileType = keaImgH5File->createDataSet(KEA_DATASETNAME_HEADER_FILETYPE, strTypeAll, dataspaceStrAll);
+			wStrdata = new const char*[1];
+            std::string strVal = "KEA";
+			wStrdata[0] = strVal.c_str();			
+			datasetFileType.write((void*)wStrdata, strTypeAll);
+			datasetFileType.close();
+			delete[] wStrdata;
+            
+            // SET THE FILE GENARATOR IN GLOBAL HEADER
+            H5::DataSet datasetGenarator = keaImgH5File->createDataSet(KEA_DATASETNAME_HEADER_GENERATOR, strTypeAll, dataspaceStrAll);
+			wStrdata = new const char*[1];
+            strVal = "LibKEA";
+			wStrdata[0] = strVal.c_str();			
+			datasetGenarator.write((void*)wStrdata, strTypeAll);
+			datasetGenarator.close();
+			delete[] wStrdata;
+            
+            // SET THE FILE VERSION IN GLOBAL HEADER
+            H5::DataSet datasetVersion = keaImgH5File->createDataSet(KEA_DATASETNAME_HEADER_VERSION, strTypeAll, dataspaceStrAll);
+			wStrdata = new const char*[1];
+            strVal = "1.0";
+			wStrdata[0] = strVal.c_str();			
+			datasetVersion.write((void*)wStrdata, strTypeAll);
+			datasetVersion.close();
 			delete[] wStrdata;
             
             if(deleteSpatialInfo)
