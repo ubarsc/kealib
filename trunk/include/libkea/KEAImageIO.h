@@ -83,9 +83,11 @@ namespace libkea{
         void addAttributes(unsigned int band, std::vector<KEAATTAttribute*> *attributes) throw(KEAATTException);
         
         void close()throw(KEAIOException);
+        
         static H5::H5File* createKEAImage(std::string fileName, KEADataType dataType, unsigned int xSize, unsigned int ySize, unsigned int numImgBands, std::vector<std::string> *bandDescrips=NULL, KEAImageSpatialInfo *spatialInfo=NULL, unsigned int blockSize=KEA_WRITE_CHUNK_SIZE)throw(KEAIOException);
         static H5::H5File* openKEAImageRW(std::string fileName)throw(KEAIOException);
         static H5::H5File* openKEAImageRDOnly(std::string fileName)throw(KEAIOException);
+        static bool isKEAImage(std::string fileName)throw(KEAIOException);
         virtual ~KEAImageIO();
     protected:
         H5::H5File *keaImgFile;

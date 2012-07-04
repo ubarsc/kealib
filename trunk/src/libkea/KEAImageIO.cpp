@@ -316,7 +316,140 @@ namespace libkea{
     
     void KEAImageIO::readImageBlock2Band(unsigned int band, void *data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType)throw(KEAIOException)
     {
-        throw KEAIOException("Not Implmented yet!");
+        try 
+        {
+            // CHECK PARAMETERS PROVIDED FIT WITHIN IMAGE
+            if(band == 0)
+            {
+                throw KEAIOException("KEA Image Bands start at 1.");
+            }
+            else if(band > this->numImgBands)
+            {
+                throw KEAIOException("Band is not present within image."); 
+            }
+            
+            unsigned long endXPxl = xPxl + xSize;
+            unsigned long endYPxl = yPxl + ySize;
+            
+            if(xPxl > this->spatialInfo->xSize)
+            {
+                throw KEAIOException("Start X Pixel is not within image.");  
+            }
+            
+            if(endXPxl > this->spatialInfo->xSize)
+            {
+                throw KEAIOException("End X Pixel is not within image.");  
+            }
+            
+            if(yPxl > this->spatialInfo->ySize)
+            {
+                throw KEAIOException("Start Y Pixel is not within image.");  
+            }
+            
+            if(endYPxl > this->spatialInfo->ySize)
+            {
+                throw KEAIOException("End Y Pixel is not within image.");  
+            }
+            
+            //std::cout << "Band: " << band << std::endl;
+            //std::cout << "Start: [" << xPxl << "," << yPxl << "]\n";
+            //std::cout << "End: [" << endXPxl << "," << endYPxl << "]\n";
+            //std::cout << "Size: [" << xSize << "," << ySize << "]\n";
+            
+            // GET NATIVE DATASET
+            H5::DataType imgBandDT = H5::PredType::NATIVE_FLOAT;
+            if(inDataType == kea_8int)
+            {
+                imgBandDT = H5::PredType::NATIVE_INT;
+            }
+            else if(inDataType == kea_16int)
+            {
+                imgBandDT = H5::PredType::NATIVE_INT;
+            }
+            else if(inDataType == kea_32int)
+            {
+                imgBandDT = H5::PredType::NATIVE_INT;
+            }
+            else if(inDataType == kea_64int)
+            {
+                imgBandDT = H5::PredType::NATIVE_LONG;
+            }
+            else if(inDataType == kea_8uint)
+            {
+                imgBandDT = H5::PredType::NATIVE_UINT;
+            }
+            else if(inDataType == kea_16uint)
+            {
+                imgBandDT = H5::PredType::NATIVE_UINT;
+            }
+            else if(inDataType == kea_32uint)
+            {
+                imgBandDT = H5::PredType::NATIVE_UINT;
+            }
+            else if(inDataType == kea_64uint)
+            {
+                imgBandDT = H5::PredType::NATIVE_ULONG;
+            }
+            else if(inDataType == kea_32float)
+            {
+                imgBandDT = H5::PredType::NATIVE_FLOAT;
+            }
+            else if(inDataType == kea_64float)
+            {
+                imgBandDT = H5::PredType::NATIVE_DOUBLE;
+            }
+            else
+            {
+                throw KEAIOException("The specified data type was not recognised.");
+            }
+            
+            // OPEN BAND DATASET AND WRITE IMAGE DATA
+            try 
+            {
+                std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band);
+                H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( imageBandPath + KEA_BANDNAME_DATA );
+                H5::DataSpace imgBandDataspace = imgBandDataset.getSpace();                
+                
+                hsize_t dataOffset[2];
+                dataOffset[0] = yPxl;
+                dataOffset[1] = xPxl;
+                hsize_t dataDims[2];
+                dataDims[0] = ySize;
+                dataDims[1] = xSize;
+                H5::DataSpace read2BandDataspace = H5::DataSpace(2, dataDims);
+                
+                imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataDims, dataOffset);
+                imgBandDataset.read( data, imgBandDT, read2BandDataspace, imgBandDataspace);
+                
+                imgBandDataset.close();
+                imgBandDataspace.close();
+                read2BandDataspace.close();
+            } 
+            catch ( H5::Exception &e) 
+            {
+                throw KEAIOException("The TL coordinate is not specified.");
+            }            
+        }
+        catch(KEAIOException &e)
+        {
+            throw e;
+        }
+        catch( H5::FileIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+		catch( H5::DataSetIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+		catch( H5::DataSpaceIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+		catch( H5::DataTypeIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
     }
     
     void KEAImageIO::setImageMetaData(std::string name, std::string value)throw(KEAIOException)
@@ -1072,6 +1205,86 @@ namespace libkea{
 		}
         
         return keaImgH5File;
+    }
+    
+    bool KEAImageIO::isKEAImage(std::string fileName)throw(KEAIOException)
+    {
+        bool keaImageFound = false;
+        H5::Exception::dontPrint();
+        
+        try 
+        {
+            H5::H5File *keaImgH5File = NULL;
+            const H5std_string keaImgFilePath(fileName);
+            keaImgH5File = new H5::H5File(keaImgFilePath, H5F_ACC_RDONLY);
+            
+            try 
+            {
+                hid_t nativeFTStrType;
+                H5::DataSet datasetFileType = keaImgH5File->openDataSet( KEA_DATASETNAME_HEADER_FILETYPE );
+                H5::DataType strFTDataType = datasetFileType.getDataType();
+                char **strFTData = new char*[1];
+                if((nativeFTStrType=H5Tget_native_type(strFTDataType.getId(), H5T_DIR_DEFAULT))<0)
+                {
+                    throw KEAIOException("Could not define a native string type");
+                }
+                datasetFileType.read((void*)strFTData, strFTDataType);
+                std::string fileType = std::string(strFTData[0]);
+                delete strFTData[0];
+                delete[] strFTData;
+                datasetFileType.close();
+                                
+                try 
+                {
+                    if(fileType == "KEA")
+                    {
+                        hid_t nativeVerStrType;
+                        H5::DataSet datasetFileVersion = keaImgH5File->openDataSet( KEA_DATASETNAME_HEADER_VERSION );
+                        H5::DataType strVerDataType = datasetFileVersion.getDataType();
+                        char **strVerData = new char*[1];
+                        if((nativeVerStrType=H5Tget_native_type(strVerDataType.getId(), H5T_DIR_DEFAULT))<0)
+                        {
+                            throw KEAIOException("Could not define a native string type");
+                        }
+                        datasetFileVersion.read((void*)strVerData, strVerDataType);
+                        std::string fileVersion = std::string(strVerData[0]);
+                        delete strVerData[0];
+                        delete[] strVerData;
+                        datasetFileVersion.close();
+                        
+                        if(fileVersion == "1.0")
+                        {
+                            keaImageFound = true;
+                        }
+                        else
+                        {
+                            keaImageFound = false;
+                        }
+                    }
+                    else
+                    {
+                        keaImageFound = false;
+                    }
+                } 
+                catch ( H5::Exception &e) // WILL BE THROWN IF THE FILE VERSION DATASET IS NOT PRESENT
+                {
+                    keaImageFound = false;
+                }
+                
+            } 
+            catch ( H5::Exception &e) // WILL BE THROWN IF THE FILE TYPE DATASET IS NOT PRESENT
+            {
+                keaImageFound = false;
+            }
+            
+            keaImgH5File->close();
+        } 
+        catch( H5::Exception &e ) // WILL BE THROWN WHEN THE HDF LIBRARY CANNOT OPEN THE FILE - IE IT IS NOT A HDF5 FILE!
+		{
+			keaImageFound = false;
+		}
+        
+        return keaImageFound;
     }
 
     KEAImageIO::~KEAImageIO()

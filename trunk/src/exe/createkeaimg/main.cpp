@@ -63,7 +63,6 @@ int main (int argc, char * const argv[])
         imageIO.writeImageBlock2Band(2, data, 100, 200, 100, 200, libkea::kea_32float);
         imageIO.writeImageBlock2Band(3, data, 200, 400, 100, 200, libkea::kea_32float);
         std::cout << "Written Image data\n";
-        delete[] data;
         
         imageIO.setImageMetaData("TEST", "Hello World");
         imageIO.setImageBandMetaData(1, "TEST", "Hello World");
@@ -73,9 +72,63 @@ int main (int argc, char * const argv[])
         std::cout << "DESCRIPTION 2: " << imageIO.getImageBandDescription(2) << std::endl;
         std::cout << "DESCRIPTION 3: " << imageIO.getImageBandDescription(3) << std::endl;
         
+        
+        for(unsigned int i = 0; i < (100*200); ++i)
+        {
+            data[i] = 0;
+        }
+        
+        imageIO.readImageBlock2Band(1, data, 50, 100, 100, 200, libkea::kea_32float);
+        
+        for(unsigned int i = 0; i < 200; ++i)
+        {
+            for(unsigned int j = 0; j < 100; ++j)
+            {
+                if(j == 0)
+                {
+                    std::cout << data[(i*100)+j];
+                }
+                else
+                {
+                    std::cout << "," << data[(i*100)+j];
+                }
+            }
+            std::cout << std::endl;
+        }
+        
+        delete[] data;
+        
         imageIO.close();
         
         keaImgFile->close();
+        
+        if(libkea::KEAImageIO::isKEAImage("/Users/pete/Desktop/TestImage.kea"))
+        {
+            std::cout << "FOUND KEA IMAGE - THIS IS CORRECT A KEA IMAGE WAS PROVIDED!\n";
+        }
+        else
+        {
+            std::cout << "DID NOT FIND KEA IMAGE - THIS IS **NOT** CORRECT A KEA IMAGE WAS PROVIDED!\n";
+        }
+        
+        
+        if(libkea::KEAImageIO::isKEAImage("/Users/pete/Desktop/LI080204_RAW9_1m_pmfgrd_dtm.img"))
+        {
+            std::cout << "FOUND KEA IMAGE - THIS IS **NOT** CORRECT A IMG IMAGE WAS PROVIDED!\n";
+        }
+        else
+        {
+            std::cout << "DID NOT FIND KEA IMAGE - THIS IS CORRECT A IMG IMAGE WAS PROVIDED!\n";
+        }
+        
+        if(libkea::KEAImageIO::isKEAImage("/Users/pete/Desktop/LI080220_RAW17_10m_pmfgrd_h.spd"))
+        {
+            std::cout << "FOUND KEA IMAGE - THIS IS **NOT** CORRECT A SPD IMAGE WAS PROVIDED!\n";
+        }
+        else
+        {
+            std::cout << "DID NOT FIND KEA IMAGE - THIS IS CORRECT A SPD IMAGE WAS PROVIDED!\n";
+        }
     } 
     catch (libkea::KEAException &e) 
     {
