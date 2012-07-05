@@ -22,6 +22,7 @@ void GDALRegister_KEA()
         poDriver->SetMetadataItem( GDAL_DMD_EXTENSION, "kea" );
 
         poDriver->pfnOpen = KEADataset::Open;
+        poDriver->pfnCreate = KEADataset::Create;
 
         GetGDALDriverManager()->RegisterDriver( poDriver );
     }
