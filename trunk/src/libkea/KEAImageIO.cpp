@@ -61,6 +61,24 @@ namespace libkea{
             {
                 throw KEAIOException("The number of image bands was not specified.");
             }
+            
+            // READ NUMBER OF IMAGE BLOCK SIZE
+            try 
+            {
+                hsize_t dimsValue[1];
+                dimsValue[0] = 1;
+                H5::DataSpace valueDataSpace(1, dimsValue);
+                unsigned int value[1];
+                H5::DataSet datasetImgBlockSize = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_BLOCKSIZE );
+                datasetImgBlockSize.read(value, H5::PredType::NATIVE_UINT, valueDataSpace);
+                this->imgBlockSize = value[0];
+                datasetImgBlockSize.close();
+                valueDataSpace.close();
+            } 
+            catch ( H5::Exception &e) 
+            {
+                throw KEAIOException("The image block size was not specified.");
+            }
 
             // READ TL COORDINATES
             try 
@@ -701,6 +719,11 @@ namespace libkea{
     unsigned int KEAImageIO::getNumOfImageBands() throw(KEAIOException)
     {
         return this->numImgBands;
+    }
+    
+    unsigned int KEAImageIO::getImageBlockSize() throw(KEAIOException)
+    {
+        return this->imgBlockSize;
     }
     
     KEADataType KEAImageIO::getImageDataType() throw(KEAIOException)
