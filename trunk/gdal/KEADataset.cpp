@@ -120,11 +120,21 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
                                   GDALDataType eType,
                                   char ** papszParmList  )
 {
+    // default value
+    unsigned int blockSize = libkea::KEA_WRITE_CHUNK_SIZE;
+    // see if they have provided a different value
+    const char *pszValue = CSLFetchNameValue( papszParmList, "BLOCKSIZE" );
+    if( pszValue != NULL )
+    {
+        blockSize = atol( pszValue );
+    }
+
     try
     {
         H5::H5File *keaImgH5File = libkea::KEAImageIO::createKEAImage( pszFilename,
                                                     GDAL_to_KEA_Type( eType ),
-                                                    nXSize, nYSize, nBands );
+                                                    nXSize, nYSize, nBands,
+                                                    NULL, NULL, blockSize );
                                                     
         KEADataset *pDataset = new KEADataset( keaImgH5File );
 
@@ -135,8 +145,8 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
     catch (libkea::KEAIOException &e)
     {
         CPLError( CE_Failure, CPLE_OpenFailed,
-                  "Attempt to create file `%s' failed.\n",
-                  pszFilename );
+                  "Attempt to create file `%s' failed. Error: %s\n",
+                  pszFilename, e.what() );
         return NULL;
     }
 }
@@ -158,6 +168,7 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File )
         // create all the bands
         for( int nCount = 0; nCount < nBands; nCount++ )
         {
+            // note GDAL uses indices starting at 1
             KEARasterBand *pBand = new KEARasterBand( this, nCount + 1, &m_ImageIO );
             this->SetBand( nCount + 1, pBand );            
         }
@@ -165,6 +176,8 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File )
     catch (libkea::KEAIOException &e)
     {
         // ignore?
+        CPLError( CE_Warning, CPLE_AppDefined,
+                "Caught exception in KEADataset constructor %s", e.what() );
     }
 }
 
@@ -191,7 +204,7 @@ CPLErr KEADataset::GetGeoTransform( double * padfTransform )
     catch (libkea::KEAIOException &e)
     {
         CPLError( CE_Warning, CPLE_AppDefined,
-                "Unable to read geotransform" );
+                "Unable to read geotransform: %s", e.what() );
         return CE_Failure;
     }
 }
@@ -227,7 +240,7 @@ CPLErr KEADataset::SetGeoTransform (double *padfTransform )
     catch (libkea::KEAIOException &e)
     {
         CPLError( CE_Warning, CPLE_AppDefined,
-                "Unable to write geotransform" );
+                "Unable to write geotransform: %s", e.what() );
         return CE_Failure;
     }
 }
@@ -246,8 +259,14 @@ CPLErr KEADataset::SetProjection( const char *pszWKT )
     catch (libkea::KEAIOException &e)
     {
         CPLError( CE_Warning, CPLE_AppDefined,
-                "Unable to write projection" );
+                "Unable to write projection: %s", e.what() );
         return CE_Failure;
     }
+}
+
+// Thought this might be handy to pass back to the application
+void * KEADataset::GetInternalHandle(const char *)
+{
+    return &m_ImageIO;
 }
 

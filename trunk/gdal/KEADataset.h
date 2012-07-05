@@ -23,6 +23,8 @@ public:
 
     CPLErr  SetGeoTransform (double *padfTransform );
     CPLErr SetProjection( const char *pszWKT );
+
+    void *GetInternalHandle (const char *);
 };
 
 // conversion functions
