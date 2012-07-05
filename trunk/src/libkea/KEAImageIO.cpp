@@ -42,7 +42,7 @@ namespace libkea{
         try 
         {
             this->keaImgFile = keaImgH5File;
-            this->spatialInfo = new KEAImageSpatialInfo();
+            this->spatialInfoFile = new KEAImageSpatialInfo();
             
             // READ NUMBER OF IMAGE BANDS
             try 
@@ -71,8 +71,8 @@ namespace libkea{
                 double *values = new double[2];
                 H5::DataSet datasetSpatialTL = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_TL );
                 datasetSpatialTL.read(values, H5::PredType::NATIVE_DOUBLE, valueDataSpace);
-                this->spatialInfo->tlX = values[0];
-                this->spatialInfo->tlY = values[1];
+                this->spatialInfoFile->tlX = values[0];
+                this->spatialInfoFile->tlY = values[1];
                 datasetSpatialTL.close();
                 valueDataSpace.close();
             } 
@@ -90,8 +90,8 @@ namespace libkea{
                 float *values = new float[2];
                 H5::DataSet spatialResDataset = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_RES );
                 spatialResDataset.read(values, H5::PredType::NATIVE_FLOAT, valueDataSpace);
-                this->spatialInfo->xRes = values[0];
-                this->spatialInfo->yRes = values[1];
+                this->spatialInfoFile->xRes = values[0];
+                this->spatialInfoFile->yRes = values[1];
                 spatialResDataset.close();
                 valueDataSpace.close();
             } 
@@ -109,8 +109,8 @@ namespace libkea{
                 float *values = new float[2];
                 H5::DataSet spatialRotDataset = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_ROT );
                 spatialRotDataset.read(values, H5::PredType::NATIVE_FLOAT, valueDataSpace);
-                this->spatialInfo->xRot = values[0];
-                this->spatialInfo->yRot = values[1];
+                this->spatialInfoFile->xRot = values[0];
+                this->spatialInfoFile->yRot = values[1];
                 spatialRotDataset.close();
                 valueDataSpace.close();
             } 
@@ -128,8 +128,8 @@ namespace libkea{
                 unsigned long *values = new unsigned long[2];
                 H5::DataSet spatialSizeDataset = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_SIZE );
                 spatialSizeDataset.read(values, H5::PredType::NATIVE_ULONG, valueDataSpace);
-                this->spatialInfo->xSize = values[0];
-                this->spatialInfo->ySize = values[1];
+                this->spatialInfoFile->xSize = values[0];
+                this->spatialInfoFile->ySize = values[1];
                 spatialSizeDataset.close();
                 valueDataSpace.close();
             } 
@@ -150,7 +150,7 @@ namespace libkea{
                     throw KEAIOException("Could not define a native string type");
                 }
                 datasetSpatialReference.read((void*)strData, strDataType);
-                this->spatialInfo->wktString = std::string(strData[0]);
+                this->spatialInfoFile->wktString = std::string(strData[0]);
                 delete strData[0];
                 delete[] strData;
                 datasetSpatialReference.close();
@@ -161,11 +161,11 @@ namespace libkea{
             }
             
             std::cout << "Number of Bands: " << this->numImgBands << std::endl;
-            std::cout << "TL Coords: [" << this->spatialInfo->tlX << "," << this->spatialInfo->tlY << "]" << std::endl;
-            std::cout << "Resolution: [" << this->spatialInfo->xRes << "," << this->spatialInfo->yRes << "]" << std::endl;
-            std::cout << "Rotation: [" << this->spatialInfo->xRot << "," << this->spatialInfo->yRot << "]" << std::endl;
-            std::cout << "Size: [" << this->spatialInfo->xSize << "," << this->spatialInfo->ySize << "]" << std::endl;
-            std::cout << "WKT: \'" << this->spatialInfo->wktString << "\'" << std::endl;
+            std::cout << "TL Coords: [" << this->spatialInfoFile->tlX << "," << this->spatialInfoFile->tlY << "]" << std::endl;
+            std::cout << "Resolution: [" << this->spatialInfoFile->xRes << "," << this->spatialInfoFile->yRes << "]" << std::endl;
+            std::cout << "Rotation: [" << this->spatialInfoFile->xRot << "," << this->spatialInfoFile->yRot << "]" << std::endl;
+            std::cout << "Size: [" << this->spatialInfoFile->xSize << "," << this->spatialInfoFile->ySize << "]" << std::endl;
+            std::cout << "WKT: \'" << this->spatialInfoFile->wktString << "\'" << std::endl;
             
         } 
         catch (KEAIOException &e) 
@@ -191,22 +191,22 @@ namespace libkea{
             unsigned long endXPxl = xPxl + xSize;
             unsigned long endYPxl = yPxl + ySize;
             
-            if(xPxl > this->spatialInfo->xSize)
+            if(xPxl > this->spatialInfoFile->xSize)
             {
                throw KEAIOException("Start X Pixel is not within image.");  
             }
             
-            if(endXPxl > this->spatialInfo->xSize)
+            if(endXPxl > this->spatialInfoFile->xSize)
             {
                 throw KEAIOException("End X Pixel is not within image.");  
             }
             
-            if(yPxl > this->spatialInfo->ySize)
+            if(yPxl > this->spatialInfoFile->ySize)
             {
                 throw KEAIOException("Start Y Pixel is not within image.");  
             }
             
-            if(endYPxl > this->spatialInfo->ySize)
+            if(endYPxl > this->spatialInfoFile->ySize)
             {
                 throw KEAIOException("End Y Pixel is not within image.");  
             }
@@ -331,22 +331,22 @@ namespace libkea{
             unsigned long endXPxl = xPxl + xSize;
             unsigned long endYPxl = yPxl + ySize;
             
-            if(xPxl > this->spatialInfo->xSize)
+            if(xPxl > this->spatialInfoFile->xSize)
             {
                 throw KEAIOException("Start X Pixel is not within image.");  
             }
             
-            if(endXPxl > this->spatialInfo->xSize)
+            if(endXPxl > this->spatialInfoFile->xSize)
             {
                 throw KEAIOException("End X Pixel is not within image.");  
             }
             
-            if(yPxl > this->spatialInfo->ySize)
+            if(yPxl > this->spatialInfoFile->ySize)
             {
                 throw KEAIOException("Start Y Pixel is not within image.");  
             }
             
-            if(endYPxl > this->spatialInfo->ySize)
+            if(endYPxl > this->spatialInfoFile->ySize)
             {
                 throw KEAIOException("End Y Pixel is not within image.");  
             }
@@ -632,6 +632,89 @@ namespace libkea{
         return description;
     }
     
+    
+    void KEAImageIO::setSpatialInfo(KEAImageSpatialInfo *inSpatialInfo)throw(KEAIOException)
+    {
+        try 
+        {
+            // SET X AND Y TL IN GLOBAL HEADER
+            double *doubleVals = new double[2];
+            doubleVals[0] = inSpatialInfo->tlX;
+            doubleVals[1] = inSpatialInfo->tlY;
+            hsize_t dimsSpatialTL[1];
+			dimsSpatialTL[0] = 2;
+            H5::DataSpace spatialTLDataSpace(1, dimsSpatialTL);
+            H5::DataSet spatialTLDataset = this->keaImgFile->createDataSet(KEA_DATASETNAME_HEADER_TL, H5::PredType::IEEE_F64LE, spatialTLDataSpace);
+			spatialTLDataset.write( doubleVals, H5::PredType::NATIVE_DOUBLE );
+            spatialTLDataset.close();
+            spatialTLDataSpace.close();
+            delete[] doubleVals;
+            
+            // SET X AND Y RESOLUTION IN GLOBAL HEADER
+            float *floatVals = new float[2];
+            floatVals[0] = inSpatialInfo->xRes;
+            floatVals[1] = inSpatialInfo->yRes;
+            hsize_t dimsSpatialRes[1];
+			dimsSpatialRes[0] = 2;
+            H5::DataSpace spatialResDataSpace(1, dimsSpatialRes);
+            H5::DataSet spatialResDataset = this->keaImgFile->createDataSet(KEA_DATASETNAME_HEADER_RES, H5::PredType::IEEE_F32LE, spatialResDataSpace);
+			spatialResDataset.write( floatVals, H5::PredType::NATIVE_FLOAT );
+            spatialResDataset.close();
+            spatialResDataSpace.close();
+            
+            // SET X AND Y ROTATION IN GLOBAL HEADER
+            floatVals[0] = inSpatialInfo->xRot;
+            floatVals[1] = inSpatialInfo->yRot;
+            hsize_t dimsSpatialRot[1];
+			dimsSpatialRot[0] = 2;
+            H5::DataSpace spatialRotDataSpace(1, dimsSpatialRot);
+            H5::DataSet spatialRotDataset = this->keaImgFile->createDataSet(KEA_DATASETNAME_HEADER_ROT, H5::PredType::IEEE_F32LE, spatialRotDataSpace);
+			spatialRotDataset.write( floatVals, H5::PredType::NATIVE_FLOAT );
+            spatialRotDataset.close();
+            spatialRotDataSpace.close();
+            delete[] floatVals;
+            
+            // SET THE WKT STRING SPATAIL REFERENCE IN GLOBAL HEADER
+			const char **wStrdata = NULL;
+			hsize_t	dimsForStr[1];
+			dimsForStr[0] = 1; // number of lines;
+            H5::DataSpace dataspaceStrAll(1, dimsForStr);
+            H5::StrType strTypeAll(0, H5T_VARIABLE);
+            H5::DataSet datasetSpatialReference = this->keaImgFile->createDataSet(KEA_DATASETNAME_HEADER_WKT, strTypeAll, dataspaceStrAll);
+			wStrdata = new const char*[1];
+			wStrdata[0] = inSpatialInfo->wktString.c_str();			
+			datasetSpatialReference.write((void*)wStrdata, strTypeAll);
+			datasetSpatialReference.close();
+			delete[] wStrdata;
+        } 
+        catch (H5::Exception &e)
+        {
+            throw KEAIOException(e.getCDetailMsg());
+        }
+    }
+    
+    KEAImageSpatialInfo* KEAImageIO::getSpatialInfo()
+    {
+        return spatialInfoFile;
+    }
+    
+    std::pair<unsigned int,unsigned int> KEAImageIO::getImageSize()
+    {
+        return std::pair<unsigned int,unsigned int>(xSize, ySize);
+    }
+    
+    unsigned int KEAImageIO::getNumOfImageBands()
+    {
+        return this->numImgBands;
+    }
+    
+    KEADataType KEAImageIO::getImageDataType()
+    {
+        return this->dataType;
+    }
+    
+    
+    
     void KEAImageIO::initImageBandATT(unsigned int band, size_t numFeats)throw(KEAIOException)
     {
         throw KEAIOException("Not Implmented yet!");
@@ -715,7 +798,7 @@ namespace libkea{
     {
         try 
         {
-            delete this->spatialInfo;
+            delete this->spatialInfoFile;
             this->keaImgFile = NULL;
         }
         catch(KEAIOException &e)

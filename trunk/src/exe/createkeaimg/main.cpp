@@ -82,6 +82,8 @@ int main (int argc, char * const argv[])
         std::cout << "DESCRIPTION 2: " << imageIO.getImageBandDescription(2) << std::endl;
         std::cout << "DESCRIPTION 3: " << imageIO.getImageBandDescription(3) << std::endl;
         
+        std::cout << "Number of Bands: " << imageIO.getNumOfImageBands() << std::endl;
+        
         
         for(unsigned int i = 0; i < (100*200); ++i)
         {
