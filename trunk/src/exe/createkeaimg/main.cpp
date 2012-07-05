@@ -40,9 +40,19 @@
 
 int main (int argc, char * const argv[]) 
 {
+    std::string sFilename;
+    if( argc == 2 )
+    {
+        sFilename = argv[1];
+    }
+    else
+    {
+        sFilename = "TestImage.kea";
+    }
+
     try 
     {
-        H5::H5File *keaImgFile = libkea::KEAImageIO::createKEAImage("/Users/pete/Desktop/TestImage.kea", libkea::kea_32float, 1000, 2000, 3);
+        H5::H5File *keaImgFile = libkea::KEAImageIO::createKEAImage(sFilename, libkea::kea_32float, 1000, 2000, 3);
         
         libkea::KEAImageIO imageIO;
         imageIO.openKEAImage(keaImgFile);
