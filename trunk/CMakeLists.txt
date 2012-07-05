@@ -28,6 +28,7 @@ set (PROJECT_LIBRARY_DIR lib)
 set (PROJECT_SOURCE_DIR src)
 set (PROJECT_HEADER_DIR include)
 set (PROJECT_TOOLS_DIR tools)
+set (PROJECT_GDAL_DIR gdal)
 
 # The version number.
 set (LIBKEA_HG_VERSION 1)
@@ -50,10 +51,14 @@ else()
 endif()
 
 option (BUILD_SHARED_LIBS "Build with shared library" ON)
-set(LIBKEA_WITH_UTILITIES TRUE CACHE BOOL "Choose if SPDLib utilities should be built")
+set(LIBKEA_WITH_UTILITIES TRUE CACHE BOOL "Choose if KeaLib utilities should be built")
+set(LIBKEA_WITH_GDAL TRUE CACHE BOOL "Choose if .kea GDAL driver should be built")
 
 set(HDF5_INCLUDE_DIR /usr/local/include CACHE PATH "Include PATH for HDF5")
 set(HDF5_LIB_PATH /usr/local/lib CACHE PATH "Library PATH for HDF5")
+
+set(GDAL_INCLUDE_DIR /usr/local/include CACHE PATH "Include PATH for GDAL")
+set(GDAL_LIB_PATH /usr/local/lib CACHE PATH "Library PATH for GDAL")
 
 ###############################################################################
 
@@ -154,6 +159,7 @@ endif(APPLE)
 include_directories(${HDF5_INCLUDE_DIR})
 set(HDF5_LIBRARIES -L${HDF5_LIB_PATH} -lhdf5 -lhdf5_hl -lhdf5_cpp)
 
+set(GDAL_LIBRARIES -L${GDAL_LIB_PATH} -lgdal)
 ###############################################################################
 
 ###############################################################################
@@ -161,6 +167,9 @@ set(HDF5_LIBRARIES -L${HDF5_LIB_PATH} -lhdf5 -lhdf5_hl -lhdf5_cpp)
 
 include_directories ("${PROJECT_HEADER_DIR}")
 add_subdirectory ("${PROJECT_SOURCE_DIR}")
+if (LIBKEA_WITH_GDAL)
+	add_subdirectory ("${PROJECT_GDAL_DIR}")
+endif(LIBKEA_WITH_GDAL)
 ###############################################################################
 
 ###############################################################################
