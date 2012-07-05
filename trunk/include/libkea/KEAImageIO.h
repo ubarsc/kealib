@@ -61,13 +61,11 @@ namespace libkea{
         std::string getImageBandDescription(unsigned int band)throw(KEAIOException);
         
         void setSpatialInfo(KEAImageSpatialInfo *spatialInfo)throw(KEAIOException);
-        KEAImageSpatialInfo* getSpatialInfo();
+        KEAImageSpatialInfo* getSpatialInfo() throw(KEAIOException);
+                
+        unsigned int getNumOfImageBands() throw(KEAIOException);
         
-        std::pair<unsigned int,unsigned int> getImageSize();
-        
-        unsigned int getNumOfImageBands();
-        
-        KEADataType getImageDataType();
+        KEADataType getImageDataType() throw(KEAIOException);
         
         void initImageBandATT(unsigned int band, size_t numFeats)throw(KEAIOException);
         
@@ -100,11 +98,8 @@ namespace libkea{
         virtual ~KEAImageIO();
     protected:
         H5::H5File *keaImgFile;
-        KEADataType dataType;
-        std::vector<std::string> *bandDescrips;
+        //KEADataType dataType;
         KEAImageSpatialInfo *spatialInfoFile;
-        unsigned int xSize;
-        unsigned int ySize;
         unsigned int numImgBands;
     };
     

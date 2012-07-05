@@ -693,24 +693,20 @@ namespace libkea{
         }
     }
     
-    KEAImageSpatialInfo* KEAImageIO::getSpatialInfo()
+    KEAImageSpatialInfo* KEAImageIO::getSpatialInfo() throw(KEAIOException)
     {
         return spatialInfoFile;
     }
     
-    std::pair<unsigned int,unsigned int> KEAImageIO::getImageSize()
-    {
-        return std::pair<unsigned int,unsigned int>(xSize, ySize);
-    }
-    
-    unsigned int KEAImageIO::getNumOfImageBands()
+    unsigned int KEAImageIO::getNumOfImageBands() throw(KEAIOException)
     {
         return this->numImgBands;
     }
     
-    KEADataType KEAImageIO::getImageDataType()
+    KEADataType KEAImageIO::getImageDataType() throw(KEAIOException)
     {
-        return this->dataType;
+        throw KEAIOException("Not Implmented yet!");
+        //return this->dataType;
     }
     
     
