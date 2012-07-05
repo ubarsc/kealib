@@ -164,28 +164,28 @@ namespace libkea{
         unsigned int idx;
     };
     
-    std::string int2Str(int num)
+    inline std::string int2Str(int num)
     {
         std::ostringstream convert;
         convert << num;
         return convert.str();
     }
     
-    std::string uint2Str(unsigned int num)
+    inline std::string uint2Str(unsigned int num)
     {
         std::ostringstream convert;
         convert << num;
         return convert.str();
     }
     
-    std::string long2Str(long num)
+    inline std::string long2Str(long num)
     {
         std::ostringstream convert;
         convert << num;
         return convert.str();
     }
     
-    std::string ulong2Str(unsigned long num)
+    inline std::string ulong2Str(unsigned long num)
     {
         std::ostringstream convert;
         convert << num;
