@@ -34,7 +34,7 @@ namespace libkea{
     
     KEAImageIO::KEAImageIO()
     {
-        
+        this->fileOpen = false;
     }
     
     void KEAImageIO::openKEAImage(H5::H5File *keaImgH5File)throw(KEAIOException)
@@ -55,6 +55,24 @@ namespace libkea{
                 datasetNumImgBands.read(value, H5::PredType::NATIVE_UINT, valueDataSpace);
                 this->numImgBands = value[0];
                 datasetNumImgBands.close();
+                valueDataSpace.close();
+            } 
+            catch ( H5::Exception &e) 
+            {
+                throw KEAIOException("The number of image bands was not specified.");
+            }
+            
+            // READ IMAGE DATA TYPE
+            try 
+            {
+                hsize_t dimsValue[1];
+                dimsValue[0] = 1;
+                H5::DataSpace valueDataSpace(1, dimsValue);
+                unsigned int value[1];
+                H5::DataSet datasetImgDT = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_DT );
+                datasetImgDT.read(value, H5::PredType::NATIVE_UINT, valueDataSpace);
+                this->imgDataType = (KEADataType)value[0];
+                datasetImgDT.close();
                 valueDataSpace.close();
             } 
             catch ( H5::Exception &e) 
@@ -190,10 +208,17 @@ namespace libkea{
         {
             throw e;
         }
+        
+        this->fileOpen = true;
     }
     
     void KEAImageIO::writeImageBlock2Band(unsigned int band, void *data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType)throw(KEAIOException)
     {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
         try 
         {
             // CHECK PARAMETERS PROVIDED FIT WITHIN IMAGE
@@ -334,6 +359,11 @@ namespace libkea{
     
     void KEAImageIO::readImageBlock2Band(unsigned int band, void *data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType)throw(KEAIOException)
     {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
         try 
         {
             // CHECK PARAMETERS PROVIDED FIT WITHIN IMAGE
@@ -472,6 +502,11 @@ namespace libkea{
     
     void KEAImageIO::setImageMetaData(std::string name, std::string value)throw(KEAIOException)
     {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
         // FORM META-DATA PATH WITHIN THE H5 FILE 
         std::string metaDataH5Path = KEA_DATASETNAME_METADATA + std::string("/") + name;
         
@@ -508,6 +543,11 @@ namespace libkea{
     
     std::string KEAImageIO::getImageMetaData(std::string name)throw(KEAIOException)
     {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
         std::string metaDataH5Path = KEA_DATASETNAME_METADATA + std::string("/") + name;
         std::string value = "";
         // READ IMAGE META-DATA
@@ -537,6 +577,11 @@ namespace libkea{
     
     void KEAImageIO::setImageBandMetaData(unsigned int band, std::string name, std::string value)throw(KEAIOException)
     {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
         // FORM META-DATA PATH WITHIN THE H5 FILE 
         std::string metaDataH5Path = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_METADATA + std::string("/") + name;
         
@@ -573,6 +618,11 @@ namespace libkea{
     
     std::string KEAImageIO::getImageBandMetaData(unsigned int band, std::string name)throw(KEAIOException)
     {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
         std::string metaDataH5Path = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_METADATA + std::string("/") + name;
         std::string value = "";
         // READ IMAGE BAND META-DATA
@@ -602,6 +652,11 @@ namespace libkea{
     
     void KEAImageIO::setImageBandDescription(unsigned int band, std::string description)throw(KEAIOException)
     {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
         std::string bandName = KEA_DATASETNAME_BAND + uint2Str(band);
         
         // WRITE IMAGE BAND DESCRIPTION
@@ -623,6 +678,11 @@ namespace libkea{
     
     std::string KEAImageIO::getImageBandDescription(unsigned int band)throw(KEAIOException)
     {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
         std::string bandName = KEA_DATASETNAME_BAND + uint2Str(band) + std::string("/") + KEA_BANDNAME_DESCRIP;
         std::string description = "";
         // READ IMAGE BAND DESCRIPTION
@@ -653,6 +713,11 @@ namespace libkea{
     
     void KEAImageIO::setSpatialInfo(KEAImageSpatialInfo *inSpatialInfo)throw(KEAIOException)
     {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
         try 
         {
             // SET X AND Y TL IN GLOBAL HEADER
@@ -713,23 +778,42 @@ namespace libkea{
     
     KEAImageSpatialInfo* KEAImageIO::getSpatialInfo() throw(KEAIOException)
     {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
         return spatialInfoFile;
     }
     
     unsigned int KEAImageIO::getNumOfImageBands() throw(KEAIOException)
     {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
         return this->numImgBands;
     }
     
     unsigned int KEAImageIO::getImageBlockSize() throw(KEAIOException)
     {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
         return this->imgBlockSize;
     }
     
     KEADataType KEAImageIO::getImageDataType() throw(KEAIOException)
     {
-        throw KEAIOException("Not Implmented yet!");
-        //return this->dataType;
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        return this->imgDataType;
     }
     
     
@@ -819,6 +903,7 @@ namespace libkea{
         {
             delete this->spatialInfoFile;
             this->keaImgFile = NULL;
+            this->fileOpen = false;
         }
         catch(KEAIOException &e)
         {
@@ -873,6 +958,15 @@ namespace libkea{
             blockSizeDataset.close();
             blockSizeDataSpace.close();
             
+            // SET IMAGE DATA TYPE IN GLOBAL HEADER
+            hsize_t dimsDT[1];
+			dimsDT[0] = 1;
+            H5::DataSpace dtDataSpace(1, dimsDT);
+            H5::DataSet dtDataset = keaImgH5File->createDataSet(KEA_DATASETNAME_HEADER_DT, H5::PredType::STD_U16LE, dtDataSpace);
+			dtDataset.write( &dataType, H5::PredType::NATIVE_UINT );
+            dtDataset.close();
+            dtDataset.close();
+            
             // SET NUMBER OF IMAGE BANDS IN GLOBAL HEADER
             hsize_t dimsNumBands[1];
 			dimsNumBands[0] = 1;
@@ -881,7 +975,7 @@ namespace libkea{
 			numBandsDataset.write( &numImgBands, H5::PredType::NATIVE_UINT );
             numBandsDataset.close();
             numBandsDataSpace.close();
-                        
+                                    
             // SET X AND Y TL IN GLOBAL HEADER
             double *doubleVals = new double[2];
             doubleVals[0] = spatialInfo->tlX;

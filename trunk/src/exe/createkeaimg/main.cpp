@@ -47,7 +47,7 @@ int main (int argc, char * const argv[])
     }
     else
     {
-        sFilename = "TestImage.kea";
+        sFilename = "/Users/pete/Desktop/TestImage.kea";
     }
 
     try 
@@ -84,6 +84,7 @@ int main (int argc, char * const argv[])
         
         std::cout << "Number of Bands: " << imageIO.getNumOfImageBands() << std::endl;
         
+        std::cout << "Image Data Type: " << imageIO.getImageDataType() << std::endl;
         
         for(unsigned int i = 0; i < (100*200); ++i)
         {

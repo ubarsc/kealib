@@ -99,8 +99,9 @@ namespace libkea{
         static bool isKEAImage(std::string fileName)throw(KEAIOException);
         virtual ~KEAImageIO();
     protected:
+        bool fileOpen;
         H5::H5File *keaImgFile;
-        //KEADataType dataType;
+        KEADataType imgDataType;
         KEAImageSpatialInfo *spatialInfoFile;
         unsigned int numImgBands;
         unsigned int imgBlockSize;
