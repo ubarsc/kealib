@@ -195,6 +195,58 @@ namespace libkea{
         return convert.str();
     }
     
+    inline std::string getDataTypeAsStr(KEADataType dataType)
+    {
+        std::string strDT = "Unknown";
+        
+        if(dataType == kea_8int)
+        {
+            strDT = "Integer 8 bit";
+        }
+        else if(dataType == kea_16int)
+        {
+            strDT = "Integer 16 bit";
+        }
+        else if(dataType == kea_32int)
+        {
+            strDT = "Integer 32 bit";
+        }
+        else if(dataType == kea_64int)
+        {
+            strDT = "Integer 64 bit";
+        }
+        else if(dataType == kea_8uint)
+        {
+            strDT = "Unsigned Integer 8 bit";
+        }
+        else if(dataType == kea_16uint)
+        {
+            strDT = "Unsigned Integer 16 bit";
+        }
+        else if(dataType == kea_32uint)
+        {
+            strDT = "Unsigned Integer 32 bit";
+        }
+        else if(dataType == kea_64uint)
+        {
+            strDT = "Unsigned Integer 64 bit";
+        }
+        else if(dataType == kea_32float)
+        {
+            strDT = "Float 32 bit";
+        }
+        else if(dataType == kea_64float)
+        {
+            strDT = "Float 64 bit";
+        }
+        else
+        {
+            strDT = "Unknown";
+        }
+           
+        return strDT;
+    }
+    
     
 }
 
