@@ -77,7 +77,7 @@ namespace libkea{
             } 
             catch ( H5::Exception &e) 
             {
-                throw KEAIOException("The number of image bands was not specified.");
+                throw KEAIOException("The image data type was not specified.");
             }
             
             // READ NUMBER OF IMAGE BLOCK SIZE
