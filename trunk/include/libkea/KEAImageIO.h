@@ -46,7 +46,8 @@ namespace libkea{
     {
     public:
         KEAImageIO();
-        void openKEAImage(H5::H5File *keaImgH5File)throw(KEAIOException);
+                
+        void openKEAImageHeader(H5::H5File *keaImgH5File)throw(KEAIOException);
         
         void writeImageBlock2Band(unsigned int band, void *data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType)throw(KEAIOException);
         void readImageBlock2Band(unsigned int band, void *data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType)throw(KEAIOException);
@@ -94,9 +95,9 @@ namespace libkea{
         void close()throw(KEAIOException);
         
         static H5::H5File* createKEAImage(std::string fileName, KEADataType dataType, unsigned int xSize, unsigned int ySize, unsigned int numImgBands, std::vector<std::string> *bandDescrips=NULL, KEAImageSpatialInfo *spatialInfo=NULL, unsigned int blockSize=KEA_WRITE_CHUNK_SIZE)throw(KEAIOException);
-        static H5::H5File* openKEAImageRW(std::string fileName)throw(KEAIOException);
-        static H5::H5File* openKEAImageRDOnly(std::string fileName)throw(KEAIOException);
         static bool isKEAImage(std::string fileName)throw(KEAIOException);
+        static H5::H5File* openKeaH5RW(std::string fileName)throw(KEAIOException);
+        static H5::H5File* openKeaH5RDOnly(std::string fileName)throw(KEAIOException);
         virtual ~KEAImageIO();
     protected:
         bool fileOpen;
