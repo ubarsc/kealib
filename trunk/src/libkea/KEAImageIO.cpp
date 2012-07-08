@@ -37,7 +37,7 @@ namespace libkea{
         this->fileOpen = false;
     }
     
-    void KEAImageIO::openKEAImage(H5::H5File *keaImgH5File)throw(KEAIOException)
+    void KEAImageIO::openKEAImageHeader(H5::H5File *keaImgH5File)throw(KEAIOException)
     {
         try 
         {
@@ -1335,7 +1335,7 @@ namespace libkea{
         return keaImgH5File;
     }
     
-    H5::H5File* KEAImageIO::openKEAImageRW(std::string fileName)throw(KEAIOException)
+    H5::H5File* KEAImageIO::openKeaH5RW(std::string fileName)throw(KEAIOException)
     {
         H5::Exception::dontPrint();
         
@@ -1369,7 +1369,7 @@ namespace libkea{
         return keaImgH5File;
     }
     
-    H5::H5File* KEAImageIO::openKEAImageRDOnly(std::string fileName)throw(KEAIOException)
+    H5::H5File* KEAImageIO::openKeaH5RDOnly(std::string fileName)throw(KEAIOException)
     {
         H5::Exception::dontPrint();
         
@@ -1402,7 +1402,7 @@ namespace libkea{
         
         return keaImgH5File;
     }
-    
+        
     bool KEAImageIO::isKEAImage(std::string fileName)throw(KEAIOException)
     {
         bool keaImageFound = false;

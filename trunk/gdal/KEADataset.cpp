@@ -91,11 +91,11 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
             H5::H5File *pH5File;
             if( poOpenInfo->eAccess == GA_ReadOnly )
             {
-                pH5File = libkea::KEAImageIO::openKEAImageRDOnly( poOpenInfo->pszFilename );
+                pH5File = libkea::KEAImageIO::openKeaH5RDOnly( poOpenInfo->pszFilename );
             }
             else
             {
-                pH5File = libkea::KEAImageIO::openKEAImageRW( poOpenInfo->pszFilename );
+                pH5File = libkea::KEAImageIO::openKeaH5RW( poOpenInfo->pszFilename );
             }
             KEADataset *pDataset = new KEADataset( pH5File );
 
@@ -157,7 +157,7 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File )
     try
     {
         // open the file
-        m_ImageIO.openKEAImage( keaImgH5File );
+        m_ImageIO.openKEAImageHeader( keaImgH5File );
         libkea::KEAImageSpatialInfo *pSpatialInfo = m_ImageIO.getSpatialInfo();
 
         // get the dimensions

@@ -55,7 +55,7 @@ int main (int argc, char * const argv[])
         H5::H5File *keaImgFile = libkea::KEAImageIO::createKEAImage(sFilename, libkea::kea_32float, 1000, 2000, 3);
         
         libkea::KEAImageIO imageIO;
-        imageIO.openKEAImage(keaImgFile);
+        imageIO.openKEAImageHeader(keaImgFile);
         
                 
         float *data = new float[100*200];
