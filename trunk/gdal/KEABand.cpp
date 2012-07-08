@@ -17,7 +17,7 @@ CPLErr KEARasterBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage 
     try
     {
         // note GDAL uses indices starting at 1
-        this->m_pImageIO->readImageBlock2Band( this->nBand - 1, pImage, this->nBlockXSize * nBlockXOff,
+        this->m_pImageIO->readImageBlock2Band( this->nBand, pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
                                             this->nBlockXSize, this->nBlockYSize, 
                                             this->m_pImageIO->getImageDataType() );
@@ -36,7 +36,7 @@ CPLErr KEARasterBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage
     try
     {
         // note GDAL uses indices starting at 1
-        this->m_pImageIO->writeImageBlock2Band( this->nBand - 1, pImage, this->nBlockXSize * nBlockXOff,
+        this->m_pImageIO->writeImageBlock2Band( this->nBand, pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
                                             this->nBlockXSize, this->nBlockYSize, 
                                             this->m_pImageIO->getImageDataType() );
