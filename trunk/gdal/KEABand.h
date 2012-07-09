@@ -9,6 +9,8 @@ class KEARasterBand : public GDALPamRasterBand
 {
     libkea::KEAImageIO  *m_pImageIO;
     int                 *m_pnRefCount;
+    int                  m_nXSize;
+    int                  m_nYSize;
 public:
     KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageIO *pImageIO, int* pRefCount );
     ~KEARasterBand();

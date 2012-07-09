@@ -8,6 +8,8 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageI
     this->eDataType = KEA_to_GDAL_Type( pImageIO->getImageDataType() );
     this->nBlockXSize = pImageIO->getImageBlockSize();
     this->nBlockYSize = pImageIO->getImageBlockSize();
+    this->m_nXSize = this->poDS->GetRasterXSize();
+    this->m_nYSize = this->poDS->GetRasterYSize();
 
     this->m_pImageIO = pImageIO;
     this->m_pnRefCount = pRefCount;
@@ -33,9 +35,24 @@ CPLErr KEARasterBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage 
 {
     try
     {
+        // GDAL deals in blocks - if we are at the end of a row
+        // we need to adjust the amount read so we don't go over the edge
+        int xsize = this->nBlockXSize;
+        int xtotalsize = this->nBlockXSize * (nBlockXOff + 1);
+        if( xtotalsize > m_nXSize )
+        {
+            xsize -= (xtotalsize - m_nXSize);
+        }
+        int ysize = this->nBlockYSize;
+        int ytotalsize = this->nBlockYSize * (nBlockYOff + 1);
+        if( ytotalsize > m_nYSize )
+        {
+            ysize -= (ytotalsize - m_nYSize);
+        }
+
         this->m_pImageIO->readImageBlock2Band( this->nBand, pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
-                                            this->nBlockXSize, this->nBlockYSize, 
+                                            xsize, ysize, 
                                             this->m_pImageIO->getImageDataType() );
         return CE_None;
     }
@@ -51,9 +68,23 @@ CPLErr KEARasterBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage
 {
     try
     {
+        // GDAL deals in blocks - if we are at the end of a row
+        // we need to adjust the amount written so we don't go over the edge
+        int xsize = this->nBlockXSize;
+        int xtotalsize = this->nBlockXSize * (nBlockXOff + 1);
+        if( xtotalsize > m_nXSize )
+        {
+            xsize -= (xtotalsize - m_nXSize);
+        }
+        int ysize = this->nBlockYSize;
+        int ytotalsize = this->nBlockYSize * (nBlockYOff + 1);
+        if( ytotalsize > m_nYSize )
+        {
+            ysize -= (ytotalsize - m_nYSize);
+        }
         this->m_pImageIO->writeImageBlock2Band( this->nBand, pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
-                                            this->nBlockXSize, this->nBlockYSize, 
+                                            xsize, ysize, 
                                             this->m_pImageIO->getImageDataType() );
         return CE_None;
     }
