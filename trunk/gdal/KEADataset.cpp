@@ -156,16 +156,12 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File )
 {
     try
     {
-        // create the image IO and initilize the refcount
-        m_pImageIO = new libkea::KEAImageIO();
-        m_pnRefcount = new int(1);
-
         // open the file
-        m_pImageIO->openKEAImageHeader( keaImgH5File );
-        libkea::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
+        m_ImageIO.openKEAImageHeader( keaImgH5File );
+        libkea::KEAImageSpatialInfo *pSpatialInfo = m_ImageIO.getSpatialInfo();
 
         // get the dimensions
-        nBands = m_pImageIO->getNumOfImageBands();
+        nBands = m_ImageIO.getNumOfImageBands();
         nRasterXSize = pSpatialInfo->xSize;
         nRasterYSize = pSpatialInfo->ySize;
 
@@ -173,7 +169,7 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File )
         for( int nCount = 0; nCount < nBands; nCount++ )
         {
             // note GDAL uses indices starting at 1
-            KEARasterBand *pBand = new KEARasterBand( this, nCount + 1, m_pImageIO, m_pnRefcount );
+            KEARasterBand *pBand = new KEARasterBand( this, nCount + 1, &m_ImageIO );
             this->SetBand( nCount + 1, pBand );            
         }
     }
@@ -187,21 +183,14 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File )
 
 KEADataset::~KEADataset()
 {
-    // decrement the refcount and delete if needed
-    (*m_pnRefcount)--;
-    if( *m_pnRefcount == 0 )
-    {
-        m_pImageIO->close();
-        delete m_pImageIO;
-        delete m_pnRefcount;
-    }
+    m_ImageIO.close();
 }
 
 CPLErr KEADataset::GetGeoTransform( double * padfTransform )
 {
     try
     {
-        libkea::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
+        libkea::KEAImageSpatialInfo *pSpatialInfo = m_ImageIO.getSpatialInfo();
 
         padfTransform[0] = pSpatialInfo->tlX;
         padfTransform[1] = pSpatialInfo->xRes;
@@ -224,7 +213,7 @@ const char *KEADataset::GetProjectionRef()
 {
     try
     {
-        libkea::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
+        libkea::KEAImageSpatialInfo *pSpatialInfo = m_ImageIO.getSpatialInfo();
         return pSpatialInfo->wktString.c_str();
     }
     catch (libkea::KEAIOException &e)
@@ -237,7 +226,7 @@ CPLErr KEADataset::SetGeoTransform (double *padfTransform )
 {
     try
     {
-        libkea::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
+        libkea::KEAImageSpatialInfo *pSpatialInfo = m_ImageIO.getSpatialInfo();
         pSpatialInfo->tlX = padfTransform[0];
         pSpatialInfo->xRes = padfTransform[1];
         pSpatialInfo->xRot = padfTransform[2];
@@ -245,7 +234,7 @@ CPLErr KEADataset::SetGeoTransform (double *padfTransform )
         pSpatialInfo->yRot = padfTransform[4];
         pSpatialInfo->yRes = padfTransform[5];
 
-        m_pImageIO->setSpatialInfo( pSpatialInfo );
+        m_ImageIO.setSpatialInfo( pSpatialInfo );
         return CE_None;
     }
     catch (libkea::KEAIOException &e)
@@ -260,11 +249,11 @@ CPLErr KEADataset::SetProjection( const char *pszWKT )
 {
     try
     {
-        libkea::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
+        libkea::KEAImageSpatialInfo *pSpatialInfo = m_ImageIO.getSpatialInfo();
 
         pSpatialInfo->wktString = pszWKT;
 
-        m_pImageIO->setSpatialInfo( pSpatialInfo );
+        m_ImageIO.setSpatialInfo( pSpatialInfo );
         return CE_None;
     }
     catch (libkea::KEAIOException &e)
@@ -278,6 +267,6 @@ CPLErr KEADataset::SetProjection( const char *pszWKT )
 // Thought this might be handy to pass back to the application
 void * KEADataset::GetInternalHandle(const char *)
 {
-    return m_pImageIO;
+    return &m_ImageIO;
 }
 
