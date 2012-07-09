@@ -156,6 +156,7 @@ int main (int argc, char * const argv[])
             }
             std::cout << ".Complete" << std::endl;
         }
+        delete[] data;
         
         imgIO->close();
         GDALClose(gdalDataset);
