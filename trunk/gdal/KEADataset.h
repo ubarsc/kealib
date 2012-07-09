@@ -7,7 +7,6 @@
 
 class KEADataset : public GDALPamDataset
 {
-    libkea::KEAImageIO m_ImageIO;
 public:
     KEADataset( H5::H5File *keaImgH5File );
     ~KEADataset();
@@ -25,6 +24,12 @@ public:
     CPLErr SetProjection( const char *pszWKT );
 
     void *GetInternalHandle (const char *);
+
+private:
+    // pointer to KEAImageIO class and the refcount for it
+    libkea::KEAImageIO  *m_pImageIO;
+    int                 *m_pnRefcount;
+
 };
 
 // conversion functions

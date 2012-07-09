@@ -1,7 +1,7 @@
 
 #include "KEABand.h"
 
-KEARasterBand::KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageIO *pImageIO )
+KEARasterBand::KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageIO *pImageIO, int* pRefCount )
 {
     this->poDS = pDataset;
     this->nBand = nBand;
@@ -10,13 +10,29 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageI
     this->nBlockYSize = pImageIO->getImageBlockSize();
 
     this->m_pImageIO = pImageIO;
+    this->m_pnRefCount = pRefCount;
+    // increment the refcount as we now have a reference to imageio
+    (*this->m_pnRefCount)++;
+}
+
+KEARasterBand::~KEARasterBand()
+{
+    // according to the docs, this is required
+    this->FlushCache();
+    // decrement the recount and delete if needed
+    (*m_pnRefCount)--;
+    if( *m_pnRefCount == 0 )
+    {
+        m_pImageIO->close();
+        delete m_pImageIO;
+        delete m_pnRefCount;
+    }
 }
 
 CPLErr KEARasterBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
 {
     try
     {
-        // note GDAL uses indices starting at 1
         this->m_pImageIO->readImageBlock2Band( this->nBand, pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
                                             this->nBlockXSize, this->nBlockYSize, 
@@ -35,7 +51,6 @@ CPLErr KEARasterBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage
 {
     try
     {
-        // note GDAL uses indices starting at 1
         this->m_pImageIO->writeImageBlock2Band( this->nBand, pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
                                             this->nBlockXSize, this->nBlockYSize, 

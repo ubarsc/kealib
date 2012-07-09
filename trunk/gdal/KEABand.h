@@ -7,10 +7,13 @@
 
 class KEARasterBand : public GDALPamRasterBand
 {
-    libkea::KEAImageIO *m_pImageIO;
+    libkea::KEAImageIO  *m_pImageIO;
+    int                 *m_pnRefCount;
 public:
-    KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageIO *pImageIO );
+    KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageIO *pImageIO, int* pRefCount );
+    ~KEARasterBand();
 
+protected:
     virtual CPLErr IReadBlock( int, int, void * );
     virtual CPLErr IWriteBlock( int, int, void * );
 };
