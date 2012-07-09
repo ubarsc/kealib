@@ -49,6 +49,10 @@ int main (int argc, char * const argv[])
         inFilename = std::string(argv[1]);
         outFilename = std::string(argv[2]);
     }
+    else
+    {
+        std::cout << "gdal2kea [Input Image] [Output Image]" << std::endl;
+    }
     
     GDALAllRegister();
     GDALDataset *gdalDataset = NULL;
