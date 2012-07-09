@@ -177,6 +177,8 @@ endif(LIBKEA_WITH_GDAL)
 if (LIBKEA_WITH_UTILITIES)
 	add_executable(createkeaimg ${PROJECT_SOURCE_DIR}/exe/createkeaimg/main.cpp)
 	target_link_libraries (createkeaimg ${LIBKEA_LIB_NAME} )
+	add_executable(gdal2kea ${PROJECT_SOURCE_DIR}/exe/gdal2kea/main.cpp)
+	target_link_libraries (gdal2kea ${LIBKEA_LIB_NAME} ${GDAL_LIBRARIES} )
 endif(LIBKEA_WITH_UTILITIES)
 ###############################################################################
 
@@ -184,6 +186,7 @@ endif(LIBKEA_WITH_UTILITIES)
 # Installation
 if (LIBKEA_WITH_UTILITIES)
 	install (TARGETS createkeaimg DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+	install (TARGETS gdal2kea DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 endif(LIBKEA_WITH_UTILITIES)
 
 install (FILES "${PROJECT_BINARY_DIR}/kea-config" DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
