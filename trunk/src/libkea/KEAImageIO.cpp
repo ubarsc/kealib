@@ -724,49 +724,34 @@ namespace libkea{
             double *doubleVals = new double[2];
             doubleVals[0] = inSpatialInfo->tlX;
             doubleVals[1] = inSpatialInfo->tlY;
-            hsize_t dimsSpatialTL[1];
-			dimsSpatialTL[0] = 2;
-            H5::DataSpace spatialTLDataSpace(1, dimsSpatialTL);
-            H5::DataSet spatialTLDataset = this->keaImgFile->createDataSet(KEA_DATASETNAME_HEADER_TL, H5::PredType::IEEE_F64LE, spatialTLDataSpace);
+            H5::DataSet spatialTLDataset = this->keaImgFile->openDataSet(KEA_DATASETNAME_HEADER_TL);
 			spatialTLDataset.write( doubleVals, H5::PredType::NATIVE_DOUBLE );
             spatialTLDataset.close();
-            spatialTLDataSpace.close();
             delete[] doubleVals;
             
             // SET X AND Y RESOLUTION IN GLOBAL HEADER
             float *floatVals = new float[2];
             floatVals[0] = inSpatialInfo->xRes;
             floatVals[1] = inSpatialInfo->yRes;
-            hsize_t dimsSpatialRes[1];
-			dimsSpatialRes[0] = 2;
-            H5::DataSpace spatialResDataSpace(1, dimsSpatialRes);
-            H5::DataSet spatialResDataset = this->keaImgFile->createDataSet(KEA_DATASETNAME_HEADER_RES, H5::PredType::IEEE_F32LE, spatialResDataSpace);
+            H5::DataSet spatialResDataset = this->keaImgFile->openDataSet(KEA_DATASETNAME_HEADER_RES);
 			spatialResDataset.write( floatVals, H5::PredType::NATIVE_FLOAT );
             spatialResDataset.close();
-            spatialResDataSpace.close();
             
             // SET X AND Y ROTATION IN GLOBAL HEADER
             floatVals[0] = inSpatialInfo->xRot;
             floatVals[1] = inSpatialInfo->yRot;
-            hsize_t dimsSpatialRot[1];
-			dimsSpatialRot[0] = 2;
-            H5::DataSpace spatialRotDataSpace(1, dimsSpatialRot);
-            H5::DataSet spatialRotDataset = this->keaImgFile->createDataSet(KEA_DATASETNAME_HEADER_ROT, H5::PredType::IEEE_F32LE, spatialRotDataSpace);
+            H5::DataSet spatialRotDataset = this->keaImgFile->openDataSet(KEA_DATASETNAME_HEADER_ROT);
 			spatialRotDataset.write( floatVals, H5::PredType::NATIVE_FLOAT );
             spatialRotDataset.close();
-            spatialRotDataSpace.close();
             delete[] floatVals;
             
             // SET THE WKT STRING SPATAIL REFERENCE IN GLOBAL HEADER
 			const char **wStrdata = NULL;
-			hsize_t	dimsForStr[1];
-			dimsForStr[0] = 1; // number of lines;
-            H5::DataSpace dataspaceStrAll(1, dimsForStr);
-            H5::StrType strTypeAll(0, H5T_VARIABLE);
-            H5::DataSet datasetSpatialReference = this->keaImgFile->createDataSet(KEA_DATASETNAME_HEADER_WKT, strTypeAll, dataspaceStrAll);
+            H5::DataSet datasetSpatialReference = this->keaImgFile->openDataSet(KEA_DATASETNAME_HEADER_WKT);
+            H5::DataType strDataType = datasetSpatialReference.getDataType();
 			wStrdata = new const char*[1];
 			wStrdata[0] = inSpatialInfo->wktString.c_str();			
-			datasetSpatialReference.write((void*)wStrdata, strTypeAll);
+			datasetSpatialReference.write((void*)wStrdata, strDataType);
 			datasetSpatialReference.close();
 			delete[] wStrdata;
         } 

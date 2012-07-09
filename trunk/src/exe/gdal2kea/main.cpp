@@ -114,10 +114,12 @@ int main (int argc, char * const argv[])
 
     try
     {
-        H5::H5File *keaImgFile = libkea::KEAImageIO::createKEAImage(outFilename, keaDataType, keaSpatInfo->xSize, keaSpatInfo->ySize, numImgBands, NULL, keaSpatInfo);
+        H5::H5File *keaImgFile = libkea::KEAImageIO::createKEAImage(outFilename, keaDataType, keaSpatInfo->xSize, keaSpatInfo->ySize, numImgBands, NULL, NULL);//keaSpatInfo);
         
         libkea::KEAImageIO *imgIO = new libkea::KEAImageIO();
         imgIO->openKEAImageHeader(keaImgFile);
+        
+        imgIO->setSpatialInfo(keaSpatInfo);
         
         float *data = new float[keaSpatInfo->xSize];
         
