@@ -175,6 +175,7 @@ endif(LIBKEA_WITH_GDAL)
 ###############################################################################
 # Build executables
 if (LIBKEA_WITH_UTILITIES)
+	include_directories(${GDAL_INCLUDE_DIR})
 	add_executable(createkeaimg ${PROJECT_SOURCE_DIR}/exe/createkeaimg/main.cpp)
 	target_link_libraries (createkeaimg ${LIBKEA_LIB_NAME} )
 	add_executable(gdal2kea ${PROJECT_SOURCE_DIR}/exe/gdal2kea/main.cpp)
