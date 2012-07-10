@@ -263,43 +263,43 @@ namespace libkea{
             H5::DataType imgBandDT = H5::PredType::NATIVE_FLOAT;
             if(inDataType == kea_8int)
             {
-                imgBandDT = H5::PredType::STD_I8LE;
+                imgBandDT = H5::PredType::NATIVE_INT8;
             }
             else if(inDataType == kea_16int)
             {
-                imgBandDT = H5::PredType::STD_I16LE;
+                imgBandDT = H5::PredType::NATIVE_INT16;
             }
             else if(inDataType == kea_32int)
             {
-                imgBandDT = H5::PredType::STD_I32LE;
+                imgBandDT = H5::PredType::NATIVE_INT32;
             }
             else if(inDataType == kea_64int)
             {
-                imgBandDT = H5::PredType::STD_I64LE;
+                imgBandDT = H5::PredType::NATIVE_INT64;
             }
             else if(inDataType == kea_8uint)
             {
-                imgBandDT = H5::PredType::STD_U8LE;
+                imgBandDT = H5::PredType::NATIVE_UINT8;
             }
             else if(inDataType == kea_16uint)
             {
-                imgBandDT = H5::PredType::STD_U16LE;
+                imgBandDT = H5::PredType::NATIVE_UINT16;
             }
             else if(inDataType == kea_32uint)
             {
-                imgBandDT = H5::PredType::STD_U32LE;
+                imgBandDT = H5::PredType::NATIVE_UINT32;
             }
             else if(inDataType == kea_64uint)
             {
-                imgBandDT = H5::PredType::STD_U64LE;
+                imgBandDT = H5::PredType::NATIVE_UINT64;
             }
             else if(inDataType == kea_32float)
             {
-                imgBandDT = H5::PredType::IEEE_F32LE;
+                imgBandDT = H5::PredType::NATIVE_FLOAT;
             }
             else if(inDataType == kea_64float)
             {
-                imgBandDT = H5::PredType::IEEE_F64LE;
+                imgBandDT = H5::PredType::NATIVE_DOUBLE;
             }
             else
             {
@@ -408,43 +408,43 @@ namespace libkea{
             H5::DataType imgBandDT = H5::PredType::NATIVE_FLOAT;
             if(inDataType == kea_8int)
             {
-                imgBandDT = H5::PredType::STD_I8LE;
+                imgBandDT = H5::PredType::NATIVE_INT8;
             }
             else if(inDataType == kea_16int)
             {
-                imgBandDT = H5::PredType::STD_I16LE;
+                imgBandDT = H5::PredType::NATIVE_INT16;
             }
             else if(inDataType == kea_32int)
             {
-                imgBandDT = H5::PredType::STD_I32LE;
+                imgBandDT = H5::PredType::NATIVE_INT32;
             }
             else if(inDataType == kea_64int)
             {
-                imgBandDT = H5::PredType::STD_I64LE;
+                imgBandDT = H5::PredType::NATIVE_INT64;
             }
             else if(inDataType == kea_8uint)
             {
-                imgBandDT = H5::PredType::STD_U8LE;
+                imgBandDT = H5::PredType::NATIVE_UINT8;
             }
             else if(inDataType == kea_16uint)
             {
-                imgBandDT = H5::PredType::STD_U16LE;
+                imgBandDT = H5::PredType::NATIVE_UINT16;
             }
             else if(inDataType == kea_32uint)
             {
-                imgBandDT = H5::PredType::STD_U32LE;
+                imgBandDT = H5::PredType::NATIVE_UINT32;
             }
             else if(inDataType == kea_64uint)
             {
-                imgBandDT = H5::PredType::STD_U64LE;
+                imgBandDT = H5::PredType::NATIVE_UINT64;
             }
             else if(inDataType == kea_32float)
             {
-                imgBandDT = H5::PredType::IEEE_F32LE;
+                imgBandDT = H5::PredType::NATIVE_FLOAT;
             }
             else if(inDataType == kea_64float)
             {
-                imgBandDT = H5::PredType::IEEE_F64LE;
+                imgBandDT = H5::PredType::NATIVE_DOUBLE;
             }
             else
             {
