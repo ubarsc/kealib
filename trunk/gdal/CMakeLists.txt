@@ -31,11 +31,11 @@ include_directories(${GDAL_INCLUDE_DIR})
 ###############################################################################
 # Set target properties
 
-SET_TARGET_PROPERTIES(${LIBKEA_GDAL_DRIVER}
-PROPERTIES
-        SOVERSION ${LIBKEA_VERSION}
-        VERSION ${LIBKEA_VERSION}
-)
+#SET_TARGET_PROPERTIES(${LIBKEA_GDAL_DRIVER}
+#PROPERTIES
+#        SOVERSION ${LIBKEA_VERSION}
+#        VERSION ${LIBKEA_VERSION}
+#)
 
 ###############################################################################
 
