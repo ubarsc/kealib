@@ -1217,6 +1217,56 @@ namespace libkea{
         return imgDataType;
     }
     
+    void KEAImageIO::setImageBandLayerType(unsigned int band, KEALayerType imgLayerType) throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+                
+        // WRITE IMAGE LAYER TYPE
+        try 
+        {
+            H5::DataSet datasetImgDT = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_DT );
+            datasetImgDT.write(&imgLayerType, H5::PredType::NATIVE_UINT);
+            datasetImgDT.close();
+        } 
+        catch ( H5::Exception &e) 
+        {
+            throw KEAIOException("The image band data type was not specified.");
+        }        
+    }
+    
+    KEALayerType KEAImageIO::getImageBandLayerType(unsigned int band) throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        KEALayerType imgLayerType = kea_continuous;
+        
+        // READ IMAGE LAYER TYPE
+        try 
+        {
+            hsize_t dimsValue[1];
+            dimsValue[0] = 1;
+            H5::DataSpace valueDataSpace(1, dimsValue);
+            unsigned int value[1];
+            H5::DataSet datasetImgDT = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_DT );
+            datasetImgDT.read(value, H5::PredType::NATIVE_UINT, valueDataSpace);
+            imgLayerType = (KEALayerType)value[0];
+            datasetImgDT.close();
+            valueDataSpace.close();
+        } 
+        catch ( H5::Exception &e) 
+        {
+            throw KEAIOException("The image band data type was not specified.");
+        }
+        
+        return imgLayerType;
+    }
+    
     void KEAImageIO::createOverview(unsigned int band, unsigned int overview, unsigned long xSize, unsigned long ySize) throw(KEAIOException)
     {
         if(!this->fileOpen)
@@ -2107,7 +2157,7 @@ namespace libkea{
             const H5std_string strImgVerVal ("1.2");
             H5::DataSpace attr_dataspace = H5::DataSpace(H5S_SCALAR);
             
-            
+            unsigned int bandType = kea_continuous;
             std::string bandName = "";
             std::string bandDescrip = "";
             for(unsigned int i = 0; i < numImgBands; ++i)
@@ -2155,14 +2205,21 @@ namespace libkea{
                 datasetBandDescription.close();
                 delete[] wStrdata;
                 
-                // SET IMAGE DATA TYPE IN IMAGE BAND
+                // SET IMAGE BAND DATA TYPE IN IMAGE BAND
                 hsize_t dimsDT[1];
                 dimsDT[0] = 1;
                 H5::DataSpace dtDataSpace(1, dimsDT);
                 H5::DataSet dtDataset = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_DT), H5::PredType::STD_U16LE, dtDataSpace);
                 dtDataset.write( &dataType, H5::PredType::NATIVE_UINT );
                 dtDataset.close();
-                dtDataset.close();
+                
+                // SET IMAGE BAND TYPE IN IMAGE BAND (I.E., CONTINUOUS (0) OR THEMATIC (1))
+                hsize_t dimsType[1];
+                dimsType[0] = 1;
+                H5::DataSpace typeDataSpace(1, dimsType);
+                H5::DataSet typeDataset = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_TYPE), H5::PredType::STD_U8LE, typeDataSpace);
+                typeDataset.write( &bandType, H5::PredType::NATIVE_UINT );
+                typeDataset.close();
                 
                 // CREATE META-DATA
                 keaImgH5File->createGroup( bandName+KEA_BANDNAME_METADATA );

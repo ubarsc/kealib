@@ -59,6 +59,7 @@ namespace libkea{
     static const std::string KEA_BANDNAME_DATA( "/DATA" );
     static const std::string KEA_BANDNAME_DESCRIP( "/DESCRIPTION" );
     static const std::string KEA_BANDNAME_DT( "/DATATYPE" );
+    static const std::string KEA_BANDNAME_TYPE( "/LAYER_TYPE" );
     static const std::string KEA_BANDNAME_NO_DATA_VAL( "/NO_DATA_VAL" );
     static const std::string KEA_BANDNAME_METADATA( "/METADATA" );
     static const std::string KEA_BANDNAME_METADATA_MIN( "/METADATA/STATISTICS_MINIMUM" );
@@ -129,6 +130,12 @@ namespace libkea{
         kea_64uint = 8,
         kea_32float = 9,
         kea_64float = 10,
+    };
+    
+    enum KEALayerType
+    {
+        kea_continuous = 0,
+        kea_thematic = 1
     };
     
     struct KEAImageSpatialInfo
