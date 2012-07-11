@@ -78,11 +78,22 @@ int main (int argc, char * const argv[])
         imageIO.writeImageBlock2Band(3, data, 200, 400, 100, 200, libkea::kea_32float);
         std::cout << "Written Image data\n";
         
-        imageIO.setImageMetaData("TEST", "Hello World");
-        imageIO.setImageBandMetaData(1, "TEST", "Hello World on Band");
+        imageIO.setImageMetaData("TEST1", "Hello World 1");
+        imageIO.setImageMetaData("TEST2", "Hello World 2");
+        imageIO.setImageMetaData("TEST3", "Hello World 3");
+        imageIO.setImageMetaData("TEST4", "Hello World 4");
+        imageIO.setImageMetaData("TEST5", "Hello World 5");
+        imageIO.setImageMetaData("TEST6", "Hello World 6");
+        imageIO.setImageMetaData("TEST7", "Hello World 7");
+        imageIO.setImageBandMetaData(1, "TEST1", "Hello World 1 on Band");
+        imageIO.setImageBandMetaData(1, "TEST2", "Hello World 2 on Band");
+        imageIO.setImageBandMetaData(1, "TEST3", "Hello World 3 on Band");
+        imageIO.setImageBandMetaData(1, "TEST4", "Hello World 4 on Band");
+        imageIO.setImageBandMetaData(1, "TEST5", "Hello World 5 on Band");
+        imageIO.setImageBandMetaData(1, "TEST6", "Hello World 6 on Band");
         
-        std::cout << "TEST META-DATA Image: " << imageIO.getImageMetaData("TEST") << std::endl;
-        std::cout << "TEST META-DATA Band: " << imageIO.getImageBandMetaData(1, "TEST") << std::endl;
+        std::cout << "TEST META-DATA Image: " << imageIO.getImageMetaData("TEST1") << std::endl;
+        std::cout << "TEST META-DATA Band: " << imageIO.getImageBandMetaData(1, "TEST1") << std::endl;
         std::cout << "DESCRIPTION 1: " << imageIO.getImageBandDescription(1) << std::endl;
         std::cout << "DESCRIPTION 2: " << imageIO.getImageBandDescription(2) << std::endl;
         std::cout << "DESCRIPTION 3: " << imageIO.getImageBandDescription(3) << std::endl;
@@ -109,6 +120,47 @@ int main (int argc, char * const argv[])
         noDataValRead = -1;
         imageIO.getNoDataValue(1, &noDataValRead, libkea::kea_32float);
         std::cout << "No Data value read as " << noDataVal << std::endl;
+        
+        
+        std::vector<std::string> bandMetaDataNames =  imageIO.getImageBandMetaDataNames(1);
+        std::cout << "Image Band 1 Meta Data Names: \n";
+        for(std::vector<std::string>::iterator iterNames = bandMetaDataNames.begin(); iterNames != bandMetaDataNames.end(); ++iterNames)
+        {
+            std::cout << "\t" << *iterNames << std::endl;
+        }
+        
+        std::vector<std::string> imgMetaDataNames =  imageIO.getImageMetaDataNames();
+        std::cout << "Image Meta Data Names: \n";
+        for(std::vector<std::string>::iterator iterNames = imgMetaDataNames.begin(); iterNames != imgMetaDataNames.end(); ++iterNames)
+        {
+            std::cout << "\t" << *iterNames << std::endl;
+        }
+        
+        std::vector< std::pair<std::string, std::string> > imgBandMetaData = imageIO.getImageBandMetaData(1);
+        std::cout << "Image Band Meta Data: \n";
+        for(std::vector< std::pair<std::string, std::string> >::iterator iterMetaData = imgBandMetaData.begin(); iterMetaData != imgBandMetaData.end(); ++iterMetaData)
+        {
+            std::cout << "\t" << iterMetaData->first << " = " << iterMetaData->second << std::endl;
+        }
+        
+        std::vector< std::pair<std::string, std::string> > imgMetaData = imageIO.getImageMetaData();
+        std::cout << "Image Meta Data: \n";
+        for(std::vector< std::pair<std::string, std::string> >::iterator iterMetaData = imgMetaData.begin(); iterMetaData != imgMetaData.end(); ++iterMetaData)
+        {
+            std::cout << "\t" << iterMetaData->first << " = " << iterMetaData->second << std::endl;
+        }
+        
+        std::vector< std::pair<std::string, std::string> > newMetaData;
+        
+        newMetaData.push_back(std::pair<std::string, std::string>("min1", "4"));
+        newMetaData.push_back(std::pair<std::string, std::string>("max1", "4543"));
+        newMetaData.push_back(std::pair<std::string, std::string>("min2", "45"));
+        newMetaData.push_back(std::pair<std::string, std::string>("max2", "67546"));
+        newMetaData.push_back(std::pair<std::string, std::string>("min3", "12"));
+        newMetaData.push_back(std::pair<std::string, std::string>("max3", "900"));
+        
+        imageIO.setImageBandMetaData(2, newMetaData);
+        imageIO.setImageMetaData(newMetaData);
         
         std::cout << "Creating overview images\n";
         imageIO.createOverview(1, 0, 500, 1000);

@@ -539,6 +539,95 @@ namespace libkea{
         return value;
     }
     
+    std::vector<std::string> KEAImageIO::getImageMetaDataNames()throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        std::vector<std::string> metaDataNames;
+        
+        try 
+        {
+            // Try to open dataset with overviewName
+            H5::Group imgBandMetaDataGrp = this->keaImgFile->openGroup(KEA_DATASETNAME_METADATA);
+            hsize_t numMetaDataItems = imgBandMetaDataGrp.getNumObjs();
+            
+            for(hsize_t i = 0; i < numMetaDataItems; ++i)
+            {
+                metaDataNames.push_back(imgBandMetaDataGrp.getObjnameByIdx(i));
+                //std::cout << "Name: " << imgBandMetaDataGrp.getObjnameByIdx(i) << std::endl;
+            }
+        }
+        catch (H5::Exception &e)
+        {
+            throw KEAIOException("Could not retrieve image meta data.");
+        }
+        
+        return metaDataNames;
+    }
+    
+    std::vector< std::pair<std::string, std::string> > KEAImageIO::getImageMetaData()throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        std::vector< std::pair<std::string, std::string> > metaData;
+        
+        try 
+        {
+            // Try to open dataset with overviewName
+            H5::Group imgBandMetaDataGrp = this->keaImgFile->openGroup(KEA_DATASETNAME_METADATA);
+            hsize_t numMetaDataItems = imgBandMetaDataGrp.getNumObjs();
+            std::string name = "";
+            std::string value = "";
+            
+            for(hsize_t i = 0; i < numMetaDataItems; ++i)
+            {
+                name = imgBandMetaDataGrp.getObjnameByIdx(i);
+                value = this->getImageMetaData(name);
+                metaData.push_back(std::pair<std::string, std::string>(name,value));
+            }
+        }
+        catch (KEAIOException &e)
+        {
+            throw e;
+        }
+        catch (H5::Exception &e)
+        {
+            throw KEAIOException("Could not retrieve image meta data.");
+        }
+        
+        return metaData;
+    }
+    
+    void KEAImageIO::setImageMetaData(std::vector< std::pair<std::string, std::string> > data)throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        try 
+        {
+            for(std::vector< std::pair<std::string, std::string> >::iterator iterMetaData = data.begin(); iterMetaData != data.end(); ++iterMetaData)
+            {
+                this->setImageMetaData(iterMetaData->first, iterMetaData->second);
+            }
+        }
+        catch (KEAIOException &e)
+        {
+            throw e;
+        }
+        catch (H5::Exception &e)
+        {
+            throw KEAIOException("Could not set image band meta data.");
+        }
+    }
+    
     void KEAImageIO::setImageBandMetaData(unsigned int band, std::string name, std::string value)throw(KEAIOException)
     {
         if(!this->fileOpen)
@@ -614,6 +703,97 @@ namespace libkea{
         return value;
     }
     
+    std::vector<std::string> KEAImageIO::getImageBandMetaDataNames(unsigned int band)throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        std::vector<std::string> metaDataNames;
+        
+        std::string metaDataGroupName = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_METADATA;
+        try 
+        {
+            // Try to open dataset with overviewName
+            H5::Group imgBandMetaDataGrp = this->keaImgFile->openGroup(metaDataGroupName);
+            hsize_t numMetaDataItems = imgBandMetaDataGrp.getNumObjs();
+            
+            for(hsize_t i = 0; i < numMetaDataItems; ++i)
+            {
+                metaDataNames.push_back(imgBandMetaDataGrp.getObjnameByIdx(i));
+                //std::cout << "Name: " << imgBandMetaDataGrp.getObjnameByIdx(i) << std::endl;
+            }
+        }
+        catch (H5::Exception &e)
+        {
+            throw KEAIOException("Could not retrieve image band meta data.");
+        }
+        
+        return metaDataNames;
+    }
+    
+    std::vector< std::pair<std::string, std::string> > KEAImageIO::getImageBandMetaData(unsigned int band)throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        std::vector< std::pair<std::string, std::string> > metaData;
+        
+        std::string metaDataGroupName = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_METADATA;
+        try 
+        {
+            // Try to open dataset with overviewName
+            H5::Group imgBandMetaDataGrp = this->keaImgFile->openGroup(metaDataGroupName);
+            hsize_t numMetaDataItems = imgBandMetaDataGrp.getNumObjs();
+            std::string name = "";
+            std::string value = "";
+            
+            for(hsize_t i = 0; i < numMetaDataItems; ++i)
+            {
+                name = imgBandMetaDataGrp.getObjnameByIdx(i);
+                value = this->getImageBandMetaData(band, name);
+                metaData.push_back(std::pair<std::string, std::string>(name,value));
+            }
+        }
+        catch (KEAIOException &e)
+        {
+            throw e;
+        }
+        catch (H5::Exception &e)
+        {
+            throw KEAIOException("Could not retrieve image band meta data.");
+        }
+        
+        return metaData;
+    }
+    
+    void KEAImageIO::setImageBandMetaData(unsigned int band, std::vector< std::pair<std::string, std::string> > data)throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        try 
+        {
+            for(std::vector< std::pair<std::string, std::string> >::iterator iterMetaData = data.begin(); iterMetaData != data.end(); ++iterMetaData)
+            {
+                this->setImageBandMetaData(band, iterMetaData->first, iterMetaData->second);
+            }
+        }
+        catch (KEAIOException &e)
+        {
+            throw e;
+        }
+        catch (H5::Exception &e)
+        {
+            throw KEAIOException("Could not set image band meta data.");
+        }
+    }
+    
     void KEAImageIO::setImageBandDescription(unsigned int band, std::string description)throw(KEAIOException)
     {
         if(!this->fileOpen)
@@ -673,7 +853,7 @@ namespace libkea{
         
         return description;
     }
-    
+        
     void KEAImageIO::setNoDataValue(unsigned int band, void *data, KEADataType inDataType)throw(KEAIOException)
     {
         if(!this->fileOpen)

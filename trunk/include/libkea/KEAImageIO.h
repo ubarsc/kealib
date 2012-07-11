@@ -54,9 +54,15 @@ namespace libkea{
 
         void setImageMetaData(std::string name, std::string value)throw(KEAIOException);
         std::string getImageMetaData(std::string name)throw(KEAIOException);
+        std::vector<std::string> getImageMetaDataNames()throw(KEAIOException);
+        std::vector< std::pair<std::string, std::string> > getImageMetaData()throw(KEAIOException);
+        void setImageMetaData(std::vector< std::pair<std::string, std::string> > data)throw(KEAIOException);
         
         void setImageBandMetaData(unsigned int band, std::string name, std::string value)throw(KEAIOException);
         std::string getImageBandMetaData(unsigned int band, std::string name)throw(KEAIOException);
+        std::vector<std::string> getImageBandMetaDataNames(unsigned int band)throw(KEAIOException);
+        std::vector< std::pair<std::string, std::string> > getImageBandMetaData(unsigned int band)throw(KEAIOException);
+        void setImageBandMetaData(unsigned int band, std::vector< std::pair<std::string, std::string> > data)throw(KEAIOException);
         
         void setImageBandDescription(unsigned int band, std::string description)throw(KEAIOException);
         std::string getImageBandDescription(unsigned int band)throw(KEAIOException);
