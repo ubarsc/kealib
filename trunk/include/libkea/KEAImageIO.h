@@ -66,7 +66,7 @@ namespace libkea{
                 
         unsigned int getNumOfImageBands() throw(KEAIOException);
         
-        unsigned int getImageBlockSize() throw(KEAIOException);
+        unsigned int getImageBlockSize(unsigned int band) throw(KEAIOException);
         
         KEADataType getImageDataType() throw(KEAIOException);
         
@@ -111,7 +111,6 @@ namespace libkea{
         KEADataType imgDataType;
         KEAImageSpatialInfo *spatialInfoFile;
         unsigned int numImgBands;
-        unsigned int imgBlockSize;
     };
     
 }

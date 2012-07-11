@@ -96,6 +96,7 @@ namespace libkea{
     
     static const std::string KEA_ATTRIBUTENAME_CLASS( "CLASS" );
 	static const std::string KEA_ATTRIBUTENAME_IMAGE_VERSION( "IMAGE_VERSION" );
+    static const std::string KEA_ATTRIBUTENAME_BLOCK_SIZE( "BLOCK_SIZE" );
     
     static const int KEA_READ_MDC_NELMTS( 0 ); // 0
     static const hsize_t KEA_READ_RDCC_NELMTS( 512 ); // 512

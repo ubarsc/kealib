@@ -102,6 +102,8 @@ int main (int argc, char * const argv[])
         
         imageIO.createOverview(3, 0, 500, 1000);
         imageIO.createOverview(3, 1, 250, 500);
+        
+        std::cout << "Overview 1 Band 3 block size: " << imageIO.getOverviewBlockSize(3, 1) << std::endl;
                 
         
         for(unsigned int i = 0; i < (100*200); ++i)
@@ -111,7 +113,7 @@ int main (int argc, char * const argv[])
         
         imageIO.readImageBlock2Band(1, data, 50, 100, 100, 200, libkea::kea_32float);
         
-        for(unsigned int i = 0; i < 200; ++i)
+        /*for(unsigned int i = 0; i < 200; ++i)
         {
             for(unsigned int j = 0; j < 100; ++j)
             {
@@ -125,7 +127,7 @@ int main (int argc, char * const argv[])
                 }
             }
             std::cout << std::endl;
-        }
+        }*/
         
         delete[] data;
         
