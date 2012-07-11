@@ -1290,6 +1290,29 @@ namespace libkea{
 		}
     }
     
+    unsigned int KEAImageIO::getNumOfOverviews(unsigned int band) throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        std::string overviewGroupName = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_OVERVIEWS;
+        unsigned int numOverviews = 0;
+        try 
+        {
+            // Try to open dataset with overviewName
+            H5::Group imgOverviewsGrp = this->keaImgFile->openGroup(overviewGroupName);
+            numOverviews = imgOverviewsGrp.getNumObjs();
+        }
+        catch (H5::Exception &e)
+        {
+            throw KEAIOException("Could not retrieve the number of image band overviews.");
+        }
+        
+        return numOverviews;
+    }
+    
     void KEAImageIO::initImageBandATT(unsigned int band, size_t numFeats)throw(KEAIOException)
     {
         throw KEAIOException("Not Implmented yet!");
