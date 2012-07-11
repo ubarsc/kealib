@@ -130,25 +130,52 @@ CPLErr KEARasterBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage
 
 void KEARasterBand::SetDescription(const char *pszDescription)
 {
-    this->m_pImageIO->setImageBandDescription(this->nBand, pszDescription);
+    try
+    {
+        this->m_pImageIO->setImageBandDescription(this->nBand, pszDescription);
+    }
+    catch (libkea::KEAIOException &e)
+    {
+    }
 }
 
 const char *KEARasterBand::GetDescription() const
 {
-    const char *psz = this->m_pImageIO->getImageBandDescription(this->nBand).c_str();
-    return strdup(psz);
+    try
+    {
+        const char *psz = this->m_pImageIO->getImageBandDescription(this->nBand).c_str();
+        return strdup(psz);
+    }
+    catch (libkea::KEAIOException &e)
+    {
+        return "";
+    }
 }
 
 CPLErr KEARasterBand::SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain)
 {
-    this->m_pImageIO->setImageBandMetaData(this->nBand, pszName, pszValue );
-    return CE_None;
+    try
+    {
+        this->m_pImageIO->setImageBandMetaData(this->nBand, pszName, pszValue );
+        return CE_None;
+    }
+    catch (libkea::KEAIOException &e)
+    {
+        return CE_Failure;
+    }
 }
 
 const char *KEARasterBand::GetMetadataItem (const char *pszName, const char *pszDomain)
 {
-    const char *psz = this->m_pImageIO->getImageMetaData(pszName).c_str();
-    return strdup(psz);
+    try
+    {
+        const char *psz = this->m_pImageIO->getImageBandMetaData(this->nBand, pszName).c_str();
+        return strdup(psz);
+    }
+    catch (libkea::KEAIOException &e)
+    {
+        return NULL;
+    }
 }
 
 void KEARasterBand::deleteOverviewObjects()
