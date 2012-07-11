@@ -49,7 +49,7 @@ void KEARasterBand::CreateOverviews(int nOverviews, int *panOverviewList)
     m_nOverviews = nOverviews;
 
     int nFactor, nXSize, nYSize;
-    for( nCount = 0; nCount < m_nOverviews; nCount++ )
+    for( int nCount = 0; nCount < m_nOverviews; nCount++ )
     {
         nFactor = panOverviewList[nCount];
         nXSize = this->nRasterXSize / nFactor;
@@ -149,10 +149,10 @@ void KEARasterBand::readExistingOverviews()
     m_nOverviews = this->m_pImageIO->getNumOfOverviews(this->nBand);
     m_panOverviewBands = (KEAOverview**)CPLMalloc(sizeof(KEAOverview*) * m_nOverviews);
 
-    int nXSize, nYSize;    
-    for( nCount = 0; nCount < m_nOverviews; nCount++ )
+    unsigned long nXSize, nYSize;    
+    for( int nCount = 0; nCount < m_nOverviews; nCount++ )
     {
-        this->m_pImageIO->getOverviewSize(nCount + 1, &nXSize, &nYSize);
+        this->m_pImageIO->getOverviewSize(this->nBand, nCount + 1, &nXSize, &nYSize);
         m_panOverviewBands[nCount] = new KEAOverview((KEADataset*)this->poDS, this->nBand, 
                                         this->m_pImageIO, this->m_pnRefCount, nCount + 1, nXSize, nYSize);
     }
