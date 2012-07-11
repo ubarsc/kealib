@@ -89,9 +89,26 @@ int main (int argc, char * const argv[])
         
         std::cout << "Number of Bands: " << imageIO.getNumOfImageBands() << std::endl;
         
-        std::cout << "Image Data Type: " << imageIO.getImageDataType() << std::endl;
-        std::cout << "Image Data Type: " << getDataTypeAsStr(imageIO.getImageDataType()) << std::endl;
+        std::cout << "Image Data Type: " << imageIO.getImageBandDataType(1) << std::endl;
+        std::cout << "Image Data Type: " << getDataTypeAsStr(imageIO.getImageBandDataType(1)) << std::endl;
         
+        int noDataVal = 13;
+        
+        imageIO.setNoDataValue(1, &noDataVal, libkea::kea_32int);
+        std::cout << "No Data value being set to " << noDataVal << std::endl;
+        
+        float noDataValRead = -1;
+        imageIO.getNoDataValue(1, &noDataValRead, libkea::kea_32float);
+        std::cout << "No Data value read as " << noDataVal << std::endl;
+        
+        noDataVal = 2300;
+        
+        imageIO.setNoDataValue(1, &noDataVal, libkea::kea_32int);
+        std::cout << "No Data value being set to " << noDataVal << std::endl;
+        
+        noDataValRead = -1;
+        imageIO.getNoDataValue(1, &noDataValRead, libkea::kea_32float);
+        std::cout << "No Data value read as " << noDataVal << std::endl;
         
         std::cout << "Creating overview images\n";
         imageIO.createOverview(1, 0, 500, 1000);
