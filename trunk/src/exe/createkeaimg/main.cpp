@@ -107,6 +107,13 @@ int main (int argc, char * const argv[])
         
         std::cout << "There are " << imageIO.getNumOfOverviews(1) << " overviews for band 1\n";
         
+        unsigned long xSizeOverview = 0;
+        unsigned long ySizeOverview = 0;
+        
+        imageIO.getOverviewSize(2, 1, &xSizeOverview, &ySizeOverview);
+        
+        std::cout << "Image overview 1 for band 2 has size [" << xSizeOverview << "," << ySizeOverview << "]\n";
+        
         for(unsigned int i = 0; i < (100*200); ++i)
         {
             data[i] = 0;
