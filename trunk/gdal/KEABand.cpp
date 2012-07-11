@@ -178,6 +178,35 @@ const char *KEARasterBand::GetMetadataItem (const char *pszName, const char *psz
     }
 }
 
+double KEARasterBand::GetNoDataValue(int *pbSuccess)
+{
+    try
+    {
+        double dVal;
+        this->m_pImageIO->getNoDataValue(this->nBand, &dVal, libkea::kea_64float);
+        return dVal;
+    }
+    catch (libkea::KEAIOException &e)
+    {
+        if( pbSuccess != NULL )
+            *pbSuccess = 0;
+        return -1;
+    }
+}
+
+CPLErr KEARasterBand::SetNoDataValue(double dfNoData)
+{
+    try
+    {
+        this->m_pImageIO->setNoDataValue(this->nBand, &dfNoData, libkea::kea_64float);
+        return CE_None;
+    }
+    catch (libkea::KEAIOException &e)
+    {
+        return CE_Failure;
+    }
+}
+
 void KEARasterBand::deleteOverviewObjects()
 {
     // deletes the objects - not the overviews themselves
