@@ -7,8 +7,8 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageI
     this->poDS = pDataset;
     this->nBand = nBand;
     this->eDataType = KEA_to_GDAL_Type( pImageIO->getImageDataType() );
-    this->nBlockXSize = pImageIO->getImageBlockSize();
-    this->nBlockYSize = pImageIO->getImageBlockSize();
+    this->nBlockXSize = pImageIO->getImageBlockSize(nBand);
+    this->nBlockYSize = pImageIO->getImageBlockSize(nBand);
     this->nRasterXSize = this->poDS->GetRasterXSize();
     this->nRasterYSize = this->poDS->GetRasterYSize();
 
@@ -25,11 +25,7 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageI
 KEARasterBand::~KEARasterBand()
 {
     // delete any overview bands
-    for( int nCount = 0; nCount < m_nOverviews; nCount++ )
-    {
-        delete m_panOverviewBands[nCount];
-    }
-    CPLFree(m_panOverviewBands);
+    this->deleteOverviewObjects();
 
     // according to the docs, this is required
     this->FlushCache();
@@ -46,13 +42,8 @@ KEARasterBand::~KEARasterBand()
 
 void KEARasterBand::CreateOverviews(int nOverviews, int *panOverviewList)
 {
-   // delete any existing overview bands
-    int nCount;
-    for( nCount = 0; nCount < m_nOverviews; nCount++ )
-    {
-        delete m_panOverviewBands[nCount];
-    }
-    CPLFree(m_panOverviewBands);
+    // delete any existing overview bands
+    this->deleteOverviewObjects();
 
     m_panOverviewBands = (KEAOverview**)CPLMalloc(sizeof(KEAOverview*) * nOverviews);
     m_nOverviews = nOverviews;
@@ -137,3 +128,49 @@ CPLErr KEARasterBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage
     }
 }
 
+void KEARasterBand::deleteOverviewObjects()
+{
+    // deletes the objects - not the overviews themselves
+    int nCount;
+    for( nCount = 0; nCount < m_nOverviews; nCount++ )
+    {
+        delete m_panOverviewBands[nCount];
+    }
+    CPLFree(m_panOverviewBands);
+    m_panOverviewBands = NULL;
+    m_nOverviews = 0;
+}
+
+void KEARasterBand::readExistingOverviews()
+{
+    // delete any existing overview bands
+    this->deleteOverviewObjects();
+
+    m_nOverviews = this->m_pImageIO->getNumOfOverviews(this->nBand);
+    m_panOverviewBands = (KEAOverview**)CPLMalloc(sizeof(KEAOverview*) * m_nOverviews);
+
+    int nXSize, nYSize;    
+    for( nCount = 0; nCount < m_nOverviews; nCount++ )
+    {
+        this->m_pImageIO->getOverviewSize(nCount + 1, &nXSize, &nYSize);
+        m_panOverviewBands[nCount] = new KEAOverview((KEADataset*)this->poDS, this->nBand, 
+                                        this->m_pImageIO, this->m_pnRefCount, nCount + 1, nXSize, nYSize);
+    }
+}
+
+int KEARasterBand::GetOverviewCount()
+{
+    return m_nOverviews;
+}
+
+GDALRasterBand* KEARasterBand::GetOverview(int nOverview)
+{
+    if( nOverview >= m_nOverviews )
+    {
+        return NULL;
+    }
+    else
+    {
+        return m_panOverviewBands[nOverview];
+    }
+}

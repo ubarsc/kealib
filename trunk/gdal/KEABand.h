@@ -17,6 +17,11 @@ public:
     KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageIO *pImageIO, int *pRefCount );
     ~KEARasterBand();
 
+    int GetOverviewCount();
+    GDALRasterBand* GetOverview(int nOverview);
+
+    void readExistingOverviews();
+    void deleteOverviewObjects();
     void CreateOverviews(int nOverviews, int *panOverviewList);
     KEAOverview** GetOverviewList() { return m_panOverviewBands; }
 

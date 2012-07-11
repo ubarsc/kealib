@@ -8,6 +8,8 @@ KEAOverview::KEAOverview(KEADataset *pDataset, int nBand,
 {
     this->m_nOverviewIndex = nOverviewIndex;
     // overridden from the band
+    this->nBlockXSize = pImageIO->getOverviewBlockSize(nBand, nOverviewIndex);
+    this->nBlockYSize = pImageIO->getOverviewBlockSize(nBand, nOverviewIndex);
     this->nRasterXSize = nXSize;
     this->nRasterYSize = nYSize;
 }

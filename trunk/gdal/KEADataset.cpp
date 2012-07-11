@@ -174,6 +174,7 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File )
         {
             // note GDAL uses indices starting at 1
             KEARasterBand *pBand = new KEARasterBand( this, nCount + 1, m_pImageIO, m_pnRefcount );
+            pBand->readExistingOverviews();
             this->SetBand( nCount + 1, pBand );            
         }
     }
