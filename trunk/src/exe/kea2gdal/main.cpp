@@ -75,7 +75,7 @@ int main (int argc, char * const argv[])
         trans[2] = keaSpatInfo->xRot;
         trans[4] = keaSpatInfo->yRot;
         
-        libkea::KEADataType keaDataType = imgIO->getImageDataType();
+        libkea::KEADataType keaDataType = imgIO->getImageBandDataType(1);
         
         GDALDataType gdalDataType = GDT_Unknown;
         switch( keaDataType )

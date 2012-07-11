@@ -24,6 +24,8 @@ public:
     const char *GetDescription () const;
     CPLErr SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain="");
     const char *GetMetadataItem (const char *pszName, const char *pszDomain="");
+    double GetNoDataValue(int *pbSuccess=NULL);
+    CPLErr SetNoDataValue(double dfNoData);
 
     void readExistingOverviews();
     void deleteOverviewObjects();
