@@ -25,6 +25,11 @@ public:
 
     void *GetInternalHandle (const char *);
 
+protected:
+    virtual CPLErr IBuildOverviews(const char *pszResampling, int nOverviews, int *panOverviewList, 
+                                    int nListBands, int *panBandList, GDALProgressFunc pfnProgress, 
+                                    void *pProgressData);
+
 private:
     // pointer to KEAImageIO class and the refcount for it
     libkea::KEAImageIO  *m_pImageIO;
