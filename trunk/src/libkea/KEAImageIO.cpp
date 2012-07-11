@@ -519,7 +519,7 @@ namespace libkea{
         }
         catch (H5::Exception &e) 
         {
-            throw KEAIOException("Could not set image band description.");
+            throw KEAIOException("Could not set image meta-data.");
         }
     }
     
@@ -594,7 +594,7 @@ namespace libkea{
         }
         catch (H5::Exception &e) 
         {
-            throw KEAIOException("Could not set image band description.");
+            throw KEAIOException("Could not set image band meta-data.");
         }
     }
     
