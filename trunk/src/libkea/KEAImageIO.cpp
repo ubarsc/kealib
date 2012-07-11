@@ -1733,7 +1733,6 @@ namespace libkea{
             H5::DataSpace attr_dataspace = H5::DataSpace(H5S_SCALAR);
             
             
-            std::string zeroChar = "0";
             std::string bandName = "";
             std::string bandDescrip = "";
             for(unsigned int i = 0; i < numImgBands; ++i)
@@ -1783,91 +1782,6 @@ namespace libkea{
                 
                 // CREATE META-DATA
                 keaImgH5File->createGroup( bandName+KEA_BANDNAME_METADATA );
-                
-                H5::DataSet datasetBandMetaMin = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_METADATA_MIN), strTypeAll, dataspaceStrAll);
-                wStrdata = new const char*[1];
-                wStrdata[0] = zeroChar.c_str();			
-                datasetBandMetaMin.write((void*)wStrdata, strTypeAll);
-                datasetBandMetaMin.close();
-                delete[] wStrdata;
-                
-                H5::DataSet datasetBandMetaMax = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_METADATA_MAX), strTypeAll, dataspaceStrAll);
-                wStrdata = new const char*[1];
-                wStrdata[0] = zeroChar.c_str();			
-                datasetBandMetaMax.write((void*)wStrdata, strTypeAll);
-                datasetBandMetaMax.close();
-                delete[] wStrdata;
-                
-                H5::DataSet datasetBandMetaMean = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_METADATA_MEAN), strTypeAll, dataspaceStrAll);
-                wStrdata = new const char*[1];
-                wStrdata[0] = zeroChar.c_str();			
-                datasetBandMetaMean.write((void*)wStrdata, strTypeAll);
-                datasetBandMetaMean.close();
-                delete[] wStrdata;
-                
-                H5::DataSet datasetBandMetaStdDev = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_METADATA_STDDEV), strTypeAll, dataspaceStrAll);
-                wStrdata = new const char*[1];
-                wStrdata[0] = zeroChar.c_str();			
-                datasetBandMetaStdDev.write((void*)wStrdata, strTypeAll);
-                datasetBandMetaStdDev.close();
-                delete[] wStrdata;
-                
-                H5::DataSet datasetBandMetaMode = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_METADATA_MODE), strTypeAll, dataspaceStrAll);
-                wStrdata = new const char*[1];
-                wStrdata[0] = zeroChar.c_str();			
-                datasetBandMetaMode.write((void*)wStrdata, strTypeAll);
-                datasetBandMetaMode.close();
-                delete[] wStrdata;
-                
-                H5::DataSet datasetBandMetaHistoMin = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_METADATA_HISTOMIN), strTypeAll, dataspaceStrAll);
-                wStrdata = new const char*[1];
-                wStrdata[0] = zeroChar.c_str();			
-                datasetBandMetaHistoMin.write((void*)wStrdata, strTypeAll);
-                datasetBandMetaHistoMin.close();
-                delete[] wStrdata;
-                
-                H5::DataSet datasetBandMetaHistoMax = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_METADATA_HISTOMAX), strTypeAll, dataspaceStrAll);
-                wStrdata = new const char*[1];
-                wStrdata[0] = zeroChar.c_str();			
-                datasetBandMetaHistoMax.write((void*)wStrdata, strTypeAll);
-                datasetBandMetaHistoMax.close();
-                delete[] wStrdata;
-                
-                H5::DataSet datasetBandMetaHistoNumBins = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_METADATA_HISTONUMBINS), strTypeAll, dataspaceStrAll);
-                wStrdata = new const char*[1];
-                wStrdata[0] = zeroChar.c_str();			
-                datasetBandMetaHistoNumBins.write((void*)wStrdata, strTypeAll);
-                datasetBandMetaHistoNumBins.close();
-                delete[] wStrdata;
-                
-                H5::DataSet datasetBandMetaHistoBinValues = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_METADATA_HISTOBINVALUES), strTypeAll, dataspaceStrAll);
-                wStrdata = new const char*[1];
-                wStrdata[0] = zeroChar.c_str();			
-                datasetBandMetaHistoBinValues.write((void*)wStrdata, strTypeAll);
-                datasetBandMetaHistoBinValues.close();
-                delete[] wStrdata;
-                
-                H5::DataSet datasetBandMetaHistoBinFunction = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_METADATA_HISTOBINFUNCTION), strTypeAll, dataspaceStrAll);
-                wStrdata = new const char*[1];
-                wStrdata[0] = zeroChar.c_str();			
-                datasetBandMetaHistoBinFunction.write((void*)wStrdata, strTypeAll);
-                datasetBandMetaHistoBinFunction.close();
-                delete[] wStrdata;
-                
-                H5::DataSet datasetBandMetaWavelength = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_METADATA_WAVELENGTH), strTypeAll, dataspaceStrAll);
-                wStrdata = new const char*[1];
-                wStrdata[0] = zeroChar.c_str();			
-                datasetBandMetaWavelength.write((void*)wStrdata, strTypeAll);
-                datasetBandMetaWavelength.close();
-                delete[] wStrdata;
-                
-                H5::DataSet datasetBandMetaFWHM = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_METADATA_FWHM), strTypeAll, dataspaceStrAll);
-                wStrdata = new const char*[1];
-                wStrdata[0] = zeroChar.c_str();			
-                datasetBandMetaFWHM.write((void*)wStrdata, strTypeAll);
-                datasetBandMetaFWHM.close();
-                delete[] wStrdata;
-                
                 
                 // CREATE OVERVIEWS GROUP
                 keaImgH5File->createGroup( bandName+KEA_BANDNAME_OVERVIEWS );
