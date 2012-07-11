@@ -79,9 +79,10 @@ int main (int argc, char * const argv[])
         std::cout << "Written Image data\n";
         
         imageIO.setImageMetaData("TEST", "Hello World");
-        imageIO.setImageBandMetaData(1, "TEST", "Hello World");
+        imageIO.setImageBandMetaData(1, "TEST", "Hello World on Band");
         
-        std::cout << "TEST META-DATA: " << imageIO.getImageMetaData("TEST") << std::endl;
+        std::cout << "TEST META-DATA Image: " << imageIO.getImageMetaData("TEST") << std::endl;
+        std::cout << "TEST META-DATA Band: " << imageIO.getImageBandMetaData(1, "TEST") << std::endl;
         std::cout << "DESCRIPTION 1: " << imageIO.getImageBandDescription(1) << std::endl;
         std::cout << "DESCRIPTION 2: " << imageIO.getImageBandDescription(2) << std::endl;
         std::cout << "DESCRIPTION 3: " << imageIO.getImageBandDescription(3) << std::endl;
