@@ -25,6 +25,9 @@ public:
 
     void *GetInternalHandle (const char *);
 
+    CPLErr SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain="");
+    const char *GetMetadataItem (const char *pszName, const char *pszDomain="");
+
 protected:
     virtual CPLErr IBuildOverviews(const char *pszResampling, int nOverviews, int *panOverviewList, 
                                     int nListBands, int *panBandList, GDALProgressFunc pfnProgress, 

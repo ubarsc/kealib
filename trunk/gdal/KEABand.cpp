@@ -128,6 +128,29 @@ CPLErr KEARasterBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage
     }
 }
 
+void KEARasterBand::SetDescription(const char *pszDescription)
+{
+    this->m_pImageIO->setImageBandDescription(this->nBand, pszDescription);
+}
+
+const char *KEARasterBand::GetDescription() const
+{
+    const char *psz = this->m_pImageIO->getImageBandDescription(this->nBand).c_str();
+    return strdup(psz);
+}
+
+CPLErr KEARasterBand::SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain)
+{
+    this->m_pImageIO->setImageBandMetaData(this->nBand, pszName, pszValue );
+    return CE_None;
+}
+
+const char *KEARasterBand::GetMetadataItem (const char *pszName, const char *pszDomain)
+{
+    const char *psz = this->m_pImageIO->getImageMetaData(pszName).c_str();
+    return strdup(psz);
+}
+
 void KEARasterBand::deleteOverviewObjects()
 {
     // deletes the objects - not the overviews themselves

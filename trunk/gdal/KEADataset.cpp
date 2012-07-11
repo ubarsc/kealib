@@ -308,3 +308,15 @@ CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, in
         return CE_None;
     }
 }
+
+CPLErr KEADataset::SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain)
+{
+    m_pImageIO->setImageMetaData(pszName, pszValue);
+    return CE_None;
+}
+
+const char *KEADataset::GetMetadataItem (const char *pszName, const char *pszDomain)
+{
+    const char *psz = m_pImageIO->getImageMetaData(pszName).c_str();
+    return strdup(psz);
+}
