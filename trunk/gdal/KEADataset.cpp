@@ -285,14 +285,14 @@ CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, in
                                     int nListBands, int *panBandList, GDALProgressFunc pfnProgress, 
                                     void *pProgressData)
 {
-    int nCurrentBand, nCurrentOverview, nOK = 1;
+    int nCurrentBand, nOK = 1;
     for( int nBandCount = 0; (nBandCount < nListBands) && nOK; nBandCount++ )
     {
         nCurrentBand = panBandList[nBandCount];
-        KEARasterBand *pBand = (KEARasterBand*)this->GetRasterBand(nCount + 1);
+        KEARasterBand *pBand = (KEARasterBand*)this->GetRasterBand(nCurrentBand);
         pBand->CreateOverviews( nOverviews, panOverviewList );
 
-        if( GDALRegenerateOverviews( pBand, nOverviews, pBand->GetOverviewList(),
+        if( GDALRegenerateOverviews( (GDALRasterBandH)pBand, nOverviews, (GDALRasterBandH*)pBand->GetOverviewList(),
                                     pszResampling, pfnProgress, pProgressData ) != CE_None )
         {
             nOK = 0;
@@ -300,7 +300,7 @@ CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, in
     }
     if( !nOK )
     {
-        return CE_Falure;
+        return CE_Failure;
     }
     else
     {

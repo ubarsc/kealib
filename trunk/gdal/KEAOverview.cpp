@@ -8,8 +8,8 @@ KEAOverview::KEAOverview(KEADataset *pDataset, int nBand,
 {
     this->m_nOverviewIndex = nOverviewIndex;
     // overridden from the band
-    this->m_nXSize = nXSize;
-    this->m_nYSize = nYSize;
+    this->nRasterXSize = nXSize;
+    this->nRasterYSize = nYSize;
 }
 
 KEAOverview::~KEAOverview()
@@ -25,15 +25,15 @@ CPLErr KEAOverview::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
         // we need to adjust the amount read so we don't go over the edge
         int xsize = this->nBlockXSize;
         int xtotalsize = this->nBlockXSize * (nBlockXOff + 1);
-        if( xtotalsize > m_nXSize )
+        if( xtotalsize > this->nRasterXSize )
         {
-            xsize -= (xtotalsize - m_nXSize);
+            xsize -= (xtotalsize - this->nRasterXSize);
         }
         int ysize = this->nBlockYSize;
         int ytotalsize = this->nBlockYSize * (nBlockYOff + 1);
-        if( ytotalsize > m_nYSize )
+        if( ytotalsize > this->nRasterYSize )
         {
-            ysize -= (ytotalsize - m_nYSize);
+            ysize -= (ytotalsize - this->nRasterYSize);
         }
         this->m_pImageIO->readFromOverview( this->nBand, this->m_nOverviewIndex,
                                             pImage, this->nBlockXSize * nBlockXOff,
@@ -50,7 +50,7 @@ CPLErr KEAOverview::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
     }
 }
 
-CPLErr KEARasterBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage )
+CPLErr KEAOverview::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage )
 {
     try
     {
@@ -58,15 +58,15 @@ CPLErr KEARasterBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage
         // we need to adjust the amount written so we don't go over the edge
         int xsize = this->nBlockXSize;
         int xtotalsize = this->nBlockXSize * (nBlockXOff + 1);
-        if( xtotalsize > m_nXSize )
+        if( xtotalsize > this->nRasterXSize )
         {
-            xsize -= (xtotalsize - m_nXSize);
+            xsize -= (xtotalsize - this->nRasterXSize);
         }
         int ysize = this->nBlockYSize;
         int ytotalsize = this->nBlockYSize * (nBlockYOff + 1);
-        if( ytotalsize > m_nYSize )
+        if( ytotalsize > this->nRasterYSize )
         {
-            ysize -= (ytotalsize - m_nYSize);
+            ysize -= (ytotalsize - this->nRasterYSize);
         }
 
         this->m_pImageIO->writeToOverview( this->nBand, this->m_nOverviewIndex,
