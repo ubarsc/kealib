@@ -54,6 +54,10 @@ int main (int argc, char * const argv[])
     {
         H5::H5File *keaImgFile = libkea::KEAImageIO::createKEAImage(sFilename, libkea::kea_32float, 1000, 2000, 3);
         
+        //keaImgFile->close();
+        //keaImgFile = libkea::KEAImageIO::openKeaH5RW(sFilename);
+        
+        
         libkea::KEAImageIO imageIO;
         imageIO.openKEAImageHeader(keaImgFile);
         
@@ -86,6 +90,19 @@ int main (int argc, char * const argv[])
         
         std::cout << "Image Data Type: " << imageIO.getImageDataType() << std::endl;
         std::cout << "Image Data Type: " << getDataTypeAsStr(imageIO.getImageDataType()) << std::endl;
+        
+        
+        std::cout << "Creating overview images\n";
+        imageIO.createOverview(1, 0, 500, 1000);
+        imageIO.createOverview(1, 1, 250, 500);
+        imageIO.createOverview(1, 1, 500, 500);
+        
+        imageIO.createOverview(2, 0, 500, 1000);
+        imageIO.createOverview(2, 1, 250, 500);
+        
+        imageIO.createOverview(3, 0, 500, 1000);
+        imageIO.createOverview(3, 1, 250, 500);
+                
         
         for(unsigned int i = 0; i < (100*200); ++i)
         {

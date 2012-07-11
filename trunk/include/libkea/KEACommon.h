@@ -111,7 +111,7 @@ namespace libkea{
     static const hsize_t  KEA_WRITE_SIEVE_BUF( 65536 ); // 65536
     static const hsize_t  KEA_WRITE_META_BLOCKSIZE( 2048 ); // 2048
     static const unsigned int KEA_DEFLATE( 1 ); // 1
-    static const hsize_t KEA_WRITE_CHUNK_SIZE( 200 ); //100
+    static const hsize_t KEA_WRITE_CHUNK_SIZE( 256 ); //100
     
     
     enum KEADataType

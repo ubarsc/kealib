@@ -70,6 +70,12 @@ namespace libkea{
         
         KEADataType getImageDataType() throw(KEAIOException);
         
+        void createOverview(unsigned int band, unsigned int overview, unsigned long xSize, unsigned long ySize) throw(KEAIOException);
+        void removeOverview(unsigned int band, unsigned int overview) throw(KEAIOException);
+        unsigned int getOverviewBlockSize(unsigned int band, unsigned int overview) throw(KEAIOException);
+        void writeToOverview(unsigned int band, unsigned int overview, void *data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType) throw(KEAIOException);
+        void readFromOverview(unsigned int band, unsigned int overview, void *data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType) throw(KEAIOException);
+        
         void initImageBandATT(unsigned int band, size_t numFeats)throw(KEAIOException);
         
         bool getATTBoolField(unsigned int band, size_t fid, std::string name) throw(KEAATTException);
