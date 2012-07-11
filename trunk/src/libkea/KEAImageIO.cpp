@@ -1227,9 +1227,9 @@ namespace libkea{
         // WRITE IMAGE LAYER TYPE
         try 
         {
-            H5::DataSet datasetImgDT = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_DT );
-            datasetImgDT.write(&imgLayerType, H5::PredType::NATIVE_UINT);
-            datasetImgDT.close();
+            H5::DataSet datasetImgLT = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_TYPE );
+            datasetImgLT.write(&imgLayerType, H5::PredType::NATIVE_UINT);
+            datasetImgLT.close();
         } 
         catch ( H5::Exception &e) 
         {
@@ -1253,10 +1253,10 @@ namespace libkea{
             dimsValue[0] = 1;
             H5::DataSpace valueDataSpace(1, dimsValue);
             unsigned int value[1];
-            H5::DataSet datasetImgDT = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_DT );
-            datasetImgDT.read(value, H5::PredType::NATIVE_UINT, valueDataSpace);
+            H5::DataSet datasetImgLT = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_TYPE );
+            datasetImgLT.read(value, H5::PredType::NATIVE_UINT, valueDataSpace);
             imgLayerType = (KEALayerType)value[0];
-            datasetImgDT.close();
+            datasetImgLT.close();
             valueDataSpace.close();
         } 
         catch ( H5::Exception &e) 
