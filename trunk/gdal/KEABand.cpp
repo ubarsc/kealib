@@ -15,12 +15,24 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageI
     this->m_pnRefCount = pRefCount;
     // increment the refcount as we now have a reference to imageio
     (*this->m_pnRefCount)++;
+
+    // overviews
+    m_nOverviews = 0;
+    m_panOverviewBands = NULL;
 }
 
 KEARasterBand::~KEARasterBand()
 {
+    // delete any overview bands
+    for( int nCount = 0; nCount < m_nOverviews; nCount++ )
+    {
+        delete m_panOverviewBands[nCount];
+    }
+    CPLFree(m_panOverviewBands);
+
     // according to the docs, this is required
     this->FlushCache();
+
     // decrement the recount and delete if needed
     (*m_pnRefCount)--;
     if( *m_pnRefCount == 0 )
@@ -28,6 +40,33 @@ KEARasterBand::~KEARasterBand()
         m_pImageIO->close();
         delete m_pImageIO;
         delete m_pnRefCount;
+    }
+}
+
+void KEARasterBand::CreateOverviews(int nOverviews, int *panOverviewList)
+{
+   // delete any existing overview bands
+    int nCount;
+    for( nCount = 0; nCount < m_nOverviews; nCount++ )
+    {
+        delete m_panOverviewBands[nCount];
+    }
+    CPLFree(m_panOverviewBands);
+
+    m_panOverviewBands = CPLMalloc(sizeof(KEAOverview*) * nOverviews);
+    m_nOverviews = nOverviews;
+
+    int nFactor, nXSize, nYSize;
+    for( nCount = 0; nCount < m_nOverviews; nCount++ )
+    {
+        nFactor = panOverviewList[nCount];
+        nXSize = this->m_nXSize / nFactor;
+        nYSize = this->m_nYSize / nFactor;
+
+        this->m_pImageIO->createOverview(this->m_nBand, nCount + 1, nXSize, nYSize);
+
+        m_panOverviewBands[nCount] = new KEAOverview(this->poDS, this->m_nBand, 
+                                        this->m_pImageIO, this->m_pnRefCount, nCount + 1, nXSize, nYSize);
     }
 }
 

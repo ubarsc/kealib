@@ -281,3 +281,29 @@ void * KEADataset::GetInternalHandle(const char *)
     return m_pImageIO;
 }
 
+CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, int *panOverviewList, 
+                                    int nListBands, int *panBandList, GDALProgressFunc pfnProgress, 
+                                    void *pProgressData)
+{
+    int nCurrentBand, nCurrentOverview, nOK = 1;
+    for( int nBandCount = 0; (nBandCount < nListBands) && nOK; nBandCount++ )
+    {
+        nCurrentBand = panBandList[nBandCount];
+        KEARasterBand *pBand = (KEARasterBand*)this->GetRasterBand(nCount + 1);
+        pBand->CreateOverviews( nOverviews, panOverviewList );
+
+        if( GDALRegenerateOverviews( pBand, nOverviews, pBand->GetOverviewList(),
+                                    pszResampling, pfnProgress, pProgressData ) != CE_None )
+        {
+            nOK = 0;
+        }
+    }
+    if( !nOK )
+    {
+        return CE_Falure;
+    }
+    else
+    {
+        return CE_None;
+    }
+}
