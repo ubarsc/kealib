@@ -1290,6 +1290,88 @@ namespace libkea{
 		}
     }
     
+    unsigned int KEAImageIO::getNumOfOverviews(unsigned int band) throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        std::string overviewGroupName = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_OVERVIEWS;
+        unsigned int numOverviews = 0;
+        try 
+        {
+            // Try to open dataset with overviewName
+            H5::Group imgOverviewsGrp = this->keaImgFile->openGroup(overviewGroupName);
+            numOverviews = imgOverviewsGrp.getNumObjs();
+        }
+        catch (H5::Exception &e)
+        {
+            throw KEAIOException("Could not retrieve the number of image band overviews.");
+        }
+        
+        return numOverviews;
+    }
+    
+    void KEAImageIO::getOverviewSize(unsigned int band, unsigned int overview, unsigned long *xSize, unsigned long *ySize) throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        try 
+        {
+            // CHECK PARAMETERS PROVIDED FIT WITHIN IMAGE
+            if(band == 0)
+            {
+                throw KEAIOException("KEA Image Bands start at 1.");
+            }
+            else if(band > this->numImgBands)
+            {
+                throw KEAIOException("Band is not present within image."); 
+            }
+                        
+            // OPEN BAND DATASET AND READ THE IMAGE DIMENSIONS
+            try 
+            {
+                std::string overviewName = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_OVERVIEWSNAME_OVERVIEW + uint2Str(overview);
+                H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( overviewName );
+                H5::DataSpace imgBandDataspace = imgBandDataset.getSpace();                
+                
+                unsigned int nDims = imgBandDataspace.getSimpleExtentNdims();
+                if(nDims != 2)
+                {
+                    throw KEAIOException("The number of dimensions for the overview must be 2.");
+                }
+                hsize_t *dims = new hsize_t[2];
+                imgBandDataspace.getSimpleExtentDims(dims);
+                
+                *xSize = dims[1];
+                *ySize = dims[0];
+                
+                delete[] dims;
+                imgBandDataset.close();
+            } 
+            catch(KEAIOException &e)
+            {
+                throw e;
+            }
+            catch ( H5::Exception &e) 
+            {
+                throw KEAIOException("Could not read from image overview.");
+            }            
+        }
+        catch(KEAIOException &e)
+        {
+            throw e;
+        }
+        catch( H5::Exception &e )
+		{
+			throw KEAIOException("Could not get the overview size.");
+		}
+    }
+    
     void KEAImageIO::initImageBandATT(unsigned int band, size_t numFeats)throw(KEAIOException)
     {
         throw KEAIOException("Not Implmented yet!");
@@ -1313,6 +1395,12 @@ namespace libkea{
         return 0;
     }
     
+    std::string KEAImageIO::getATTStringField(unsigned int band, size_t fid, std::string name) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+        return "";
+    }
+    
     void KEAImageIO::setATTBoolField(unsigned int band, size_t fid, std::string name, bool value) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
@@ -1328,6 +1416,11 @@ namespace libkea{
         throw KEAATTException("Not Implmented yet!");
     }
     
+    void KEAImageIO::setATTStringField(unsigned int band, size_t fid, std::string name, std::string value) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+    }
+    
     void KEAImageIO::setATTBoolValue(unsigned int band, std::string name, bool value) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
@@ -1339,6 +1432,11 @@ namespace libkea{
     }
     
     void KEAImageIO::setATTFloatValue(unsigned int band, std::string name, double value) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+    }
+    
+    void KEAImageIO::setATTStringValue(unsigned int band, std::string name, std::string value) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
     }
@@ -1360,6 +1458,11 @@ namespace libkea{
     }
     
     void KEAImageIO::addAttFloatField(unsigned int band, std::string name, double val) throw(KEAATTException)
+    {
+        throw KEAATTException("Not Implmented yet!");
+    }
+    
+    void KEAImageIO::addAttStringField(unsigned int band, std::string name, std::string val) throw(KEAATTException)
     {
         throw KEAATTException("Not Implmented yet!");
     }
