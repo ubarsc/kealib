@@ -6,7 +6,7 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageI
 {
     this->poDS = pDataset;
     this->nBand = nBand;
-    this->eDataType = KEA_to_GDAL_Type( pImageIO->getImageDataType() );
+    this->eDataType = KEA_to_GDAL_Type( pImageIO->getImageBandDataType(nBand) );
     this->nBlockXSize = pImageIO->getImageBlockSize(nBand);
     this->nBlockYSize = pImageIO->getImageBlockSize(nBand);
     this->nRasterXSize = this->poDS->GetRasterXSize();
@@ -84,7 +84,7 @@ CPLErr KEARasterBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage 
         this->m_pImageIO->readImageBlock2Band( this->nBand, pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
                                             xsize, ysize, 
-                                            this->m_pImageIO->getImageDataType() );
+                                            this->m_pImageIO->getImageBandDataType(this->nBand) );
         return CE_None;
     }
     catch (libkea::KEAIOException &e)
@@ -117,7 +117,7 @@ CPLErr KEARasterBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage
         this->m_pImageIO->writeImageBlock2Band( this->nBand, pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
                                             xsize, ysize, 
-                                            this->m_pImageIO->getImageDataType() );
+                                            this->m_pImageIO->getImageBandDataType(this->nBand) );
         return CE_None;
     }
     catch (libkea::KEAIOException &e)
