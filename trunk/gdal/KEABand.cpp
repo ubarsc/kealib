@@ -53,7 +53,7 @@ void KEARasterBand::CreateOverviews(int nOverviews, int *panOverviewList)
     {
         nFactor = panOverviewList[nCount];
         nXSize = this->nRasterXSize / nFactor;
-        nYSize = this->nRasterXSize / nFactor;
+        nYSize = this->nRasterYSize / nFactor;
 
         this->m_pImageIO->createOverview(this->nBand, nCount + 1, nXSize, nYSize);
 
