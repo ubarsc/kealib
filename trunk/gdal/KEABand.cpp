@@ -101,7 +101,7 @@ CPLErr KEARasterBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage 
         }
         this->m_pImageIO->readImageBlock2Band( this->nBand, pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
-                                            xsize, ysize, 
+                                            xsize, ysize, this->nBlockXSize, this->nBlockYSize, 
                                             this->m_pImageIO->getImageBandDataType(this->nBand) );
         return CE_None;
     }
@@ -134,7 +134,7 @@ CPLErr KEARasterBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage
 
         this->m_pImageIO->writeImageBlock2Band( this->nBand, pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
-                                            xsize, ysize, 
+                                            xsize, ysize, this->nBlockXSize, this->nBlockYSize,
                                             this->m_pImageIO->getImageBandDataType(this->nBand) );
         return CE_None;
     }

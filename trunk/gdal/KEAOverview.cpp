@@ -40,7 +40,7 @@ CPLErr KEAOverview::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
         this->m_pImageIO->readFromOverview( this->nBand, this->m_nOverviewIndex,
                                             pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
-                                            xsize, ysize, 
+                                            xsize, ysize, this->nBlockXSize, this->nBlockYSize, 
                                             this->m_pImageIO->getImageBandDataType(this->nBand) );
         return CE_None;
     }
@@ -74,7 +74,7 @@ CPLErr KEAOverview::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage )
         this->m_pImageIO->writeToOverview( this->nBand, this->m_nOverviewIndex,
                                             pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
-                                            xsize, ysize, 
+                                            xsize, ysize, this->nBlockXSize, this->nBlockYSize,
                                             this->m_pImageIO->getImageBandDataType(this->nBand) );
         return CE_None;
     }

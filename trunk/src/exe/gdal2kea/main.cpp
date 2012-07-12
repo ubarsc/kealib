@@ -154,7 +154,7 @@ int main (int argc, char * const argv[])
 					feedbackCounter = feedbackCounter + 10;
 				}
                 imgBand->RasterIO(GF_Read, 0, n, keaSpatInfo->xSize, 1, data, keaSpatInfo->xSize, 1, GDT_Int32, 0, 0);
-                imgIO->writeImageBlock2Band(i, data, 0, n, keaSpatInfo->xSize, 1, libkea::kea_32int);
+                imgIO->writeImageBlock2Band(i, data, 0, n, keaSpatInfo->xSize, 1, keaSpatInfo->xSize, 1, libkea::kea_32int);
             }
             std::cout << ".Complete" << std::endl;
         }

@@ -191,6 +191,7 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File )
 
 KEADataset::~KEADataset()
 {
+    CSLDestroy(m_papszMetadataList);
     // decrement the refcount and delete if needed
     (*m_pnRefcount)--;
     if( *m_pnRefcount == 0 )
