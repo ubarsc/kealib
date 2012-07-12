@@ -20,10 +20,17 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageI
     // overviews
     m_nOverviews = 0;
     m_panOverviewBands = NULL;
+
+    // grab the description here
+    this->sDescription = pImageIO->getImageBandDescription(nBand);
+
+    m_papszMetadataList = NULL;
+    this->UpdateMetadataList();
 }
 
 KEARasterBand::~KEARasterBand()
 {
+    CSLDestroy(m_papszMetadataList);
     // delete any overview bands
     this->deleteOverviewObjects();
 
@@ -37,6 +44,17 @@ KEARasterBand::~KEARasterBand()
         m_pImageIO->close();
         delete m_pImageIO;
         delete m_pnRefCount;
+    }
+}
+
+void KEARasterBand::UpdateMetadataList()
+{
+    std::vector< std::pair<std::string, std::string> > data;
+
+    data = this->m_pImageIO->getImageBandMetaData(this->nBand);
+    for(std::vector< std::pair<std::string, std::string> >::iterator iterMetaData = data.begin(); iterMetaData != data.end(); ++iterMetaData)
+    {
+        m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, iterMetaData->first.c_str(), iterMetaData->second.c_str());
     }
 }
 
@@ -133,6 +151,7 @@ void KEARasterBand::SetDescription(const char *pszDescription)
     try
     {
         this->m_pImageIO->setImageBandDescription(this->nBand, pszDescription);
+        this->sDescription = pszDescription;
     }
     catch (libkea::KEAIOException &e)
     {
@@ -141,22 +160,17 @@ void KEARasterBand::SetDescription(const char *pszDescription)
 
 const char *KEARasterBand::GetDescription() const
 {
-    try
-    {
-        const char *psz = this->m_pImageIO->getImageBandDescription(this->nBand).c_str();
-        return strdup(psz);
-    }
-    catch (libkea::KEAIOException &e)
-    {
-        return "";
-    }
+    // do we need to implement this?
+    return this->sDescription.c_str();
 }
 
-CPLErr KEARasterBand::SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain)
+CPLErr KEARasterBand::SetMetadataItem(const char *pszName, const char *pszValue, const char *pszDomain)
 {
     try
     {
         this->m_pImageIO->setImageBandMetaData(this->nBand, pszName, pszValue );
+        // CSLSetNameValue will update if already there
+        m_papszMetadataList = CSLSetNameValue( m_papszMetadataList, pszName, pszValue );
         return CE_None;
     }
     catch (libkea::KEAIOException &e)
@@ -167,15 +181,36 @@ CPLErr KEARasterBand::SetMetadataItem (const char *pszName, const char *pszValue
 
 const char *KEARasterBand::GetMetadataItem (const char *pszName, const char *pszDomain)
 {
+    return CSLFetchNameValue(m_papszMetadataList, pszName);
+}
+
+char **KEARasterBand::GetMetadata(const char *pszDomain)
+{ 
+    return m_papszMetadataList; 
+}
+
+CPLErr KEARasterBand::SetMetadata(char **papszMetadata, const char *pszDomain)
+{
+    int nIndex = 0;
+    char *pszName;
+    const char *pszValue;
     try
     {
-        const char *psz = this->m_pImageIO->getImageBandMetaData(this->nBand, pszName).c_str();
-        return strdup(psz);
+        while( papszMetadata[nIndex] != NULL )
+        {
+            pszValue = CPLParseNameValue( papszMetadata[nIndex], &pszName );
+            this->m_pImageIO->setImageBandMetaData(this->nBand, pszName, pszValue );
+            nIndex++;
+        }
     }
     catch (libkea::KEAIOException &e)
     {
-        return NULL;
+        return CE_Failure;
     }
+
+    CSLDestroy(m_papszMetadataList);
+    m_papszMetadataList = CSLDuplicate(papszMetadata);
+    return CE_None;
 }
 
 double KEARasterBand::GetNoDataValue(int *pbSuccess)
@@ -184,6 +219,9 @@ double KEARasterBand::GetNoDataValue(int *pbSuccess)
     {
         double dVal;
         this->m_pImageIO->getNoDataValue(this->nBand, &dVal, libkea::kea_64float);
+        if( pbSuccess != NULL )
+            *pbSuccess = 1;
+
         return dVal;
     }
     catch (libkea::KEAIOException &e)

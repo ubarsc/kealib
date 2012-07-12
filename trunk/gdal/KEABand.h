@@ -13,6 +13,7 @@ class KEARasterBand : public GDALPamRasterBand
 
     int                  m_nOverviews;
     KEAOverview        **m_panOverviewBands;
+
 public:
     KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageIO *pImageIO, int *pRefCount );
     ~KEARasterBand();
@@ -24,6 +25,10 @@ public:
     const char *GetDescription () const;
     CPLErr SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain="");
     const char *GetMetadataItem (const char *pszName, const char *pszDomain="");
+
+    char **GetMetadata(const char *pszDomain="");
+    CPLErr SetMetadata(char **papszMetadata, const char *pszDomain="");
+
     double GetNoDataValue(int *pbSuccess=NULL);
     CPLErr SetNoDataValue(double dfNoData);
 
@@ -36,7 +41,10 @@ protected:
     virtual CPLErr IReadBlock( int, int, void * );
     virtual CPLErr IWriteBlock( int, int, void * );
 
+    void UpdateMetadataList();
+
     libkea::KEAImageIO  *m_pImageIO;
+    char               **m_papszMetadataList;
 };
 
 
