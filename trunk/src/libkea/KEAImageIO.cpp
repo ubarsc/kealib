@@ -176,7 +176,7 @@ namespace libkea{
         this->fileOpen = true;
     }
     
-    void KEAImageIO::writeImageBlock2Band(unsigned int band, void *data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType)throw(KEAIOException)
+    void KEAImageIO::writeImageBlock2Band(unsigned int band, void *data, unsigned long xPxlOff, unsigned long yPxlOff, unsigned long xSizeOut, unsigned long ySizeOut, unsigned long xSizeBuf, unsigned long ySizeBuf, KEADataType inDataType)throw(KEAIOException)
     {
         if(!this->fileOpen)
         {
@@ -195,10 +195,10 @@ namespace libkea{
                throw KEAIOException("Band is not present within image."); 
             }
             
-            unsigned long endXPxl = xPxl + xSize;
-            unsigned long endYPxl = yPxl + ySize;
+            unsigned long endXPxl = xPxlOff + xSizeOut;
+            unsigned long endYPxl = yPxlOff + ySizeOut;
             
-            if(xPxl > this->spatialInfoFile->xSize)
+            if(xPxlOff > this->spatialInfoFile->xSize)
             {
                throw KEAIOException("Start X Pixel is not within image.");  
             }
@@ -208,7 +208,7 @@ namespace libkea{
                 throw KEAIOException("End X Pixel is not within image.");  
             }
             
-            if(yPxl > this->spatialInfoFile->ySize)
+            if(yPxlOff > this->spatialInfoFile->ySize)
             {
                 throw KEAIOException("Start Y Pixel is not within image.");  
             }
@@ -218,10 +218,11 @@ namespace libkea{
                 throw KEAIOException("End Y Pixel is not within image.");  
             }
             
-            //std::cout << "Band: " << band << std::endl;
-            //std::cout << "Start: [" << xPxl << "," << yPxl << "]\n";
-            //std::cout << "End: [" << endXPxl << "," << endYPxl << "]\n";
-            //std::cout << "Size: [" << xSize << "," << ySize << "]\n";
+            std::cout << "Band: " << band << std::endl;
+            std::cout << "Start: [" << xPxlOff << "," << yPxlOff << "]\n";
+            std::cout << "End: [" << endXPxl << "," << endYPxl << "]\n";
+            std::cout << "Size Out: [" << xSizeOut << "," << ySizeOut << "]\n";
+            std::cout << "Size Buf: [" << xSizeBuf << "," << ySizeBuf << "]\n";
             
             // GET NATIVE DATASET
             H5::DataType imgBandDT = H5::PredType::NATIVE_FLOAT;
@@ -278,16 +279,23 @@ namespace libkea{
                 H5::DataSpace imgBandDataspace = imgBandDataset.getSpace();                
                 
                 hsize_t dataOffset[2];
-                dataOffset[0] = yPxl;
-                dataOffset[1] = xPxl;
+                dataOffset[0] = yPxlOff;
+                dataOffset[1] = xPxlOff;
                 hsize_t dataDims[2];
-                dataDims[0] = ySize;
-                dataDims[1] = xSize;
+                dataDims[0] = ySizeOut;
+                dataDims[1] = xSizeOut;
                 H5::DataSpace write2BandDataspace = H5::DataSpace(2, dataDims);
                 
-                imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataDims, dataOffset);
-                imgBandDataset.write( data, imgBandDT, write2BandDataspace, imgBandDataspace);
-                
+                if((ySizeOut == ySizeBuf) & (xSizeOut == xSizeBuf))
+                {
+                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataDims, dataOffset);
+                    imgBandDataset.write( data, imgBandDT, write2BandDataspace, imgBandDataspace); // MOVE THIS LINE OUTSIDE OF IF STATMENT ONCE ELSE IMPLEMENTED!!!
+                }
+                else
+                {
+                    std::cerr << "HELP!!!! edge of image block... Still working this out...\n";
+                }
+                                
                 imgBandDataset.close();
                 imgBandDataspace.close();
                 write2BandDataspace.close();
@@ -321,7 +329,7 @@ namespace libkea{
 		}
     }
     
-    void KEAImageIO::readImageBlock2Band(unsigned int band, void *data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType)throw(KEAIOException)
+    void KEAImageIO::readImageBlock2Band(unsigned int band, void *data, unsigned long xPxlOff, unsigned long yPxlOff, unsigned long xSizeIn, unsigned long ySizeIn, unsigned long xSizeBuf, unsigned long ySizeBuf, KEADataType inDataType)throw(KEAIOException)
     {
         if(!this->fileOpen)
         {
@@ -340,10 +348,10 @@ namespace libkea{
                 throw KEAIOException("Band is not present within image."); 
             }
             
-            unsigned long endXPxl = xPxl + xSize;
-            unsigned long endYPxl = yPxl + ySize;
+            unsigned long endXPxl = xPxlOff + xSizeIn;
+            unsigned long endYPxl = yPxlOff + ySizeIn;
             
-            if(xPxl > this->spatialInfoFile->xSize)
+            if(xPxlOff > this->spatialInfoFile->xSize)
             {
                 throw KEAIOException("Start X Pixel is not within image.");  
             }
@@ -353,7 +361,7 @@ namespace libkea{
                 throw KEAIOException("End X Pixel is not within image.");  
             }
             
-            if(yPxl > this->spatialInfoFile->ySize)
+            if(yPxlOff > this->spatialInfoFile->ySize)
             {
                 throw KEAIOException("Start Y Pixel is not within image.");  
             }
@@ -363,10 +371,11 @@ namespace libkea{
                 throw KEAIOException("End Y Pixel is not within image.");  
             }
             
-            //std::cout << "Band: " << band << std::endl;
-            //std::cout << "Start: [" << xPxl << "," << yPxl << "]\n";
-            //std::cout << "End: [" << endXPxl << "," << endYPxl << "]\n";
-            //std::cout << "Size: [" << xSize << "," << ySize << "]\n";
+            std::cout << "Band: " << band << std::endl;
+            std::cout << "Start: [" << xPxlOff << "," << yPxlOff << "]\n";
+            std::cout << "End: [" << endXPxl << "," << endYPxl << "]\n";
+            std::cout << "Size In: [" << xSizeIn << "," << ySizeIn << "]\n";
+            std::cout << "Size Buf: [" << xSizeBuf << "," << ySizeBuf << "]\n";
             
             // GET NATIVE DATASET
             H5::DataType imgBandDT = H5::PredType::NATIVE_FLOAT;
@@ -423,15 +432,22 @@ namespace libkea{
                 H5::DataSpace imgBandDataspace = imgBandDataset.getSpace();                
                 
                 hsize_t dataOffset[2];
-                dataOffset[0] = yPxl;
-                dataOffset[1] = xPxl;
+                dataOffset[0] = yPxlOff;
+                dataOffset[1] = xPxlOff;
                 hsize_t dataDims[2];
-                dataDims[0] = ySize;
-                dataDims[1] = xSize;
+                dataDims[0] = ySizeIn;
+                dataDims[1] = xSizeIn;
                 H5::DataSpace read2BandDataspace = H5::DataSpace(2, dataDims);
                 
-                imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataDims, dataOffset);
-                imgBandDataset.read( data, imgBandDT, read2BandDataspace, imgBandDataspace);
+                if((ySizeBuf == ySizeIn) & (xSizeBuf == xSizeIn))
+                {
+                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataDims, dataOffset);
+                    imgBandDataset.read( data, imgBandDT, read2BandDataspace, imgBandDataspace); // MOVE THIS LINE OUTSIDE OF IF STATMENT ONCE ELSE IMPLEMENTED!!!
+                }
+                else
+                {
+                    std::cerr << "HELP!!!! edge of image block... Still working this out...\n";
+                }
                 
                 imgBandDataset.close();
                 imgBandDataspace.close();
