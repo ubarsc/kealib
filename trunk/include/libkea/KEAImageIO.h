@@ -85,8 +85,8 @@ namespace libkea{
         void createOverview(unsigned int band, unsigned int overview, unsigned long xSize, unsigned long ySize) throw(KEAIOException);
         void removeOverview(unsigned int band, unsigned int overview) throw(KEAIOException);
         unsigned int getOverviewBlockSize(unsigned int band, unsigned int overview) throw(KEAIOException);
-        void writeToOverview(unsigned int band, unsigned int overview, void *data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType) throw(KEAIOException);
-        void readFromOverview(unsigned int band, unsigned int overview, void *data, unsigned long xPxl, unsigned long yPxl, unsigned long xSize, unsigned long ySize, KEADataType inDataType) throw(KEAIOException);
+        void writeToOverview(unsigned int band, unsigned int overview, void *data, unsigned long xPxlOff, unsigned long yPxlOff, unsigned long xSizeOut, unsigned long ySizeOut, unsigned long xSizeBuf, unsigned long ySizeBuf, KEADataType inDataType) throw(KEAIOException);
+        void readFromOverview(unsigned int band, unsigned int overview, void *data, unsigned long xPxlOff, unsigned long yPxlOff, unsigned long xSizeIn, unsigned long ySizeIn, unsigned long xSizeBuf, unsigned long ySizeBuf, KEADataType inDataType) throw(KEAIOException);
         unsigned int getNumOfOverviews(unsigned int band) throw(KEAIOException);
         void getOverviewSize(unsigned int band, unsigned int overview, unsigned long *xSize, unsigned long *ySize) throw(KEAIOException);
         
