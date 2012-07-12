@@ -28,15 +28,21 @@ public:
     CPLErr SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain="");
     const char *GetMetadataItem (const char *pszName, const char *pszDomain="");
 
+    char **GetMetadata(const char *pszDomain="");
+    CPLErr SetMetadata(char **papszMetadata, const char *pszDomain="");
+
 protected:
     virtual CPLErr IBuildOverviews(const char *pszResampling, int nOverviews, int *panOverviewList, 
                                     int nListBands, int *panBandList, GDALProgressFunc pfnProgress, 
                                     void *pProgressData);
 
+    void UpdateMetadataList();
+
 private:
     // pointer to KEAImageIO class and the refcount for it
     libkea::KEAImageIO  *m_pImageIO;
     int                 *m_pnRefcount;
+    char               **m_papszMetadataList;
 
 };
 

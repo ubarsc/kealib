@@ -177,6 +177,9 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File )
             pBand->readExistingOverviews();
             this->SetBand( nCount + 1, pBand );            
         }
+
+        m_papszMetadataList = NULL;
+        this->UpdateMetadataList();
     }
     catch (libkea::KEAIOException &e)
     {
@@ -195,6 +198,17 @@ KEADataset::~KEADataset()
         m_pImageIO->close();
         delete m_pImageIO;
         delete m_pnRefcount;
+    }
+}
+
+void KEADataset::UpdateMetadataList()
+{
+    std::vector< std::pair<std::string, std::string> > data;
+
+    data = this->m_pImageIO->getImageMetaData();
+    for(std::vector< std::pair<std::string, std::string> >::iterator iterMetaData = data.begin(); iterMetaData != data.end(); ++iterMetaData)
+    {
+        m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, iterMetaData->first.c_str(), iterMetaData->second.c_str());
     }
 }
 
@@ -309,11 +323,13 @@ CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, in
     }
 }
 
-CPLErr KEADataset::SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain)
+CPLErr KEADataset::SetMetadataItem(const char *pszName, const char *pszValue, const char *pszDomain)
 {
     try
     {
-        m_pImageIO->setImageMetaData(pszName, pszValue);
+        this->m_pImageIO->setImageMetaData(pszName, pszValue );
+        // CSLSetNameValue will update if already there
+        m_papszMetadataList = CSLSetNameValue( m_papszMetadataList, pszName, pszValue );
         return CE_None;
     }
     catch (libkea::KEAIOException &e)
@@ -324,13 +340,34 @@ CPLErr KEADataset::SetMetadataItem (const char *pszName, const char *pszValue, c
 
 const char *KEADataset::GetMetadataItem (const char *pszName, const char *pszDomain)
 {
+    return CSLFetchNameValue(m_papszMetadataList, pszName);
+}
+
+char **KEADataset::GetMetadata(const char *pszDomain)
+{ 
+    return m_papszMetadataList; 
+}
+
+CPLErr KEADataset::SetMetadata(char **papszMetadata, const char *pszDomain)
+{
+    int nIndex = 0;
+    char *pszName;
+    const char *pszValue;
     try
     {
-        const char *psz = m_pImageIO->getImageMetaData(pszName).c_str();
-        return strdup(psz);
+        while( papszMetadata[nIndex] != NULL )
+        {
+            pszValue = CPLParseNameValue( papszMetadata[nIndex], &pszName );
+            this->m_pImageIO->setImageMetaData(pszName, pszValue );
+            nIndex++;
+        }
     }
     catch (libkea::KEAIOException &e)
     {
-        return NULL;
+        return CE_Failure;
     }
+
+    CSLDestroy(m_papszMetadataList);
+    m_papszMetadataList = CSLDuplicate(papszMetadata);
+    return CE_None;
 }

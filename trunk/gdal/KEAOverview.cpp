@@ -41,7 +41,7 @@ CPLErr KEAOverview::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
                                             pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
                                             xsize, ysize, 
-                                            this->m_pImageIO->getImageDataType() );
+                                            this->m_pImageIO->getImageBandDataType(this->nBand) );
         return CE_None;
     }
     catch (libkea::KEAIOException &e)
@@ -75,7 +75,7 @@ CPLErr KEAOverview::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage )
                                             pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
                                             xsize, ysize, 
-                                            this->m_pImageIO->getImageDataType() );
+                                            this->m_pImageIO->getImageBandDataType(this->nBand) );
         return CE_None;
     }
     catch (libkea::KEAIOException &e)
