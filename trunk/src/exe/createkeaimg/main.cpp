@@ -78,6 +78,46 @@ int main (int argc, char * const argv[])
         imageIO.writeImageBlock2Band(3, data, 200, 400, 100, 200, 100, 200, libkea::kea_32float);
         std::cout << "Written Image data\n";
         
+        float *dataEdge = new float[100*100];
+        for(unsigned int i = 0; i < 50; ++i)
+        {
+            for(unsigned int j = 0; j < 50; ++j)
+            {
+                dataEdge[(i*100)+j] = j; 
+            }
+        }
+        
+        imageIO.writeImageBlock2Band(1, dataEdge, 950, 1950, 50, 50, 100, 100, libkea::kea_32float);
+        delete[] dataEdge;
+        
+        float *dataEdgeRead = new float[100*100];
+        for(unsigned int i = 0; i < 100; ++i)
+        {
+            for(unsigned int j = 0; j < 100; ++j)
+            {
+                dataEdge[(i*100)+j] = 0; 
+            }
+        }
+        
+        imageIO.readImageBlock2Band(1, dataEdge, 950, 1950, 50, 50, 100, 100, libkea::kea_32float);
+        
+        for(unsigned int i = 0; i < 100; ++i)
+        {
+            for(unsigned int j = 0; j < 100; ++j)
+            {
+                if(j == 0)
+                {
+                    std::cout << dataEdgeRead[(i*100)+j]; 
+                }
+                else
+                {
+                    std::cout << "," << dataEdgeRead[(i*100)+j]; 
+                }
+            }
+            std::cout << std::endl;
+        }
+        delete[] dataEdgeRead;
+        
         imageIO.setImageMetaData("TEST1", "Hello World 1");
         imageIO.setImageMetaData("TEST2", "Hello World 2");
         imageIO.setImageMetaData("TEST3", "Hello World 3");
@@ -190,8 +230,8 @@ int main (int argc, char * const argv[])
         }
         
         imageIO.readImageBlock2Band(1, data, 50, 100, 100, 200, 100, 200, libkea::kea_32float);
-        
-        /*for(unsigned int i = 0; i < 200; ++i)
+        /*
+        for(unsigned int i = 0; i < 200; ++i)
         {
             for(unsigned int j = 0; j < 100; ++j)
             {
@@ -205,7 +245,8 @@ int main (int argc, char * const argv[])
                 }
             }
             std::cout << std::endl;
-        }*/
+        }
+         */
         
         delete[] data;
         

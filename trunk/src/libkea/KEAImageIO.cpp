@@ -218,11 +218,13 @@ namespace libkea{
                 throw KEAIOException("End Y Pixel is not within image.");  
             }
             
+            /*
             std::cout << "Band: " << band << std::endl;
             std::cout << "Start: [" << xPxlOff << "," << yPxlOff << "]\n";
             std::cout << "End: [" << endXPxl << "," << endYPxl << "]\n";
             std::cout << "Size Out: [" << xSizeOut << "," << ySizeOut << "]\n";
             std::cout << "Size Buf: [" << xSizeBuf << "," << ySizeBuf << "]\n";
+            */
             
             // GET NATIVE DATASET
             H5::DataType imgBandDT = H5::PredType::NATIVE_FLOAT;
@@ -278,23 +280,53 @@ namespace libkea{
                 H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( imageBandPath + KEA_BANDNAME_DATA );
                 H5::DataSpace imgBandDataspace = imgBandDataset.getSpace();                
                 
-                hsize_t dataOffset[2];
-                dataOffset[0] = yPxlOff;
-                dataOffset[1] = xPxlOff;
+                hsize_t imgOffset[2];
+                imgOffset[0] = yPxlOff;
+                imgOffset[1] = xPxlOff;
                 hsize_t dataDims[2];
-                dataDims[0] = ySizeOut;
-                dataDims[1] = xSizeOut;
+                dataDims[0] = ySizeBuf;
+                dataDims[1] = xSizeBuf;
                 H5::DataSpace write2BandDataspace = H5::DataSpace(2, dataDims);
                 
-                if((ySizeOut == ySizeBuf) & (xSizeOut == xSizeBuf))
-                {
-                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataDims, dataOffset);
-                    imgBandDataset.write( data, imgBandDT, write2BandDataspace, imgBandDataspace); // MOVE THIS LINE OUTSIDE OF IF STATMENT ONCE ELSE IMPLEMENTED!!!
+                
+                if((ySizeOut != ySizeBuf) | (xSizeOut != xSizeBuf))
+                {                    
+                    hsize_t dataSelectMemDims[2];
+                    dataSelectMemDims[0] = ySizeOut;
+                    dataSelectMemDims[1] = 1;
+                    //std::cout << "Count: [" << dataSelectMemDims[1] << "," << dataSelectMemDims[0] << "]\n";
+                    hsize_t dataOffDims[2];
+                    dataOffDims[0] = 0;
+                    dataOffDims[1] = 0;
+                    //std::cout << "Offset: [" << dataOffDims[1] << "," << dataOffDims[0] << "]\n";
+                    hsize_t dataSelectStrideDims[2];
+                    dataSelectStrideDims[0] = 1;
+                    if(xSizeBuf == xSizeOut)
+                    {
+                        dataSelectStrideDims[1] = 1;
+                    }
+                    else
+                    {
+                        dataSelectStrideDims[1] = xSizeBuf - xSizeOut;
+                    }
+                    //std::cout << "Stride: [" << dataSelectStrideDims[1] << "," << dataSelectStrideDims[0] << "]\n";
+                    hsize_t dataSelectBlockSizeDims[2];
+                    dataSelectBlockSizeDims[0] = 1;
+                    dataSelectBlockSizeDims[1] = xSizeOut;
+                    //std::cout << "Block: [" << dataSelectBlockSizeDims[1] << "," << dataSelectBlockSizeDims[0] << "]\n";
+                    write2BandDataspace.selectHyperslab(H5S_SELECT_SET, dataSelectMemDims, dataOffDims, dataSelectStrideDims, dataSelectBlockSizeDims);
+                    
+                    hsize_t dataOutDims[2];
+                    dataOutDims[0] = ySizeOut;
+                    dataOutDims[1] = xSizeOut;
+                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataOutDims, imgOffset);
                 }
                 else
                 {
-                    std::cerr << "HELP!!!! edge of image block... Still working this out...\n";
+                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataDims, imgOffset);
                 }
+                
+                imgBandDataset.write( data, imgBandDT, write2BandDataspace, imgBandDataspace);
                                 
                 imgBandDataset.close();
                 imgBandDataspace.close();
@@ -371,11 +403,13 @@ namespace libkea{
                 throw KEAIOException("End Y Pixel is not within image.");  
             }
             
+            /*
             std::cout << "Band: " << band << std::endl;
             std::cout << "Start: [" << xPxlOff << "," << yPxlOff << "]\n";
             std::cout << "End: [" << endXPxl << "," << endYPxl << "]\n";
             std::cout << "Size In: [" << xSizeIn << "," << ySizeIn << "]\n";
             std::cout << "Size Buf: [" << xSizeBuf << "," << ySizeBuf << "]\n";
+            */
             
             // GET NATIVE DATASET
             H5::DataType imgBandDT = H5::PredType::NATIVE_FLOAT;
@@ -435,19 +469,49 @@ namespace libkea{
                 dataOffset[0] = yPxlOff;
                 dataOffset[1] = xPxlOff;
                 hsize_t dataDims[2];
-                dataDims[0] = ySizeIn;
-                dataDims[1] = xSizeIn;
+                dataDims[0] = ySizeBuf;
+                dataDims[1] = xSizeBuf;
                 H5::DataSpace read2BandDataspace = H5::DataSpace(2, dataDims);
                 
-                if((ySizeBuf == ySizeIn) & (xSizeBuf == xSizeIn))
+                if((ySizeBuf != ySizeIn) | (xSizeBuf != xSizeIn))
                 {
-                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataDims, dataOffset);
-                    imgBandDataset.read( data, imgBandDT, read2BandDataspace, imgBandDataspace); // MOVE THIS LINE OUTSIDE OF IF STATMENT ONCE ELSE IMPLEMENTED!!!
+                    hsize_t dataSelectMemDims[2];
+                    dataSelectMemDims[0] = ySizeIn;
+                    dataSelectMemDims[1] = 1;
+                    //std::cout << "Count: [" << dataSelectMemDims[1] << "," << dataSelectMemDims[0] << "]\n";
+                    hsize_t dataOffDims[2];
+                    dataOffDims[0] = 0;
+                    dataOffDims[1] = 0;
+                    //std::cout << "Offset: [" << dataOffDims[1] << "," << dataOffDims[0] << "]\n";
+                    hsize_t dataSelectStrideDims[2];
+                    dataSelectStrideDims[0] = 1;
+                    if(xSizeBuf == xSizeIn)
+                    {
+                        dataSelectStrideDims[1] = 1;
+                    }
+                    else
+                    {
+                        dataSelectStrideDims[1] = xSizeBuf - xSizeIn;
+                    }
+                    //std::cout << "Stride: [" << dataSelectStrideDims[1] << "," << dataSelectStrideDims[0] << "]\n";
+                    hsize_t dataSelectBlockSizeDims[2];
+                    dataSelectBlockSizeDims[0] = 1;
+                    dataSelectBlockSizeDims[1] = xSizeIn;
+                    //std::cout << "Block: [" << dataSelectBlockSizeDims[1] << "," << dataSelectBlockSizeDims[0] << "]\n";
+                    read2BandDataspace.selectHyperslab(H5S_SELECT_SET, dataSelectMemDims, dataOffDims, dataSelectStrideDims, dataSelectBlockSizeDims);
+                    
+                    hsize_t dataInDims[2];
+                    dataInDims[0] = ySizeIn;
+                    dataInDims[1] = xSizeIn;
+                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataInDims, dataOffset);
                 }
                 else
                 {
-                    std::cerr << "HELP!!!! edge of image block... Still working this out...\n";
+                    
+                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataDims, dataOffset);
                 }
+                
+                imgBandDataset.read( data, imgBandDT, read2BandDataspace, imgBandDataspace);
                 
                 imgBandDataset.close();
                 imgBandDataspace.close();
