@@ -56,6 +56,16 @@ void KEARasterBand::UpdateMetadataList()
     {
         m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, iterMetaData->first.c_str(), iterMetaData->second.c_str());
     }
+    // we have a pseudo metadata item that tells if we are thematic 
+    // or continuous like the HFA driver
+    if( this->m_pImageIO->getImageBandLayerType(this->nBand) == libkea::kea_continuous )
+    {
+        m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "LAYER_TYPE", "athematic" );
+    }
+    else
+    {
+        m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "LAYER_TYPE", "thematic" );
+    }
 }
 
 void KEARasterBand::CreateOverviews(int nOverviews, int *panOverviewList)
@@ -168,7 +178,21 @@ CPLErr KEARasterBand::SetMetadataItem(const char *pszName, const char *pszValue,
 {
     try
     {
-        this->m_pImageIO->setImageBandMetaData(this->nBand, pszName, pszValue );
+        if( EQUAL( pszName, "LAYER_TYPE" ) )
+        {
+            if( EQUAL( pszValue, "athematic" ) )
+            {
+                this->m_pImageIO->setImageBandLayerType(this->nBand, libkea::kea_continuous );
+            }
+            else
+            {
+                this->m_pImageIO->setImageBandLayerType(this->nBand, libkea::kea_thematic );
+            }
+        }
+        else
+        {
+            this->m_pImageIO->setImageBandMetaData(this->nBand, pszName, pszValue );
+        }
         // CSLSetNameValue will update if already there
         m_papszMetadataList = CSLSetNameValue( m_papszMetadataList, pszName, pszValue );
         return CE_None;
@@ -199,7 +223,22 @@ CPLErr KEARasterBand::SetMetadata(char **papszMetadata, const char *pszDomain)
         while( papszMetadata[nIndex] != NULL )
         {
             pszValue = CPLParseNameValue( papszMetadata[nIndex], &pszName );
-            this->m_pImageIO->setImageBandMetaData(this->nBand, pszName, pszValue );
+
+            if( EQUAL( pszName, "LAYER_TYPE" ) )
+            {
+                if( EQUAL( pszValue, "athematic" ) )
+                {
+                    this->m_pImageIO->setImageBandLayerType(this->nBand, libkea::kea_continuous );
+                }
+                else
+                {
+                    this->m_pImageIO->setImageBandLayerType(this->nBand, libkea::kea_thematic );
+                }
+            }
+            else
+            {
+                this->m_pImageIO->setImageBandMetaData(this->nBand, pszName, pszValue );
+            }
             nIndex++;
         }
     }

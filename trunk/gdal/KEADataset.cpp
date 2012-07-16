@@ -326,6 +326,10 @@ CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, in
 
 CPLErr KEADataset::SetMetadataItem(const char *pszName, const char *pszValue, const char *pszDomain)
 {
+    // only deal with 'default' domain - no geolocation etc
+    if( ( pszDomain != NULL ) || ((pszDomain != NULL) &&  (*pszDomain != '\0' ) ) )
+        return CE_Failure;
+
     try
     {
         this->m_pImageIO->setImageMetaData(pszName, pszValue );
@@ -341,16 +345,26 @@ CPLErr KEADataset::SetMetadataItem(const char *pszName, const char *pszValue, co
 
 const char *KEADataset::GetMetadataItem (const char *pszName, const char *pszDomain)
 {
+    // only deal with 'default' domain - no geolocation etc
+    if( ( pszDomain != NULL ) || ((pszDomain != NULL) &&  (*pszDomain != '\0' ) ) )
+        return NULL;
     return CSLFetchNameValue(m_papszMetadataList, pszName);
 }
 
 char **KEADataset::GetMetadata(const char *pszDomain)
 { 
+    // only deal with 'default' domain - no geolocation etc
+    if( ( pszDomain != NULL ) || ((pszDomain != NULL) &&  (*pszDomain != '\0' ) ) )
+        return NULL;
     return m_papszMetadataList; 
 }
 
 CPLErr KEADataset::SetMetadata(char **papszMetadata, const char *pszDomain)
 {
+    // only deal with 'default' domain - no geolocation etc
+    if( ( pszDomain != NULL ) || ((pszDomain != NULL) &&  (*pszDomain != '\0' ) ) )
+        return CE_Failure;
+
     int nIndex = 0;
     char *pszName;
     const char *pszValue;
