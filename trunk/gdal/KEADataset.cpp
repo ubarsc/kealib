@@ -77,6 +77,7 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
     bool isKEA = false;
     try
     {
+        // is this a KEA file?
         isKEA = libkea::KEAImageIO::isKEAImage( poOpenInfo->pszFilename );
     }
     catch (libkea::KEAIOException &e)
@@ -88,6 +89,7 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
     {
         try
         {
+            // try and open it in the appropriate mode
             H5::H5File *pH5File;
             if( poOpenInfo->eAccess == GA_ReadOnly )
             {
@@ -97,19 +99,23 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
             {
                 pH5File = libkea::KEAImageIO::openKeaH5RW( poOpenInfo->pszFilename );
             }
+            // create the KEADataset object
             KEADataset *pDataset = new KEADataset( pH5File );
 
+            // set the description as the name
             pDataset->SetDescription( poOpenInfo->pszFilename );
 
             return pDataset;
         }
         catch (libkea::KEAIOException &e)
         {
+            // was a problem - can't be a valid file
             return NULL;
         }
     }
     else
     {
+        // not a KEA file
         return NULL;
     }
 }
@@ -120,6 +126,7 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
                                   GDALDataType eType,
                                   char ** papszParmList  )
 {
+    // process any creation options in papszParmList
     // default value
     unsigned int blockSize = libkea::KEA_WRITE_CHUNK_SIZE;
     // see if they have provided a different value
@@ -131,11 +138,12 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
 
     try
     {
+        // now create it
         H5::H5File *keaImgH5File = libkea::KEAImageIO::createKEAImage( pszFilename,
                                                     GDAL_to_KEA_Type( eType ),
                                                     nXSize, nYSize, nBands,
                                                     NULL, NULL, blockSize );
-                                                    
+        // create our dataset object                            
         KEADataset *pDataset = new KEADataset( keaImgH5File );
 
         pDataset->SetDescription( pszFilename );
@@ -172,11 +180,18 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File )
         // create all the bands
         for( int nCount = 0; nCount < nBands; nCount++ )
         {
-            // note GDAL uses indices starting at 1
+            // note GDAL uses indices starting at 1 and so does libkea
+            // create band object
             KEARasterBand *pBand = new KEARasterBand( this, nCount + 1, m_pImageIO, m_pnRefcount );
+            // read in overviews
             pBand->readExistingOverviews();
+            // set the band into this dataset
             this->SetBand( nCount + 1, pBand );            
         }
+
+        // read in the metadata
+        m_papszMetadataList = NULL;
+        this->UpdateMetadataList();
     }
     catch (libkea::KEAIOException &e)
     {
@@ -188,6 +203,8 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File )
 
 KEADataset::~KEADataset()
 {
+    // destroy the metadata
+    CSLDestroy(m_papszMetadataList);
     // decrement the refcount and delete if needed
     (*m_pnRefcount)--;
     if( *m_pnRefcount == 0 )
@@ -198,12 +215,25 @@ KEADataset::~KEADataset()
     }
 }
 
+// read in the metadata into our CSLStringList
+void KEADataset::UpdateMetadataList()
+{
+    std::vector< std::pair<std::string, std::string> > data;
+    // get all the metadata
+    data = this->m_pImageIO->getImageMetaData();
+    for(std::vector< std::pair<std::string, std::string> >::iterator iterMetaData = data.begin(); iterMetaData != data.end(); ++iterMetaData)
+    {
+        m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, iterMetaData->first.c_str(), iterMetaData->second.c_str());
+    }
+}
+
+// read in the geotransform
 CPLErr KEADataset::GetGeoTransform( double * padfTransform )
 {
     try
     {
         libkea::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
-
+        // GDAL uses an array format
         padfTransform[0] = pSpatialInfo->tlX;
         padfTransform[1] = pSpatialInfo->xRes;
         padfTransform[2] = pSpatialInfo->xRot;
@@ -221,11 +251,13 @@ CPLErr KEADataset::GetGeoTransform( double * padfTransform )
     }
 }
 
+// read in the projection ref
 const char *KEADataset::GetProjectionRef()
 {
     try
     {
         libkea::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
+        // should be safe since pSpatialInfo should be around a while...
         return pSpatialInfo->wktString.c_str();
     }
     catch (libkea::KEAIOException &e)
@@ -234,11 +266,14 @@ const char *KEADataset::GetProjectionRef()
     }
 }
 
+// set the geotransform
 CPLErr KEADataset::SetGeoTransform (double *padfTransform )
 {
     try
     {
+        // get the spatial info and update it
         libkea::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
+        // convert back from GDAL's array format
         pSpatialInfo->tlX = padfTransform[0];
         pSpatialInfo->xRes = padfTransform[1];
         pSpatialInfo->xRot = padfTransform[2];
@@ -257,10 +292,12 @@ CPLErr KEADataset::SetGeoTransform (double *padfTransform )
     }
 }
 
+// set the projection
 CPLErr KEADataset::SetProjection( const char *pszWKT )
 {
     try
     {
+        // get the spatial info and update it
         libkea::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
 
         pSpatialInfo->wktString = pszWKT;
@@ -282,17 +319,25 @@ void * KEADataset::GetInternalHandle(const char *)
     return m_pImageIO;
 }
 
+// this is called by GDALDataset::BuildOverviews. we implement this function to support
+// building of overviews
 CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, int *panOverviewList, 
                                     int nListBands, int *panBandList, GDALProgressFunc pfnProgress, 
                                     void *pProgressData)
 {
+    // go through the list of bands that have been passed in
     int nCurrentBand, nOK = 1;
     for( int nBandCount = 0; (nBandCount < nListBands) && nOK; nBandCount++ )
     {
+        // get the band number
         nCurrentBand = panBandList[nBandCount];
+        // get the band
         KEARasterBand *pBand = (KEARasterBand*)this->GetRasterBand(nCurrentBand);
+        // create the overview object
         pBand->CreateOverviews( nOverviews, panOverviewList );
 
+        // get GDAL to do the hard work. It will calculate the overviews and write them
+        // back into the objects
         if( GDALRegenerateOverviews( (GDALRasterBandH)pBand, nOverviews, (GDALRasterBandH*)pBand->GetOverviewList(),
                                     pszResampling, pfnProgress, pProgressData ) != CE_None )
         {
@@ -309,11 +354,18 @@ CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, in
     }
 }
 
-CPLErr KEADataset::SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain)
+// set a single metadata item
+CPLErr KEADataset::SetMetadataItem(const char *pszName, const char *pszValue, const char *pszDomain)
 {
+    // only deal with 'default' domain - no geolocation etc
+    if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
+        return CE_Failure;
+
     try
     {
-        m_pImageIO->setImageMetaData(pszName, pszValue);
+        this->m_pImageIO->setImageMetaData(pszName, pszValue );
+        // CSLSetNameValue will update if already there
+        m_papszMetadataList = CSLSetNameValue( m_papszMetadataList, pszName, pszValue );
         return CE_None;
     }
     catch (libkea::KEAIOException &e)
@@ -322,15 +374,55 @@ CPLErr KEADataset::SetMetadataItem (const char *pszName, const char *pszValue, c
     }
 }
 
+// get a single metadata item
 const char *KEADataset::GetMetadataItem (const char *pszName, const char *pszDomain)
 {
+    // only deal with 'default' domain - no geolocation etc
+    if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
+        return NULL;
+    // string returned from CSLFetchNameValue should be persistant
+    return CSLFetchNameValue(m_papszMetadataList, pszName);
+}
+
+// get the whole metadata as CSLStringList
+char **KEADataset::GetMetadata(const char *pszDomain)
+{ 
+    // only deal with 'default' domain - no geolocation etc
+    if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
+        return NULL;
+    // this is what we store it as anyway
+    return m_papszMetadataList; 
+}
+
+// set the whole metadata as a CSLStringList
+CPLErr KEADataset::SetMetadata(char **papszMetadata, const char *pszDomain)
+{
+    // only deal with 'default' domain - no geolocation etc
+    if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
+        return CE_Failure;
+
+    int nIndex = 0;
+    char *pszName;
+    const char *pszValue;
     try
     {
-        const char *psz = m_pImageIO->getImageMetaData(pszName).c_str();
-        return strdup(psz);
+        // go through each item
+        while( papszMetadata[nIndex] != NULL )
+        {
+            // get the value/name
+            pszValue = CPLParseNameValue( papszMetadata[nIndex], &pszName );
+            // set it with imageio
+            this->m_pImageIO->setImageMetaData(pszName, pszValue );
+            nIndex++;
+        }
     }
     catch (libkea::KEAIOException &e)
     {
-        return NULL;
+        return CE_Failure;
     }
+
+    // destroy our one and replace it
+    CSLDestroy(m_papszMetadataList);
+    m_papszMetadataList = CSLDuplicate(papszMetadata);
+    return CE_None;
 }

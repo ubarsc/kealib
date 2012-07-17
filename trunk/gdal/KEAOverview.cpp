@@ -1,15 +1,16 @@
 
 #include "KEAOverview.h"
 
-KEAOverview::KEAOverview(KEADataset *pDataset, int nBand, 
+// constructor
+KEAOverview::KEAOverview(KEADataset *pDataset, int nSrcBand, 
                 libkea::KEAImageIO *pImageIO, int *pRefCount,
                 int nOverviewIndex, int nXSize, int nYSize)
- : KEARasterBand( pDataset, nBand, pImageIO, pRefCount )
+ : KEARasterBand( pDataset, nSrcBand, pImageIO, pRefCount )
 {
     this->m_nOverviewIndex = nOverviewIndex;
-    // overridden from the band
-    this->nBlockXSize = pImageIO->getOverviewBlockSize(nBand, nOverviewIndex);
-    this->nBlockYSize = pImageIO->getOverviewBlockSize(nBand, nOverviewIndex);
+    // overridden from the band - not the same size as the band obviously
+    this->nBlockXSize = pImageIO->getOverviewBlockSize(nSrcBand, nOverviewIndex);
+    this->nBlockYSize = pImageIO->getOverviewBlockSize(nSrcBand, nOverviewIndex);
     this->nRasterXSize = nXSize;
     this->nRasterYSize = nYSize;
 }
@@ -19,6 +20,7 @@ KEAOverview::~KEAOverview()
 
 }
 
+// overridden implementation - calls readFromOverview instead
 CPLErr KEAOverview::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
 {
     try
@@ -40,8 +42,8 @@ CPLErr KEAOverview::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
         this->m_pImageIO->readFromOverview( this->nBand, this->m_nOverviewIndex,
                                             pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
-                                            xsize, ysize, 
-                                            this->m_pImageIO->getImageDataType() );
+                                            xsize, ysize, this->nBlockXSize, this->nBlockYSize, 
+                                            this->m_eKEADataType );
         return CE_None;
     }
     catch (libkea::KEAIOException &e)
@@ -52,6 +54,7 @@ CPLErr KEAOverview::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
     }
 }
 
+// overridden implementation - calls writeToOverview instead
 CPLErr KEAOverview::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage )
 {
     try
@@ -74,8 +77,8 @@ CPLErr KEAOverview::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage )
         this->m_pImageIO->writeToOverview( this->nBand, this->m_nOverviewIndex,
                                             pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
-                                            xsize, ysize, 
-                                            this->m_pImageIO->getImageDataType() );
+                                            xsize, ysize, this->nBlockXSize, this->nBlockYSize,
+                                            this->m_eKEADataType );
         return CE_None;
     }
     catch (libkea::KEAIOException &e)

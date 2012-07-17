@@ -75,7 +75,7 @@ int main (int argc, char * const argv[])
         trans[2] = keaSpatInfo->xRot;
         trans[4] = keaSpatInfo->yRot;
         
-        libkea::KEADataType keaDataType = imgIO->getImageDataType();
+        libkea::KEADataType keaDataType = imgIO->getImageBandDataType(1);
         
         GDALDataType gdalDataType = GDT_Unknown;
         switch( keaDataType )
@@ -150,7 +150,7 @@ int main (int argc, char * const argv[])
 					feedbackCounter = feedbackCounter + 10;
 				}
                 
-                imgIO->readImageBlock2Band(i, data, 0, n, keaSpatInfo->xSize, 1, libkea::kea_32float);
+                imgIO->readImageBlock2Band(i, data, 0, n, keaSpatInfo->xSize, 1, keaSpatInfo->xSize, 1, libkea::kea_32float);
                 
                 imgBand->RasterIO(GF_Write, 0, n, keaSpatInfo->xSize, 1, data, keaSpatInfo->xSize, 1, GDT_Float32, 0, 0);
             }

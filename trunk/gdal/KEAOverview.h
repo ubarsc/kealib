@@ -4,15 +4,18 @@
 
 #include "KEABand.h"
 
+// overview class. Derives from our band class
+// and just overrited and read/write block functions
 class KEAOverview : public KEARasterBand
 {
-    int         m_nOverviewIndex;
+    int         m_nOverviewIndex; // the index of this overview
 public:
-    KEAOverview(KEADataset *pDataset, int nBand, libkea::KEAImageIO *pImageIO, int *pRefCount,
+    KEAOverview(KEADataset *pDataset, int nSrcBand, libkea::KEAImageIO *pImageIO, int *pRefCount,
                 int nOverviewIndex, int nXSize, int nYSize );
     ~KEAOverview();
 
 protected:
+    // we just override these functions from KEARasterBand
     virtual CPLErr IReadBlock( int, int, void * );
     virtual CPLErr IWriteBlock( int, int, void * );
 };

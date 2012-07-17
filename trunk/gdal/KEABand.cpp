@@ -2,28 +2,41 @@
 #include "KEABand.h"
 #include "KEAOverview.h"
 
-KEARasterBand::KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageIO *pImageIO, int *pRefCount )
+// constructor
+KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, libkea::KEAImageIO *pImageIO, int *pRefCount )
 {
-    this->poDS = pDataset;
-    this->nBand = nBand;
-    this->eDataType = KEA_to_GDAL_Type( pImageIO->getImageDataType() );
-    this->nBlockXSize = pImageIO->getImageBlockSize(nBand);
-    this->nBlockYSize = pImageIO->getImageBlockSize(nBand);
-    this->nRasterXSize = this->poDS->GetRasterXSize();
+    this->poDS = pDataset; // our pointer onto the dataset
+    this->nBand = nSrcBand; // this is the band we are
+    this->m_eKEADataType = pImageIO->getImageBandDataType(nSrcBand); // get the data type as KEA enum
+    this->eDataType = KEA_to_GDAL_Type( m_eKEADataType );       // convert to GDAL enum
+    this->nBlockXSize = pImageIO->getImageBlockSize(nSrcBand);  // get the native blocksize
+    this->nBlockYSize = pImageIO->getImageBlockSize(nSrcBand);
+    this->nRasterXSize = this->poDS->GetRasterXSize();          // ask the dataset for the total image size
     this->nRasterYSize = this->poDS->GetRasterYSize();
 
+    // grab the imageio class and its refcount
     this->m_pImageIO = pImageIO;
     this->m_pnRefCount = pRefCount;
     // increment the refcount as we now have a reference to imageio
     (*this->m_pnRefCount)++;
 
-    // overviews
+    // initialis overview variables
     m_nOverviews = 0;
     m_panOverviewBands = NULL;
+
+    // grab the description here
+    this->sDescription = pImageIO->getImageBandDescription(nSrcBand);
+
+    // initialise the metadata as a CPLStringList
+    m_papszMetadataList = NULL;
+    this->UpdateMetadataList();
 }
 
+// destructor
 KEARasterBand::~KEARasterBand()
 {
+    // destroy the metadata
+    CSLDestroy(m_papszMetadataList);
     // delete any overview bands
     this->deleteOverviewObjects();
 
@@ -40,29 +53,59 @@ KEARasterBand::~KEARasterBand()
     }
 }
 
+// internal method that updates the metadata into m_papszMetadataList
+void KEARasterBand::UpdateMetadataList()
+{
+    std::vector< std::pair<std::string, std::string> > data;
+
+    // get all the metadata and iterate through
+    data = this->m_pImageIO->getImageBandMetaData(this->nBand);
+    for(std::vector< std::pair<std::string, std::string> >::iterator iterMetaData = data.begin(); iterMetaData != data.end(); ++iterMetaData)
+    {
+        // add to our list
+        m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, iterMetaData->first.c_str(), iterMetaData->second.c_str());
+    }
+    // we have a pseudo metadata item that tells if we are thematic 
+    // or continuous like the HFA driver
+    if( this->m_pImageIO->getImageBandLayerType(this->nBand) == libkea::kea_continuous )
+    {
+        m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "LAYER_TYPE", "athematic" );
+    }
+    else
+    {
+        m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "LAYER_TYPE", "thematic" );
+    }
+}
+
+// internal method to create the overviews
 void KEARasterBand::CreateOverviews(int nOverviews, int *panOverviewList)
 {
     // delete any existing overview bands
     this->deleteOverviewObjects();
 
+    // allocate space
     m_panOverviewBands = (KEAOverview**)CPLMalloc(sizeof(KEAOverview*) * nOverviews);
     m_nOverviews = nOverviews;
 
+    // loop through and create the overviews
     int nFactor, nXSize, nYSize;
     for( int nCount = 0; nCount < m_nOverviews; nCount++ )
     {
         nFactor = panOverviewList[nCount];
+        // divide by the factor to get the new size
         nXSize = this->nRasterXSize / nFactor;
-        nYSize = this->nRasterXSize / nFactor;
+        nYSize = this->nRasterYSize / nFactor;
 
+        // tell image io to create a new overview
         this->m_pImageIO->createOverview(this->nBand, nCount + 1, nXSize, nYSize);
 
+        // create one of our objects to represent it
         m_panOverviewBands[nCount] = new KEAOverview((KEADataset*)this->poDS, this->nBand, 
                                         this->m_pImageIO, this->m_pnRefCount, nCount + 1, nXSize, nYSize);
     }
 }
 
-
+// virtual method to read a block
 CPLErr KEARasterBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
 {
     try
@@ -83,8 +126,8 @@ CPLErr KEARasterBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage 
         }
         this->m_pImageIO->readImageBlock2Band( this->nBand, pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
-                                            xsize, ysize, 
-                                            this->m_pImageIO->getImageDataType() );
+                                            xsize, ysize, this->nBlockXSize, this->nBlockYSize, 
+                                            this->m_eKEADataType );
         return CE_None;
     }
     catch (libkea::KEAIOException &e)
@@ -95,6 +138,7 @@ CPLErr KEARasterBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage 
     }
 }
 
+// virtual method to write a block
 CPLErr KEARasterBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage )
 {
     try
@@ -116,8 +160,8 @@ CPLErr KEARasterBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage
 
         this->m_pImageIO->writeImageBlock2Band( this->nBand, pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
-                                            xsize, ysize, 
-                                            this->m_pImageIO->getImageDataType() );
+                                            xsize, ysize, this->nBlockXSize, this->nBlockYSize,
+                                            this->m_eKEADataType );
         return CE_None;
     }
     catch (libkea::KEAIOException &e)
@@ -133,30 +177,47 @@ void KEARasterBand::SetDescription(const char *pszDescription)
     try
     {
         this->m_pImageIO->setImageBandDescription(this->nBand, pszDescription);
+        this->sDescription = pszDescription;
     }
     catch (libkea::KEAIOException &e)
     {
+        // ignore?
     }
 }
 
 const char *KEARasterBand::GetDescription() const
 {
-    try
-    {
-        const char *psz = this->m_pImageIO->getImageBandDescription(this->nBand).c_str();
-        return strdup(psz);
-    }
-    catch (libkea::KEAIOException &e)
-    {
-        return "";
-    }
+    // do we need to implement this?
+    return this->sDescription.c_str();
 }
 
-CPLErr KEARasterBand::SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain)
+// set a metadata item
+CPLErr KEARasterBand::SetMetadataItem(const char *pszName, const char *pszValue, const char *pszDomain)
 {
+    // only deal with 'default' domain - no geolocation etc
+    if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
+        return CE_Failure;
     try
     {
-        this->m_pImageIO->setImageBandMetaData(this->nBand, pszName, pszValue );
+        // if it is LAYER_TYPE handle it seperately
+        if( EQUAL( pszName, "LAYER_TYPE" ) )
+        {
+            if( EQUAL( pszValue, "athematic" ) )
+            {
+                this->m_pImageIO->setImageBandLayerType(this->nBand, libkea::kea_continuous );
+            }
+            else
+            {
+                this->m_pImageIO->setImageBandLayerType(this->nBand, libkea::kea_thematic );
+            }
+        }
+        else
+        {
+            // otherwise set it as normal
+            this->m_pImageIO->setImageBandMetaData(this->nBand, pszName, pszValue );
+        }
+        // CSLSetNameValue will update if already there
+        m_papszMetadataList = CSLSetNameValue( m_papszMetadataList, pszName, pszValue );
         return CE_None;
     }
     catch (libkea::KEAIOException &e)
@@ -165,19 +226,108 @@ CPLErr KEARasterBand::SetMetadataItem (const char *pszName, const char *pszValue
     }
 }
 
+// get a single metdata item
 const char *KEARasterBand::GetMetadataItem (const char *pszName, const char *pszDomain)
 {
+    // only deal with 'default' domain - no geolocation etc
+    if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
+        return NULL;
+    // get it out of the CSLStringList so we can be sure it is persistant
+    return CSLFetchNameValue(m_papszMetadataList, pszName);
+}
+
+// get all the metadata as a CSLStringList
+char **KEARasterBand::GetMetadata(const char *pszDomain)
+{
+    // only deal with 'default' domain - no geolocation etc
+    if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
+        return NULL;
+    // conveniently we already have it in this format
+    return m_papszMetadataList; 
+}
+
+// set the metdata as a CSLStringList
+CPLErr KEARasterBand::SetMetadata(char **papszMetadata, const char *pszDomain)
+{
+    // only deal with 'default' domain - no geolocation etc
+    if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
+        return CE_Failure;
+    int nIndex = 0;
+    char *pszName;
+    const char *pszValue;
     try
     {
-        const char *psz = this->m_pImageIO->getImageBandMetaData(this->nBand, pszName).c_str();
-        return strdup(psz);
+        // iterate through each one
+        while( papszMetadata[nIndex] != NULL )
+        {
+            pszValue = CPLParseNameValue( papszMetadata[nIndex], &pszName );
+
+            // it is LAYER_TYPE? if so handle seperately
+            if( EQUAL( pszName, "LAYER_TYPE" ) )
+            {
+                if( EQUAL( pszValue, "athematic" ) )
+                {
+                    this->m_pImageIO->setImageBandLayerType(this->nBand, libkea::kea_continuous );
+                }
+                else
+                {
+                    this->m_pImageIO->setImageBandLayerType(this->nBand, libkea::kea_thematic );
+                }
+            }
+            else
+            {
+                // write it into the image
+                this->m_pImageIO->setImageBandMetaData(this->nBand, pszName, pszValue );
+            }
+            nIndex++;
+        }
     }
     catch (libkea::KEAIOException &e)
     {
-        return NULL;
+        return CE_Failure;
+    }
+    // destroy our list and duplicate the one passed in
+    // and use that as our list from now on
+    CSLDestroy(m_papszMetadataList);
+    m_papszMetadataList = CSLDuplicate(papszMetadata);
+    return CE_None;
+}
+
+// get the no data value
+double KEARasterBand::GetNoDataValue(int *pbSuccess)
+{
+    try
+    {
+        double dVal;
+        this->m_pImageIO->getNoDataValue(this->nBand, &dVal, libkea::kea_64float);
+        if( pbSuccess != NULL )
+            *pbSuccess = 1;
+
+        return dVal;
+    }
+    catch (libkea::KEAIOException &e)
+    {
+        if( pbSuccess != NULL )
+            *pbSuccess = 0;
+        return -1;
     }
 }
 
+// set the no data value
+CPLErr KEARasterBand::SetNoDataValue(double dfNoData)
+{
+    try
+    {
+        this->m_pImageIO->setNoDataValue(this->nBand, &dfNoData, libkea::kea_64float);
+        return CE_None;
+    }
+    catch (libkea::KEAIOException &e)
+    {
+        return CE_Failure;
+    }
+}
+
+// clean up our overview objects
 void KEARasterBand::deleteOverviewObjects()
 {
     // deletes the objects - not the overviews themselves
@@ -191,6 +341,7 @@ void KEARasterBand::deleteOverviewObjects()
     m_nOverviews = 0;
 }
 
+// read in any overviews in the file into our array of objects
 void KEARasterBand::readExistingOverviews()
 {
     // delete any existing overview bands
@@ -208,11 +359,13 @@ void KEARasterBand::readExistingOverviews()
     }
 }
 
+// number of overviews
 int KEARasterBand::GetOverviewCount()
 {
     return m_nOverviews;
 }
 
+// get a given overview
 GDALRasterBand* KEARasterBand::GetOverview(int nOverview)
 {
     if( nOverview >= m_nOverviews )

@@ -123,7 +123,7 @@ namespace libkea{
         kea_32uint = 7,
         kea_64uint = 8,
         kea_32float = 9,
-        kea_64float = 10,
+        kea_64float = 10
     };
     
     enum KEALayerType
@@ -160,7 +160,7 @@ namespace libkea{
         rsgis_na = 0,
         rsgis_bool = 1,
         rsgis_int = 2,
-        rsgis_float = 3,
+        rsgis_float = 3
     };
     
     struct KEAATTAttribute
