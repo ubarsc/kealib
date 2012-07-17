@@ -1,13 +1,14 @@
 
 #include "KEAOverview.h"
 
+// constructor
 KEAOverview::KEAOverview(KEADataset *pDataset, int nSrcBand, 
                 libkea::KEAImageIO *pImageIO, int *pRefCount,
                 int nOverviewIndex, int nXSize, int nYSize)
  : KEARasterBand( pDataset, nSrcBand, pImageIO, pRefCount )
 {
     this->m_nOverviewIndex = nOverviewIndex;
-    // overridden from the band
+    // overridden from the band - not the same size as the band obviously
     this->nBlockXSize = pImageIO->getOverviewBlockSize(nSrcBand, nOverviewIndex);
     this->nBlockYSize = pImageIO->getOverviewBlockSize(nSrcBand, nOverviewIndex);
     this->nRasterXSize = nXSize;
@@ -19,6 +20,7 @@ KEAOverview::~KEAOverview()
 
 }
 
+// overridden implementation - calls readFromOverview instead
 CPLErr KEAOverview::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
 {
     try
@@ -41,7 +43,7 @@ CPLErr KEAOverview::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
                                             pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
                                             xsize, ysize, this->nBlockXSize, this->nBlockYSize, 
-                                            this->m_pImageIO->getImageBandDataType(this->nBand) );
+                                            this->m_eKEADataType );
         return CE_None;
     }
     catch (libkea::KEAIOException &e)
@@ -52,6 +54,7 @@ CPLErr KEAOverview::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
     }
 }
 
+// overridden implementation - calls writeToOverview instead
 CPLErr KEAOverview::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage )
 {
     try
@@ -75,7 +78,7 @@ CPLErr KEAOverview::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage )
                                             pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
                                             xsize, ysize, this->nBlockXSize, this->nBlockYSize,
-                                            this->m_pImageIO->getImageBandDataType(this->nBand) );
+                                            this->m_eKEADataType );
         return CE_None;
     }
     catch (libkea::KEAIOException &e)
