@@ -128,13 +128,51 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
 {
     // process any creation options in papszParmList
     // default value
-    unsigned int blockSize = libkea::KEA_WRITE_CHUNK_SIZE;
+    unsigned int imageblockSize = libkea::KEA_IMAGE_CHUNK_SIZE;
     // see if they have provided a different value
-    const char *pszValue = CSLFetchNameValue( papszParmList, "BLOCKSIZE" );
+    const char *pszValue = CSLFetchNameValue( papszParmList, "IMAGEBLOCKSIZE" );
     if( pszValue != NULL )
-    {
-        blockSize = atol( pszValue );
-    }
+        imageblockSize = atol( pszValue );
+
+    unsigned int attblockSize = libkea::KEA_ATT_CHUNK_SIZE;
+    pszValue = CSLFetchNameValue( papszParmList, "ATTBLOCKSIZE" );
+    if( pszValue != NULL )
+        attblockSize = atol( pszValue );
+
+    unsigned int mdcElmts = libkea::KEA_MDC_NELMTS;
+    pszValue = CSLFetchNameValue( papszParmList, "MDC_NELMTS" );
+    if( pszValue != NULL )
+        mdcElmts = atol( pszValue );
+
+    hsize_t rdccNElmts = libkea::KEA_RDCC_NELMTS;
+    pszValue = CSLFetchNameValue( papszParmList, "RDCC_NELMTS" );
+    if( pszValue != NULL )
+        rdccNElmts = atol( pszValue );
+
+    hsize_t rdccNBytes = libkea::KEA_RDCC_NBYTES;
+    pszValue = CSLFetchNameValue( papszParmList, "RDCC_NBYTES" );
+    if( pszValue != NULL )
+        rdccNBytes = atol( pszValue );
+
+    double rdccW0 = libkea::KEA_RDCC_W0;
+    pszValue = CSLFetchNameValue( papszParmList, "RDCC_W0" );
+    if( pszValue != NULL )
+        rdccW0 = atof( pszValue );
+
+    hsize_t sieveBuf = libkea::KEA_SIEVE_BUF;
+    pszValue = CSLFetchNameValue( papszParmList, "SIEVE_BUF" );
+    if( pszValue != NULL )
+        sieveBuf = atol( pszValue );
+
+    hsize_t metaBlockSize = libkea::KEA_META_BLOCKSIZE;
+    pszValue = CSLFetchNameValue( papszParmList, "META_BLOCKSIZE" );
+    if( pszValue != NULL )
+        metaBlockSize = atol( pszValue );
+
+    unsigned int deflate = libkea::KEA_DEFLATE;
+    pszValue = CSLFetchNameValue( papszParmList, "DEFLATE" );
+    if( pszValue != NULL )
+        deflate = atol( pszValue );
 
     try
     {
@@ -142,7 +180,8 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
         H5::H5File *keaImgH5File = libkea::KEAImageIO::createKEAImage( pszFilename,
                                                     GDAL_to_KEA_Type( eType ),
                                                     nXSize, nYSize, nBands,
-                                                    NULL, NULL, blockSize );
+                                                    NULL, NULL, imageblockSize, attblockSize, mdcElmts, rdccNElmts,
+                                                    rdccNBytes, rdccW0, sieveBuf, metaBlockSize, deflate );
         // create our dataset object                            
         KEADataset *pDataset = new KEADataset( keaImgH5File );
 
