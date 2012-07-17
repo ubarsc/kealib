@@ -100,21 +100,15 @@ namespace libkea{
 	static const std::string KEA_ATTRIBUTENAME_IMAGE_VERSION( "IMAGE_VERSION" );
     static const std::string KEA_ATTRIBUTENAME_BLOCK_SIZE( "BLOCK_SIZE" );
     
-    static const int KEA_READ_MDC_NELMTS( 0 ); // 0
-    static const hsize_t KEA_READ_RDCC_NELMTS( 512 ); // 512
-    static const hsize_t KEA_READ_RDCC_NBYTES( 1048576 ); // 1048576
-    static const double KEA_READ_RDCC_W0( 0.75 ); // 0.75
-    static const hsize_t KEA_READ_SIEVE_BUF( 65536 ); // 65536
-    static const hsize_t KEA_READ_META_BLOCKSIZE( 2048 ); // 2048
-    
-    static const int KEA_WRITE_MDC_NELMTS( 0 ); // 0
-    static const hsize_t  KEA_WRITE_RDCC_NELMTS( 512 ); // 512
-    static const hsize_t  KEA_WRITE_RDCC_NBYTES( 1048576 ); // 1048576
-    static const double KEA_WRITE_RDCC_W0( 0.75 ); // 0.75
-    static const hsize_t  KEA_WRITE_SIEVE_BUF( 65536 ); // 65536
-    static const hsize_t  KEA_WRITE_META_BLOCKSIZE( 2048 ); // 2048
+    static const int KEA_MDC_NELMTS( 0 ); // 0
+    static const hsize_t  KEA_RDCC_NELMTS( 512 ); // 512
+    static const hsize_t  KEA_RDCC_NBYTES( 1048576 ); // 1048576
+    static const double KEA_RDCC_W0( 0.75 ); // 0.75
+    static const hsize_t  KEA_SIEVE_BUF( 65536 ); // 65536
+    static const hsize_t  KEA_META_BLOCKSIZE( 2048 ); // 2048
     static const unsigned int KEA_DEFLATE( 1 ); // 1
-    static const hsize_t KEA_WRITE_CHUNK_SIZE( 256 ); //100
+    static const hsize_t KEA_IMAGE_CHUNK_SIZE( 256 ); // 256
+    static const hsize_t KEA_ATT_CHUNK_SIZE( 1000 ); // 1000
     
     
     enum KEADataType

@@ -2061,7 +2061,7 @@ namespace libkea{
         }
     }
     
-    H5::H5File* KEAImageIO::createKEAImage(std::string fileName, KEADataType dataType, unsigned int xSize, unsigned int ySize, unsigned int numImgBands, std::vector<std::string> *bandDescrips, KEAImageSpatialInfo * spatialInfo, unsigned int blockSize)throw(KEAIOException)
+    H5::H5File* KEAImageIO::createKEAImage(std::string fileName, KEADataType dataType, unsigned int xSize, unsigned int ySize, unsigned int numImgBands, std::vector<std::string> *bandDescrips, KEAImageSpatialInfo * spatialInfo, unsigned int imageBlockSize, unsigned int attBlockSize, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize, unsigned int deflate)throw(KEAIOException)
     {
         H5::Exception::dontPrint();
         
@@ -2069,11 +2069,10 @@ namespace libkea{
         
         try 
         {
-            // CREATE HDF FILE ACCESS PROPERTIES - VALUES CAN BE TUNED FROM KEACommon.h
+            // CREATE HDF FILE ACCESS PROPERTIES - DEFAULT VALUES CAN BE TUNED FROM KEACommon.h
             H5::FileAccPropList keaAccessPlist = H5::FileAccPropList(H5::FileAccPropList::DEFAULT);
-            keaAccessPlist.setCache(KEA_WRITE_MDC_NELMTS, KEA_WRITE_RDCC_NELMTS, KEA_WRITE_RDCC_NBYTES, KEA_WRITE_RDCC_W0);
-            keaAccessPlist.setSieveBufSize(KEA_WRITE_SIEVE_BUF);
-            hsize_t metaBlockSize = KEA_WRITE_META_BLOCKSIZE;
+            keaAccessPlist.setCache(mdcElmts, rdccNElmts, rdccNBytes, rdccW0);
+            keaAccessPlist.setSieveBufSize(sieveBuf);
             keaAccessPlist.setMetaBlockSize(metaBlockSize);
             
             // CREATE THE HDF FILE - EXISTING FILE WILL BE TRUNCATED
@@ -2276,8 +2275,8 @@ namespace libkea{
                 minImgDim = xSize;
             }
             
-            unsigned int blockSize2Use = blockSize;
-            if(blockSize > minImgDim)
+            unsigned int blockSize2Use = imageBlockSize;
+            if(imageBlockSize > minImgDim)
             {
                 blockSize2Use = minImgDim;
             }
@@ -2289,7 +2288,7 @@ namespace libkea{
             H5::DSetCreatPropList initParamsImgBand;
 			initParamsImgBand.setChunk(2, dimsImageBandChunk);			
 			initParamsImgBand.setShuffle();
-            initParamsImgBand.setDeflate(KEA_DEFLATE);
+            initParamsImgBand.setDeflate(deflate);
 			initParamsImgBand.setFillValue( H5::PredType::NATIVE_INT, &initFillVal);
             
             H5::StrType strdatatypeLen6(H5::PredType::C_S1, 6);
@@ -2414,15 +2413,20 @@ namespace libkea{
         return keaImgH5File;
     }
     
-    H5::H5File* KEAImageIO::openKeaH5RW(std::string fileName)throw(KEAIOException)
+    H5::H5File* KEAImageIO::openKeaH5RW(std::string fileName, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize)throw(KEAIOException)
     {
         H5::Exception::dontPrint();
         
         H5::H5File *keaImgH5File = NULL;
         try 
         {
+            H5::FileAccPropList keaAccessPlist = H5::FileAccPropList(H5::FileAccPropList::DEFAULT);
+            keaAccessPlist.setCache(mdcElmts, rdccNElmts, rdccNBytes, rdccW0);
+            keaAccessPlist.setSieveBufSize(sieveBuf);
+            keaAccessPlist.setMetaBlockSize(metaBlockSize);
+            
             const H5std_string keaImgFilePath(fileName);
-            keaImgH5File = new H5::H5File(keaImgFilePath, H5F_ACC_RDWR);
+            keaImgH5File = new H5::H5File(keaImgFilePath, H5F_ACC_RDWR, H5::FileCreatPropList::DEFAULT, keaAccessPlist);
         } 
         catch (KEAIOException &e) 
         {
@@ -2448,15 +2452,20 @@ namespace libkea{
         return keaImgH5File;
     }
     
-    H5::H5File* KEAImageIO::openKeaH5RDOnly(std::string fileName)throw(KEAIOException)
+    H5::H5File* KEAImageIO::openKeaH5RDOnly(std::string fileName, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize)throw(KEAIOException)
     {
         H5::Exception::dontPrint();
         
         H5::H5File *keaImgH5File = NULL;
         try 
         {
+            H5::FileAccPropList keaAccessPlist = H5::FileAccPropList(H5::FileAccPropList::DEFAULT);
+            keaAccessPlist.setCache(mdcElmts, rdccNElmts, rdccNBytes, rdccW0);
+            keaAccessPlist.setSieveBufSize(sieveBuf);
+            keaAccessPlist.setMetaBlockSize(metaBlockSize);
+            
             const H5std_string keaImgFilePath(fileName);
-            keaImgH5File = new H5::H5File(keaImgFilePath, H5F_ACC_RDONLY);
+            keaImgH5File = new H5::H5File(keaImgFilePath, H5F_ACC_RDONLY, H5::FileCreatPropList::DEFAULT, keaAccessPlist);
         } 
         catch (KEAIOException &e) 
         {
