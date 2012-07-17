@@ -2,13 +2,13 @@
 #include "KEABand.h"
 #include "KEAOverview.h"
 
-KEARasterBand::KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageIO *pImageIO, int *pRefCount )
+KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, libkea::KEAImageIO *pImageIO, int *pRefCount )
 {
     this->poDS = pDataset;
-    this->nBand = nBand;
-    this->eDataType = KEA_to_GDAL_Type( pImageIO->getImageBandDataType(nBand) );
-    this->nBlockXSize = pImageIO->getImageBlockSize(nBand);
-    this->nBlockYSize = pImageIO->getImageBlockSize(nBand);
+    this->nBand = nSrcBand;
+    this->eDataType = KEA_to_GDAL_Type( pImageIO->getImageBandDataType(nSrcBand) );
+    this->nBlockXSize = pImageIO->getImageBlockSize(nSrcBand);
+    this->nBlockYSize = pImageIO->getImageBlockSize(nSrcBand);
     this->nRasterXSize = this->poDS->GetRasterXSize();
     this->nRasterYSize = this->poDS->GetRasterYSize();
 
@@ -22,7 +22,7 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageI
     m_panOverviewBands = NULL;
 
     // grab the description here
-    this->sDescription = pImageIO->getImageBandDescription(nBand);
+    this->sDescription = pImageIO->getImageBandDescription(nSrcBand);
 
     m_papszMetadataList = NULL;
     this->UpdateMetadataList();

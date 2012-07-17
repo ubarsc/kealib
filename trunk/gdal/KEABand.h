@@ -15,7 +15,7 @@ class KEARasterBand : public GDALPamRasterBand
     KEAOverview        **m_panOverviewBands;
 
 public:
-    KEARasterBand( KEADataset *pDataset, int nBand, libkea::KEAImageIO *pImageIO, int *pRefCount );
+    KEARasterBand( KEADataset *pDataset, int nSrcBand, libkea::KEAImageIO *pImageIO, int *pRefCount );
     ~KEARasterBand();
 
     int GetOverviewCount();

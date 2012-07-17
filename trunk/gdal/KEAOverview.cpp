@@ -1,15 +1,15 @@
 
 #include "KEAOverview.h"
 
-KEAOverview::KEAOverview(KEADataset *pDataset, int nBand, 
+KEAOverview::KEAOverview(KEADataset *pDataset, int nSrcBand, 
                 libkea::KEAImageIO *pImageIO, int *pRefCount,
                 int nOverviewIndex, int nXSize, int nYSize)
- : KEARasterBand( pDataset, nBand, pImageIO, pRefCount )
+ : KEARasterBand( pDataset, nSrcBand, pImageIO, pRefCount )
 {
     this->m_nOverviewIndex = nOverviewIndex;
     // overridden from the band
-    this->nBlockXSize = pImageIO->getOverviewBlockSize(nBand, nOverviewIndex);
-    this->nBlockYSize = pImageIO->getOverviewBlockSize(nBand, nOverviewIndex);
+    this->nBlockXSize = pImageIO->getOverviewBlockSize(nSrcBand, nOverviewIndex);
+    this->nBlockYSize = pImageIO->getOverviewBlockSize(nSrcBand, nOverviewIndex);
     this->nRasterXSize = nXSize;
     this->nRasterYSize = nYSize;
 }

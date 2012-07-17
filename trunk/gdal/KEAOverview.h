@@ -8,7 +8,7 @@ class KEAOverview : public KEARasterBand
 {
     int         m_nOverviewIndex;
 public:
-    KEAOverview(KEADataset *pDataset, int nBand, libkea::KEAImageIO *pImageIO, int *pRefCount,
+    KEAOverview(KEADataset *pDataset, int nSrcBand, libkea::KEAImageIO *pImageIO, int *pRefCount,
                 int nOverviewIndex, int nXSize, int nYSize );
     ~KEAOverview();
 
