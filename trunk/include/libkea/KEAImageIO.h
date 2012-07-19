@@ -42,7 +42,7 @@
 
 namespace libkea{
         
-    class KEAImageIO
+    class DllExport KEAImageIO
     {
     public:
         KEAImageIO();

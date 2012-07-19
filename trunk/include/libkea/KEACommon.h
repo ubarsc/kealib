@@ -38,6 +38,13 @@
 
 #include "H5Cpp.h"
 
+// mark all exported classes/functions with DllExport to have
+// them exported by Visual Studio
+#define DllExport
+#ifdef _WIN32
+    #define DllExport   __declspec( dllexport )
+#endif
+
 namespace libkea{
         
     static const std::string KEA_DATASETNAME_HEADER( "/HEADER" );

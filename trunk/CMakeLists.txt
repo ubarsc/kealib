@@ -122,8 +122,6 @@ if(WIN32)
 
     endif()
 
-	set(CMAKE_INCLUDE_PATH c:/osgeo4w/include;$ENV{CMAKE_INCLUDE_PATH})
-    set(CMAKE_LIBRARY_PATH c:/osgeo4w/lib;$ENV{CMAKE_LIBRARY_PATH})
 else()
   # Recommended C++ compilation flags
   # -Weffc++
@@ -157,9 +155,17 @@ endif(APPLE)
 # Check the required libraries are present
 
 include_directories(${HDF5_INCLUDE_DIR})
-set(HDF5_LIBRARIES -L${HDF5_LIB_PATH} -lhdf5 -lhdf5_hl -lhdf5_cpp)
+if (WIN32)
+  set(HDF5_LIBRARIES -LIBPATH:"${HDF5_LIB_PATH}" hdf5.lib hdf5_hl.lib hdf5_cpp.lib libszip.lib libzlib.lib)
+else()
+  set(HDF5_LIBRARIES -L${HDF5_LIB_PATH} -lhdf5 -lhdf5_hl -lhdf5_cpp)
+endif(WIN32)
 
-set(GDAL_LIBRARIES -L${GDAL_LIB_PATH} -lgdal)
+if (WIN32)
+  set(GDAL_LIBRARIES -LIBPATH:"${GDAL_LIB_PATH}" gdal_i.lib)
+else()
+  set(GDAL_LIBRARIES -L${GDAL_LIB_PATH} -lgdal)
+endif(WIN32)
 ###############################################################################
 
 ###############################################################################

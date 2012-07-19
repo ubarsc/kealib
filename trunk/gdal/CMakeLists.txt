@@ -24,7 +24,11 @@ add_library(${LIBKEA_GDAL_DRIVER} ${KEA_GDAL_CPP} ${KEA_GDAL_H} )
 # remove the leading "lib" as GDAL won't look for files with this prefix
 set_target_properties(${LIBKEA_GDAL_DRIVER} PROPERTIES PREFIX "")
 
-target_link_libraries(${LIBKEA_GDAL_DRIVER} ${GDAL_LIBRARIES} -L../src -lkea)
+if (WIN32)
+  target_link_libraries(${LIBKEA_GDAL_DRIVER} ${GDAL_LIBRARIES} -LIBPATH:../src libkea.lib)
+else()
+  target_link_libraries(${LIBKEA_GDAL_DRIVER} ${GDAL_LIBRARIES} -L../src -lkea)
+endif(WIN32)
 include_directories(${GDAL_INCLUDE_DIR})
 ###############################################################################
 

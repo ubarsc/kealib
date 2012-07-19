@@ -37,7 +37,7 @@
 
 namespace libkea
 {    
-	class KEAException : public std::exception
+	class DllExport KEAException : public std::exception
 	{
     public:
         KEAException() : exception() {msgs = "A KEAException has been created.";};
@@ -49,7 +49,7 @@ namespace libkea
         std::string msgs;
 	};
     
-    class KEAIOException : public KEAException
+    class DllExport KEAIOException : public KEAException
 	{
     public:
         KEAIOException() : KEAException("KEAIOException has been created."){};
@@ -58,7 +58,7 @@ namespace libkea
         ~KEAIOException() throw() {};
 	};
     
-    class KEAATTException : public KEAException
+    class DllExport KEAATTException : public KEAException
 	{
     public:
         KEAATTException() : KEAException("KEAATTException has been created."){};
