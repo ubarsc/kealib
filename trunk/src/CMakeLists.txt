@@ -9,11 +9,13 @@ set(LIBKEA_H
 	${LIBKEA_HEADERS_DIR}/KEACommon.h
 	${LIBKEA_HEADERS_DIR}/KEAException.h
 	${LIBKEA_HEADERS_DIR}/KEAImageIO.h
-	${LIBKEA_HEADERS_DIR}/KEAAttributeTable.h )
+	${LIBKEA_HEADERS_DIR}/KEAAttributeTable.h
+	${LIBKEA_HEADERS_DIR}/KEAAttributeTableInMem.h )
 
 set(LIBKEA_CPP
 	${LIBKEA_SRC_DIR}/KEAImageIO.cpp
-	${LIBKEA_SRC_DIR}/KEAAttributeTable.cpp )
+	${LIBKEA_SRC_DIR}/KEAAttributeTable.cpp
+	${LIBKEA_SRC_DIR}/KEAAttributeTableInMem.cpp )
 
 ###############################################################################
 

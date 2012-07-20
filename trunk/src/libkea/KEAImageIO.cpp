@@ -1127,7 +1127,7 @@ namespace libkea{
         catch ( H5::Exception &e) 
         {
             throw KEAIOException("The image band no data vakue was not specified.");
-        }        
+        }
     }
     
     void KEAImageIO::setSpatialInfo(KEAImageSpatialInfo *inSpatialInfo)throw(KEAIOException)
@@ -1947,7 +1947,56 @@ namespace libkea{
 		}
     }
     
-   
+    KEAAttributeTable* KEAImageIO::getAttributeTable(KEAATTType type, unsigned int band) throw(KEAATTException, KEAIOException)
+    {
+        KEAAttributeTable *att = NULL;
+        try 
+        {
+            if(type == kea_att_mem)
+            {
+                att = libkea::KEAAttributeTableInMem::createKeaAtt(this->keaImgFile, band);
+            }
+            else if(type == kea_att_cached)
+            {
+                throw KEAATTException("The cached implementation of the attribute table class has not yet been implemented.");
+            }
+            else
+            {
+                throw KEAATTException("The attribute table type was not recognised.");
+            }
+        }
+        catch(KEAIOException &e)
+        {
+            throw e;
+        }
+        catch(KEAATTException &e)
+        {
+            throw e;
+        }
+        
+        return att;
+    }
+    
+    void KEAImageIO::setAttributeTable(KEAAttributeTable* att, unsigned int band, unsigned int chunkSize, unsigned int deflate) throw(KEAATTException, KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        try 
+        {
+            att->exportToKeaFile(this->keaImgFile, band, chunkSize, deflate);
+        }
+        catch(KEAIOException &e)
+        {
+            throw e;
+        }
+        catch(KEAATTException &e)
+        {
+            throw e;
+        }
+    }
     
     void KEAImageIO::close() throw(KEAIOException)
     {

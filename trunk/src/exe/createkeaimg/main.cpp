@@ -37,6 +37,7 @@
 #include "libkea/KEACommon.h"
 #include "libkea/KEAException.h"
 #include "libkea/KEAImageIO.h"
+#include "libkea/KEAAttributeTable.h"
 
 int main (int argc, char * const argv[]) 
 {
@@ -249,6 +250,61 @@ int main (int argc, char * const argv[])
          */
         
         delete[] data;
+        
+        std::cout << "Creating attribute table\n";
+        libkea::KEAAttributeTable *attTable = imageIO.getAttributeTable(libkea::kea_att_mem, 1);
+        std::cout << "Got attribute table\n";
+        std::cout << "Adding rows\n";
+        attTable->addRows(100);
+        std::cout << "Rows added\n";
+        attTable->addAttFloatField("Float Field 1", 0, "Red");
+        attTable->addAttIntField("Int Field 1", 0);
+        attTable->addAttFloatField("Float Field 2", 1, "Green");
+        attTable->addAttFloatField("Float Field 3", 2, "Blue");
+        attTable->addAttIntField("Int Field 2", 1);
+        attTable->addAttStringField("String Field 1", "xxx");
+        attTable->addAttStringField("String Field 2", "yyy");
+        attTable->addAttBoolField("Bool Field 1", false);
+        attTable->addAttBoolField("Bool Field 2", true);
+        
+        attTable->setFloatField(10, "Float Field 1", 10);
+        
+        attTable->setFloatField(2, "Float Field 2", 99);
+        
+        attTable->setStringField(99, "String Field 2", "Hello World");
+        
+        std::cout << "FID 45: Field \'Float Field 2\' = " << attTable->getFloatField(45, "Float Field 2") << "\n";
+        
+        size_t numRows = attTable->getSize();
+        libkea::KEAATTFeature *feat = NULL;
+        for(size_t i = 0; i < numRows; ++i)
+        {
+            feat = attTable->getFeature(i);
+            std::cout << "FID: " << feat->fid << std::endl;
+            std::cout << "\t" << feat->intFields->at(0) << ", " << feat->intFields->at(1) << std::endl;
+            std::cout << "\t" << feat->floatFields->at(0) << ", " << feat->floatFields->at(1) << ", " << feat->floatFields->at(2) << std::endl;
+            std::cout << "\t" << feat->strFields->at(0) << ", " << feat->strFields->at(1) << std::endl;
+            std::cout << "\t";
+            if(feat->boolFields->at(0))
+            {
+                std::cout << "TRUE";
+            }
+            else
+            {
+                std::cout << "FALSE";
+            }
+            if(feat->boolFields->at(1))
+            {
+                std::cout << ", TRUE\n";
+            }
+            else
+            {
+                std::cout << ", FALSE\n";
+            }
+            std::cout << std::endl;
+        }
+        
+        imageIO.setAttributeTable(attTable, 1);
         
         imageIO.close();
         

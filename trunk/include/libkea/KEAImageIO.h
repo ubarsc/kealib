@@ -40,6 +40,7 @@
 #include "libkea/KEACommon.h"
 #include "libkea/KEAException.h"
 #include "libkea/KEAAttributeTable.h"
+#include "libkea/KEAAttributeTableInMem.h"
 
 namespace libkea{
         
@@ -91,8 +92,8 @@ namespace libkea{
         unsigned int getNumOfOverviews(unsigned int band) throw(KEAIOException);
         void getOverviewSize(unsigned int band, unsigned int overview, unsigned long *xSize, unsigned long *ySize) throw(KEAIOException);
                 
-        KEAAttributeTable* getAttributeTable() throw(KEAATTException, KEAIOException);
-        void setAttributeTable(KEAAttributeTable* att) throw(KEAATTException, KEAIOException);
+        KEAAttributeTable* getAttributeTable(KEAATTType type, unsigned int band) throw(KEAATTException, KEAIOException);
+        void setAttributeTable(KEAAttributeTable* att, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE) throw(KEAATTException, KEAIOException);
         
         void close()throw(KEAIOException);
         
