@@ -38,6 +38,8 @@ void GDALRegister_KEA()
 
         // pointer to open function
         poDriver->pfnOpen = KEADataset::Open;
+        // pointer to identify function
+        poDriver->pfnIdentify = KEADataset::Identify;
         // pointer to create function
         poDriver->pfnCreate = KEADataset::Create;
 

@@ -121,6 +121,28 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
 }
 
 // static function- pointer set in driver
+// this function is called in preference to Open
+// 
+int KEADataset::Identify( GDALOpenInfo * poOpenInfo )
+{
+    fprintf( stderr, "identify %s\n", poOpenInfo->pszFilename );
+    bool isKEA = false;
+    try
+    {
+        // is this a KEA file?
+        isKEA = libkea::KEAImageIO::isKEAImage( poOpenInfo->pszFilename );
+    }
+    catch (libkea::KEAIOException &e)
+    {
+        isKEA = false;
+    }
+    if( isKEA )
+        return 1;
+    else
+        return 0;
+}
+
+// static function- pointer set in driver
 GDALDataset *KEADataset::Create( const char * pszFilename,
                                   int nXSize, int nYSize, int nBands,
                                   GDALDataType eType,

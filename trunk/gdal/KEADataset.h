@@ -16,6 +16,7 @@ public:
     // static methods that handle open and creation
     // the driver class has pointers to these
     static GDALDataset *Open( GDALOpenInfo * );
+    static int Identify( GDALOpenInfo * poOpenInfo );
     static GDALDataset *Create( const char * pszFilename,
                                   int nXSize, int nYSize, int nBands,
                                   GDALDataType eType,
