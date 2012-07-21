@@ -255,7 +255,7 @@ int main (int argc, char * const argv[])
         libkea::KEAAttributeTable *attTable = imageIO.getAttributeTable(libkea::kea_att_mem, 1);
         std::cout << "Got attribute table\n";
         std::cout << "Adding rows\n";
-        attTable->addRows(100);
+        attTable->addRows(1500);
         std::cout << "Rows added\n";
         attTable->addAttFloatField("Float Field 1", 0, "Red");
         attTable->addAttIntField("Int Field 1", 0);

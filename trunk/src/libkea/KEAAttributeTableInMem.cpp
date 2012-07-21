@@ -495,6 +495,25 @@ namespace libkea{
             H5::DataSet *neighboursDataset;
             
             H5::StrType strType(0, H5T_VARIABLE);
+            size_t strMaxLen = 0;
+            if(this->numStringFields > 0)
+            {
+                for(size_t i = 0; i < attRows->size(); ++i)
+                {
+                    for(size_t j = 0; j < this->numStringFields; ++j)
+                    {
+                        if((i == 0) & (i == 0))
+                        {
+                            strMaxLen = attRows->at(i)->strFields->at(j).length();
+                        }
+                        else if(attRows->at(i)->strFields->at(j).length() > strMaxLen)
+                        {
+                            strMaxLen = attRows->at(i)->strFields->at(j).length();
+                        }
+                    }
+                }
+            }
+            std::cout << "Max. String length is: " << strMaxLen << std::endl;
             
             if(attSize > 0)
             {
@@ -726,21 +745,24 @@ namespace libkea{
                 if(this->numStringFields > 0)
                 {
                     // Create the string
-                    hsize_t initDimsString[2];
-                    initDimsString[0] = this->attRows->size();
-                    initDimsString[1] = this->numStringFields;
-                    hsize_t maxDimsString[2];
+                    hsize_t initDimsString[3];
+                    initDimsString[0] = strMaxLen;
+                    initDimsString[1] = this->attRows->size();
+                    initDimsString[2] = this->numStringFields;
+                    hsize_t maxDimsString[3];
                     maxDimsString[0] = H5S_UNLIMITED;
                     maxDimsString[1] = H5S_UNLIMITED;
-                    H5::DataSpace stringDataSpace = H5::DataSpace(2, initDimsString, maxDimsString);
+                    maxDimsString[2] = H5S_UNLIMITED;
+                    H5::DataSpace stringDataSpace = H5::DataSpace(3, initDimsString, maxDimsString);
                     
-                    hsize_t dimsStringChunk[2];
+                    hsize_t dimsStringChunk[3];
                     dimsStringChunk[0] = chunkSize;
-                    dimsStringChunk[1] = 1;
+                    dimsStringChunk[1] = chunkSize;
+                    dimsStringChunk[2] = 1;
                     
                     const char *fillValueStr = std::string("").c_str();
                     H5::DSetCreatPropList creationStringDSPList;
-                    creationStringDSPList.setChunk(2, dimsStringChunk);
+                    creationStringDSPList.setChunk(3, dimsStringChunk);
                     creationStringDSPList.setShuffle();
                     creationStringDSPList.setDeflate(deflate);
                     creationStringDSPList.setFillValue(strType, &fillValueStr);
@@ -777,88 +799,296 @@ namespace libkea{
             size_t remainRows = attRows->size() - (numOfBlocks * chunkSize);
             
             
-            bool **boolData = NULL;
+            
+            int *boolData = NULL;
             if(this->numBoolFields > 0)
             {
-                boolData = new bool*[this->numBoolFields];
-                for(size_t i = 0; i < this->numBoolFields; ++i)
-                {
-                    boolData[i] = new bool[chunkSize];
-                }
+                boolData = new int[this->numBoolFields*chunkSize];
             }
-            long **intData = NULL;
+            long *intData = NULL;
             if(this->numIntFields > 0)
             {
-                intData = new long*[this->numIntFields];
-                for(size_t i = 0; i < this->numIntFields; ++i)
-                {
-                    intData[i] = new long[chunkSize];
-                }
+                intData = new long[this->numIntFields*chunkSize];
             }
-            double **floatData = NULL;
+            double *floatData = NULL;
             if(this->numFloatFields > 0)
             {
-                floatData = new double*[this->numFloatFields];
-                for(size_t i = 0; i < this->numFloatFields; ++i)
-                {
-                    floatData[i] = new double[chunkSize];
-                }
+                floatData = new double[this->numFloatFields*chunkSize];
             }
-            char ***stringData = NULL;
+            char *stringData = NULL;
+            char *singleStr = NULL;
             if(this->numStringFields > 0)
             {
-                stringData = new char**[this->numStringFields];
-                for(size_t i = 0; i < this->numStringFields; ++i)
-                {
-                    stringData[i] = new char*[chunkSize];
-                }
+                singleStr = new char[strMaxLen];
+                stringData = new char[this->numStringFields*chunkSize*strMaxLen];
             }
-
+                        
+            hvl_t *neighbourVals = new hvl_t[chunkSize];
             
             if(numOfBlocks > 0)
             {
+                hsize_t boolDataOffset[2];
+                boolDataOffset[0] = 0;
+                boolDataOffset[1] = 0;
+                hsize_t boolDataDims[2];
+                boolDataDims[0] = chunkSize;
+                boolDataDims[1] = this->numBoolFields;
+                
+                hsize_t intDataOffset[2];
+                intDataOffset[0] = 0;
+                intDataOffset[1] = 0;
+                hsize_t intDataDims[2];
+                intDataDims[0] = chunkSize;
+                intDataDims[1] = this->numIntFields;
+                
+                hsize_t floatDataOffset[2];
+                floatDataOffset[0] = 0;
+                floatDataOffset[1] = 0;
+                hsize_t floatDataDims[2];
+                floatDataDims[0] = chunkSize;
+                floatDataDims[1] = this->numFloatFields;
+                
+                hsize_t stringDataOffset[3];
+                stringDataOffset[0] = 0;
+                stringDataOffset[1] = 0;
+                stringDataOffset[2] = 0;
+                hsize_t stringDataDims[3];
+                stringDataDims[0] = strMaxLen;
+                stringDataDims[1] = chunkSize;
+                stringDataDims[2] = this->numStringFields;
+                
+                hsize_t neighboursDataOffset[1];
+                neighboursDataOffset[0] = 0;
+                hsize_t neighboursDataDims[1];
+                neighboursDataDims[0] = chunkSize;
+                H5::DataType intVarLenMemDT = H5::VarLenType(&H5::PredType::NATIVE_UINT64);
+                
+                
+                size_t rowOff = 0;
+                size_t strOff = 0;
                 for(size_t n = 0; n < numOfBlocks; ++n)
                 {
+                    rowOff = n * chunkSize;
+                    for(size_t i = 0; i < chunkSize; ++i)
+                    {
+                        for(size_t j = 0; j < this->numBoolFields; ++j)
+                        {
+                            boolData[(i*this->numBoolFields)+j] = attRows->at(rowOff+i)->boolFields->at(j);
+                        }
+                        for(size_t j = 0; j < this->numIntFields; ++j)
+                        {
+                            intData[(i*this->numIntFields)+j] = attRows->at(rowOff+i)->intFields->at(j);
+                        }
+                        for(size_t j = 0; j < this->numFloatFields; ++j)
+                        {
+                            floatData[(i*this->numFloatFields)+j] = attRows->at(rowOff+i)->floatFields->at(j);
+                        }
+                        for(size_t j = 0; j < this->numStringFields; ++j)
+                        {
+                            strncpy(singleStr, attRows->at(rowOff+i)->strFields->at(j).c_str(), strMaxLen);
+                            //std::cout << "singleStr = " << singleStr << std::endl;
+                            strOff = (rowOff * (this->numStringFields*strMaxLen)) + (i*(this->numStringFields*strMaxLen)) + (j*strMaxLen);
+                            for(size_t k = 0; k < strMaxLen; ++k)
+                            {
+                                //std::cout << "singleStr[" << k << "] = " << singleStr[k] << std::endl;
+                                stringData[strOff+k] = singleStr[k];
+                            }
+                        }
+                    }
+                    
+                    //std::cout << "STRING: " << stringData << std::endl;
+                    
+                    if(this->numBoolFields > 0)
+                    {
+                        boolDataOffset[0] = rowOff;
+                        boolDataOffset[1] = 0;
+                        
+                        H5::DataSpace boolWriteDataSpace = boolDataset->getSpace();
+                        boolWriteDataSpace.selectHyperslab(H5S_SELECT_SET, boolDataDims, boolDataOffset);
+                        H5::DataSpace newBoolDataspace = H5::DataSpace(2, boolDataDims);
+                        
+                        boolDataset->write(boolData, H5::PredType::NATIVE_INT, newBoolDataspace, boolWriteDataSpace);
+                    }
+                    
+                    if(this->numIntFields > 0)
+                    {
+                        intDataOffset[0] = rowOff;
+                        intDataOffset[1] = 0;
+                        
+                        H5::DataSpace intWriteDataSpace = intDataset->getSpace();
+                        intWriteDataSpace.selectHyperslab(H5S_SELECT_SET, intDataDims, intDataOffset);
+                        H5::DataSpace newIntDataspace = H5::DataSpace(2, intDataDims);
+                        
+                        intDataset->write(intData, H5::PredType::NATIVE_LONG, newIntDataspace, intWriteDataSpace);
+                    }
+                    
+                    if(this->numFloatFields > 0)
+                    {
+                        floatDataOffset[0] = rowOff;
+                        floatDataOffset[1] = 0;
+                        
+                        H5::DataSpace floatWriteDataSpace = floatDataset->getSpace();
+                        floatWriteDataSpace.selectHyperslab(H5S_SELECT_SET, floatDataDims, floatDataOffset);
+                        H5::DataSpace newFloatDataspace = H5::DataSpace(2, floatDataDims);
+                        
+                        floatDataset->write(floatData, H5::PredType::NATIVE_DOUBLE, newFloatDataspace, floatWriteDataSpace);
+                    }
+                    
+                    if(this->numStringFields > 0)
+                    {
+                        stringDataOffset[0] = 0;
+                        stringDataOffset[1] = rowOff;
+                        stringDataOffset[2] = 0;
+                        
+                        H5::DataSpace stringWriteDataSpace = strDataset->getSpace();
+                        stringWriteDataSpace.selectHyperslab(H5S_SELECT_SET, stringDataDims, stringDataOffset);
+                        H5::DataSpace newStringDataspace = H5::DataSpace(3, stringDataDims);
+                        
+                        //strDataset->write(stringData, strType, newStringDataspace, stringWriteDataSpace);
+                    }
+                    
                     
                 }                
             }
             
             if(remainRows > 0)
             {
+                hsize_t boolDataOffset[2];
+                boolDataOffset[0] = 0;
+                boolDataOffset[1] = 0;
+                hsize_t boolDataDims[2];
+                boolDataDims[0] = remainRows;
+                boolDataDims[1] = this->numBoolFields;
                 
+                hsize_t intDataOffset[2];
+                intDataOffset[0] = 0;
+                intDataOffset[1] = 0;
+                hsize_t intDataDims[2];
+                intDataDims[0] = remainRows;
+                intDataDims[1] = this->numIntFields;
+                
+                hsize_t floatDataOffset[2];
+                floatDataOffset[0] = 0;
+                floatDataOffset[1] = 0;
+                hsize_t floatDataDims[2];
+                floatDataDims[0] = remainRows;
+                floatDataDims[1] = this->numFloatFields;
+                
+                hsize_t stringDataOffset[3];
+                stringDataOffset[0] = 0;
+                stringDataOffset[1] = 0;
+                stringDataOffset[2] = 0;
+                hsize_t stringDataDims[3];
+                stringDataDims[0] = strMaxLen;
+                stringDataDims[1] = remainRows;
+                stringDataDims[2] = this->numStringFields;
+                
+                hsize_t neighboursDataOffset[1];
+                neighboursDataOffset[0] = 0;
+                hsize_t neighboursDataDims[1];
+                neighboursDataDims[0] = chunkSize;
+                H5::DataType intVarLenMemDT = H5::VarLenType(&H5::PredType::NATIVE_UINT64);
+                
+                
+                size_t rowOff = numOfBlocks * chunkSize;
+                size_t strOff = 0;
+                
+                for(size_t i = 0; i < remainRows; ++i)
+                {
+                    for(size_t j = 0; j < this->numBoolFields; ++j)
+                    {
+                        boolData[(i*this->numBoolFields)+j] = attRows->at(rowOff+i)->boolFields->at(j);
+                    }
+                    for(size_t j = 0; j < this->numIntFields; ++j)
+                    {
+                        intData[(i*this->numIntFields)+j] = attRows->at(rowOff+i)->intFields->at(j);
+                    }
+                    for(size_t j = 0; j < this->numFloatFields; ++j)
+                    {
+                        floatData[(i*this->numFloatFields)+j] = attRows->at(rowOff+i)->floatFields->at(j);
+                    }
+                    for(size_t j = 0; j < this->numStringFields; ++j)
+                    {
+                        strncpy(singleStr, attRows->at(rowOff+i)->strFields->at(j).c_str(), strMaxLen);
+                        //std::cout << "singleStr = " << singleStr << std::endl;
+                        strOff = (rowOff * (this->numStringFields*strMaxLen)) + (i*(this->numStringFields*strMaxLen)) + (j*strMaxLen);
+                        for(size_t k = 0; k < strMaxLen; ++k)
+                        {
+                            //std::cout << "singleStr[" << k << "] = " << singleStr[k] << std::endl;
+                            stringData[strOff+k] = singleStr[k];
+                        }
+                    }
+                }
+                
+                //std::cout << "STRING: " << stringData << std::endl;
+                
+                if(this->numBoolFields > 0)
+                {
+                    boolDataOffset[0] = rowOff;
+                    boolDataOffset[1] = 0;
+                    
+                    H5::DataSpace boolWriteDataSpace = boolDataset->getSpace();
+                    boolWriteDataSpace.selectHyperslab(H5S_SELECT_SET, boolDataDims, boolDataOffset);
+                    H5::DataSpace newBoolDataspace = H5::DataSpace(2, boolDataDims);
+                    
+                    boolDataset->write(boolData, H5::PredType::NATIVE_INT, newBoolDataspace, boolWriteDataSpace);
+                }
+                
+                if(this->numIntFields > 0)
+                {
+                    intDataOffset[0] = rowOff;
+                    intDataOffset[1] = 0;
+                    
+                    H5::DataSpace intWriteDataSpace = intDataset->getSpace();
+                    intWriteDataSpace.selectHyperslab(H5S_SELECT_SET, intDataDims, intDataOffset);
+                    H5::DataSpace newIntDataspace = H5::DataSpace(2, intDataDims);
+                    
+                    intDataset->write(intData, H5::PredType::NATIVE_LONG, newIntDataspace, intWriteDataSpace);
+                }
+                
+                if(this->numFloatFields > 0)
+                {
+                    floatDataOffset[0] = rowOff;
+                    floatDataOffset[1] = 0;
+                    
+                    H5::DataSpace floatWriteDataSpace = floatDataset->getSpace();
+                    floatWriteDataSpace.selectHyperslab(H5S_SELECT_SET, floatDataDims, floatDataOffset);
+                    H5::DataSpace newFloatDataspace = H5::DataSpace(2, floatDataDims);
+                    
+                    floatDataset->write(floatData, H5::PredType::NATIVE_DOUBLE, newFloatDataspace, floatWriteDataSpace);
+                }
+                
+                if(this->numStringFields > 0)
+                {
+                    stringDataOffset[0] = 0;
+                    stringDataOffset[1] = rowOff;
+                    stringDataOffset[2] = 0;
+                    
+                    H5::DataSpace stringWriteDataSpace = strDataset->getSpace();
+                    stringWriteDataSpace.selectHyperslab(H5S_SELECT_SET, stringDataDims, stringDataOffset);
+                    H5::DataSpace newStringDataspace = H5::DataSpace(3, stringDataDims);
+                    
+                    //strDataset->write(stringData, strType, newStringDataspace, stringWriteDataSpace);
+                }
+
             }
             
             if(this->numBoolFields > 0)
             {
-                for(size_t i = 0; i < this->numBoolFields; ++i)
-                {
-                    delete[] boolData[i];
-                }
                 delete[] boolData;
             }
             if(this->numIntFields > 0)
             {
-                for(size_t i = 0; i < this->numIntFields; ++i)
-                {
-                    delete[] intData[i];
-                }
                 delete[] intData;
             }
             if(this->numFloatFields > 0)
             {
-                for(size_t i = 0; i < this->numFloatFields; ++i)
-                {
-                    delete[] floatData[i];
-                }
                 delete[] floatData;
             }
             if(this->numStringFields > 0)
             {
-                for(size_t i = 0; i < this->numStringFields; ++i)
-                {
-                    delete[] stringData[i];
-                }
                 delete[] stringData;
+                delete[] singleStr;
             }
             
             delete boolDataset;
