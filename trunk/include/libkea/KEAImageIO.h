@@ -39,6 +39,8 @@
 
 #include "libkea/KEACommon.h"
 #include "libkea/KEAException.h"
+#include "libkea/KEAAttributeTable.h"
+#include "libkea/KEAAttributeTableInMem.h"
 
 namespace libkea{
         
@@ -89,32 +91,9 @@ namespace libkea{
         void readFromOverview(unsigned int band, unsigned int overview, void *data, unsigned long xPxlOff, unsigned long yPxlOff, unsigned long xSizeIn, unsigned long ySizeIn, unsigned long xSizeBuf, unsigned long ySizeBuf, KEADataType inDataType) throw(KEAIOException);
         unsigned int getNumOfOverviews(unsigned int band) throw(KEAIOException);
         void getOverviewSize(unsigned int band, unsigned int overview, unsigned long *xSize, unsigned long *ySize) throw(KEAIOException);
-        
-        void initImageBandATT(unsigned int band, size_t numFeats)throw(KEAIOException);
-        
-        bool getATTBoolField(unsigned int band, size_t fid, std::string name) throw(KEAATTException);
-        long getATTIntField(unsigned int band, size_t fid, std::string name) throw(KEAATTException);
-        double getATTDoubleField(unsigned int band, size_t fid, std::string name) throw(KEAATTException);
-        std::string getATTStringField(unsigned int band, size_t fid, std::string name) throw(KEAATTException);
-        
-        void setATTBoolField(unsigned int band, size_t fid, std::string name, bool value) throw(KEAATTException);
-        void setATTIntField(unsigned int band, size_t fid, std::string name, long value) throw(KEAATTException);
-        void setATTDoubleField(unsigned int band, size_t fid, std::string name, double value) throw(KEAATTException);
-        void setATTStringField(unsigned int band, size_t fid, std::string name, std::string value) throw(KEAATTException);
-        
-        void setATTBoolValue(unsigned int band, std::string name, bool value) throw(KEAATTException);
-        void setATTIntValue(unsigned int band, std::string name, long value) throw(KEAATTException);
-        void setATTFloatValue(unsigned int band, std::string name, double value) throw(KEAATTException);
-        void setATTStringValue(unsigned int band, std::string name, std::string value) throw(KEAATTException);
-        
-        KEAATTFeature* getFeature(unsigned int band, size_t fid) throw(KEAATTException);
-        
-        void addAttBoolField(unsigned int band, std::string name, bool val) throw(KEAATTException);
-        void addAttIntField(unsigned int band, std::string name, long val) throw(KEAATTException);
-        void addAttFloatField(unsigned int band, std::string name, double val) throw(KEAATTException);
-        void addAttStringField(unsigned int band, std::string name, std::string val) throw(KEAATTException);
-        
-        void addAttributes(unsigned int band, std::vector<KEAATTAttribute*> *attributes) throw(KEAATTException);
+                
+        KEAAttributeTable* getAttributeTable(KEAATTType type, unsigned int band) throw(KEAATTException, KEAIOException);
+        void setAttributeTable(KEAAttributeTable* att, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE) throw(KEAATTException, KEAIOException);
         
         void close()throw(KEAIOException);
         

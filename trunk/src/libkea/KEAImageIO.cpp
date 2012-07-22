@@ -1127,7 +1127,7 @@ namespace libkea{
         catch ( H5::Exception &e) 
         {
             throw KEAIOException("The image band no data vakue was not specified.");
-        }        
+        }
     }
     
     void KEAImageIO::setSpatialInfo(KEAImageSpatialInfo *inSpatialInfo)throw(KEAIOException)
@@ -1947,104 +1947,55 @@ namespace libkea{
 		}
     }
     
-    void KEAImageIO::initImageBandATT(unsigned int band, size_t numFeats)throw(KEAIOException)
+    KEAAttributeTable* KEAImageIO::getAttributeTable(KEAATTType type, unsigned int band) throw(KEAATTException, KEAIOException)
     {
-        throw KEAIOException("Not Implmented yet!");
+        KEAAttributeTable *att = NULL;
+        try 
+        {
+            if(type == kea_att_mem)
+            {
+                att = libkea::KEAAttributeTableInMem::createKeaAtt(this->keaImgFile, band);
+            }
+            else if(type == kea_att_cached)
+            {
+                throw KEAATTException("The cached implementation of the attribute table class has not yet been implemented.");
+            }
+            else
+            {
+                throw KEAATTException("The attribute table type was not recognised.");
+            }
+        }
+        catch(KEAIOException &e)
+        {
+            throw e;
+        }
+        catch(KEAATTException &e)
+        {
+            throw e;
+        }
+        
+        return att;
     }
     
-    bool KEAImageIO::getATTBoolField(unsigned int band, size_t fid, std::string name) throw(KEAATTException)
+    void KEAImageIO::setAttributeTable(KEAAttributeTable* att, unsigned int band, unsigned int chunkSize, unsigned int deflate) throw(KEAATTException, KEAIOException)
     {
-        throw KEAATTException("Not Implmented yet!");
-        return false;
-    }
-    
-    long KEAImageIO::getATTIntField(unsigned int band, size_t fid, std::string name) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
-        return 0;
-    }
-    
-    double KEAImageIO::getATTDoubleField(unsigned int band, size_t fid, std::string name) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
-        return 0;
-    }
-    
-    std::string KEAImageIO::getATTStringField(unsigned int band, size_t fid, std::string name) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
-        return "";
-    }
-    
-    void KEAImageIO::setATTBoolField(unsigned int band, size_t fid, std::string name, bool value) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
-    }
-    
-    void KEAImageIO::setATTIntField(unsigned int band, size_t fid, std::string name, long value) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
-    }
-    
-    void KEAImageIO::setATTDoubleField(unsigned int band, size_t fid, std::string name, double value) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
-    }
-    
-    void KEAImageIO::setATTStringField(unsigned int band, size_t fid, std::string name, std::string value) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
-    }
-    
-    void KEAImageIO::setATTBoolValue(unsigned int band, std::string name, bool value) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
-    }
-    
-    void KEAImageIO::setATTIntValue(unsigned int band, std::string name, long value) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
-    }
-    
-    void KEAImageIO::setATTFloatValue(unsigned int band, std::string name, double value) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
-    }
-    
-    void KEAImageIO::setATTStringValue(unsigned int band, std::string name, std::string value) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
-    }
-    
-    KEAATTFeature* KEAImageIO::getFeature(unsigned int band, size_t fid) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
-        return NULL;
-    }
-    
-    void KEAImageIO::addAttBoolField(unsigned int band, std::string name, bool val) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
-    }
-    
-    void KEAImageIO::addAttIntField(unsigned int band, std::string name, long val) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
-    }
-    
-    void KEAImageIO::addAttFloatField(unsigned int band, std::string name, double val) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
-    }
-    
-    void KEAImageIO::addAttStringField(unsigned int band, std::string name, std::string val) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
-    }
-    
-    void KEAImageIO::addAttributes(unsigned int band, std::vector<KEAATTAttribute*> *attributes) throw(KEAATTException)
-    {
-        throw KEAATTException("Not Implmented yet!");
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        try 
+        {
+            att->exportToKeaFile(this->keaImgFile, band, chunkSize, deflate);
+        }
+        catch(KEAIOException &e)
+        {
+            throw e;
+        }
+        catch(KEAATTException &e)
+        {
+            throw e;
+        }
     }
     
     void KEAImageIO::close() throw(KEAIOException)
@@ -2052,6 +2003,7 @@ namespace libkea{
         try 
         {
             delete this->spatialInfoFile;
+            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
             this->keaImgFile = NULL;
             this->fileOpen = false;
         }
@@ -2373,13 +2325,28 @@ namespace libkea{
                 keaImgH5File->createGroup( bandName+KEA_ATT_GROUPNAME_NEIGHBOURS );
                 keaImgH5File->createGroup( bandName+KEA_ATT_GROUPNAME_HEADER );
                 
+                // SET ATTRIBUTE TABLE CHUNK SIZE
+                int attChunkSize = 0;
+                hsize_t dimsAttChunkSize[1];
+                dimsAttChunkSize[0] = 1;
+                H5::DataSpace attChunkSizeDataSpace(1, dimsAttChunkSize);
+                H5::DataSet attChunkSizeDataset = keaImgH5File->createDataSet((bandName+KEA_ATT_CHUNKSIZE_HEADER), H5::PredType::STD_U64LE, attChunkSizeDataSpace);
+                attChunkSizeDataset.write( &attChunkSize, H5::PredType::NATIVE_INT );
+                attChunkSizeDataset.close();
+                attChunkSizeDataSpace.close();
+                
                 // SET ATTRIBUTE TABLE SIZE
-                int attSize = 0;
+                int *attSize = new int[5];
+                attSize[0] = 0;
+                attSize[1] = 0;
+                attSize[2] = 0;
+                attSize[3] = 0;
+                attSize[4] = 0;
                 hsize_t dimsAttSize[1];
-                dimsAttSize[0] = 1;
+                dimsAttSize[0] = 5;
                 H5::DataSpace attSizeDataSpace(1, dimsAttSize);
                 H5::DataSet attSizeDataset = keaImgH5File->createDataSet((bandName+KEA_ATT_SIZE_HEADER), H5::PredType::STD_U64LE, attSizeDataSpace);
-                attSizeDataset.write( &attSize, H5::PredType::NATIVE_INT );
+                attSizeDataset.write( attSize, H5::PredType::NATIVE_INT );
                 attSizeDataset.close();
                 attSizeDataSpace.close();
             }

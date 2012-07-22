@@ -96,9 +96,11 @@ namespace libkea{
     static const std::string KEA_ATT_FLOAT_FIELDS_HEADER( "/ATT/HEADER/FLOAT_FIELDS" );
     static const std::string KEA_ATT_STRING_FIELDS_HEADER( "/ATT/HEADER/STRING_FIELDS" );
     static const std::string KEA_ATT_SIZE_HEADER( "/ATT/HEADER/SIZE" );
+    static const std::string KEA_ATT_CHUNKSIZE_HEADER( "/ATT/HEADER/CHUNKSIZE" );
     
     static const std::string KEA_ATT_NAME_FIELD( "NAME" );
     static const std::string KEA_ATT_INDEX_FIELD( "INDEX" );
+    static const std::string KEA_ATT_USAGE_FIELD( "USAGE" );
     
     static const std::string KEA_BANDNAME_OVERVIEWS( "/OVERVIEWS" );
     static const std::string KEA_OVERVIEWSNAME_OVERVIEW( "/OVERVIEWS/OVERVIEW" );
@@ -116,7 +118,6 @@ namespace libkea{
     static const unsigned int KEA_DEFLATE( 1 ); // 1
     static const hsize_t KEA_IMAGE_CHUNK_SIZE( 256 ); // 256
     static const hsize_t KEA_ATT_CHUNK_SIZE( 1000 ); // 1000
-    
     
     enum KEADataType
     {
@@ -152,31 +153,6 @@ namespace libkea{
         unsigned int ySize;
     };
     
-    
-    struct KEAATTFeature
-    {
-        size_t fid;
-        std::vector<bool> *boolFields;
-        std::vector<long> *intFields;
-        std::vector<double> *floatFields;
-        std::vector<size_t> *neighbours;
-    };
-    
-    enum KEAAttributeDataType
-    {
-        rsgis_na = 0,
-        rsgis_bool = 1,
-        rsgis_int = 2,
-        rsgis_float = 3
-    };
-    
-    struct KEAATTAttribute
-    {
-        std::string name;
-        KEAAttributeDataType dataType;
-        unsigned int idx;
-    };
-    
     inline std::string int2Str(int num)
     {
         std::ostringstream convert;
@@ -199,6 +175,13 @@ namespace libkea{
     }
     
     inline std::string ulong2Str(unsigned long num)
+    {
+        std::ostringstream convert;
+        convert << num;
+        return convert.str();
+    }
+    
+    inline std::string sizet2Str(size_t num)
     {
         std::ostringstream convert;
         convert << num;
