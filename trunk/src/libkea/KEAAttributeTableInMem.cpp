@@ -819,7 +819,7 @@ namespace libkea{
                 singleStr = new char[strMaxLen];
                 stringData = new char[this->numStringFields*chunkSize*strMaxLen];
             }
-                        
+            
             VarLenFieldHDF *neighbourVals = new VarLenFieldHDF[chunkSize];
             
             if(numOfBlocks > 0)
@@ -859,13 +859,17 @@ namespace libkea{
                 hsize_t neighboursDataDims[1];
                 neighboursDataDims[0] = chunkSize;
                 H5::DataType intVarLenMemDT = H5::VarLenType(&H5::PredType::NATIVE_HSIZE);
+                H5::DataSpace memNeighboursDataspace = H5::DataSpace(1, neighboursDataDims);
                 
                 size_t rowOff = 0;
                 size_t strOff = 0;
                 KEAATTFeature *keaFeat = NULL;
                 for(size_t n = 0; n < numOfBlocks; ++n)
                 {
+                    std::cout << "n = " << n << std::endl;
                     rowOff = n * chunkSize;
+                    std::cout << "rowOff = " << rowOff << std::endl;
+                    
                     for(size_t i = 0; i < chunkSize; ++i)
                     {
                         keaFeat = attRows->at(rowOff+i);
@@ -883,12 +887,14 @@ namespace libkea{
                         }
                         for(size_t j = 0; j < this->numStringFields; ++j)
                         {
+                            /*
                             strncpy(singleStr, keaFeat->strFields->at(j).c_str(), strMaxLen);
                             strOff = (rowOff * (this->numStringFields*strMaxLen)) + (i*(this->numStringFields*strMaxLen)) + (j*strMaxLen);
                             for(size_t k = 0; k < strMaxLen; ++k)
                             {
                                 stringData[strOff+k] = singleStr[k];
                             }
+                            */
                         }
                         
                         neighbourVals[i].length = 0;
@@ -957,16 +963,15 @@ namespace libkea{
                     
                     H5::DataSpace neighboursWriteDataSpace = neighboursDataset->getSpace();
                     neighboursWriteDataSpace.selectHyperslab(H5S_SELECT_SET, neighboursDataDims, neighboursDataOffset);
-                    H5::DataSpace newNeighboursDataspace = H5::DataSpace(1, neighboursDataDims);
                     
-                    //neighboursDataset->write(neighbourVals, intVarLenMemDT, newNeighboursDataspace, neighboursWriteDataSpace);
+                    neighboursDataset->write(neighbourVals, intVarLenMemDT, memNeighboursDataspace, neighboursWriteDataSpace);
                     
                     for(size_t i = 0; i < chunkSize; ++i)
                     {
                         if(neighbourVals[i].length > 0)
                         {
                             neighbourVals[i].length = 0;
-                            //delete[] ((hsize_t*)neighbourVals[i].p);
+                            delete[] ((hsize_t*)neighbourVals[i].p);
                         }
                     }
                 }                
@@ -1011,7 +1016,7 @@ namespace libkea{
                 neighboursDataOffset[0] = rowOff;
                 hsize_t neighboursDataDims[1];
                 neighboursDataDims[0] = remainRows;
-                H5::DataType intVarLenMemDT = H5::VarLenType(&H5::PredType::NATIVE_UINT64);
+                H5::DataType intVarLenMemDT = H5::VarLenType(&H5::PredType::NATIVE_HSIZE);
                 
                 KEAATTFeature *keaFeat = NULL;
                 for(size_t i = 0; i < remainRows; ++i)
@@ -1091,14 +1096,14 @@ namespace libkea{
                 neighboursWriteDataSpace.selectHyperslab(H5S_SELECT_SET, neighboursDataDims, neighboursDataOffset);
                 H5::DataSpace newNeighboursDataspace = H5::DataSpace(1, neighboursDataDims);
                 
-                //neighboursDataset->write(neighbourVals, intVarLenMemDT, newNeighboursDataspace, neighboursWriteDataSpace);
+                neighboursDataset->write(neighbourVals, intVarLenMemDT, newNeighboursDataspace, neighboursWriteDataSpace);
                 
                 for(size_t i = 0; i < chunkSize; ++i)
                 {
                     if(neighbourVals[i].length > 0)
                     {
                         neighbourVals[i].length = 0;
-                        //delete[] ((size_t*)neighbourVals[i].p);
+                        delete[] ((size_t*)neighbourVals[i].p);
                     }
                 }
             }
@@ -1699,11 +1704,12 @@ namespace libkea{
                     {
                         rowOff = (n*chunkSize);
                         // Read data.
-                        //neighboursOffset[0] = rowOff;
-                        //neighboursDataspace.selectHyperslab( H5S_SELECT_SET, neighboursCount, neighboursOffset );
-                        //std::cout << "reading neighbours\n";
-                        //neighboursDataset.read(neighbourVals, intVarLenMemDT, neighboursMemspace, neighboursDataspace);
-                        //std::cout << "neighbours read\n";
+                        neighboursOffset[0] = rowOff;
+                        neighboursDataspace.selectHyperslab( H5S_SELECT_SET, neighboursCount, neighboursOffset );
+                        std::cout << "reading neighbours\n";
+                        neighboursDataset.read(neighbourVals, intVarLenMemDT, neighboursMemspace, neighboursDataspace);
+                        std::cout << "neighbours read\n";
+                        
                         if(att->numBoolFields > 0)
                         {
                             boolFieldsOffset[0] = rowOff;
@@ -1774,14 +1780,15 @@ namespace libkea{
                                 }
                             }
                             
-                            /*
-                            feat->neighbours->reserve(neighbourVals[i].length);
-                            for(hsize_t n = 0; n < neighbourVals[i].length; ++n)
+                            if(neighbourVals[i].length > 0)
                             {
-                                feat->neighbours->push_back(((size_t*)neighbourVals[i].p)[n]);
+                                feat->neighbours->reserve(neighbourVals[i].length);
+                                for(hsize_t n = 0; n < neighbourVals[i].length; ++n)
+                                {
+                                    feat->neighbours->push_back(((size_t*)neighbourVals[i].p)[n]);
+                                }
+                                delete[] ((size_t*)neighbourVals[i].p);
                             }
-                            delete[] ((size_t*)neighbourVals[i].p);
-                            */
                             
                             //std::cout << cFid << " has " << neighbourVals[j].length << " neighbours\n";
                             
@@ -1795,14 +1802,16 @@ namespace libkea{
                     rowOff = (numOfBlocks*chunkSize);
                     // Read data.
                     neighboursOffset[0] = rowOff;
+                    neighboursCount[0] = remainRows;
                     neighboursDataspace.selectHyperslab( H5S_SELECT_SET, neighboursCount, neighboursOffset );
-                    //std::cout << "reading neighbours\n";
-                    //neighboursDataset.read(neighbourVals, intVarLenMemDT, neighboursMemspace, neighboursDataspace);
-                    //std::cout << "neighbours read\n";
+                    
+                    neighboursDimsRead[0] = remainRows;
+                    neighboursMemspace = H5::DataSpace( 1, neighboursDimsRead );
+                    neighboursDataset.read(neighbourVals, intVarLenMemDT, neighboursMemspace, neighboursDataspace);
                     
                     if(att->numBoolFields > 0)
                     {
-                        boolFieldsOffset[0] = numOfBlocks*chunkSize;
+                        boolFieldsOffset[0] = rowOff;
                         boolFieldsOffset[1] = 0;
                         boolFieldsCount[0] = remainRows;
                         boolFieldsCount[1] = att->numBoolFields;
@@ -1823,7 +1832,7 @@ namespace libkea{
                     
                     if(att->numIntFields > 0)
                     {
-                        intFieldsOffset[0] = numOfBlocks*chunkSize;
+                        intFieldsOffset[0] = rowOff;
                         intFieldsOffset[1] = 0;
                         intFieldsCount[0] = remainRows;
                         intFieldsCount[1] = att->numIntFields;
@@ -1844,7 +1853,7 @@ namespace libkea{
                     
                     if(att->numFloatFields > 0)
                     {
-                        floatFieldsOffset[0] = numOfBlocks*chunkSize;
+                        floatFieldsOffset[0] = rowOff;
                         floatFieldsOffset[1] = 0;
                         floatFieldsCount[0] = remainRows;
                         floatFieldsCount[1] = att->numFloatFields;
@@ -1866,7 +1875,7 @@ namespace libkea{
                     if(att->numStringFields > 0)
                     {
                         strFieldsOffset[0] = 0;
-                        strFieldsOffset[1] = numOfBlocks*chunkSize;
+                        strFieldsOffset[1] = rowOff;
                         strFieldsOffset[2] = 0;
                         strFieldsCount[0] = 0;
                         strFieldsCount[1] = remainRows;
@@ -1932,14 +1941,15 @@ namespace libkea{
                             }
                         }
                         
-                        /*
-                        feat->neighbours->reserve(neighbourVals[i].length);
-                        for(hsize_t n = 0; n < neighbourVals[i].length; ++n)
+                        if(neighbourVals[i].length > 0)
                         {
-                            feat->neighbours->push_back(((size_t*)neighbourVals[i].p)[n]);
+                            feat->neighbours->reserve(neighbourVals[i].length);
+                            for(hsize_t n = 0; n < neighbourVals[i].length; ++n)
+                            {
+                                feat->neighbours->push_back(((size_t*)neighbourVals[i].p)[n]);
+                            }
+                            delete[] ((size_t*)neighbourVals[i].p);
                         }
-                        delete[] ((size_t*)neighbourVals[i].p);
-                        */
                         //std::cout << cFid << " has " << neighbourVals[j].length << " neighbours\n";
                         
                         att->attRows->push_back(feat);

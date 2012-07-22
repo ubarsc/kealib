@@ -367,6 +367,7 @@ int main (int argc, char * const argv[])
             std::cout << "DID NOT FIND KEA IMAGE - THIS IS CORRECT A SPD IMAGE WAS PROVIDED!\n";
         }
         
+        
         keaImgFile = libkea::KEAImageIO::openKeaH5RDOnly(sFilename);
         
         imageIO.openKEAImageHeader(keaImgFile);
