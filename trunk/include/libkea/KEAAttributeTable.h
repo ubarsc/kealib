@@ -85,11 +85,11 @@ namespace libkea{
         char *usage;
     };
     
-    struct hvl_t
+    typedef struct 
     {
         size_t length;
         void   *p;
-    };
+    } VarLenFieldHDF;
     
     class DllExport KEAAttributeTable
     {

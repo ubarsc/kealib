@@ -2003,6 +2003,7 @@ namespace libkea{
         try 
         {
             delete this->spatialInfoFile;
+            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
             this->keaImgFile = NULL;
             this->fileOpen = false;
         }
@@ -2324,13 +2325,28 @@ namespace libkea{
                 keaImgH5File->createGroup( bandName+KEA_ATT_GROUPNAME_NEIGHBOURS );
                 keaImgH5File->createGroup( bandName+KEA_ATT_GROUPNAME_HEADER );
                 
+                // SET ATTRIBUTE TABLE CHUNK SIZE
+                int attChunkSize = 0;
+                hsize_t dimsAttChunkSize[1];
+                dimsAttChunkSize[0] = 1;
+                H5::DataSpace attChunkSizeDataSpace(1, dimsAttChunkSize);
+                H5::DataSet attChunkSizeDataset = keaImgH5File->createDataSet((bandName+KEA_ATT_CHUNKSIZE_HEADER), H5::PredType::STD_U64LE, attChunkSizeDataSpace);
+                attChunkSizeDataset.write( &attChunkSize, H5::PredType::NATIVE_INT );
+                attChunkSizeDataset.close();
+                attChunkSizeDataSpace.close();
+                
                 // SET ATTRIBUTE TABLE SIZE
-                int attSize = 0;
+                int *attSize = new int[5];
+                attSize[0] = 0;
+                attSize[1] = 0;
+                attSize[2] = 0;
+                attSize[3] = 0;
+                attSize[4] = 0;
                 hsize_t dimsAttSize[1];
-                dimsAttSize[0] = 1;
+                dimsAttSize[0] = 5;
                 H5::DataSpace attSizeDataSpace(1, dimsAttSize);
                 H5::DataSet attSizeDataset = keaImgH5File->createDataSet((bandName+KEA_ATT_SIZE_HEADER), H5::PredType::STD_U64LE, attSizeDataSpace);
-                attSizeDataset.write( &attSize, H5::PredType::NATIVE_INT );
+                attSizeDataset.write( attSize, H5::PredType::NATIVE_INT );
                 attSizeDataset.close();
                 attSizeDataSpace.close();
             }

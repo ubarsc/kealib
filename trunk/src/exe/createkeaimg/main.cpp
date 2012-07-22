@@ -255,7 +255,7 @@ int main (int argc, char * const argv[])
         libkea::KEAAttributeTable *attTable = imageIO.getAttributeTable(libkea::kea_att_mem, 1);
         std::cout << "Got attribute table\n";
         std::cout << "Adding rows\n";
-        attTable->addRows(1500);
+        attTable->addRows(2500);
         std::cout << "Rows added\n";
         attTable->addAttFloatField("Float Field 1", 0, "Red");
         attTable->addAttIntField("Int Field 1", 0);
@@ -275,6 +275,22 @@ int main (int argc, char * const argv[])
         
         std::cout << "FID 45: Field \'Float Field 2\' = " << attTable->getFloatField(45, "Float Field 2") << "\n";
         
+        libkea::KEAATTFeature *keaFeat = attTable->getFeature(10);
+        keaFeat->neighbours->push_back(9);
+        keaFeat->neighbours->push_back(3);
+        keaFeat->neighbours->push_back(15);
+        
+        keaFeat = attTable->getFeature(40);
+        keaFeat->neighbours->push_back(41);
+        keaFeat->neighbours->push_back(39);
+        keaFeat->neighbours->push_back(48);
+
+        keaFeat = attTable->getFeature(1300);
+        keaFeat->neighbours->push_back(1301);
+        keaFeat->neighbours->push_back(1320);
+        keaFeat->neighbours->push_back(1299);
+        
+        /*
         size_t numRows = attTable->getSize();
         libkea::KEAATTFeature *feat = NULL;
         for(size_t i = 0; i < numRows; ++i)
@@ -301,9 +317,22 @@ int main (int argc, char * const argv[])
             {
                 std::cout << ", FALSE\n";
             }
+            std::cout << "\tNeighbours: ";
+            for(size_t j = 0; j < feat->neighbours->size(); ++j)
+            {
+                if(j == 0)
+                {
+                    std::cout << feat->neighbours->at(j);
+                }
+                else
+                {
+                    std::cout << ", " << feat->neighbours->at(j);
+                }
+            }
             std::cout << std::endl;
         }
-        
+        */
+                
         imageIO.setAttributeTable(attTable, 1);
         
         imageIO.close();
@@ -337,6 +366,54 @@ int main (int argc, char * const argv[])
         {
             std::cout << "DID NOT FIND KEA IMAGE - THIS IS CORRECT A SPD IMAGE WAS PROVIDED!\n";
         }
+        
+        keaImgFile = libkea::KEAImageIO::openKeaH5RDOnly(sFilename);
+        
+        imageIO.openKEAImageHeader(keaImgFile);
+        libkea::KEAAttributeTable *readAtt = imageIO.getAttributeTable(libkea::kea_att_mem, 1);
+        
+        size_t numRows1 = readAtt->getSize();
+        libkea::KEAATTFeature *feat = NULL;
+        for(size_t i = 0; i < numRows1; ++i)
+        {
+            feat = attTable->getFeature(i);
+            std::cout << "FID: " << feat->fid << std::endl;
+            std::cout << "\t" << feat->intFields->at(0) << ", " << feat->intFields->at(1) << std::endl;
+            std::cout << "\t" << feat->floatFields->at(0) << ", " << feat->floatFields->at(1) << ", " << feat->floatFields->at(2) << std::endl;
+            //std::cout << "\t" << feat->strFields->at(0) << ", " << feat->strFields->at(1) << std::endl;
+            std::cout << "\t";
+            if(feat->boolFields->at(0))
+            {
+                std::cout << "TRUE";
+            }
+            else
+            {
+                std::cout << "FALSE";
+            }
+            if(feat->boolFields->at(1))
+            {
+                std::cout << ", TRUE\n";
+            }
+            else
+            {
+                std::cout << ", FALSE\n";
+            }
+            std::cout << "\tNeighbours: ";
+            for(size_t j = 0; j < feat->neighbours->size(); ++j)
+            {
+                if(j == 0)
+                {
+                    std::cout << feat->neighbours->at(j);
+                }
+                else
+                {
+                    std::cout << ", " << feat->neighbours->at(j);
+                }
+            }
+            std::cout << std::endl;
+        }
+        
+        
     } 
     catch (libkea::KEAException &e) 
     {

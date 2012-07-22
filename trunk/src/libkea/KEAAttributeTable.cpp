@@ -429,12 +429,12 @@ namespace libkea{
     {
         try
         {
-            H5::StrType strTypeOut(0, H5T_VARIABLE);
+            H5::StrType strTypeDisk(0, H5T_VARIABLE);
             
             H5::CompType *attIdxDataType = new H5::CompType( sizeof(KEAAttributeIdx) );
-            attIdxDataType->insertMember(KEA_ATT_NAME_FIELD, HOFFSET(KEAAttributeIdx, name), strTypeOut);
+            attIdxDataType->insertMember(KEA_ATT_NAME_FIELD, HOFFSET(KEAAttributeIdx, name), strTypeDisk);
             attIdxDataType->insertMember(KEA_ATT_INDEX_FIELD, HOFFSET(KEAAttributeIdx, idx), H5::PredType::STD_U32LE);
-            attIdxDataType->insertMember(KEA_ATT_USAGE_FIELD, HOFFSET(KEAAttributeIdx, usage), strTypeOut);
+            attIdxDataType->insertMember(KEA_ATT_USAGE_FIELD, HOFFSET(KEAAttributeIdx, usage), strTypeDisk);
             return attIdxDataType;
         }
         catch( H5::FileIException &e )
@@ -459,12 +459,12 @@ namespace libkea{
     {
         try
         {
-            H5::StrType strTypeIn(0, H5T_VARIABLE);
+            H5::StrType strTypeMem(0, H5T_VARIABLE);
             
             H5::CompType *attIdxDataType = new H5::CompType( sizeof(KEAAttributeIdx) );
-            attIdxDataType->insertMember(KEA_ATT_NAME_FIELD, HOFFSET(KEAAttributeIdx, name), strTypeIn);
+            attIdxDataType->insertMember(KEA_ATT_NAME_FIELD, HOFFSET(KEAAttributeIdx, name), strTypeMem);
             attIdxDataType->insertMember(KEA_ATT_INDEX_FIELD, HOFFSET(KEAAttributeIdx, idx), H5::PredType::NATIVE_UINT);
-            attIdxDataType->insertMember(KEA_ATT_USAGE_FIELD, HOFFSET(KEAAttributeIdx, usage), strTypeIn);
+            attIdxDataType->insertMember(KEA_ATT_USAGE_FIELD, HOFFSET(KEAAttributeIdx, usage), strTypeMem);
             return attIdxDataType;
         }
         catch( H5::FileIException &e )

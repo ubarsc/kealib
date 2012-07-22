@@ -96,6 +96,7 @@ namespace libkea{
     static const std::string KEA_ATT_FLOAT_FIELDS_HEADER( "/ATT/HEADER/FLOAT_FIELDS" );
     static const std::string KEA_ATT_STRING_FIELDS_HEADER( "/ATT/HEADER/STRING_FIELDS" );
     static const std::string KEA_ATT_SIZE_HEADER( "/ATT/HEADER/SIZE" );
+    static const std::string KEA_ATT_CHUNKSIZE_HEADER( "/ATT/HEADER/CHUNKSIZE" );
     
     static const std::string KEA_ATT_NAME_FIELD( "NAME" );
     static const std::string KEA_ATT_INDEX_FIELD( "INDEX" );
@@ -117,7 +118,6 @@ namespace libkea{
     static const unsigned int KEA_DEFLATE( 1 ); // 1
     static const hsize_t KEA_IMAGE_CHUNK_SIZE( 256 ); // 256
     static const hsize_t KEA_ATT_CHUNK_SIZE( 1000 ); // 1000
-    
     
     enum KEADataType
     {
