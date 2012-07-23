@@ -88,3 +88,9 @@ CPLErr KEAOverview::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage )
         return CE_Failure;
     }
 }
+
+const GDALRasterAttributeTable *KEAOverview::GetDefaultRAT()
+{
+    // KEARasterBand implements this, but we don't want to
+    return NULL;
+}

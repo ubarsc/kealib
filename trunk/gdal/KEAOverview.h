@@ -14,6 +14,9 @@ public:
                 int nOverviewIndex, int nXSize, int nYSize );
     ~KEAOverview();
 
+    // virtual methods for RATs - not implemented for overviews
+    const GDALRasterAttributeTable *GetDefaultRAT();
+
 protected:
     // we just override these functions from KEARasterBand
     virtual CPLErr IReadBlock( int, int, void * );

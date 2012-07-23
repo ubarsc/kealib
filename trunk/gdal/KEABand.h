@@ -16,6 +16,9 @@ private:
     int                  m_nOverviews; // number of overviews
     KEAOverview        **m_panOverviewBands; // array of overview objects
 
+    GDALRasterAttributeTable  *m_pAttributeTable; // pointer to the attribute table
+                                                 // created on first call to GetDefaultRAT()
+
 public:
     // constructor/destructor
     KEARasterBand( KEADataset *pDataset, int nSrcBand, libkea::KEAImageIO *pImageIO, int *pRefCount );
@@ -39,7 +42,10 @@ public:
     double GetNoDataValue(int *pbSuccess=NULL);
     CPLErr SetNoDataValue(double dfNoData);
 
-    // internal methods for 
+    // virtual methods for RATs
+    const GDALRasterAttributeTable *GetDefaultRAT();
+
+    // internal methods for overviews
     void readExistingOverviews();
     void deleteOverviewObjects();
     void CreateOverviews(int nOverviews, int *panOverviewList);

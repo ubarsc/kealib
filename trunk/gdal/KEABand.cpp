@@ -2,6 +2,9 @@
 #include "KEABand.h"
 #include "KEAOverview.h"
 
+#include "gdal_rat.h"
+#include "libkea/KEAAttributeTable.h"
+
 // constructor
 KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, libkea::KEAImageIO *pImageIO, int *pRefCount )
 {
@@ -27,6 +30,8 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, libkea::KEAIma
     // grab the description here
     this->sDescription = pImageIO->getImageBandDescription(nSrcBand);
 
+    this->m_pAttributeTable = NULL;  // no RAT yet
+
     // initialise the metadata as a CPLStringList
     m_papszMetadataList = NULL;
     this->UpdateMetadataList();
@@ -35,8 +40,10 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, libkea::KEAIma
 // destructor
 KEARasterBand::~KEARasterBand()
 {
+    // destroy RAT if any
+    delete this->m_pAttributeTable;
     // destroy the metadata
-    CSLDestroy(m_papszMetadataList);
+    CSLDestroy(this->m_papszMetadataList);
     // delete any overview bands
     this->deleteOverviewObjects();
 
@@ -325,6 +332,116 @@ CPLErr KEARasterBand::SetNoDataValue(double dfNoData)
     {
         return CE_Failure;
     }
+}
+
+// read the attributes into a GDALAttributeTable
+const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
+{
+    if( this->m_pAttributeTable == NULL )
+    {
+        try
+        {
+            if( this->m_pImageIO->attributeTablePresent(this->nBand) )
+            {
+                // we need to create one
+                this->m_pAttributeTable = new GDALRasterAttributeTable();
+
+                // we assume this is never NULL - creates a new one if none exists
+                libkea::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(libkea::kea_att_mem, this->nBand);
+    
+                for( size_t nColumnIndex = 0; nColumnIndex < pKEATable->getMaxGlobalColIdx(); nColumnIndex++ )
+                {
+                    libkea::KEAATTField sKEAField;
+                    try
+                    {
+                        sKEAField = pKEATable->getField(nColumnIndex);
+                    }
+                    catch(libkea::KEAATTException &e)
+                    {
+                        // pKEATable->getField raised exception because we have a missing column
+                        continue;
+                    }
+
+                    GDALRATFieldType eGDALType;
+                    switch( sKEAField.dataType )
+                    {
+                        case libkea::kea_att_bool:
+                        case libkea::kea_att_int:
+                            eGDALType = GFT_Integer;
+                            break;
+                        case libkea::kea_att_float:
+                            eGDALType = GFT_Real;
+                            break;
+                        case libkea::kea_att_string:
+                            eGDALType = GFT_String;
+                            break;
+                        default:
+                            continue;
+                            break;
+                    }
+
+                    GDALRATFieldUsage eGDALUsage;
+                    if( sKEAField.usage == "PixelCount" )
+                        eGDALUsage = GFU_PixelCount;
+                    else if( sKEAField.usage == "Name" )
+                        eGDALUsage = GFU_Name;
+                    else if( sKEAField.usage == "Red" )
+                        eGDALUsage = GFU_Red;
+                    else if( sKEAField.usage == "Green" )
+                        eGDALUsage = GFU_Green;
+                    else if( sKEAField.usage == "Blue" )
+                        eGDALUsage = GFU_Blue;
+                    else if( sKEAField.usage == "Alpha" )
+                        eGDALUsage = GFU_Alpha;
+                    else
+                    {
+                        // don't recognise any other special names - generic column
+                        eGDALUsage = GFU_Generic;
+                    }
+
+                    if( this->m_pAttributeTable->CreateColumn(sKEAField.name.c_str(), eGDALType, eGDALUsage) != CE_None )
+                    {
+                        CPLError( CE_Warning, CPLE_AppDefined, "Unable to create column %s", sKEAField.name.c_str() );
+                        continue;
+                    }
+
+                    int nGDALColumnIndex = this->m_pAttributeTable->GetColumnCount() - 1;
+                    for( size_t nRowIndex = 0; nRowIndex < pKEATable->getSize(); nRowIndex++ )
+                    {
+                        if( sKEAField.dataType == libkea::kea_att_bool )
+                        {
+                            bool bVal = pKEATable->getBoolField(nRowIndex, nColumnIndex);
+                            int nVal;
+                            if( bVal )
+                                nVal = 1;
+                            else
+                                nVal = 0;
+                            this->m_pAttributeTable->SetValue(nRowIndex, nGDALColumnIndex, nVal);
+                        }
+                        else if( sKEAField.dataType == libkea::kea_att_int )
+                        {
+                            int nVal = pKEATable->getIntField(nRowIndex, nColumnIndex);
+                            this->m_pAttributeTable->SetValue(nRowIndex, nGDALColumnIndex, nVal);
+                        }
+                        else
+                        {
+                            std::string sVal = pKEATable->getStringField(nRowIndex, nColumnIndex);
+                            this->m_pAttributeTable->SetValue(nRowIndex, nGDALColumnIndex, sVal.c_str());
+                        }
+                    }
+                }
+
+                delete pKEATable;
+            }
+        }
+        catch(libkea::KEAException &e)
+        {
+            CPLError( CE_Failure, CPLE_AppDefined, "Failed to read attributes: %s", e.what() );
+            delete this->m_pAttributeTable;
+            this->m_pAttributeTable = NULL;
+        }
+    }
+    return this->m_pAttributeTable;
 }
 
 // clean up our overview objects
