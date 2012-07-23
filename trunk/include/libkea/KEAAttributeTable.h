@@ -145,6 +145,7 @@ namespace libkea{
         virtual KEAFieldDataType getDataFieldType(std::string name) throw(KEAATTException);
         virtual size_t getFieldIndex(std::string name) throw(KEAATTException);
         virtual KEAATTField getField(std::string name) throw(KEAATTException);
+        virtual KEAATTField getField(size_t globalColIdx) throw(KEAATTException);
         virtual std::vector<std::string> getFieldNames();
         virtual bool hasField(std::string name);
         virtual size_t getNumBoolFields();

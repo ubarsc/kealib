@@ -419,6 +419,14 @@ int main (int argc, char * const argv[])
         readAtt->addAttFloatField("another string field", 50.3);
         
         imageIO.setAttributeTable(readAtt, 1);
+        
+        std::cout << "Global Column 0 is \'" << readAtt->getField(0).name << "\'" <<  std::endl;
+        std::cout << "Global Column 2 is \'" << readAtt->getField(2).name << "\'" <<  std::endl;
+        std::cout << "Global Column 4 is \'" << readAtt->getField(4).name << "\'" <<  std::endl;
+        std::cout << "Global Column 1 is \'" << readAtt->getField(1).name << "\'" <<  std::endl;
+        std::cout << "Global Column 7 is \'" << readAtt->getField(7).name << "\'" <<  std::endl;
+        std::cout << "Global Column 9 is \'" << readAtt->getField(9).name << "\'" <<  std::endl;
+        
         imageIO.close();
     } 
     catch (libkea::KEAException &e) 

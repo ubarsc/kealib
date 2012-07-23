@@ -205,6 +205,28 @@ namespace libkea{
         return (*iterField).second;
     }
     
+    KEAATTField KEAAttributeTable::getField(size_t globalColIdx) throw(KEAATTException)
+    {
+        KEAATTField field;
+        bool found = false;
+        for(std::map<std::string, KEAATTField>::iterator iterField = fields->begin(); iterField != fields->end(); ++iterField)
+        {
+            if((*iterField).second.colNum == globalColIdx)
+            {
+                field = (*iterField).second;
+                found = true;
+                break;
+            }
+        }
+        
+        if(!found)
+        {
+            throw KEAATTException("Global column index could not be found.");
+        }
+        
+        return field;
+    }
+    
     std::vector<std::string> KEAAttributeTable::getFieldNames()
     {
         std::vector<std::string> names;
