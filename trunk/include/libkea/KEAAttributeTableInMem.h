@@ -70,7 +70,7 @@ namespace libkea{
         
         KEAATTFeature* getFeature(size_t fid) throw(KEAATTException);
         
-         size_t getSize();
+        size_t getSize();
         
         void addAttBoolField(KEAATTField field, bool val) throw(KEAATTException);
         void addAttIntField(KEAATTField field, int val) throw(KEAATTException);

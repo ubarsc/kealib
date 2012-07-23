@@ -94,6 +94,7 @@ namespace libkea{
                 
         KEAAttributeTable* getAttributeTable(KEAATTType type, unsigned int band) throw(KEAATTException, KEAIOException);
         void setAttributeTable(KEAAttributeTable* att, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE) throw(KEAATTException, KEAIOException);
+        bool attributeTablePresent(unsigned int band);
         
         void close()throw(KEAIOException);
         

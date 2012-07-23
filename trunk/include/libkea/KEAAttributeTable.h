@@ -154,6 +154,8 @@ namespace libkea{
         virtual size_t getNumStringFields();
         
         virtual size_t getSize()=0;
+        virtual size_t getTotalNumOfCols();
+        virtual size_t getMaxGlobalColIdx();
         virtual void addRows(size_t numRows)=0;
         
         virtual void exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE)throw(KEAATTException, KEAIOException)=0;

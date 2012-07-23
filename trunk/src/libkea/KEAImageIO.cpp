@@ -1998,6 +1998,55 @@ namespace libkea{
         }
     }
     
+    bool KEAImageIO::attributeTablePresent(unsigned int band)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        bool attPresent = false;
+        try 
+        {
+            std::string bandPathBase = KEA_DATASETNAME_BAND + uint2Str(band);
+            hsize_t *attSize = new hsize_t[5];
+            try 
+            {   
+                hsize_t dimsValue[1];
+                dimsValue[0] = 5;
+                H5::DataSpace valueDataSpace(1, dimsValue);
+                H5::DataSet datasetAttSize = this->keaImgFile->openDataSet( bandPathBase + KEA_ATT_SIZE_HEADER );
+                datasetAttSize.read(attSize, H5::PredType::STD_U64LE, valueDataSpace);
+                datasetAttSize.close();
+                valueDataSpace.close();
+            } 
+            catch (H5::Exception &e) 
+            {
+                throw KEAIOException("The attribute table size field is not present.");
+            }
+            
+            if(attSize[0] > 0)
+            {
+                attPresent = true;
+            }
+            
+            delete[] attSize;
+        }
+        catch(KEAIOException &e)
+        {
+            throw e;
+        }
+        catch(KEAATTException &e)
+        {
+            throw e;
+        }
+        catch( H5::Exception &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+        return attPresent;
+    }
+    
     void KEAImageIO::close() throw(KEAIOException)
     {
         try 
@@ -2012,7 +2061,7 @@ namespace libkea{
             throw e;
         }
     }
-    
+        
     H5::H5File* KEAImageIO::createKEAImage(std::string fileName, KEADataType dataType, unsigned int xSize, unsigned int ySize, unsigned int numImgBands, std::vector<std::string> *bandDescrips, KEAImageSpatialInfo * spatialInfo, unsigned int imageBlockSize, unsigned int attBlockSize, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize, unsigned int deflate)throw(KEAIOException)
     {
         H5::Exception::dontPrint();

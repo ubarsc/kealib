@@ -267,6 +267,16 @@ namespace libkea{
         return this->numStringFields;
     }
     
+    size_t KEAAttributeTable::getTotalNumOfCols()
+    {
+        return this->numBoolFields + this->numIntFields + this->numFloatFields + this->numStringFields;
+    }
+    
+    size_t KEAAttributeTable::getMaxGlobalColIdx()
+    {
+        return numOfCols;
+    }
+    
     void KEAAttributeTable::addAttBoolField(std::string name, bool val, std::string usage) throw(KEAATTException)
     {
         try 
