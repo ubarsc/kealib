@@ -334,6 +334,7 @@ int main (int argc, char * const argv[])
         */
                 
         imageIO.setAttributeTable(attTable, 1);
+        imageIO.setAttributeTable(attTable, 2);
         
         imageIO.close();
         
@@ -367,7 +368,7 @@ int main (int argc, char * const argv[])
             std::cout << "DID NOT FIND KEA IMAGE - THIS IS CORRECT A SPD IMAGE WAS PROVIDED!\n";
         }
         
-        keaImgFile = libkea::KEAImageIO::openKeaH5RDOnly(sFilename);
+        keaImgFile = libkea::KEAImageIO::openKeaH5RW(sFilename);
         
         imageIO.openKEAImageHeader(keaImgFile);
         libkea::KEAAttributeTable *readAtt = imageIO.getAttributeTable(libkea::kea_att_mem, 1);
@@ -413,6 +414,12 @@ int main (int argc, char * const argv[])
             std::cout << std::endl;
         }
         */
+        
+        readAtt->addAttStringField("third field", "new value");
+        readAtt->addAttFloatField("another string field", 50.3);
+        
+        imageIO.setAttributeTable(readAtt, 1);
+        imageIO.close();
     } 
     catch (libkea::KEAException &e) 
     {
