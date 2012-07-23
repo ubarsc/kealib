@@ -451,11 +451,6 @@ namespace libkea{
         
     }
     
-    void KEAAttributeTable::exportToHDF(std::string outputFile)throw(KEAATTException, KEAIOException)
-    {
-        
-    }
-    
     H5::CompType* KEAAttributeTable::createAttibuteIdxCompTypeDisk() throw(KEAATTException)
     {
         try
