@@ -39,6 +39,7 @@ namespace libkea{
         numIntFields = 0;
         numFloatFields = 0;
         numStringFields = 0;
+        numOfCols = 0;
         
         fields = new std::map<std::string, KEAATTField>();
     }
@@ -261,6 +262,7 @@ namespace libkea{
             nField.dataType = kea_att_bool;
             nField.idx = numBoolFields;
             nField.usage = usage;
+            nField.colNum = numOfCols;
             
             // Get the implementation to created the new field
             this->addAttBoolField(nField, val);
@@ -268,6 +270,7 @@ namespace libkea{
             // If no expection thrown added to header.
             fields->insert(std::pair<std::string, KEAATTField>(name, nField));
             ++numBoolFields;
+            ++numOfCols;
         }
         catch (KEAATTException &e)
         {
@@ -292,6 +295,7 @@ namespace libkea{
             nField.dataType = kea_att_int;
             nField.idx = numIntFields;
             nField.usage = usage;
+            nField.colNum = numOfCols;
             
             // Get the implementation to created the new field
             this->addAttIntField(nField, val);
@@ -299,6 +303,7 @@ namespace libkea{
             // If no expection thrown added to header.
             fields->insert(std::pair<std::string, KEAATTField>(name, nField));
             ++numIntFields;
+            ++numOfCols;
         }
         catch (KEAATTException &e)
         {
@@ -323,6 +328,7 @@ namespace libkea{
             nField.dataType = kea_att_float;
             nField.idx = numFloatFields;
             nField.usage = usage;
+            nField.colNum = numOfCols;
             
             // Get the implementation to created the new field
             this->addAttFloatField(nField, val);
@@ -330,6 +336,7 @@ namespace libkea{
             // If no expection thrown added to header.
             fields->insert(std::pair<std::string, KEAATTField>(name, nField));
             ++numFloatFields;
+            ++numOfCols;
         }
         catch (KEAATTException &e)
         {
@@ -354,6 +361,7 @@ namespace libkea{
             nField.dataType = kea_att_string;
             nField.idx = numStringFields;
             nField.usage = usage;
+            nField.colNum = numOfCols;
             
             // Get the implementation to created the new field
             this->addAttStringField(nField, val);
@@ -361,6 +369,7 @@ namespace libkea{
             // If no expection thrown added to header.
             fields->insert(std::pair<std::string, KEAATTField>(name, nField));
             ++numStringFields;
+            ++numOfCols;
         }
         catch (KEAATTException &e)
         {
@@ -435,6 +444,7 @@ namespace libkea{
             attIdxDataType->insertMember(KEA_ATT_NAME_FIELD, HOFFSET(KEAAttributeIdx, name), strTypeDisk);
             attIdxDataType->insertMember(KEA_ATT_INDEX_FIELD, HOFFSET(KEAAttributeIdx, idx), H5::PredType::STD_U32LE);
             attIdxDataType->insertMember(KEA_ATT_USAGE_FIELD, HOFFSET(KEAAttributeIdx, usage), strTypeDisk);
+            attIdxDataType->insertMember(KEA_ATT_COLNUM_FIELD, HOFFSET(KEAAttributeIdx, colNum), H5::PredType::STD_U32LE);
             return attIdxDataType;
         }
         catch( H5::FileIException &e )
@@ -465,7 +475,64 @@ namespace libkea{
             attIdxDataType->insertMember(KEA_ATT_NAME_FIELD, HOFFSET(KEAAttributeIdx, name), strTypeMem);
             attIdxDataType->insertMember(KEA_ATT_INDEX_FIELD, HOFFSET(KEAAttributeIdx, idx), H5::PredType::NATIVE_UINT);
             attIdxDataType->insertMember(KEA_ATT_USAGE_FIELD, HOFFSET(KEAAttributeIdx, usage), strTypeMem);
+            attIdxDataType->insertMember(KEA_ATT_COLNUM_FIELD, HOFFSET(KEAAttributeIdx, colNum), H5::PredType::NATIVE_UINT);
             return attIdxDataType;
+        }
+        catch( H5::FileIException &e )
+        {
+            throw KEAATTException(e.getDetailMsg());
+        }
+        catch( H5::DataSetIException &e )
+        {
+            throw KEAATTException(e.getDetailMsg());
+        }
+        catch( H5::DataSpaceIException &e )
+        {
+            throw KEAATTException(e.getDetailMsg());
+        }
+        catch( H5::DataTypeIException &e )
+        {
+            throw KEAATTException(e.getDetailMsg());
+        }
+    }
+    
+    H5::CompType* KEAAttributeTable::createKeaStringCompTypeDisk() throw(KEAATTException)
+    {
+        try
+        {
+            H5::StrType strTypeDisk(0, H5T_VARIABLE);
+            
+            H5::CompType *keaStrDataType = new H5::CompType( sizeof(KEAAttString) );
+            keaStrDataType->insertMember(KEA_ATT_STRING_FIELD, HOFFSET(KEAAttString, str), strTypeDisk);
+            return keaStrDataType;
+        }
+        catch( H5::FileIException &e )
+        {
+            throw KEAATTException(e.getDetailMsg());
+        }
+        catch( H5::DataSetIException &e )
+        {
+            throw KEAATTException(e.getDetailMsg());
+        }
+        catch( H5::DataSpaceIException &e )
+        {
+            throw KEAATTException(e.getDetailMsg());
+        }
+        catch( H5::DataTypeIException &e )
+        {
+            throw KEAATTException(e.getDetailMsg());
+        }
+    }
+    
+    H5::CompType* KEAAttributeTable::createKeaStringCompTypeMem() throw(KEAATTException)
+    {
+        try
+        {
+            H5::StrType strTypeMem(0, H5T_VARIABLE);
+            
+            H5::CompType *keaStrDataType = new H5::CompType( sizeof(KEAAttString) );
+            keaStrDataType->insertMember(KEA_ATT_STRING_FIELD, HOFFSET(KEAAttString, str), strTypeMem);
+            return keaStrDataType;
         }
         catch( H5::FileIException &e )
         {

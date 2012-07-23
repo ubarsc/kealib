@@ -367,12 +367,11 @@ int main (int argc, char * const argv[])
             std::cout << "DID NOT FIND KEA IMAGE - THIS IS CORRECT A SPD IMAGE WAS PROVIDED!\n";
         }
         
-        
         keaImgFile = libkea::KEAImageIO::openKeaH5RDOnly(sFilename);
         
         imageIO.openKEAImageHeader(keaImgFile);
         libkea::KEAAttributeTable *readAtt = imageIO.getAttributeTable(libkea::kea_att_mem, 1);
-        
+        /*
         size_t numRows1 = readAtt->getSize();
         libkea::KEAATTFeature *feat = NULL;
         for(size_t i = 0; i < numRows1; ++i)
@@ -381,7 +380,7 @@ int main (int argc, char * const argv[])
             std::cout << "FID: " << feat->fid << std::endl;
             std::cout << "\t" << feat->intFields->at(0) << ", " << feat->intFields->at(1) << std::endl;
             std::cout << "\t" << feat->floatFields->at(0) << ", " << feat->floatFields->at(1) << ", " << feat->floatFields->at(2) << std::endl;
-            //std::cout << "\t" << feat->strFields->at(0) << ", " << feat->strFields->at(1) << std::endl;
+            std::cout << "\t" << feat->strFields->at(0) << ", " << feat->strFields->at(1) << std::endl;
             std::cout << "\t";
             if(feat->boolFields->at(0))
             {
@@ -413,8 +412,7 @@ int main (int argc, char * const argv[])
             }
             std::cout << std::endl;
         }
-        
-        
+        */
     } 
     catch (libkea::KEAException &e) 
     {

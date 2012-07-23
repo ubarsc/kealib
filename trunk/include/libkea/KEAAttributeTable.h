@@ -76,6 +76,7 @@ namespace libkea{
         KEAFieldDataType dataType;
         size_t idx;
         std::string usage;
+        size_t colNum;
     };
     
     struct KEAAttributeIdx
@@ -83,6 +84,12 @@ namespace libkea{
         char *name;
         unsigned int idx;
         char *usage;
+        unsigned int colNum;
+    };
+    
+    struct KEAAttString
+    {
+        char *str;
     };
     
     typedef struct 
@@ -156,6 +163,8 @@ namespace libkea{
     protected:
         static H5::CompType* createAttibuteIdxCompTypeDisk() throw(KEAATTException);
         static H5::CompType* createAttibuteIdxCompTypeMem() throw(KEAATTException);
+        static H5::CompType* createKeaStringCompTypeDisk() throw(KEAATTException);
+        static H5::CompType* createKeaStringCompTypeMem() throw(KEAATTException);
         virtual void addAttBoolField(KEAATTField field, bool val) throw(KEAATTException)=0;
         virtual void addAttIntField(KEAATTField field, int val) throw(KEAATTException)=0;
         virtual void addAttFloatField(KEAATTField field, float val) throw(KEAATTException)=0;
@@ -168,8 +177,8 @@ namespace libkea{
         size_t numIntFields;
         size_t numFloatFields;
         size_t numStringFields;
+        size_t numOfCols;
     };
-    
 }
 
 

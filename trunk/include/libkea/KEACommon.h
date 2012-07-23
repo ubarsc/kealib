@@ -101,6 +101,9 @@ namespace libkea{
     static const std::string KEA_ATT_NAME_FIELD( "NAME" );
     static const std::string KEA_ATT_INDEX_FIELD( "INDEX" );
     static const std::string KEA_ATT_USAGE_FIELD( "USAGE" );
+    static const std::string KEA_ATT_COLNUM_FIELD( "COLNUM" );
+    
+    static const std::string KEA_ATT_STRING_FIELD( "STRING" );
     
     static const std::string KEA_BANDNAME_OVERVIEWS( "/OVERVIEWS" );
     static const std::string KEA_OVERVIEWSNAME_OVERVIEW( "/OVERVIEWS/OVERVIEW" );

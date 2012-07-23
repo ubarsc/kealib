@@ -395,7 +395,6 @@ namespace libkea{
     
     void KEAAttributeTableInMem::exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize, unsigned int deflate)throw(KEAATTException, KEAIOException)
     {
-        std::cout << "EXPORTING TO KEA FILE\n";
         try
         {
             if(attRows->size() == 0)
@@ -404,7 +403,6 @@ namespace libkea{
             }
             
             std::string bandPathBase = KEA_DATASETNAME_BAND + uint2Str(band);
-            std::cout << "Band Path Base = " << bandPathBase << std::endl;
             
             // Read header size.
             hsize_t *attSize = new hsize_t[5];
@@ -422,9 +420,7 @@ namespace libkea{
             {
                 throw KEAIOException("The attribute table size field is not present.");
             }
-            
-            std::cout << "attribute table size = " << attSize[0] << std::endl;
-            
+                        
             KEAAttributeIdx *boolFields = NULL;
             if(this->numBoolFields > 0)
             {
@@ -457,6 +453,7 @@ namespace libkea{
                     boolFields[boolFieldsIdx].name = const_cast<char*>((*iterField).second.name.c_str());
                     boolFields[boolFieldsIdx].idx = (*iterField).second.idx;
                     boolFields[boolFieldsIdx].usage = const_cast<char*>((*iterField).second.usage.c_str());
+                    boolFields[boolFieldsIdx].colNum = (*iterField).second.colNum;
                     ++boolFieldsIdx;
                 }
                 else if((*iterField).second.dataType == kea_att_int)
@@ -464,6 +461,7 @@ namespace libkea{
                     intFields[intFieldsIdx].name = const_cast<char*>((*iterField).second.name.c_str());
                     intFields[intFieldsIdx].idx = (*iterField).second.idx;
                     intFields[intFieldsIdx].usage = const_cast<char*>((*iterField).second.usage.c_str());
+                    intFields[intFieldsIdx].colNum = (*iterField).second.colNum;
                     ++intFieldsIdx;
                 }
                 else if((*iterField).second.dataType == kea_att_float)
@@ -471,6 +469,7 @@ namespace libkea{
                     floatFields[floatFieldsIdx].name = const_cast<char*>((*iterField).second.name.c_str());
                     floatFields[floatFieldsIdx].idx = (*iterField).second.idx;
                     floatFields[floatFieldsIdx].usage = const_cast<char*>((*iterField).second.usage.c_str());
+                    floatFields[floatFieldsIdx].colNum = (*iterField).second.colNum;
                     ++floatFieldsIdx;
                 }
                 else if((*iterField).second.dataType == kea_att_string)
@@ -478,6 +477,7 @@ namespace libkea{
                     stringFields[stringFieldIdx].name = const_cast<char*>((*iterField).second.name.c_str());
                     stringFields[stringFieldIdx].idx = (*iterField).second.idx;
                     stringFields[stringFieldIdx].usage = const_cast<char*>((*iterField).second.usage.c_str());
+                    stringFields[stringFieldIdx].colNum = (*iterField).second.colNum;
                     ++stringFieldIdx;
                 }
                 else
@@ -493,26 +493,8 @@ namespace libkea{
             H5::DataSet *strDataset;
             H5::DataSet *neighboursDataset;
             
-            H5::StrType strType(0, H5T_VARIABLE);
-            size_t strMaxLen = 0;
-            if(this->numStringFields > 0)
-            {
-                for(size_t i = 0; i < attRows->size(); ++i)
-                {
-                    for(size_t j = 0; j < this->numStringFields; ++j)
-                    {
-                        if((i == 0) & (i == 0))
-                        {
-                            strMaxLen = attRows->at(i)->strFields->at(j).length();
-                        }
-                        else if(attRows->at(i)->strFields->at(j).length() > strMaxLen)
-                        {
-                            strMaxLen = attRows->at(i)->strFields->at(j).length();
-                        }
-                    }
-                }
-            }
-            std::cout << "Max. String length is: " << strMaxLen << std::endl;
+            H5::CompType *strTypeDisk = this->createKeaStringCompTypeDisk();
+            H5::CompType *strTypeMem = this->createKeaStringCompTypeMem();
             
             if(attSize[0] > 0)
             {
@@ -522,9 +504,8 @@ namespace libkea{
             else
             {
                 // THERE IS NO EXISTING TABLE AND THE DATA STRUCTURES NEEDS TO BE CREATED.
-                std::cout << "Creating new attribute table." << std::endl;
-                
                 H5::CompType *fieldDtDisk = this->createAttibuteIdxCompTypeDisk();
+                H5::CompType *fieldDtMem = this->createAttibuteIdxCompTypeMem();
                 if(this->numBoolFields > 0)
                 {
                     hsize_t initDimsBoolFieldsDS[1];
@@ -555,7 +536,7 @@ namespace libkea{
                     boolFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, boolFieldsDataDims, boolFieldsOffset);
                     H5::DataSpace newBoolFieldsDataspace = H5::DataSpace(1, boolFieldsDataDims);
                     
-                    boolFieldsDataset.write(boolFields, *fieldDtDisk, newBoolFieldsDataspace, boolFieldsWriteDataSpace);
+                    boolFieldsDataset.write(boolFields, *fieldDtMem, newBoolFieldsDataspace, boolFieldsWriteDataSpace);
                     
                     delete[] boolFields;
                 }
@@ -590,7 +571,7 @@ namespace libkea{
                     intFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, intFieldsDataDims, intFieldsOffset);
                     H5::DataSpace newIntFieldsDataspace = H5::DataSpace(1, intFieldsDataDims);
                     
-                    intFieldsDataset.write(intFields, *fieldDtDisk, newIntFieldsDataspace, intFieldsWriteDataSpace);
+                    intFieldsDataset.write(intFields, *fieldDtMem, newIntFieldsDataspace, intFieldsWriteDataSpace);
                     
                     delete[] intFields;
                 }
@@ -625,7 +606,7 @@ namespace libkea{
                     floatFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, floatFieldsDataDims, floatFieldsOffset);
                     H5::DataSpace newFloatFieldsDataspace = H5::DataSpace(1, floatFieldsDataDims);
                     
-                    floatFieldsDataset.write(floatFields, *fieldDtDisk, newFloatFieldsDataspace, floatFieldsWriteDataSpace);
+                    floatFieldsDataset.write(floatFields, *fieldDtMem, newFloatFieldsDataspace, floatFieldsWriteDataSpace);
                     
                     delete[] floatFields;
                 }
@@ -660,11 +641,12 @@ namespace libkea{
                     stringFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, stringFieldsDataDims, stringFieldsOffset);
                     H5::DataSpace newStringFieldsDataspace = H5::DataSpace(1, stringFieldsDataDims);
                     
-                    stringFieldsDataset.write(stringFields, *fieldDtDisk, newStringFieldsDataspace, stringFieldsWriteDataSpace);
+                    stringFieldsDataset.write(stringFields, *fieldDtMem, newStringFieldsDataspace, stringFieldsWriteDataSpace);
                     
                     delete[] stringFields;
                 }
                 delete fieldDtDisk;
+                delete fieldDtMem;
                 
                 if(this->numBoolFields > 0)
                 {
@@ -744,29 +726,26 @@ namespace libkea{
                 if(this->numStringFields > 0)
                 {
                     // Create the string
-                    hsize_t initDimsString[3];
-                    initDimsString[0] = strMaxLen;
-                    initDimsString[1] = this->attRows->size();
-                    initDimsString[2] = this->numStringFields;
-                    hsize_t maxDimsString[3];
+                    hsize_t initDimsString[2];
+                    initDimsString[0] = this->attRows->size();
+                    initDimsString[1] = this->numStringFields;
+                    hsize_t maxDimsString[2];
                     maxDimsString[0] = H5S_UNLIMITED;
                     maxDimsString[1] = H5S_UNLIMITED;
-                    maxDimsString[2] = H5S_UNLIMITED;
-                    H5::DataSpace stringDataSpace = H5::DataSpace(3, initDimsString, maxDimsString);
+                    H5::DataSpace stringDataSpace = H5::DataSpace(2, initDimsString, maxDimsString);
                     
-                    hsize_t dimsStringChunk[3];
+                    hsize_t dimsStringChunk[2];
                     dimsStringChunk[0] = chunkSize;
-                    dimsStringChunk[1] = chunkSize;
-                    dimsStringChunk[2] = 1;
+                    dimsStringChunk[1] = 1;
                     
-                    const char *fillValueStr = std::string("").c_str();
+                    KEAAttString fillValueStr = KEAAttString();
+                    fillValueStr.str = const_cast<char*>(std::string("").c_str());
                     H5::DSetCreatPropList creationStringDSPList;
-                    creationStringDSPList.setChunk(3, dimsStringChunk);
+                    creationStringDSPList.setChunk(2, dimsStringChunk);
                     creationStringDSPList.setShuffle();
                     creationStringDSPList.setDeflate(deflate);
-                    creationStringDSPList.setFillValue(strType, &fillValueStr);
-                    
-                    strDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_STRING_DATA), strType, stringDataSpace, creationStringDSPList));
+                    creationStringDSPList.setFillValue(*strTypeMem, &fillValueStr);
+                    strDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_STRING_DATA), *strTypeDisk, stringDataSpace, creationStringDSPList));
                 }
                 
                 // Create Neighbours dataset
@@ -812,12 +791,10 @@ namespace libkea{
             {
                 floatData = new double[this->numFloatFields*chunkSize];
             }
-            char *stringData = NULL;
-            char *singleStr = NULL;
+            KEAAttString *stringData = NULL;
             if(this->numStringFields > 0)
             {
-                singleStr = new char[strMaxLen];
-                stringData = new char[this->numStringFields*chunkSize*strMaxLen];
+                stringData = new KEAAttString[this->numStringFields*chunkSize];
             }
             
             VarLenFieldHDF *neighbourVals = new VarLenFieldHDF[chunkSize];
@@ -845,14 +822,12 @@ namespace libkea{
                 floatDataDims[0] = chunkSize;
                 floatDataDims[1] = this->numFloatFields;
                 
-                hsize_t stringDataOffset[3];
+                hsize_t stringDataOffset[2];
                 stringDataOffset[0] = 0;
                 stringDataOffset[1] = 0;
-                stringDataOffset[2] = 0;
-                hsize_t stringDataDims[3];
-                stringDataDims[0] = strMaxLen;
-                stringDataDims[1] = chunkSize;
-                stringDataDims[2] = this->numStringFields;
+                hsize_t stringDataDims[2];
+                stringDataDims[0] = chunkSize;
+                stringDataDims[1] = this->numStringFields;
                 
                 hsize_t neighboursDataOffset[1];
                 neighboursDataOffset[0] = 0;
@@ -862,13 +837,11 @@ namespace libkea{
                 H5::DataSpace memNeighboursDataspace = H5::DataSpace(1, neighboursDataDims);
                 
                 size_t rowOff = 0;
-                size_t strOff = 0;
+                //size_t strOff = 0;
                 KEAATTFeature *keaFeat = NULL;
                 for(size_t n = 0; n < numOfBlocks; ++n)
                 {
-                    std::cout << "n = " << n << std::endl;
                     rowOff = n * chunkSize;
-                    std::cout << "rowOff = " << rowOff << std::endl;
                     
                     for(size_t i = 0; i < chunkSize; ++i)
                     {
@@ -887,14 +860,7 @@ namespace libkea{
                         }
                         for(size_t j = 0; j < this->numStringFields; ++j)
                         {
-                            /*
-                            strncpy(singleStr, keaFeat->strFields->at(j).c_str(), strMaxLen);
-                            strOff = (rowOff * (this->numStringFields*strMaxLen)) + (i*(this->numStringFields*strMaxLen)) + (j*strMaxLen);
-                            for(size_t k = 0; k < strMaxLen; ++k)
-                            {
-                                stringData[strOff+k] = singleStr[k];
-                            }
-                            */
+                            stringData[(i*this->numStringFields)+j].str = const_cast<char*>(keaFeat->strFields->at(j).c_str());
                         }
                         
                         neighbourVals[i].length = 0;
@@ -948,15 +914,14 @@ namespace libkea{
                     
                     if(this->numStringFields > 0)
                     {
-                        stringDataOffset[0] = 0;
-                        stringDataOffset[1] = rowOff;
-                        stringDataOffset[2] = 0;
+                        stringDataOffset[0] = rowOff;
+                        stringDataOffset[1] = 0;
                         
                         H5::DataSpace stringWriteDataSpace = strDataset->getSpace();
                         stringWriteDataSpace.selectHyperslab(H5S_SELECT_SET, stringDataDims, stringDataOffset);
-                        H5::DataSpace newStringDataspace = H5::DataSpace(3, stringDataDims);
+                        H5::DataSpace newStringDataspace = H5::DataSpace(2, stringDataDims);
                         
-                        //strDataset->write(stringData, strType, newStringDataspace, stringWriteDataSpace);
+                        strDataset->write(stringData, *strTypeMem, newStringDataspace, stringWriteDataSpace);
                     }
                     
                     neighboursDataOffset[0] = rowOff;
@@ -980,7 +945,7 @@ namespace libkea{
             if(remainRows > 0)
             {
                 size_t rowOff = numOfBlocks * chunkSize;
-                size_t strOff = 0;
+                //size_t strOff = 0;
                 
                 hsize_t boolDataOffset[2];
                 boolDataOffset[0] = rowOff;
@@ -1003,14 +968,12 @@ namespace libkea{
                 floatDataDims[0] = remainRows;
                 floatDataDims[1] = this->numFloatFields;
                 
-                hsize_t stringDataOffset[3];
-                stringDataOffset[0] = 0;
-                stringDataOffset[1] = rowOff;
-                stringDataOffset[2] = 0;
-                hsize_t stringDataDims[3];
-                stringDataDims[0] = strMaxLen;
-                stringDataDims[1] = remainRows;
-                stringDataDims[2] = this->numStringFields;
+                hsize_t stringDataOffset[2];
+                stringDataOffset[0] = rowOff;
+                stringDataOffset[1] = 0;
+                hsize_t stringDataDims[2];
+                stringDataDims[0] = remainRows;
+                stringDataDims[1] = this->numStringFields;
                 
                 hsize_t neighboursDataOffset[1];
                 neighboursDataOffset[0] = rowOff;
@@ -1036,12 +999,13 @@ namespace libkea{
                     }
                     for(size_t j = 0; j < this->numStringFields; ++j)
                     {
-                        strncpy(singleStr, keaFeat->strFields->at(j).c_str(), strMaxLen);
-                        strOff = (rowOff * (this->numStringFields*strMaxLen)) + (i*(this->numStringFields*strMaxLen)) + (j*strMaxLen);
-                        for(size_t k = 0; k < strMaxLen; ++k)
-                        {
-                            stringData[strOff+k] = singleStr[k];
-                        }
+                        stringData[(i*this->numStringFields)+j].str = const_cast<char*>(keaFeat->strFields->at(j).c_str());
+                        //strncpy(singleStr, keaFeat->strFields->at(j).c_str(), strMaxLen);
+                        //strOff = (i*(this->numStringFields*strMaxLen)) + (j*strMaxLen);
+                        //for(size_t k = 0; k < strMaxLen; ++k)
+                        //{
+                        //    stringData[strOff+k] = singleStr[k];
+                        //}
                     }
                     neighbourVals[i].length = 0;
                     neighbourVals[i].p = NULL;
@@ -1087,9 +1051,9 @@ namespace libkea{
                 {
                     H5::DataSpace stringWriteDataSpace = strDataset->getSpace();
                     stringWriteDataSpace.selectHyperslab(H5S_SELECT_SET, stringDataDims, stringDataOffset);
-                    H5::DataSpace newStringDataspace = H5::DataSpace(3, stringDataDims);
+                    H5::DataSpace newStringDataspace = H5::DataSpace(2, stringDataDims);
                     
-                    //strDataset->write(stringData, strType, newStringDataspace, stringWriteDataSpace);
+                    strDataset->write(stringData, *strTypeMem, newStringDataspace, stringWriteDataSpace);
                 }
                                 
                 H5::DataSpace neighboursWriteDataSpace = neighboursDataset->getSpace();
@@ -1154,10 +1118,13 @@ namespace libkea{
             if(this->numStringFields > 0)
             {
                 delete[] stringData;
-                delete[] singleStr;
+                //delete[] singleStr;
             }
             delete[] neighbourVals;
             delete[] attSize;
+            
+            delete strTypeMem;
+            delete strTypeDisk;
             
             delete boolDataset;
             delete intDataset;
@@ -1188,9 +1155,7 @@ namespace libkea{
         // Create instance of class to populate and return.
         KEAAttributeTableInMem *att = new KEAAttributeTableInMem();
         
-        std::string bandPathBase = KEA_DATASETNAME_BAND + uint2Str(band);
-        std::cout << "Band Path Base = " << bandPathBase << std::endl;
-        
+        std::string bandPathBase = KEA_DATASETNAME_BAND + uint2Str(band);        
         try
         {
             // Read header size.
@@ -1213,7 +1178,6 @@ namespace libkea{
             if(attSize[0] > 0)
             {
                 // READ ATTRIBUTE TABLE FROM KEA IMAGE BAND...
-                std::cout << "Att Size: " << attSize[0] << std::endl;
                 
                 // READ THE CHUNK SIZE
                 size_t chunkSize = 0;
@@ -1232,9 +1196,7 @@ namespace libkea{
                 catch ( H5::Exception &e) 
                 {
                     throw KEAIOException("The attribute table size field is not present.");
-                }
-                std::cout << "Chunk Size: " << chunkSize << std::endl;
-                
+                }                
                 
                 // READ TABLE HEADERS
                 H5::CompType *fieldCompTypeMem = KEAAttributeTable::createAttibuteIdxCompTypeMem();
@@ -1280,7 +1242,6 @@ namespace libkea{
                         throw KEAIOException(e.getDetailMsg());
                     }
                 }
-                std::cout << "There are " << att->numBoolFields << " boolean fields." << std::endl;
                 
                 // READ INTEGER HEADERS
                 att->numIntFields = attSize[2];
@@ -1323,7 +1284,6 @@ namespace libkea{
                         throw KEAIOException(e.getDetailMsg());
                     }
                 }
-                std::cout << "There are " << att->numIntFields << " integer fields." << std::endl;
                 
                 // READ FLOAT HEADERS
                 att->numFloatFields = attSize[3];
@@ -1366,7 +1326,6 @@ namespace libkea{
                         throw KEAIOException(e.getDetailMsg());
                     }
                 }
-                std::cout << "There are " << att->numFloatFields << " float fields." << std::endl;
                 
                 // READ STRING HEADERS
                 att->numStringFields = attSize[4];
@@ -1409,7 +1368,6 @@ namespace libkea{
                         throw KEAIOException(e.getDetailMsg());
                     }
                 }
-                std::cout << "There are " << att->numStringFields << " string fields." << std::endl;
                 
                 // Reserve space in vector.
                 att->attRows->reserve(attSize[0]);
@@ -1417,9 +1375,6 @@ namespace libkea{
                 size_t numOfBlocks = 0;
                 numOfBlocks = floor(attSize[0]/chunkSize);
                 size_t remainRows = attSize[0] - (numOfBlocks * chunkSize);
-                  
-                std::cout << "Number of blocks = " << numOfBlocks << std::endl;
-                std::cout << "Remaining Rows = " << remainRows << std::endl;
                 
                 KEAATTFeature *feat = NULL;
                 size_t cFid = 0;
@@ -1601,7 +1556,8 @@ namespace libkea{
                 
                 H5::DataSet strDataset;
                 H5::DataSpace strDataspace;
-                char *stringVals = NULL;
+                H5::CompType *strTypeMem = KEAAttributeTable::createKeaStringCompTypeMem();
+                KEAAttString *stringVals = NULL;
                 if(att->numStringFields > 0)
                 {
                     strDataset = keaImg->openDataSet( (bandPathBase + KEA_ATT_STRING_DATA) );
@@ -1609,7 +1565,7 @@ namespace libkea{
                     
                     int strNDims = strDataspace.getSimpleExtentNdims();
                     
-                    if(strNDims != 3)
+                    if(strNDims != 2)
                     {
                         throw KEAIOException("The string datasets needs to have 2 dimensions.");
                     }
@@ -1617,46 +1573,41 @@ namespace libkea{
                     hsize_t *strDims = new hsize_t[strNDims];
                     strDataspace.getSimpleExtentDims(strDims);
                     
-                    if(strDims[1] != attSize[0])
+                    if(strDims[0] != attSize[0])
                     {
                         throw KEAIOException("The number of features in string dataset does not match expected values.");
                     }
                     
-                    if(strDims[2] != att->numStringFields)
+                    if(strDims[1] != att->numStringFields)
                     {
                         throw KEAIOException("The number of string fields does not match expected values.");
                     }
                     delete[] strDims;
                     
-                    stringVals = new char[chunkSize*att->numStringFields];
+                    stringVals = new KEAAttString[chunkSize*att->numStringFields];
                 }
-                hsize_t strFieldsOffset[3];
+                hsize_t strFieldsOffset[2];
                 strFieldsOffset[0] = 0;
                 strFieldsOffset[1] = 0;
-                strFieldsOffset[2] = 0;
-                hsize_t strFieldsCount[3];
-                strFieldsCount[0] = 0;
-                strFieldsCount[1] = chunkSize;
-                strFieldsCount[2] = att->numStringFields;
+                hsize_t strFieldsCount[2];
+                strFieldsCount[0] = chunkSize;
+                strFieldsCount[1] = att->numStringFields;
                 if(att->numStringFields > 0)
                 {
                     strDataspace.selectHyperslab( H5S_SELECT_SET, strFieldsCount, strFieldsOffset );
                 }
                 
-                hsize_t strFieldsDimsRead[3]; 
-                strFieldsDimsRead[0] = 0;
-                strFieldsDimsRead[1] = chunkSize;
-                strFieldsDimsRead[2] = att->numStringFields;
+                hsize_t strFieldsDimsRead[2]; 
+                strFieldsDimsRead[0] = chunkSize;
+                strFieldsDimsRead[1] = att->numStringFields;
                 H5::DataSpace strFieldsMemspace( 2, strFieldsDimsRead );
                 
-                hsize_t strFieldsOffset_out[3];
+                hsize_t strFieldsOffset_out[2];
                 strFieldsOffset_out[0] = 0;
                 strFieldsOffset_out[1] = 0;
-                strFieldsOffset_out[2] = 0;
-                hsize_t strFieldsCount_out[3];
-                strFieldsCount_out[0] = 0;
-                strFieldsCount_out[1] = chunkSize;
-                strFieldsCount_out[2] = att->numStringFields;
+                hsize_t strFieldsCount_out[2];
+                strFieldsCount_out[0] = chunkSize;
+                strFieldsCount_out[1] = att->numStringFields;
                 if(att->numStringFields > 0)
                 {
                     strFieldsMemspace.selectHyperslab( H5S_SELECT_SET, strFieldsCount_out, strFieldsOffset_out );
@@ -1706,9 +1657,7 @@ namespace libkea{
                         // Read data.
                         neighboursOffset[0] = rowOff;
                         neighboursDataspace.selectHyperslab( H5S_SELECT_SET, neighboursCount, neighboursOffset );
-                        std::cout << "reading neighbours\n";
                         neighboursDataset.read(neighbourVals, intVarLenMemDT, neighboursMemspace, neighboursDataspace);
-                        std::cout << "neighbours read\n";
                         
                         if(att->numBoolFields > 0)
                         {
@@ -1735,7 +1684,7 @@ namespace libkea{
                         {
                             strFieldsOffset[0] = rowOff;
                             strDataspace.selectHyperslab( H5S_SELECT_SET, strFieldsCount, strFieldsOffset );
-                            //strDataset.read(stringVals, H5::PredType::NATIVE_DOUBLE, strFieldsMemspace, strDataspace);
+                            strDataset.read(stringVals, *strTypeMem, strFieldsMemspace, strDataspace);
                         }
                         
                         // Write data into KEAATTFeatures
@@ -1776,7 +1725,7 @@ namespace libkea{
                                 feat->strFields->reserve(att->numStringFields);
                                 for(hsize_t j = 0; j < att->numStringFields; ++j)
                                 {
-                                    //feat->strFields->push_back(stringVals[(i*att->numStringFields)+j]);
+                                    feat->strFields->push_back(std::string(stringVals[(i*att->numStringFields)+j].str));
                                 }
                             }
                             
@@ -1789,9 +1738,7 @@ namespace libkea{
                                 }
                                 delete[] ((size_t*)neighbourVals[i].p);
                             }
-                            
-                            //std::cout << cFid << " has " << neighbourVals[j].length << " neighbours\n";
-                            
+                                                        
                             att->attRows->push_back(feat);
                         }                        
                     }
@@ -1874,29 +1821,23 @@ namespace libkea{
                     
                     if(att->numStringFields > 0)
                     {
-                        strFieldsOffset[0] = 0;
-                        strFieldsOffset[1] = rowOff;
-                        strFieldsOffset[2] = 0;
-                        strFieldsCount[0] = 0;
-                        strFieldsCount[1] = remainRows;
-                        strFieldsCount[2] = att->numStringFields;
+                        strFieldsOffset[0] = rowOff;
+                        strFieldsOffset[1] = 0;
+                        strFieldsCount[0] = remainRows;
+                        strFieldsCount[1] = att->numStringFields;
                         strDataspace.selectHyperslab( H5S_SELECT_SET, strFieldsCount, strFieldsOffset );
                         
-                        strFieldsDimsRead[0] = 0;
-                        strFieldsDimsRead[1] = remainRows;
-                        strFieldsDimsRead[2] = att->numStringFields;
-                        strFieldsMemspace = H5::DataSpace( 3, strFieldsDimsRead );
+                        strFieldsDimsRead[0] = remainRows;
+                        strFieldsDimsRead[1] = att->numStringFields;
+                        strFieldsMemspace = H5::DataSpace( 2, strFieldsDimsRead );
                         
                         strFieldsOffset_out[0] = 0;
                         strFieldsOffset_out[1] = 0;
-                        strFieldsOffset_out[2] = 0;
-                        strFieldsCount_out[0] = 0;
                         strFieldsCount_out[0] = remainRows;
                         strFieldsCount_out[1] = att->numStringFields;
                         strFieldsMemspace.selectHyperslab( H5S_SELECT_SET, strFieldsCount_out, strFieldsOffset_out );
                         
-                        //strDataset.read(stringVals, H5::PredType::NATIVE_DOUBLE, strFieldsMemspace, strDataspace);
-                        //std::cout << "read strings\n";
+                        strDataset.read(stringVals, *strTypeMem, strFieldsMemspace, strDataspace);
                     }
                     
                     // Write data into KEAATTFeatures
@@ -1937,7 +1878,7 @@ namespace libkea{
                             feat->strFields->reserve(att->numStringFields);
                             for(hsize_t j = 0; j < att->numStringFields; ++j)
                             {
-                                //feat->strFields->push_back(stringVals[(i*att->numStringFields)+j]);
+                                feat->strFields->push_back(std::string(stringVals[(i*att->numStringFields)+j].str));
                             }
                         }
                         
@@ -1950,12 +1891,12 @@ namespace libkea{
                             }
                             delete[] ((size_t*)neighbourVals[i].p);
                         }
-                        //std::cout << cFid << " has " << neighbourVals[j].length << " neighbours\n";
                         
                         att->attRows->push_back(feat);
                     }    
                 }
                 
+                delete strTypeMem;
             }
             
             delete[] attSize;
