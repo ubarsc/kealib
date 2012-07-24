@@ -44,6 +44,7 @@ public:
 
     // virtual methods for RATs
     const GDALRasterAttributeTable *GetDefaultRAT();
+    CPLErr SetDefaultRAT(const GDALRasterAttributeTable *poRAT);
 
     // internal methods for overviews
     void readExistingOverviews();

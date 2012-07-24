@@ -94,3 +94,9 @@ const GDALRasterAttributeTable *KEAOverview::GetDefaultRAT()
     // KEARasterBand implements this, but we don't want to
     return NULL;
 }
+
+CPLErr KEAOverview::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
+{
+    // KEARasterBand implements this, but we don't want to
+    return CE_Failure;    
+}

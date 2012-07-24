@@ -16,6 +16,7 @@ public:
 
     // virtual methods for RATs - not implemented for overviews
     const GDALRasterAttributeTable *GetDefaultRAT();
+    CPLErr SetDefaultRAT(const GDALRasterAttributeTable *poRAT);
 
 protected:
     // we just override these functions from KEARasterBand

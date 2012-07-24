@@ -444,6 +444,114 @@ const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
     return this->m_pAttributeTable;
 }
 
+CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
+{
+    if( poRAT == NULL )
+        return CE_Failure;
+
+    try
+    {
+        // we assume this is never NULL - creates a new one if none exists
+        libkea::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(libkea::kea_att_mem, this->nBand);
+
+        for( int nGDALColumnIndex = 0; nGDALColumnIndex < poRAT->GetColumnCount(); nGDALColumnIndex++ )
+        {
+            const char *pszColumnName = poRAT->GetNameOfCol(nGDALColumnIndex);
+            bool bExists = true;
+            libkea::KEAATTField sKEAField;
+            try
+            {
+                sKEAField = pKEATable->getField(pszColumnName);
+                // if this works we assume same usage, type etc
+            }
+            catch(libkea::KEAATTException &e)
+            {
+                // doesn't exist on file - create it
+                bExists = false;
+            }
+
+            if( ! bExists )
+            {
+                std::string strUsage = "Generic";
+                switch(poRAT->GetUsageOfCol(nGDALColumnIndex))
+                {
+                    case GFU_PixelCount:
+                        strUsage = "PixelCount";
+                        break;
+                    case GFU_Name:
+                        strUsage = "Name";
+                        break;
+                    case GFU_Red:
+                        strUsage = "Red";
+                        break;
+                    case GFU_Green:
+                        strUsage = "Green";
+                        break;
+                    case GFU_Blue:
+                        strUsage = "Blue";
+                        break;
+                    case GFU_Alpha:
+                        strUsage = "Alpha";
+                        break;
+                    default:
+                        // leave as "Generic"
+                        break;
+                }
+
+                if(poRAT->GetTypeOfCol(nGDALColumnIndex) == GFT_Integer)
+                {
+                    pKEATable->addAttIntField(pszColumnName, 0, strUsage);
+                }
+                else if(poRAT->GetTypeOfCol(nGDALColumnIndex) == GFT_Real)
+                {
+                    pKEATable->addAttFloatField(pszColumnName, 0, strUsage);
+                }
+                else
+                {
+                    pKEATable->addAttStringField(pszColumnName, "", strUsage);
+                }
+                // assume we can just grab this now
+                sKEAField = pKEATable->getField(pszColumnName);
+            }
+
+            // at this stage sKEAField should represent field added or found
+            for( int nRowCount = 0; nRowCount < poRAT->GetRowCount(); nRowCount++ )
+            {
+                if(poRAT->GetTypeOfCol(nGDALColumnIndex) == GFT_Integer)
+                {
+                    int nVal = poRAT->GetValueAsInt(nRowCount, nGDALColumnIndex);
+                    pKEATable->setIntField(nRowCount, sKEAField.idx, nVal);
+                }
+                else if(poRAT->GetTypeOfCol(nGDALColumnIndex) == GFT_Real)
+                {
+                    double dVal = poRAT->GetValueAsDouble(nRowCount, nGDALColumnIndex);
+                    pKEATable->setFloatField(nRowCount, sKEAField.idx, dVal);
+                }
+                else
+                {
+                    const char *pszValue = poRAT->GetValueAsString(nRowCount, nGDALColumnIndex);
+                    pKEATable->setStringField(nRowCount, sKEAField.idx, pszValue);
+                }
+                // no support for bools sorry
+            }
+        }
+
+        delete pKEATable;
+
+        // our cached attribute table object is now ouf of date
+        // delete it and next call to GetDefaultRAT() will re-read it
+        delete this->m_pAttributeTable;
+        this->m_pAttributeTable = NULL;
+    }
+    catch(libkea::KEAException &e)
+    {
+        CPLError( CE_Failure, CPLE_AppDefined, "Failed to write attributes: %s", e.what() );
+        return CE_Failure;
+    }
+    return CE_None;
+}
+
+
 // clean up our overview objects
 void KEARasterBand::deleteOverviewObjects()
 {
