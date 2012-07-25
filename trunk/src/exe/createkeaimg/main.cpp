@@ -408,7 +408,7 @@ int main (int argc, char * const argv[])
         libkea::KEAAttributeTable *readAtt = imageIO.getAttributeTable(libkea::kea_att_mem, 1);
         
         readAtt->addAttStringField("third field", "new value");
-        readAtt->addAttFloatField("another string field", 50.3);
+        readAtt->addAttFloatField("another float field", 50.3);
         
         imageIO.setAttributeTable(readAtt, 1);
         
