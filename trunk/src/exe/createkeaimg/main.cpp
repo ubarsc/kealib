@@ -48,7 +48,7 @@ int main (int argc, char * const argv[])
     }
     else
     {
-        sFilename = "/Users/pete/Desktop/TestImage.kea";
+        sFilename = "/Users/pete/Desktop/440429_070218_arefs.kea";
     }
 
     try 
@@ -62,7 +62,7 @@ int main (int argc, char * const argv[])
         libkea::KEAImageIO imageIO;
         imageIO.openKEAImageHeader(keaImgFile);
         
-                
+         /*       
         float *data = new float[100*200];
         for(unsigned int i = 0; i < 200; ++i)
         {
@@ -231,6 +231,7 @@ int main (int argc, char * const argv[])
         }
         
         imageIO.readImageBlock2Band(1, data, 50, 100, 100, 200, 100, 200, libkea::kea_32float);
+          */
         /*
         for(unsigned int i = 0; i < 200; ++i)
         {
@@ -249,7 +250,7 @@ int main (int argc, char * const argv[])
         }
          */
         
-        delete[] data;
+        //delete[] data;
         
         std::cout << "Creating attribute table\n";
         libkea::KEAAttributeTable *attTable = imageIO.getAttributeTable(libkea::kea_att_mem, 1);
@@ -339,7 +340,7 @@ int main (int argc, char * const argv[])
         imageIO.close();
         
         keaImgFile->close();
-        
+        /*
         if(libkea::KEAImageIO::isKEAImage("/Users/pete/Desktop/TestImage.kea"))
         {
             std::cout << "FOUND KEA IMAGE - THIS IS CORRECT A KEA IMAGE WAS PROVIDED!\n";
@@ -367,6 +368,7 @@ int main (int argc, char * const argv[])
         {
             std::cout << "DID NOT FIND KEA IMAGE - THIS IS CORRECT A SPD IMAGE WAS PROVIDED!\n";
         }
+         */
         
         keaImgFile = libkea::KEAImageIO::openKeaH5RW(sFilename);
         
@@ -420,14 +422,31 @@ int main (int argc, char * const argv[])
         
         imageIO.setAttributeTable(readAtt, 1);
         
+        
+        libkea::KEAAttributeTable *newAttTable = new libkea::KEAAttributeTableInMem();
+        newAttTable->addRows(200);
+        newAttTable->addAttIntField("IntVals", 42);
+        newAttTable->addAttFloatField("FloatVals", 42.5);
+        
+        imageIO.setAttributeTable(newAttTable, 1);
+        
+        /*
         std::cout << "Global Column 0 is \'" << readAtt->getField(0).name << "\'" <<  std::endl;
         std::cout << "Global Column 2 is \'" << readAtt->getField(2).name << "\'" <<  std::endl;
         std::cout << "Global Column 4 is \'" << readAtt->getField(4).name << "\'" <<  std::endl;
         std::cout << "Global Column 1 is \'" << readAtt->getField(1).name << "\'" <<  std::endl;
         std::cout << "Global Column 7 is \'" << readAtt->getField(7).name << "\'" <<  std::endl;
         std::cout << "Global Column 9 is \'" << readAtt->getField(9).name << "\'" <<  std::endl;
+        */
         
         imageIO.close();
+        
+        
+        keaImgFile = libkea::KEAImageIO::openKeaH5RW(sFilename);
+        imageIO.openKEAImageHeader(keaImgFile);
+        libkea::KEAAttributeTable *inAtt = imageIO.getAttributeTable(libkea::kea_att_mem, 1);
+        imageIO.close();
+        
     } 
     catch (libkea::KEAException &e) 
     {

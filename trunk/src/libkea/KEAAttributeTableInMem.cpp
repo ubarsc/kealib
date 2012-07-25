@@ -2072,14 +2072,14 @@ namespace libkea{
                     hsize_t *boolDims = new hsize_t[boolNDims];
                     boolDataspace.getSimpleExtentDims(boolDims);
                     
-                    if(boolDims[0] != attSize[0])
+                    if(attSize[0] > boolDims[0])
                     {
-                        throw KEAIOException("The number of features in boolean datasets does not match expected values.");
+                        throw KEAIOException("The number of features in boolean dataset is smaller than expected.");
                     }
                     
-                    if(boolDims[1] != att->numBoolFields)
+                    if(att->numBoolFields > boolDims[1])
                     {
-                        throw KEAIOException("The number of boolean fields does not match expected values.");
+                        throw KEAIOException("The number of boolean fields is smaller than expected.");
                     }
                     delete[] boolDims;
                     
@@ -2130,14 +2130,14 @@ namespace libkea{
                     hsize_t *intDims = new hsize_t[intNDims];
                     intDataspace.getSimpleExtentDims(intDims);
                     
-                    if(intDims[0] != attSize[0])
+                    if(attSize[0] > intDims[0])
                     {
-                        throw KEAIOException("The number of features in integer datasets does not match expected values.");
+                        throw KEAIOException("The number of features in integer dataset is smaller than expected.");
                     }
                     
-                    if(intDims[1] != att->numIntFields)
+                    if(att->numIntFields > intDims[1])
                     {
-                        throw KEAIOException("The number of integer fields does not match expected values.");
+                        throw KEAIOException("The number of integer fields is smaller than expected.");
                     }
                     delete[] intDims;
                     
@@ -2188,14 +2188,14 @@ namespace libkea{
                     hsize_t *floatDims = new hsize_t[floatNDims];
                     floatDataspace.getSimpleExtentDims(floatDims);
                     
-                    if(floatDims[0] != attSize[0])
+                    if(attSize[0] > floatDims[0])
                     {
-                        throw KEAIOException("The number of features in float dataset does not match expected values.");
+                        throw KEAIOException("The number of features in float dataset is smaller than expected.");
                     }
                     
-                    if(floatDims[1] != att->numFloatFields)
+                    if(att->numFloatFields > floatDims[1])
                     {
-                        throw KEAIOException("The number of float fields does not match expected values.");
+                        throw KEAIOException("The number of float fields is smaller than expected.");
                     }
                     delete[] floatDims;
                     
@@ -2247,14 +2247,14 @@ namespace libkea{
                     hsize_t *strDims = new hsize_t[strNDims];
                     strDataspace.getSimpleExtentDims(strDims);
                     
-                    if(strDims[0] != attSize[0])
+                    if(attSize[0] > strDims[0])
                     {
-                        throw KEAIOException("The number of features in string dataset does not match expected values.");
+                        throw KEAIOException("The number of features in string dataset is smaller than expected.");
                     }
                     
-                    if(strDims[1] != att->numStringFields)
+                    if(att->numStringFields > strDims[1])
                     {
-                        throw KEAIOException("The number of string fields does not match expected values.");
+                        throw KEAIOException("The number of string fields is smaller than expected.");
                     }
                     delete[] strDims;
                     
@@ -2299,9 +2299,9 @@ namespace libkea{
                 /* Neighbours */
                 hsize_t *neighboursDims = new hsize_t[neighboursNDims];
                 neighboursDataspace.getSimpleExtentDims(neighboursDims);
-                if(neighboursDims[0] != attSize[0])
+                if(attSize[0] > neighboursDims[0])
                 {
-                    throw KEAIOException("The number of features in neighbours datasets does not match expected values.");
+                    throw KEAIOException("The number of features in neighbours dataset smaller than expected.");
                 }
                 delete[] neighboursDims;
                 
