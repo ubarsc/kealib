@@ -259,7 +259,7 @@ int main (int argc, char * const argv[])
         
         attTable->printAttributeTableHeaderInfo();
         
-        /*std::cout << "Adding rows\n";
+        std::cout << "Adding rows\n";
         attTable->addRows(2500);
         std::cout << "Rows added\n";
         try
@@ -338,13 +338,13 @@ int main (int argc, char * const argv[])
         std::cout << "added fields\n";
         
         attTable->setFloatField(10, "Float Field 1", 10);
-        */
-        //attTable->setFloatField(2, "Float Field 2", 99);
         
-        //attTable->setStringField(99, "String Field 2", "Hello World");
+        attTable->setFloatField(2, "Float Field 2", 99);
         
-        //std::cout << "FID 45: Field \'Float Field 2\' = " << attTable->getFloatField(45, "Float Field 2") << "\n";
-        /*
+        attTable->setStringField(99, "String Field 2", "Hello World");
+        
+        std::cout << "FID 45: Field \'Float Field 2\' = " << attTable->getFloatField(45, "Float Field 2") << "\n";
+        
         libkea::KEAATTFeature *keaFeat = attTable->getFeature(10);
         keaFeat->neighbours->push_back(9);
         keaFeat->neighbours->push_back(3);
@@ -361,10 +361,13 @@ int main (int argc, char * const argv[])
         keaFeat->neighbours->push_back(1299);
         
         std::cout << "Created neighbours\n";
-                
+        
+        
+        std::cout << "Exporting to image bands\n";
         imageIO.setAttributeTable(attTable, 1);
         imageIO.setAttributeTable(attTable, 2);
-        */
+        std::cout << "Exported\n";
+        
         imageIO.close();
         
         keaImgFile->close();

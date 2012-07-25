@@ -447,9 +447,25 @@ namespace libkea{
     {
         KEAATTFeature *feat = new KEAATTFeature();
         feat->boolFields = new std::vector<bool>();
+        for(size_t i = 0; i < this->numBoolFields; ++i)
+        {
+            feat->boolFields->push_back(false);
+        }
         feat->intFields = new std::vector<long>();
+        for(size_t i = 0; i < this->numIntFields; ++i)
+        {
+            feat->intFields->push_back(0);
+        }
         feat->floatFields = new std::vector<double>();
+        for(size_t i = 0; i < this->numFloatFields; ++i)
+        {
+            feat->floatFields->push_back(0.0);
+        }
         feat->strFields = new std::vector<std::string>();
+        for(size_t i = 0; i < this->numStringFields; ++i)
+        {
+            feat->strFields->push_back("");
+        }
         feat->neighbours = new std::vector<size_t>();
         feat->fid = 0;
         
@@ -463,6 +479,14 @@ namespace libkea{
     
     void KEAAttributeTable::printAttributeTableHeaderInfo()
     {
+        if(this->attType == kea_att_mem)
+        {
+            std::cout << "Using an in memory attribute table\n";
+        }
+        else
+        {
+            std::cout << "This is an unknown implementation\n";
+        }
         std::cout << "Number of Boolean Fields: " << this->numBoolFields << std::endl;
         std::cout << "Number of Integer Fields: " << this->numIntFields << std::endl;
         std::cout << "Number of Float Fields: " << this->numFloatFields << std::endl;
@@ -496,7 +520,7 @@ namespace libkea{
             std::cout << " USAGE: \'" << (*iterField).second.usage << "\' Global Index: " << (*iterField).second.colNum << std::endl;
         }
         
-        std::cout << "Height Column Index: " << this->numOfCols << std::endl;
+        std::cout << "Max. Column Index: " << this->numOfCols << std::endl;
     }
     
     H5::CompType* KEAAttributeTable::createAttibuteIdxCompTypeDisk() throw(KEAATTException)
