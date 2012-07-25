@@ -1899,7 +1899,7 @@ namespace libkea{
                         chunkSize = hChunkSize;
                     }
                 } 
-                catch ( H5::Exception &e) 
+                catch(H5::Exception &e) 
                 {
                     throw KEAIOException("The attribute table size field is not present.");
                 }                
@@ -2174,6 +2174,9 @@ namespace libkea{
                 size_t numOfBlocks = 0;
                 numOfBlocks = floor(((double)attSize[0]/chunkSize));
                 size_t remainRows = attSize[0] - (numOfBlocks * chunkSize);
+                
+                std::cout << "Num of Blocks: " << numOfBlocks << std::endl;
+                std::cout << "Number Remaining: " << remainRows << std::endl;
                 
                 KEAATTFeature *feat = NULL;
                 size_t cFid = 0;
@@ -2497,7 +2500,7 @@ namespace libkea{
                                 feat->boolFields->reserve(att->numBoolFields);
                                 for(hsize_t j = 0; j < att->numBoolFields; ++j)
                                 {
-                                    feat->boolFields->push_back(boolVals[(i*att->numBoolFields)+j]);
+                                    feat->boolFields->at(j) = boolVals[(i*att->numBoolFields)+j];
                                 }
                             }
                             
@@ -2506,7 +2509,7 @@ namespace libkea{
                                 feat->intFields->reserve(att->numIntFields);
                                 for(hsize_t j = 0; j < att->numIntFields; ++j)
                                 {
-                                    feat->intFields->push_back(intVals[(i*att->numIntFields)+j]);
+                                    feat->intFields->at(j) = intVals[(i*att->numIntFields)+j];
                                 }
                             }
                             
@@ -2515,7 +2518,7 @@ namespace libkea{
                                 feat->floatFields->reserve(att->numFloatFields);
                                 for(hsize_t j = 0; j < att->numFloatFields; ++j)
                                 {
-                                    feat->floatFields->push_back(floatVals[(i*att->numFloatFields)+j]);
+                                    feat->floatFields->at(j) = floatVals[(i*att->numFloatFields)+j];
                                 }
                             }
                             
@@ -2524,7 +2527,7 @@ namespace libkea{
                                 feat->strFields->reserve(att->numStringFields);
                                 for(hsize_t j = 0; j < att->numStringFields; ++j)
                                 {
-                                    feat->strFields->push_back(std::string(stringVals[(i*att->numStringFields)+j].str));
+                                    feat->strFields->at(j) = std::string(stringVals[(i*att->numStringFields)+j].str);
                                 }
                             }
                             
@@ -2650,7 +2653,7 @@ namespace libkea{
                             feat->boolFields->reserve(att->numBoolFields);
                             for(hsize_t j = 0; j < att->numBoolFields; ++j)
                             {
-                                feat->boolFields->push_back(boolVals[(i*att->numBoolFields)+j]);
+                                feat->boolFields->at(j) = boolVals[(i*att->numBoolFields)+j];
                             }
                         }
                         
@@ -2659,7 +2662,7 @@ namespace libkea{
                             feat->intFields->reserve(att->numIntFields);
                             for(hsize_t j = 0; j < att->numIntFields; ++j)
                             {
-                                feat->intFields->push_back(intVals[(i*att->numIntFields)+j]);
+                                feat->intFields->at(j) = intVals[(i*att->numIntFields)+j];
                             }
                         }
                         
@@ -2668,7 +2671,7 @@ namespace libkea{
                             feat->floatFields->reserve(att->numFloatFields);
                             for(hsize_t j = 0; j < att->numFloatFields; ++j)
                             {
-                                feat->floatFields->push_back(floatVals[(i*att->numFloatFields)+j]);
+                                feat->floatFields->at(j) = floatVals[(i*att->numFloatFields)+j];
                             }
                         }
                         
@@ -2677,7 +2680,7 @@ namespace libkea{
                             feat->strFields->reserve(att->numStringFields);
                             for(hsize_t j = 0; j < att->numStringFields; ++j)
                             {
-                                feat->strFields->push_back(std::string(stringVals[(i*att->numStringFields)+j].str));
+                                feat->strFields->at(j) = std::string(stringVals[(i*att->numStringFields)+j].str);
                             }
                         }
                         
