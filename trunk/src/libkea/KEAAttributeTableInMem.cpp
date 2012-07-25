@@ -520,13 +520,16 @@ namespace libkea{
                         H5::DataSpace newBoolFieldsDataspace = H5::DataSpace(1, boolFieldsDataDims);
                         
                         boolFieldsDataset.write(boolFields, *fieldDtMem, newBoolFieldsDataspace, boolFieldsWriteDataSpace);
+                        boolFieldsWriteDataSpace.close();
+                        newBoolFieldsDataspace.close();
+                        boolFieldsDataset.close();
                         
                         delete[] boolFields;
                     }
                     catch(H5::Exception &e)
                     {
                         hsize_t initDimsBoolFieldsDS[1];
-                        initDimsBoolFieldsDS[0] = 0;
+                        initDimsBoolFieldsDS[0] = this->numBoolFields;
                         hsize_t maxDimsBoolFieldsDS[1];
                         maxDimsBoolFieldsDS[0] = H5S_UNLIMITED;
                         H5::DataSpace boolFieldsDataSpace = H5::DataSpace(1, initDimsBoolFieldsDS, maxDimsBoolFieldsDS);
@@ -540,10 +543,6 @@ namespace libkea{
                         creationBoolFieldsDSPList.setDeflate(deflate);
                         H5::DataSet boolFieldsDataset = keaImg->createDataSet((bandPathBase + KEA_ATT_BOOL_FIELDS_HEADER), *fieldDtDisk, boolFieldsDataSpace, creationBoolFieldsDSPList);
                         
-                        hsize_t extendBoolFieldsDatasetTo[1];
-                        extendBoolFieldsDatasetTo[0] = this->numBoolFields;
-                        boolFieldsDataset.extend( extendBoolFieldsDatasetTo );
-                        
                         hsize_t boolFieldsOffset[1];
                         boolFieldsOffset[0] = 0;
                         hsize_t boolFieldsDataDims[1];
@@ -554,6 +553,11 @@ namespace libkea{
                         H5::DataSpace newBoolFieldsDataspace = H5::DataSpace(1, boolFieldsDataDims);
                         
                         boolFieldsDataset.write(boolFields, *fieldDtMem, newBoolFieldsDataspace, boolFieldsWriteDataSpace);
+                        
+                        boolFieldsDataSpace.close();
+                        boolFieldsWriteDataSpace.close();
+                        newBoolFieldsDataspace.close();
+                        boolFieldsDataset.close();
                         
                         delete[] boolFields;
                     }
@@ -580,13 +584,17 @@ namespace libkea{
                         
                         intFieldsDataset.write(intFields, *fieldDtMem, newIntFieldsDataspace, intFieldsWriteDataSpace);
                         
+                        intFieldsWriteDataSpace.close();
+                        newIntFieldsDataspace.close();
+                        intFieldsDataset.close();
+                        
                         delete[] intFields;
 
                     }
                     catch (H5::Exception &e)
                     {
                         hsize_t initDimsIntFieldsDS[1];
-                        initDimsIntFieldsDS[0] = 0;
+                        initDimsIntFieldsDS[0] = this->numIntFields;
                         hsize_t maxDimsIntFieldsDS[1];
                         maxDimsIntFieldsDS[0] = H5S_UNLIMITED;
                         H5::DataSpace intFieldsDataSpace = H5::DataSpace(1, initDimsIntFieldsDS, maxDimsIntFieldsDS);
@@ -600,10 +608,6 @@ namespace libkea{
                         creationIntFieldsDSPList.setDeflate(deflate);
                         H5::DataSet intFieldsDataset = keaImg->createDataSet((bandPathBase + KEA_ATT_INT_FIELDS_HEADER), *fieldDtDisk, intFieldsDataSpace, creationIntFieldsDSPList);
                         
-                        hsize_t extendIntFieldsDatasetTo[1];
-                        extendIntFieldsDatasetTo[0] = this->numIntFields;
-                        intFieldsDataset.extend( extendIntFieldsDatasetTo );
-                        
                         hsize_t intFieldsOffset[1];
                         intFieldsOffset[0] = 0;
                         hsize_t intFieldsDataDims[1];
@@ -614,6 +618,11 @@ namespace libkea{
                         H5::DataSpace newIntFieldsDataspace = H5::DataSpace(1, intFieldsDataDims);
                         
                         intFieldsDataset.write(intFields, *fieldDtMem, newIntFieldsDataspace, intFieldsWriteDataSpace);
+                        
+                        intFieldsDataSpace.close();
+                        intFieldsWriteDataSpace.close();
+                        newIntFieldsDataspace.close();
+                        intFieldsDataset.close();
                         
                         delete[] intFields;
                     }
@@ -640,12 +649,16 @@ namespace libkea{
                         
                         floatFieldsDataset.write(floatFields, *fieldDtMem, newFloatFieldsDataspace, floatFieldsWriteDataSpace);
                         
+                        floatFieldsWriteDataSpace.close();
+                        newFloatFieldsDataspace.close();
+                        floatFieldsDataset.close();
+                        
                         delete[] floatFields;
                     }
                     catch(H5::Exception &e)
                     {
                         hsize_t initDimsFloatFieldsDS[1];
-                        initDimsFloatFieldsDS[0] = 0;
+                        initDimsFloatFieldsDS[0] = this->numFloatFields;
                         hsize_t maxDimsFloatFieldsDS[1];
                         maxDimsFloatFieldsDS[0] = H5S_UNLIMITED;
                         H5::DataSpace floatFieldsDataSpace = H5::DataSpace(1, initDimsFloatFieldsDS, maxDimsFloatFieldsDS);
@@ -659,10 +672,6 @@ namespace libkea{
                         creationFloatFieldsDSPList.setDeflate(deflate);
                         H5::DataSet floatFieldsDataset = keaImg->createDataSet((bandPathBase + KEA_ATT_FLOAT_FIELDS_HEADER), *fieldDtDisk, floatFieldsDataSpace, creationFloatFieldsDSPList);
                         
-                        hsize_t extendFloatFieldsDatasetTo[1];
-                        extendFloatFieldsDatasetTo[0] = this->numFloatFields;
-                        floatFieldsDataset.extend( extendFloatFieldsDatasetTo );
-                        
                         hsize_t floatFieldsOffset[1];
                         floatFieldsOffset[0] = 0;
                         hsize_t floatFieldsDataDims[1];
@@ -673,6 +682,11 @@ namespace libkea{
                         H5::DataSpace newFloatFieldsDataspace = H5::DataSpace(1, floatFieldsDataDims);
                         
                         floatFieldsDataset.write(floatFields, *fieldDtMem, newFloatFieldsDataspace, floatFieldsWriteDataSpace);
+                        
+                        floatFieldsDataSpace.close();
+                        floatFieldsWriteDataSpace.close();
+                        newFloatFieldsDataspace.close();
+                        floatFieldsDataset.close();
                         
                         delete[] floatFields;
                     }
@@ -698,6 +712,10 @@ namespace libkea{
                         H5::DataSpace newStringFieldsDataspace = H5::DataSpace(1, stringFieldsDataDims);
                         
                         stringFieldsDataset.write(stringFields, *fieldDtMem, newStringFieldsDataspace, stringFieldsWriteDataSpace);
+                        
+                        stringFieldsWriteDataSpace.close();
+                        newStringFieldsDataspace.close();
+                        stringFieldsDataset.close();
                         
                         delete[] stringFields;
                     }
@@ -732,6 +750,11 @@ namespace libkea{
                         H5::DataSpace newStringFieldsDataspace = H5::DataSpace(1, stringFieldsDataDims);
                         
                         stringFieldsDataset.write(stringFields, *fieldDtMem, newStringFieldsDataspace, stringFieldsWriteDataSpace);
+                        
+                        stringFieldsDataSpace.close();
+                        stringFieldsWriteDataSpace.close();
+                        newStringFieldsDataspace.close();
+                        stringFieldsDataset.close();
                         
                         delete[] stringFields;
                     }
@@ -773,6 +796,7 @@ namespace libkea{
                         creationBoolDSPList.setFillValue( H5::PredType::STD_I8LE, &fillValueBool);
                         
                         boolDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_BOOL_DATA), H5::PredType::STD_I8LE, boolDataSpace, creationBoolDSPList));
+                        boolDataSpace.close();
                     }
                 }
                 
@@ -809,6 +833,7 @@ namespace libkea{
                         creationIntDSPList.setFillValue( H5::PredType::STD_I64LE, &fillValueInt);
                         
                         intDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_INT_DATA), H5::PredType::STD_I64LE, intDataSpace, creationIntDSPList));
+                        intDataSpace.close();
                     }
                 }
                 
@@ -845,6 +870,7 @@ namespace libkea{
                         creationFloatDSPList.setFillValue( H5::PredType::IEEE_F64LE, &fillValueFloat);
                         
                         floatDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_FLOAT_DATA), H5::PredType::IEEE_F64LE, floatDataSpace, creationFloatDSPList));
+                        floatDataSpace.close();
                     }
                 }
                 
@@ -881,6 +907,7 @@ namespace libkea{
                         creationStringDSPList.setDeflate(deflate);
                         creationStringDSPList.setFillValue(*strTypeMem, &fillValueStr);
                         strDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_STRING_DATA), *strTypeDisk, stringDataSpace, creationStringDSPList));
+                        stringDataSpace.close();
                     }
                 }
                 
@@ -905,7 +932,7 @@ namespace libkea{
                 if(this->numBoolFields > 0)
                 {
                     hsize_t initDimsBoolFieldsDS[1];
-                    initDimsBoolFieldsDS[0] = 0;
+                    initDimsBoolFieldsDS[0] = this->numBoolFields;
                     hsize_t maxDimsBoolFieldsDS[1];
                     maxDimsBoolFieldsDS[0] = H5S_UNLIMITED;
                     H5::DataSpace boolFieldsDataSpace = H5::DataSpace(1, initDimsBoolFieldsDS, maxDimsBoolFieldsDS);
@@ -919,10 +946,6 @@ namespace libkea{
                     creationBoolFieldsDSPList.setDeflate(deflate);
                     H5::DataSet boolFieldsDataset = keaImg->createDataSet((bandPathBase + KEA_ATT_BOOL_FIELDS_HEADER), *fieldDtDisk, boolFieldsDataSpace, creationBoolFieldsDSPList);
                     
-                    hsize_t extendBoolFieldsDatasetTo[1];
-                    extendBoolFieldsDatasetTo[0] = this->numBoolFields;
-                    boolFieldsDataset.extend( extendBoolFieldsDatasetTo );
-                    
                     hsize_t boolFieldsOffset[1];
                     boolFieldsOffset[0] = 0;
                     hsize_t boolFieldsDataDims[1];
@@ -934,13 +957,18 @@ namespace libkea{
                     
                     boolFieldsDataset.write(boolFields, *fieldDtMem, newBoolFieldsDataspace, boolFieldsWriteDataSpace);
                     
+                    boolFieldsDataSpace.close();
+                    boolFieldsWriteDataSpace.close();
+                    newBoolFieldsDataspace.close();
+                    boolFieldsDataset.close();
+                    
                     delete[] boolFields;
                 }
                 
                 if(this->numIntFields > 0)
                 {
                     hsize_t initDimsIntFieldsDS[1];
-                    initDimsIntFieldsDS[0] = 0;
+                    initDimsIntFieldsDS[0] = this->numIntFields;
                     hsize_t maxDimsIntFieldsDS[1];
                     maxDimsIntFieldsDS[0] = H5S_UNLIMITED;
                     H5::DataSpace intFieldsDataSpace = H5::DataSpace(1, initDimsIntFieldsDS, maxDimsIntFieldsDS);
@@ -954,10 +982,6 @@ namespace libkea{
                     creationIntFieldsDSPList.setDeflate(deflate);
                     H5::DataSet intFieldsDataset = keaImg->createDataSet((bandPathBase + KEA_ATT_INT_FIELDS_HEADER), *fieldDtDisk, intFieldsDataSpace, creationIntFieldsDSPList);
                     
-                    hsize_t extendIntFieldsDatasetTo[1];
-                    extendIntFieldsDatasetTo[0] = this->numIntFields;
-                    intFieldsDataset.extend( extendIntFieldsDatasetTo );
-                    
                     hsize_t intFieldsOffset[1];
                     intFieldsOffset[0] = 0;
                     hsize_t intFieldsDataDims[1];
@@ -969,13 +993,18 @@ namespace libkea{
                     
                     intFieldsDataset.write(intFields, *fieldDtMem, newIntFieldsDataspace, intFieldsWriteDataSpace);
                     
+                    intFieldsDataSpace.close();
+                    intFieldsWriteDataSpace.close();
+                    newIntFieldsDataspace.close();
+                    intFieldsDataset.close();
+                    
                     delete[] intFields;
                 }
                 
                 if(this->numFloatFields > 0)
                 {
                     hsize_t initDimsFloatFieldsDS[1];
-                    initDimsFloatFieldsDS[0] = 0;
+                    initDimsFloatFieldsDS[0] = this->numFloatFields;
                     hsize_t maxDimsFloatFieldsDS[1];
                     maxDimsFloatFieldsDS[0] = H5S_UNLIMITED;
                     H5::DataSpace floatFieldsDataSpace = H5::DataSpace(1, initDimsFloatFieldsDS, maxDimsFloatFieldsDS);
@@ -989,10 +1018,6 @@ namespace libkea{
                     creationFloatFieldsDSPList.setDeflate(deflate);
                     H5::DataSet floatFieldsDataset = keaImg->createDataSet((bandPathBase + KEA_ATT_FLOAT_FIELDS_HEADER), *fieldDtDisk, floatFieldsDataSpace, creationFloatFieldsDSPList);
                     
-                    hsize_t extendFloatFieldsDatasetTo[1];
-                    extendFloatFieldsDatasetTo[0] = this->numFloatFields;
-                    floatFieldsDataset.extend( extendFloatFieldsDatasetTo );
-                    
                     hsize_t floatFieldsOffset[1];
                     floatFieldsOffset[0] = 0;
                     hsize_t floatFieldsDataDims[1];
@@ -1003,6 +1028,11 @@ namespace libkea{
                     H5::DataSpace newFloatFieldsDataspace = H5::DataSpace(1, floatFieldsDataDims);
                     
                     floatFieldsDataset.write(floatFields, *fieldDtMem, newFloatFieldsDataspace, floatFieldsWriteDataSpace);
+                    
+                    floatFieldsDataSpace.close();
+                    floatFieldsWriteDataSpace.close();
+                    newFloatFieldsDataspace.close();
+                    floatFieldsDataset.close();
                     
                     delete[] floatFields;
                 }
@@ -1039,6 +1069,11 @@ namespace libkea{
                     
                     stringFieldsDataset.write(stringFields, *fieldDtMem, newStringFieldsDataspace, stringFieldsWriteDataSpace);
                     
+                    stringFieldsDataSpace.close();
+                    stringFieldsWriteDataSpace.close();
+                    newStringFieldsDataspace.close();
+                    stringFieldsDataset.close();
+                    
                     delete[] stringFields;
                 }
                 delete fieldDtDisk;
@@ -1067,6 +1102,7 @@ namespace libkea{
                     creationBoolDSPList.setFillValue( H5::PredType::STD_I8LE, &fillValueBool);
                     
                     boolDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_BOOL_DATA), H5::PredType::STD_I8LE, boolDataSpace, creationBoolDSPList));
+                    boolDataSpace.close();
                 }
                 
                 if(this->numIntFields > 0)
@@ -1092,6 +1128,7 @@ namespace libkea{
                     creationIntDSPList.setFillValue( H5::PredType::STD_I64LE, &fillValueInt);
                     
                     intDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_INT_DATA), H5::PredType::STD_I64LE, intDataSpace, creationIntDSPList));
+                    intDataSpace.close();
                 }
                 
                 if(this->numFloatFields > 0)
@@ -1117,6 +1154,7 @@ namespace libkea{
                     creationFloatDSPList.setFillValue( H5::PredType::IEEE_F64LE, &fillValueFloat);
                     
                     floatDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_FLOAT_DATA), H5::PredType::IEEE_F64LE, floatDataSpace, creationFloatDSPList));
+                    floatDataSpace.close();
                 }
                 
                 if(this->numStringFields > 0)
@@ -1142,6 +1180,7 @@ namespace libkea{
                     creationStringDSPList.setDeflate(deflate);
                     creationStringDSPList.setFillValue(*strTypeMem, &fillValueStr);
                     strDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_STRING_DATA), *strTypeDisk, stringDataSpace, creationStringDSPList));
+                    stringDataSpace.close();
                 }
                 
                 // Create Neighbours dataset
@@ -1165,6 +1204,7 @@ namespace libkea{
                 creationNeighboursDSPList.setFillValue( intVarLenDiskDT, &neighboursDataFillVal);
                 
                 neighboursDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_NEIGHBOURS_DATA), intVarLenDiskDT, neighboursDataspace, creationNeighboursDSPList));
+                neighboursDataspace.close();
             }
             
             // WRITE DATA INTO THE STRUCTURE.
@@ -1282,6 +1322,8 @@ namespace libkea{
                         H5::DataSpace newBoolDataspace = H5::DataSpace(2, boolDataDims);
                         
                         boolDataset->write(boolData, H5::PredType::NATIVE_INT, newBoolDataspace, boolWriteDataSpace);
+                        newBoolDataspace.close();
+                        boolWriteDataSpace.close();
                     }
                     
                     if(this->numIntFields > 0)
@@ -1294,6 +1336,8 @@ namespace libkea{
                         H5::DataSpace newIntDataspace = H5::DataSpace(2, intDataDims);
                         
                         intDataset->write(intData, H5::PredType::NATIVE_LONG, newIntDataspace, intWriteDataSpace);
+                        intWriteDataSpace.close();
+                        newIntDataspace.close();
                     }
                     
                     if(this->numFloatFields > 0)
@@ -1306,6 +1350,8 @@ namespace libkea{
                         H5::DataSpace newFloatDataspace = H5::DataSpace(2, floatDataDims);
                         
                         floatDataset->write(floatData, H5::PredType::NATIVE_DOUBLE, newFloatDataspace, floatWriteDataSpace);
+                        floatWriteDataSpace.close();
+                        newFloatDataspace.close();
                     }
                     
                     if(this->numStringFields > 0)
@@ -1318,6 +1364,8 @@ namespace libkea{
                         H5::DataSpace newStringDataspace = H5::DataSpace(2, stringDataDims);
                         
                         strDataset->write(stringData, *strTypeMem, newStringDataspace, stringWriteDataSpace);
+                        stringWriteDataSpace.close();
+                        newStringDataspace.close();
                     }
                     
                     neighboursDataOffset[0] = rowOff;
@@ -1326,6 +1374,7 @@ namespace libkea{
                     neighboursWriteDataSpace.selectHyperslab(H5S_SELECT_SET, neighboursDataDims, neighboursDataOffset);
                     
                     neighboursDataset->write(neighbourVals, intVarLenMemDT, memNeighboursDataspace, neighboursWriteDataSpace);
+                    neighboursWriteDataSpace.close();
                     
                     for(size_t i = 0; i < chunkSize; ++i)
                     {
@@ -1335,7 +1384,8 @@ namespace libkea{
                             delete[] ((hsize_t*)neighbourVals[i].p);
                         }
                     }
-                }                
+                }
+                memNeighboursDataspace.close();
             }
             
             if(remainRows > 0)
@@ -1417,6 +1467,8 @@ namespace libkea{
                     H5::DataSpace newBoolDataspace = H5::DataSpace(2, boolDataDims);
                     
                     boolDataset->write(boolData, H5::PredType::NATIVE_INT, newBoolDataspace, boolWriteDataSpace);
+                    boolWriteDataSpace.close();
+                    newBoolDataspace.close();
                 }
                 
                 if(this->numIntFields > 0)
@@ -1426,6 +1478,8 @@ namespace libkea{
                     H5::DataSpace newIntDataspace = H5::DataSpace(2, intDataDims);
                     
                     intDataset->write(intData, H5::PredType::NATIVE_LONG, newIntDataspace, intWriteDataSpace);
+                    newIntDataspace.close();
+                    intWriteDataSpace.close();
                 }
                 
                 if(this->numFloatFields > 0)
@@ -1435,6 +1489,8 @@ namespace libkea{
                     H5::DataSpace newFloatDataspace = H5::DataSpace(2, floatDataDims);
                     
                     floatDataset->write(floatData, H5::PredType::NATIVE_DOUBLE, newFloatDataspace, floatWriteDataSpace);
+                    newFloatDataspace.close();
+                    floatWriteDataSpace.close();
                 }
                 
                 if(this->numStringFields > 0)
@@ -1444,6 +1500,8 @@ namespace libkea{
                     H5::DataSpace newStringDataspace = H5::DataSpace(2, stringDataDims);
                     
                     strDataset->write(stringData, *strTypeMem, newStringDataspace, stringWriteDataSpace);
+                    newStringDataspace.close();
+                    stringWriteDataSpace.close();
                 }
                                 
                 H5::DataSpace neighboursWriteDataSpace = neighboursDataset->getSpace();
@@ -1451,6 +1509,8 @@ namespace libkea{
                 H5::DataSpace newNeighboursDataspace = H5::DataSpace(1, neighboursDataDims);
                 
                 neighboursDataset->write(neighbourVals, intVarLenMemDT, newNeighboursDataspace, neighboursWriteDataSpace);
+                newNeighboursDataspace.close();
+                neighboursWriteDataSpace.close();
                 
                 for(size_t i = 0; i < chunkSize; ++i)
                 {
@@ -1474,6 +1534,9 @@ namespace libkea{
             H5::DataSpace newChunkSizeDataspace = H5::DataSpace(1, chunkSizeDataDims);
             
             chunkSizeDataset.write(&chunkSize, H5::PredType::NATIVE_UINT, newChunkSizeDataspace, chunkSizeWriteDataSpace);
+            chunkSizeDataset.close();
+            chunkSizeWriteDataSpace.close();
+            newChunkSizeDataspace.close();
             
             // WRITE THE ATT SIZE USED TO THE FILE.
             hsize_t sizeDataOffset[1];
@@ -1492,25 +1555,32 @@ namespace libkea{
             attSize[3] = this->numFloatFields;
             attSize[4] = this->numStringFields;
             sizeDataset.write(attSize, H5::PredType::NATIVE_HSIZE, newSizeDataspace, sizeWriteDataSpace);
+            sizeDataset.close();
+            sizeWriteDataSpace.close();
+            newSizeDataspace.close();
             
             if(this->numBoolFields > 0)
             {
                 delete[] boolData;
+                boolDataset->close();
                 delete boolDataset;
             }
             if(this->numIntFields > 0)
             {
                 delete[] intData;
+                intDataset->close();
                 delete intDataset;
             }
             if(this->numFloatFields > 0)
             {
                 delete[] floatData;
+                floatDataset->close();
                 delete floatDataset;
             }
             if(this->numStringFields > 0)
             {
                 delete[] stringData;
+                strDataset->close();
                 delete strDataset;
             }
             delete[] neighbourVals;
@@ -1519,6 +1589,7 @@ namespace libkea{
             delete strTypeMem;
             delete strTypeDisk;
             
+            neighboursDataset->close();
             delete neighboursDataset;
         }
         catch(H5::Exception &e)
@@ -1580,7 +1651,10 @@ namespace libkea{
                     datasetAttSize.read(&hChunkSize, H5::PredType::STD_U64LE, valueDataSpace);
                     datasetAttSize.close();
                     valueDataSpace.close();
-                    chunkSize = hChunkSize;
+                    if(hChunkSize > 0)
+                    {
+                        chunkSize = hChunkSize;
+                    }
                 } 
                 catch ( H5::Exception &e) 
                 {
@@ -1637,6 +1711,10 @@ namespace libkea{
                             att->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
                         }
                         
+                        boolFieldsDataset.close();
+                        boolFieldsDataspace.close();
+                        boolFieldsMemspace.close();
+                        
                         delete[] inFields;
                     }
                     catch( H5::Exception &e )
@@ -1689,6 +1767,10 @@ namespace libkea{
                             
                             att->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
                         }
+                        
+                        intFieldsDataset.close();
+                        intFieldsDataspace.close();
+                        intFieldsMemspace.close();
                         
                         delete[] inFields;
                     }
@@ -1743,6 +1825,10 @@ namespace libkea{
                             att->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
                         }
                         
+                        floatFieldsDataset.close();
+                        floatFieldsDataspace.close();
+                        floatFieldsMemspace.close();
+                        
                         delete[] inFields;
                     }
                     catch( H5::Exception &e )
@@ -1795,6 +1881,10 @@ namespace libkea{
                             
                             att->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
                         }
+                        
+                        strFieldsDataset.close();
+                        strFieldsDataspace.close();
+                        strFieldsMemspace.close();
                         
                         delete[] inFields;
                     }
@@ -2330,6 +2420,28 @@ namespace libkea{
                         att->attRows->push_back(feat);
                     }    
                 }
+                
+                boolDataset.close();
+                boolDataspace.close();
+                boolFieldsMemspace.close();
+                
+                intDataset.close();
+                intDataspace.close();
+                intFieldsMemspace.close();
+                
+                floatDataset.close();
+                floatDataspace.close();
+                floatFieldsMemspace.close();
+                
+                strDataset.close();
+                strDataspace.close();
+                strFieldsMemspace.close();
+                
+                neighboursDataset.close();
+                neighboursDataspace.close();
+                neighboursMemspace.close();
+                
+                delete[] neighbourVals;
                 
                 delete strTypeMem;
             }
