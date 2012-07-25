@@ -1986,13 +1986,21 @@ namespace libkea{
                             
                             if(firstColNum)
                             {
-                                att->numOfCols = field.colNum;
+                                if(field.colNum == 0)
+                                {
+                                    att->numOfCols = 1;
+                                }
+                                else
+                                {
+                                    att->numOfCols = field.colNum + 1;
+                                }
                                 firstColNum = false;
                             }
-                            else if(field.colNum > att->numOfCols)
+                            else if(field.colNum >= att->numOfCols)
                             {
-                                att->numOfCols = field.colNum;
+                                att->numOfCols = field.colNum + 1;
                             }
+
                             
                             att->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
                         }
@@ -2043,13 +2051,21 @@ namespace libkea{
                             
                             if(firstColNum)
                             {
-                                att->numOfCols = field.colNum;
+                                if(field.colNum == 0)
+                                {
+                                    att->numOfCols = 1;
+                                }
+                                else
+                                {
+                                    att->numOfCols = field.colNum + 1;
+                                }
                                 firstColNum = false;
                             }
-                            else if(field.colNum > att->numOfCols)
+                            else if(field.colNum >= att->numOfCols)
                             {
-                                att->numOfCols = field.colNum;
+                                att->numOfCols = field.colNum + 1;
                             }
+
                             
                             att->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
                         }
@@ -2100,13 +2116,21 @@ namespace libkea{
                             
                             if(firstColNum)
                             {
-                                att->numOfCols = field.colNum;
+                                if(field.colNum == 0)
+                                {
+                                    att->numOfCols = 1;
+                                }
+                                else
+                                {
+                                    att->numOfCols = field.colNum + 1;
+                                }
                                 firstColNum = false;
                             }
-                            else if(field.colNum > att->numOfCols)
+                            else if(field.colNum >= att->numOfCols)
                             {
-                                att->numOfCols = field.colNum;
+                                att->numOfCols = field.colNum + 1;
                             }
+
                             
                             att->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
                         }
