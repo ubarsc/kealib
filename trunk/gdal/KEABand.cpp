@@ -5,6 +5,9 @@
 #include "gdal_rat.h"
 #include "libkea/KEAAttributeTable.h"
 
+#include <map>
+#include <vector>
+
 // constructor
 KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, libkea::KEAImageIO *pImageIO, int *pRefCount )
 {
@@ -349,6 +352,8 @@ const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
                 // we assume this is never NULL - creates a new one if none exists
                 libkea::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(libkea::kea_att_mem, this->nBand);
     
+                // create a mapping between GDAL column number and the field info
+                std::vector<libkea::KEAATTField> vecKEAField;
                 for( size_t nColumnIndex = 0; nColumnIndex < pKEATable->getMaxGlobalColIdx(); nColumnIndex++ )
                 {
                     libkea::KEAATTField sKEAField;
@@ -405,29 +410,42 @@ const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
                         continue;
                     }
 
-                    int nGDALColumnIndex = this->m_pAttributeTable->GetColumnCount() - 1;
-                    for( size_t nRowIndex = 0; nRowIndex < pKEATable->getSize(); nRowIndex++ )
+                    vecKEAField.push_back(sKEAField);
+                }
+
+                // OK now we have filled in mapNumberField we can go through each row and fill in the fields
+                for( size_t nRowIndex = 0; nRowIndex < pKEATable->getSize(); nRowIndex++ )
+                {
+                    // get the feature
+                    libkea::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
+
+                    // iterate through the columns - same order as we added columns to GDAL
+                    int nGDALColNum = 0;
+                    for( std::vector<libkea::KEAATTField>::iterator itr = vecKEAField.begin(); itr != vecKEAField.end(); itr++ )
                     {
+                        libkea::KEAATTField sKEAField = (*itr);
                         if( sKEAField.dataType == libkea::kea_att_bool )
                         {
-                            bool bVal = pKEATable->getBoolField(nRowIndex, nColumnIndex);
-                            int nVal;
-                            if( bVal )
-                                nVal = 1;
-                            else
-                                nVal = 0;
-                            this->m_pAttributeTable->SetValue(nRowIndex, nGDALColumnIndex, nVal);
+                            bool bVal = pKEAFeature->boolFields->at(sKEAField.idx);
+                            int nVal = bVal? 1 : 0; // convert to int - GDAL doesn't do bool
+                            this->m_pAttributeTable->SetValue(nRowIndex, nGDALColNum, nVal);
                         }
                         else if( sKEAField.dataType == libkea::kea_att_int )
                         {
-                            int nVal = pKEATable->getIntField(nRowIndex, nColumnIndex);
-                            this->m_pAttributeTable->SetValue(nRowIndex, nGDALColumnIndex, nVal);
+                            int nVal = pKEAFeature->intFields->at(sKEAField.idx);
+                            this->m_pAttributeTable->SetValue(nRowIndex, nGDALColNum, nVal);
+                        }
+                        else if( sKEAField.dataType == libkea::kea_att_float )
+                        {
+                            double dVal = pKEAFeature->floatFields->at(sKEAField.idx);
+                            this->m_pAttributeTable->SetValue(nRowIndex, nGDALColNum, dVal);
                         }
                         else
                         {
-                            std::string sVal = pKEATable->getStringField(nRowIndex, nColumnIndex);
-                            this->m_pAttributeTable->SetValue(nRowIndex, nGDALColumnIndex, sVal.c_str());
+                            std::string sVal = pKEAFeature->strFields->at(sKEAField.idx);
+                            this->m_pAttributeTable->SetValue(nRowIndex, nGDALColNum, sVal.c_str());
                         }
+                        nGDALColNum++;
                     }
                 }
 
@@ -453,6 +471,15 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
     {
         // we assume this is never NULL - creates a new one if none exists
         libkea::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(libkea::kea_att_mem, this->nBand);
+
+        // add rows to the table if needed
+        if( pKEATable->getSize() < (size_t)poRAT->GetRowCount() )
+        {
+            pKEATable->addRows( poRAT->GetRowCount() - pKEATable->getSize() );
+        }
+
+        // mapping between GDAL column indices and libkea::KEAATTField
+        std::map<int, libkea::KEAATTField> mapGDALtoKEA;
 
         for( int nGDALColumnIndex = 0; nGDALColumnIndex < poRAT->GetColumnCount(); nGDALColumnIndex++ )
         {
@@ -510,32 +537,53 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
                 {
                     pKEATable->addAttStringField(pszColumnName, "", strUsage);
                 }
+
                 // assume we can just grab this now
                 sKEAField = pKEATable->getField(pszColumnName);
             }
+            // insert into map
+            mapGDALtoKEA[nGDALColumnIndex] = sKEAField;
+        }
 
-            // at this stage sKEAField should represent field added or found
-            for( int nRowCount = 0; nRowCount < poRAT->GetRowCount(); nRowCount++ )
+        // go through each row to be added
+        for( int nRowIndex = 0; nRowIndex < poRAT->GetRowCount(); nRowIndex++ )
+        {
+            // get the feature - don't need to set this back since it is a pointer to 
+            // internal datastruct
+            libkea::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
+
+            // iterate through the map
+            for( std::map<int, libkea::KEAATTField>::iterator itr = mapGDALtoKEA.begin(); itr != mapGDALtoKEA.end(); itr++ )
             {
-                if(poRAT->GetTypeOfCol(nGDALColumnIndex) == GFT_Integer)
+                // get the KEA field from the map
+                int nGDALColIndex = (*itr).first;
+                libkea::KEAATTField sKEAField = (*itr).second;
+
+                if( sKEAField.dataType == libkea::kea_att_bool )
                 {
-                    int nVal = poRAT->GetValueAsInt(nRowCount, nGDALColumnIndex);
-                    pKEATable->setIntField(nRowCount, sKEAField.idx, nVal);
+                    // write it as a bool even tho GDAL stores as int
+                    bool bVal = poRAT->GetValueAsInt(nRowIndex, nGDALColIndex) != 0;
+                    pKEAFeature->boolFields->at(sKEAField.idx) = bVal;
                 }
-                else if(poRAT->GetTypeOfCol(nGDALColumnIndex) == GFT_Real)
+                else if( sKEAField.dataType == libkea::kea_att_int )
                 {
-                    double dVal = poRAT->GetValueAsDouble(nRowCount, nGDALColumnIndex);
-                    pKEATable->setFloatField(nRowCount, sKEAField.idx, dVal);
+                    int nVal = poRAT->GetValueAsInt(nRowIndex, nGDALColIndex);
+                    pKEAFeature->intFields->at(sKEAField.idx) = nVal;
+                }
+                else if( sKEAField.dataType == libkea::kea_att_float )
+                {
+                    double dVal = poRAT->GetValueAsDouble(nRowIndex, nGDALColIndex);
+                    pKEAFeature->floatFields->at(sKEAField.idx) = dVal;
                 }
                 else
                 {
-                    const char *pszValue = poRAT->GetValueAsString(nRowCount, nGDALColumnIndex);
-                    pKEATable->setStringField(nRowCount, sKEAField.idx, pszValue);
+                    const char *pszValue = poRAT->GetValueAsString(nRowIndex, nGDALColIndex);
+                    pKEAFeature->strFields->at(sKEAField.idx) = pszValue;
                 }
-                // no support for bools sorry
             }
         }
 
+        this->m_pImageIO->setAttributeTable(pKEATable, this->nBand);
         delete pKEATable;
 
         // our cached attribute table object is now ouf of date
