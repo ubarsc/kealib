@@ -486,11 +486,11 @@ namespace libkea{
                 }
             }
             
-            H5::DataSet *boolDataset;
-            H5::DataSet *intDataset;
-            H5::DataSet *floatDataset;
-            H5::DataSet *strDataset;
-            H5::DataSet *neighboursDataset;
+            H5::DataSet *boolDataset = NULL;
+            H5::DataSet *intDataset = NULL;
+            H5::DataSet *floatDataset = NULL;
+            H5::DataSet *strDataset = NULL;
+            H5::DataSet *neighboursDataset = NULL;
             
             H5::CompType *strTypeDisk = this->createKeaStringCompTypeDisk();
             H5::CompType *strTypeMem = this->createKeaStringCompTypeMem();
