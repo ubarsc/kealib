@@ -461,6 +461,44 @@ namespace libkea{
         
     }
     
+    void KEAAttributeTable::printAttributeTableHeaderInfo()
+    {
+        std::cout << "Number of Boolean Fields: " << this->numBoolFields << std::endl;
+        std::cout << "Number of Integer Fields: " << this->numIntFields << std::endl;
+        std::cout << "Number of Float Fields: " << this->numFloatFields << std::endl;
+        std::cout << "Number of String Fields: " << this->numStringFields << std::endl;
+        
+        std::cout << "Fields:\n";
+        for(std::map<std::string, KEAATTField>::iterator iterField = fields->begin(); iterField != fields->end(); ++iterField)
+        {
+            std::cout << "Field: " << (*iterField).second.name << " DATA TYPE:";
+            if((*iterField).second.dataType == kea_att_bool)
+            {
+                std::cout << " boolean ";
+            }
+            else if((*iterField).second.dataType == kea_att_int)
+            {
+                std::cout << " integer ";
+            }
+            else if((*iterField).second.dataType == kea_att_float)
+            {
+                std::cout << " float ";
+            }
+            else if((*iterField).second.dataType == kea_att_string)
+            {
+                std::cout << " string ";
+            }
+            else
+            {
+                std::cout << " UNKNOWN!! ";
+            }
+            
+            std::cout << " USAGE: \'" << (*iterField).second.usage << "\' Global Index: " << (*iterField).second.colNum << std::endl;
+        }
+        
+        std::cout << "Height Column Index: " << this->numOfCols << std::endl;
+    }
+    
     H5::CompType* KEAAttributeTable::createAttibuteIdxCompTypeDisk() throw(KEAATTException)
     {
         try

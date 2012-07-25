@@ -211,7 +211,14 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        return attRows->at(fid)->boolFields->at(colIdx);
+        try 
+        {
+            return attRows->at(fid)->boolFields->at(colIdx);
+        }
+        catch (std::exception &e)
+        {
+            throw KEAATTException("Failed to read boolean value to field.");
+        }
     }
     
     long KEAAttributeTableInMem::getIntField(size_t fid, size_t colIdx) throw(KEAATTException)
@@ -222,13 +229,20 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        if(colIdx > attRows->at(fid)->boolFields->size())
+        if(colIdx > attRows->at(fid)->intFields->size())
         {
             std::string message = std::string("Requested integer column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
             throw KEAATTException(message);
         }
         
-        return attRows->at(fid)->intFields->at(colIdx);
+        try 
+        {
+            return attRows->at(fid)->intFields->at(colIdx);
+        }
+        catch (std::exception &e)
+        {
+            throw KEAATTException("Failed to read integer value to field.");
+        }
     }
     
     double KEAAttributeTableInMem::getFloatField(size_t fid, size_t colIdx) throw(KEAATTException)
@@ -239,13 +253,20 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        if(colIdx > attRows->at(fid)->boolFields->size())
+        if(colIdx > attRows->at(fid)->floatFields->size())
         {
             std::string message = std::string("Requested float column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
             throw KEAATTException(message);
         }
         
-        return attRows->at(fid)->floatFields->at(colIdx);
+        try 
+        {
+            return attRows->at(fid)->floatFields->at(colIdx);
+        }
+        catch (std::exception &e)
+        {
+            throw KEAATTException("Failed to read float value to field.");
+        }
     }
     
     std::string KEAAttributeTableInMem::getStringField(size_t fid, size_t colIdx) throw(KEAATTException)
@@ -256,13 +277,20 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        if(colIdx > attRows->at(fid)->boolFields->size())
+        if(colIdx > attRows->at(fid)->strFields->size())
         {
             std::string message = std::string("Requested string column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
             throw KEAATTException(message);
         }
         
-        return attRows->at(fid)->strFields->at(colIdx);
+        try 
+        {
+            return attRows->at(fid)->strFields->at(colIdx);
+        }
+        catch (std::exception &e)
+        {
+            throw KEAATTException("Failed to read string value to field.");
+        }
     }
     
     void KEAAttributeTableInMem::setBoolField(size_t fid, size_t colIdx, bool value) throw(KEAATTException)
@@ -279,7 +307,14 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        attRows->at(fid)->boolFields->at(colIdx) = value;
+        try 
+        {
+            attRows->at(fid)->boolFields->at(colIdx) = value;
+        }
+        catch (std::exception &e)
+        {
+            throw KEAATTException("Failed to write boolean value to field.");
+        }
     }
     
     void KEAAttributeTableInMem::setIntField(size_t fid, size_t colIdx, long value) throw(KEAATTException)
@@ -296,7 +331,14 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        attRows->at(fid)->intFields->at(colIdx) = value;
+        try 
+        {
+            attRows->at(fid)->intFields->at(colIdx) = value;
+        }
+        catch (std::exception &e)
+        {
+            throw KEAATTException("Failed to write integer value to field.");
+        }
     }
     
     void KEAAttributeTableInMem::setFloatField(size_t fid, size_t colIdx, double value) throw(KEAATTException)
@@ -313,7 +355,22 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        attRows->at(fid)->floatFields->at(colIdx) = value;
+        /*
+        std::cout << "FID: " << fid << std::endl;
+        std::cout << "Column: " << colIdx << std::endl;
+        std::cout << "attRows->size(): " << attRows->size() << std::endl;
+        std::cout << "attRows->at(fid)->floatFields->size(): " << attRows->at(fid)->floatFields->size() << std::endl;
+        std::cout << "this->numFloatFields = " << this->numFloatFields << std::endl;
+        */
+        
+        try 
+        {
+            attRows->at(fid)->floatFields->at(colIdx) = value;
+        }
+        catch (std::exception &e)
+        {
+            throw KEAATTException("Failed to write float value to field.");
+        }
     }
     
     void KEAAttributeTableInMem::setStringField(size_t fid, size_t colIdx, std::string value) throw(KEAATTException)
@@ -330,7 +387,14 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        attRows->at(fid)->strFields->at(colIdx) = value;
+        try
+        {
+            attRows->at(fid)->strFields->at(colIdx) = value;
+        }
+        catch (std::exception &e)
+        {
+            throw KEAATTException("Failed to write string value to field.");
+        }
     }
     
     KEAATTFeature* KEAAttributeTableInMem::getFeature(size_t fid) throw(KEAATTException)
@@ -1764,7 +1828,8 @@ namespace libkea{
         // Create instance of class to populate and return.
         KEAAttributeTableInMem *att = new KEAAttributeTableInMem();
         
-        std::string bandPathBase = KEA_DATASETNAME_BAND + uint2Str(band);        
+        std::string bandPathBase = KEA_DATASETNAME_BAND + uint2Str(band);
+        std::cout << "bandPathBase = " << bandPathBase << std::endl;
         try
         {
             // Read header size.
@@ -1774,8 +1839,9 @@ namespace libkea{
                 hsize_t dimsValue[1];
                 dimsValue[0] = 5;
                 H5::DataSpace valueDataSpace(1, dimsValue);
+                std::cout << "bandPathBase + KEA_ATT_SIZE_HEADER = " << (bandPathBase + KEA_ATT_SIZE_HEADER) << std::endl;
                 H5::DataSet datasetAttSize = keaImg->openDataSet( bandPathBase + KEA_ATT_SIZE_HEADER );
-                datasetAttSize.read(attSize, H5::PredType::STD_U64LE, valueDataSpace);
+                datasetAttSize.read(attSize, H5::PredType::NATIVE_HSIZE, valueDataSpace);
                 datasetAttSize.close();
                 valueDataSpace.close();
             } 
@@ -1783,6 +1849,13 @@ namespace libkea{
             {
                 throw KEAIOException("The attribute table size field is not present.");
             }
+            
+            std::cout << "attSize[0] = " << attSize[0] << std::endl;
+            std::cout << "attSize[1] = " << attSize[1] << std::endl;
+            std::cout << "attSize[2] = " << attSize[2] << std::endl;
+            std::cout << "attSize[3] = " << attSize[3] << std::endl;
+            std::cout << "attSize[4] = " << attSize[4] << std::endl;
+            
             
             if(attSize[0] > 0)
             {
@@ -1849,12 +1922,19 @@ namespace libkea{
                             
                             if(firstColNum)
                             {
-                                att->numOfCols = field.colNum;
+                                if(field.colNum == 0)
+                                {
+                                    att->numOfCols = 1;
+                                }
+                                else
+                                {
+                                    att->numOfCols = field.colNum + 1;
+                                }
                                 firstColNum = false;
                             }
-                            else if(field.colNum > att->numOfCols)
+                            else if(field.colNum >= att->numOfCols)
                             {
-                                att->numOfCols = field.colNum;
+                                att->numOfCols = field.colNum + 1;
                             }
 
                             att->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));

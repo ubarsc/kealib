@@ -53,10 +53,10 @@ int main (int argc, char * const argv[])
 
     try 
     {
-        H5::H5File *keaImgFile = libkea::KEAImageIO::createKEAImage(sFilename, libkea::kea_32float, 1000, 2000, 3);
+        //H5::H5File *keaImgFile = libkea::KEAImageIO::createKEAImage(sFilename, libkea::kea_32float, 1000, 2000, 3);
         
         //keaImgFile->close();
-        //keaImgFile = libkea::KEAImageIO::openKeaH5RW(sFilename);
+        H5::H5File *keaImgFile = libkea::KEAImageIO::openKeaH5RW(sFilename);
         
         
         libkea::KEAImageIO imageIO;
@@ -255,27 +255,96 @@ int main (int argc, char * const argv[])
         std::cout << "Creating attribute table\n";
         libkea::KEAAttributeTable *attTable = imageIO.getAttributeTable(libkea::kea_att_mem, 1);
         std::cout << "Got attribute table\n";
-        std::cout << "Adding rows\n";
+        std::cout << "Att has " << attTable->getSize() << " rows\n";
+        
+        attTable->printAttributeTableHeaderInfo();
+        
+        /*std::cout << "Adding rows\n";
         attTable->addRows(2500);
         std::cout << "Rows added\n";
-        attTable->addAttFloatField("Float Field 1", 0, "Red");
-        attTable->addAttIntField("Int Field 1", 0);
-        attTable->addAttFloatField("Float Field 2", 1, "Green");
-        attTable->addAttFloatField("Float Field 3", 2, "Blue");
-        attTable->addAttIntField("Int Field 2", 1);
-        attTable->addAttStringField("String Field 1", "xxx");
-        attTable->addAttStringField("String Field 2", "yyy");
-        attTable->addAttBoolField("Bool Field 1", false);
-        attTable->addAttBoolField("Bool Field 2", true);
+        try
+        {
+            attTable->addAttFloatField("Float Field 1", 0, "Red");
+        }
+        catch (libkea::KEAException &e)
+        {
+            std::cout << "Ignoring: " << e.what() << std::endl;
+        }
+        try
+        {
+            attTable->addAttIntField("Int Field 1", 0);
+        }
+        catch (libkea::KEAException &e)
+        {
+            std::cout << "Ignoring: " << e.what() << std::endl;
+        }
+        try
+        {
+            attTable->addAttFloatField("Float Field 2", 1, "Green");
+        }
+        catch (libkea::KEAException &e)
+        {
+            std::cout << "Ignoring: " << e.what() << std::endl;
+        }
+        try
+        {
+            attTable->addAttFloatField("Float Field 3", 2, "Blue");
+        }
+        catch (libkea::KEAException &e)
+        {
+            std::cout << "Ignoring: " << e.what() << std::endl;
+        }
+        try
+        {
+            attTable->addAttIntField("Int Field 2", 1);
+        }
+        catch (libkea::KEAException &e)
+        {
+            std::cout << "Ignoring: " << e.what() << std::endl;
+        }
+        try
+        {
+            attTable->addAttStringField("String Field 1", "xxx");
+        }
+        catch (libkea::KEAException &e)
+        {
+            std::cout << "Ignoring: " << e.what() << std::endl;
+        }
+        try
+        {
+            attTable->addAttStringField("String Field 2", "yyy");
+        }
+        catch (libkea::KEAException &e)
+        {
+            std::cout << "Ignoring: " << e.what() << std::endl;
+        }
+        try
+        {
+            attTable->addAttBoolField("Bool Field 1", false);
+        }
+        catch (libkea::KEAException &e)
+        {
+            std::cout << "Ignoring: " << e.what() << std::endl;
+        }
+        try
+        {
+            attTable->addAttBoolField("Bool Field 2", true);
+        }
+        catch (libkea::KEAException &e)
+        {
+            std::cout << "Ignoring: " << e.what() << std::endl;
+        }
+        
+        std::cout << "added fields\n";
         
         attTable->setFloatField(10, "Float Field 1", 10);
+        */
+        //attTable->setFloatField(2, "Float Field 2", 99);
         
-        attTable->setFloatField(2, "Float Field 2", 99);
+        //attTable->setStringField(99, "String Field 2", "Hello World");
         
-        attTable->setStringField(99, "String Field 2", "Hello World");
-        
-        std::cout << "FID 45: Field \'Float Field 2\' = " << attTable->getFloatField(45, "Float Field 2") << "\n";
-        
+        //std::cout << "FID 45: Field \'Float Field 2\' = " << attTable->getFloatField(45, "Float Field 2") << "\n";
+        /*
         libkea::KEAATTFeature *keaFeat = attTable->getFeature(10);
         keaFeat->neighbours->push_back(9);
         keaFeat->neighbours->push_back(3);
@@ -291,52 +360,11 @@ int main (int argc, char * const argv[])
         keaFeat->neighbours->push_back(1320);
         keaFeat->neighbours->push_back(1299);
         
-        /*
-        size_t numRows = attTable->getSize();
-        libkea::KEAATTFeature *feat = NULL;
-        for(size_t i = 0; i < numRows; ++i)
-        {
-            feat = attTable->getFeature(i);
-            std::cout << "FID: " << feat->fid << std::endl;
-            std::cout << "\t" << feat->intFields->at(0) << ", " << feat->intFields->at(1) << std::endl;
-            std::cout << "\t" << feat->floatFields->at(0) << ", " << feat->floatFields->at(1) << ", " << feat->floatFields->at(2) << std::endl;
-            std::cout << "\t" << feat->strFields->at(0) << ", " << feat->strFields->at(1) << std::endl;
-            std::cout << "\t";
-            if(feat->boolFields->at(0))
-            {
-                std::cout << "TRUE";
-            }
-            else
-            {
-                std::cout << "FALSE";
-            }
-            if(feat->boolFields->at(1))
-            {
-                std::cout << ", TRUE\n";
-            }
-            else
-            {
-                std::cout << ", FALSE\n";
-            }
-            std::cout << "\tNeighbours: ";
-            for(size_t j = 0; j < feat->neighbours->size(); ++j)
-            {
-                if(j == 0)
-                {
-                    std::cout << feat->neighbours->at(j);
-                }
-                else
-                {
-                    std::cout << ", " << feat->neighbours->at(j);
-                }
-            }
-            std::cout << std::endl;
-        }
-        */
+        std::cout << "Created neighbours\n";
                 
         imageIO.setAttributeTable(attTable, 1);
         imageIO.setAttributeTable(attTable, 2);
-        
+        */
         imageIO.close();
         
         keaImgFile->close();
@@ -370,58 +398,16 @@ int main (int argc, char * const argv[])
         }
          */
         
+        /*
         keaImgFile = libkea::KEAImageIO::openKeaH5RW(sFilename);
         
         imageIO.openKEAImageHeader(keaImgFile);
         libkea::KEAAttributeTable *readAtt = imageIO.getAttributeTable(libkea::kea_att_mem, 1);
-        /*
-        size_t numRows1 = readAtt->getSize();
-        libkea::KEAATTFeature *feat = NULL;
-        for(size_t i = 0; i < numRows1; ++i)
-        {
-            feat = attTable->getFeature(i);
-            std::cout << "FID: " << feat->fid << std::endl;
-            std::cout << "\t" << feat->intFields->at(0) << ", " << feat->intFields->at(1) << std::endl;
-            std::cout << "\t" << feat->floatFields->at(0) << ", " << feat->floatFields->at(1) << ", " << feat->floatFields->at(2) << std::endl;
-            std::cout << "\t" << feat->strFields->at(0) << ", " << feat->strFields->at(1) << std::endl;
-            std::cout << "\t";
-            if(feat->boolFields->at(0))
-            {
-                std::cout << "TRUE";
-            }
-            else
-            {
-                std::cout << "FALSE";
-            }
-            if(feat->boolFields->at(1))
-            {
-                std::cout << ", TRUE\n";
-            }
-            else
-            {
-                std::cout << ", FALSE\n";
-            }
-            std::cout << "\tNeighbours: ";
-            for(size_t j = 0; j < feat->neighbours->size(); ++j)
-            {
-                if(j == 0)
-                {
-                    std::cout << feat->neighbours->at(j);
-                }
-                else
-                {
-                    std::cout << ", " << feat->neighbours->at(j);
-                }
-            }
-            std::cout << std::endl;
-        }
-        */
         
         readAtt->addAttStringField("third field", "new value");
         readAtt->addAttFloatField("another string field", 50.3);
         
         imageIO.setAttributeTable(readAtt, 1);
-        
         
         libkea::KEAAttributeTable *newAttTable = new libkea::KEAAttributeTableInMem();
         newAttTable->addRows(200);
@@ -430,22 +416,16 @@ int main (int argc, char * const argv[])
         
         imageIO.setAttributeTable(newAttTable, 1);
         
-        /*
-        std::cout << "Global Column 0 is \'" << readAtt->getField(0).name << "\'" <<  std::endl;
-        std::cout << "Global Column 2 is \'" << readAtt->getField(2).name << "\'" <<  std::endl;
-        std::cout << "Global Column 4 is \'" << readAtt->getField(4).name << "\'" <<  std::endl;
-        std::cout << "Global Column 1 is \'" << readAtt->getField(1).name << "\'" <<  std::endl;
-        std::cout << "Global Column 7 is \'" << readAtt->getField(7).name << "\'" <<  std::endl;
-        std::cout << "Global Column 9 is \'" << readAtt->getField(9).name << "\'" <<  std::endl;
+        imageIO.close();
         */
         
-        imageIO.close();
-        
-        
+        /*
         keaImgFile = libkea::KEAImageIO::openKeaH5RW(sFilename);
         imageIO.openKEAImageHeader(keaImgFile);
         libkea::KEAAttributeTable *inAtt = imageIO.getAttributeTable(libkea::kea_att_mem, 1);
+        inAtt->getSize();
         imageIO.close();
+        */
         
     } 
     catch (libkea::KEAException &e) 

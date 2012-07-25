@@ -161,6 +161,8 @@ namespace libkea{
         virtual void exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE)throw(KEAATTException, KEAIOException)=0;
         virtual void exportToASCII(std::string outputFile)throw(KEAATTException, KEAIOException);
         
+        virtual void printAttributeTableHeaderInfo();
+        
         virtual ~KEAAttributeTable();
     protected:
         static H5::CompType* createAttibuteIdxCompTypeDisk() throw(KEAATTException);
