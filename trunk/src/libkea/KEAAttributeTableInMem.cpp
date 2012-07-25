@@ -1742,7 +1742,7 @@ namespace libkea{
                 newNeighboursDataspace.close();
                 neighboursWriteDataSpace.close();
                 
-                for(size_t i = 0; i < chunkSize; ++i)
+                for(size_t i = 0; i < remainRows; ++i)
                 {
                     if(neighbourVals[i].length > 0)
                     {
