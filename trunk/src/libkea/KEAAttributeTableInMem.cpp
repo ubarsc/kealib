@@ -1496,19 +1496,22 @@ namespace libkea{
             if(this->numBoolFields > 0)
             {
                 delete[] boolData;
+                delete boolDataset;
             }
             if(this->numIntFields > 0)
             {
                 delete[] intData;
+                delete intDataset;
             }
             if(this->numFloatFields > 0)
             {
                 delete[] floatData;
+                delete floatDataset;
             }
             if(this->numStringFields > 0)
             {
                 delete[] stringData;
-                //delete[] singleStr;
+                delete strDataset;
             }
             delete[] neighbourVals;
             delete[] attSize;
@@ -1516,10 +1519,6 @@ namespace libkea{
             delete strTypeMem;
             delete strTypeDisk;
             
-            delete boolDataset;
-            delete intDataset;
-            delete floatDataset;
-            delete strDataset;
             delete neighboursDataset;
         }
         catch(H5::Exception &e)
