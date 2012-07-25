@@ -582,7 +582,9 @@ namespace libkea{
                         boolFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, boolFieldsDataDims, boolFieldsOffset);
                         H5::DataSpace newBoolFieldsDataspace = H5::DataSpace(1, boolFieldsDataDims);
                         
+                        std::cout << "Run: boolFieldsDataset.write(boolFields, *fieldDtMem, newBoolFieldsDataspace, boolFieldsWriteDataSpace);\n";
                         boolFieldsDataset.write(boolFields, *fieldDtMem, newBoolFieldsDataspace, boolFieldsWriteDataSpace);
+                        std::cout << "Ran: boolFieldsDataset.write(boolFields, *fieldDtMem, newBoolFieldsDataspace, boolFieldsWriteDataSpace);\n";
                         boolFieldsWriteDataSpace.close();
                         newBoolFieldsDataspace.close();
                         boolFieldsDataset.close();
@@ -615,7 +617,9 @@ namespace libkea{
                         boolFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, boolFieldsDataDims, boolFieldsOffset);
                         H5::DataSpace newBoolFieldsDataspace = H5::DataSpace(1, boolFieldsDataDims);
                         
+                        std::cout << "Run: boolFieldsDataset.write(boolFields, *fieldDtMem, newBoolFieldsDataspace, boolFieldsWriteDataSpace);\n";
                         boolFieldsDataset.write(boolFields, *fieldDtMem, newBoolFieldsDataspace, boolFieldsWriteDataSpace);
+                        std::cout << "Ran: boolFieldsDataset.write(boolFields, *fieldDtMem, newBoolFieldsDataspace, boolFieldsWriteDataSpace);\n";
                         
                         boolFieldsDataSpace.close();
                         boolFieldsWriteDataSpace.close();
@@ -652,7 +656,9 @@ namespace libkea{
                         intFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, intFieldsDataDims, intFieldsOffset);
                         H5::DataSpace newIntFieldsDataspace = H5::DataSpace(1, intFieldsDataDims);
                         
+                        std::cout << "Run: intFieldsDataset.write(intFields, *fieldDtMem, newIntFieldsDataspace, intFieldsWriteDataSpace);\n";
                         intFieldsDataset.write(intFields, *fieldDtMem, newIntFieldsDataspace, intFieldsWriteDataSpace);
+                        std::cout << "Ran: intFieldsDataset.write(intFields, *fieldDtMem, newIntFieldsDataspace, intFieldsWriteDataSpace);\n";
                         
                         intFieldsWriteDataSpace.close();
                         newIntFieldsDataspace.close();
@@ -687,7 +693,9 @@ namespace libkea{
                         intFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, intFieldsDataDims, intFieldsOffset);
                         H5::DataSpace newIntFieldsDataspace = H5::DataSpace(1, intFieldsDataDims);
                         
+                        std::cout << "Run: intFieldsDataset.write(intFields, *fieldDtMem, newIntFieldsDataspace, intFieldsWriteDataSpace);\n";
                         intFieldsDataset.write(intFields, *fieldDtMem, newIntFieldsDataspace, intFieldsWriteDataSpace);
+                        std::cout << "Ran: intFieldsDataset.write(intFields, *fieldDtMem, newIntFieldsDataspace, intFieldsWriteDataSpace);\n";
                         
                         intFieldsDataSpace.close();
                         intFieldsWriteDataSpace.close();
@@ -724,7 +732,9 @@ namespace libkea{
                         floatFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, floatFieldsDataDims, floatFieldsOffset);
                         H5::DataSpace newFloatFieldsDataspace = H5::DataSpace(1, floatFieldsDataDims);
                         
+                        std::cout << "Run: floatFieldsDataset.write(floatFields, *fieldDtMem, newFloatFieldsDataspace, floatFieldsWriteDataSpace);\n";
                         floatFieldsDataset.write(floatFields, *fieldDtMem, newFloatFieldsDataspace, floatFieldsWriteDataSpace);
+                        std::cout << "Ran: floatFieldsDataset.write(floatFields, *fieldDtMem, newFloatFieldsDataspace, floatFieldsWriteDataSpace);\n";
                         
                         floatFieldsWriteDataSpace.close();
                         newFloatFieldsDataspace.close();
@@ -758,7 +768,9 @@ namespace libkea{
                         floatFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, floatFieldsDataDims, floatFieldsOffset);
                         H5::DataSpace newFloatFieldsDataspace = H5::DataSpace(1, floatFieldsDataDims);
                         
+                        std::cout << "Run: floatFieldsDataset.write(floatFields, *fieldDtMem, newFloatFieldsDataspace, floatFieldsWriteDataSpace);\n";
                         floatFieldsDataset.write(floatFields, *fieldDtMem, newFloatFieldsDataspace, floatFieldsWriteDataSpace);
+                        std::cout << "Ran: floatFieldsDataset.write(floatFields, *fieldDtMem, newFloatFieldsDataspace, floatFieldsWriteDataSpace);\n";
                         
                         floatFieldsDataSpace.close();
                         floatFieldsWriteDataSpace.close();
@@ -795,7 +807,9 @@ namespace libkea{
                         stringFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, stringFieldsDataDims, stringFieldsOffset);
                         H5::DataSpace newStringFieldsDataspace = H5::DataSpace(1, stringFieldsDataDims);
                         
+                        std::cout << "Run: stringFieldsDataset.write(stringFields, *fieldDtMem, newStringFieldsDataspace, stringFieldsWriteDataSpace);\n";
                         stringFieldsDataset.write(stringFields, *fieldDtMem, newStringFieldsDataspace, stringFieldsWriteDataSpace);
+                        std::cout << "Ran: stringFieldsDataset.write(stringFields, *fieldDtMem, newStringFieldsDataspace, stringFieldsWriteDataSpace);\n";
                         
                         stringFieldsWriteDataSpace.close();
                         newStringFieldsDataspace.close();
@@ -833,7 +847,9 @@ namespace libkea{
                         stringFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, stringFieldsDataDims, stringFieldsOffset);
                         H5::DataSpace newStringFieldsDataspace = H5::DataSpace(1, stringFieldsDataDims);
                         
+                        std::cout << "Run: stringFieldsDataset.write(stringFields, *fieldDtMem, newStringFieldsDataspace, stringFieldsWriteDataSpace);\n";
                         stringFieldsDataset.write(stringFields, *fieldDtMem, newStringFieldsDataspace, stringFieldsWriteDataSpace);
+                        std::cout << "Ran: stringFieldsDataset.write(stringFields, *fieldDtMem, newStringFieldsDataspace, stringFieldsWriteDataSpace);\n";
                         
                         stringFieldsDataSpace.close();
                         stringFieldsWriteDataSpace.close();
@@ -1524,8 +1540,9 @@ namespace libkea{
                         H5::DataSpace boolWriteDataSpace = boolDataset->getSpace();
                         boolWriteDataSpace.selectHyperslab(H5S_SELECT_SET, boolDataDims, boolDataOffset);
                         H5::DataSpace newBoolDataspace = H5::DataSpace(2, boolDataDims);
-                        
+                        std::cout << "Run: boolDataset->write(boolData, H5::PredType::NATIVE_INT, newBoolDataspace, boolWriteDataSpace);\n";
                         boolDataset->write(boolData, H5::PredType::NATIVE_INT, newBoolDataspace, boolWriteDataSpace);
+                        std::cout << "Ran: boolDataset->write(boolData, H5::PredType::NATIVE_INT, newBoolDataspace, boolWriteDataSpace);\n";
                         newBoolDataspace.close();
                         boolWriteDataSpace.close();
                     }
@@ -1538,8 +1555,9 @@ namespace libkea{
                         H5::DataSpace intWriteDataSpace = intDataset->getSpace();
                         intWriteDataSpace.selectHyperslab(H5S_SELECT_SET, intDataDims, intDataOffset);
                         H5::DataSpace newIntDataspace = H5::DataSpace(2, intDataDims);
-                        
+                        std::cout << "Run: intDataset->write(intData, H5::PredType::NATIVE_LONG, newIntDataspace, intWriteDataSpace);\n";
                         intDataset->write(intData, H5::PredType::NATIVE_LONG, newIntDataspace, intWriteDataSpace);
+                        std::cout << "Ran: intDataset->write(intData, H5::PredType::NATIVE_LONG, newIntDataspace, intWriteDataSpace);\n";
                         intWriteDataSpace.close();
                         newIntDataspace.close();
                     }
@@ -1552,8 +1570,9 @@ namespace libkea{
                         H5::DataSpace floatWriteDataSpace = floatDataset->getSpace();
                         floatWriteDataSpace.selectHyperslab(H5S_SELECT_SET, floatDataDims, floatDataOffset);
                         H5::DataSpace newFloatDataspace = H5::DataSpace(2, floatDataDims);
-                        
+                        std::cout << "Run: floatDataset->write(floatData, H5::PredType::NATIVE_DOUBLE, newFloatDataspace, floatWriteDataSpace);\n";
                         floatDataset->write(floatData, H5::PredType::NATIVE_DOUBLE, newFloatDataspace, floatWriteDataSpace);
+                        std::cout << "Ran: floatDataset->write(floatData, H5::PredType::NATIVE_DOUBLE, newFloatDataspace, floatWriteDataSpace);\n";
                         floatWriteDataSpace.close();
                         newFloatDataspace.close();
                     }
@@ -1566,8 +1585,9 @@ namespace libkea{
                         H5::DataSpace stringWriteDataSpace = strDataset->getSpace();
                         stringWriteDataSpace.selectHyperslab(H5S_SELECT_SET, stringDataDims, stringDataOffset);
                         H5::DataSpace newStringDataspace = H5::DataSpace(2, stringDataDims);
-                        
+                        std::cout << "Run: strDataset->write(stringData, *strTypeMem, newStringDataspace, stringWriteDataSpace);\n";
                         strDataset->write(stringData, *strTypeMem, newStringDataspace, stringWriteDataSpace);
+                        std::cout << "Ran: strDataset->write(stringData, *strTypeMem, newStringDataspace, stringWriteDataSpace);\n";
                         stringWriteDataSpace.close();
                         newStringDataspace.close();
                     }
@@ -1576,8 +1596,9 @@ namespace libkea{
                     
                     H5::DataSpace neighboursWriteDataSpace = neighboursDataset->getSpace();
                     neighboursWriteDataSpace.selectHyperslab(H5S_SELECT_SET, neighboursDataDims, neighboursDataOffset);
-                    
+                    std::cout << "Run: neighboursDataset->write(neighbourVals, intVarLenMemDT, memNeighboursDataspace, neighboursWriteDataSpace);\n";
                     neighboursDataset->write(neighbourVals, intVarLenMemDT, memNeighboursDataspace, neighboursWriteDataSpace);
+                    std::cout << "Ran: neighboursDataset->write(neighbourVals, intVarLenMemDT, memNeighboursDataspace, neighboursWriteDataSpace);\n";
                     neighboursWriteDataSpace.close();
                     
                     for(size_t i = 0; i < chunkSize; ++i)
@@ -1669,8 +1690,9 @@ namespace libkea{
                     H5::DataSpace boolWriteDataSpace = boolDataset->getSpace();
                     boolWriteDataSpace.selectHyperslab(H5S_SELECT_SET, boolDataDims, boolDataOffset);
                     H5::DataSpace newBoolDataspace = H5::DataSpace(2, boolDataDims);
-                    
+                    std::cout << "Run: boolDataset->write(boolData, H5::PredType::NATIVE_INT, newBoolDataspace, boolWriteDataSpace);\n";
                     boolDataset->write(boolData, H5::PredType::NATIVE_INT, newBoolDataspace, boolWriteDataSpace);
+                    std::cout << "Ran: boolDataset->write(boolData, H5::PredType::NATIVE_INT, newBoolDataspace, boolWriteDataSpace);\n";
                     boolWriteDataSpace.close();
                     newBoolDataspace.close();
                 }
@@ -1680,8 +1702,9 @@ namespace libkea{
                     H5::DataSpace intWriteDataSpace = intDataset->getSpace();
                     intWriteDataSpace.selectHyperslab(H5S_SELECT_SET, intDataDims, intDataOffset);
                     H5::DataSpace newIntDataspace = H5::DataSpace(2, intDataDims);
-                    
+                    std::cout << "Run: intDataset->write(intData, H5::PredType::NATIVE_LONG, newIntDataspace, intWriteDataSpace);\n";
                     intDataset->write(intData, H5::PredType::NATIVE_LONG, newIntDataspace, intWriteDataSpace);
+                    std::cout << "Ran: intDataset->write(intData, H5::PredType::NATIVE_LONG, newIntDataspace, intWriteDataSpace);\n";
                     newIntDataspace.close();
                     intWriteDataSpace.close();
                 }
@@ -1691,8 +1714,9 @@ namespace libkea{
                     H5::DataSpace floatWriteDataSpace = floatDataset->getSpace();
                     floatWriteDataSpace.selectHyperslab(H5S_SELECT_SET, floatDataDims, floatDataOffset);
                     H5::DataSpace newFloatDataspace = H5::DataSpace(2, floatDataDims);
-                    
+                    std::cout << "Run: floatDataset->write(floatData, H5::PredType::NATIVE_DOUBLE, newFloatDataspace, floatWriteDataSpace);\n";
                     floatDataset->write(floatData, H5::PredType::NATIVE_DOUBLE, newFloatDataspace, floatWriteDataSpace);
+                    std::cout << "Ran: floatDataset->write(floatData, H5::PredType::NATIVE_DOUBLE, newFloatDataspace, floatWriteDataSpace);\n";
                     newFloatDataspace.close();
                     floatWriteDataSpace.close();
                 }
@@ -1702,8 +1726,9 @@ namespace libkea{
                     H5::DataSpace stringWriteDataSpace = strDataset->getSpace();
                     stringWriteDataSpace.selectHyperslab(H5S_SELECT_SET, stringDataDims, stringDataOffset);
                     H5::DataSpace newStringDataspace = H5::DataSpace(2, stringDataDims);
-                    
+                    std::cout << "Run: strDataset->write(stringData, *strTypeMem, newStringDataspace, stringWriteDataSpace);\n";
                     strDataset->write(stringData, *strTypeMem, newStringDataspace, stringWriteDataSpace);
+                    std::cout << "Ran: strDataset->write(stringData, *strTypeMem, newStringDataspace, stringWriteDataSpace);\n";
                     newStringDataspace.close();
                     stringWriteDataSpace.close();
                 }
@@ -1711,8 +1736,9 @@ namespace libkea{
                 H5::DataSpace neighboursWriteDataSpace = neighboursDataset->getSpace();
                 neighboursWriteDataSpace.selectHyperslab(H5S_SELECT_SET, neighboursDataDims, neighboursDataOffset);
                 H5::DataSpace newNeighboursDataspace = H5::DataSpace(1, neighboursDataDims);
-                
+                std::cout << "Run: neighboursDataset->write(neighbourVals, intVarLenMemDT, newNeighboursDataspace, neighboursWriteDataSpace);\n";
                 neighboursDataset->write(neighbourVals, intVarLenMemDT, newNeighboursDataspace, neighboursWriteDataSpace);
+                std::cout << "Ran: neighboursDataset->write(neighbourVals, intVarLenMemDT, newNeighboursDataspace, neighboursWriteDataSpace);\n";
                 newNeighboursDataspace.close();
                 neighboursWriteDataSpace.close();
                 
@@ -1737,7 +1763,9 @@ namespace libkea{
             chunkSizeWriteDataSpace.selectHyperslab(H5S_SELECT_SET, chunkSizeDataDims, chunkSizeDataOffset);
             H5::DataSpace newChunkSizeDataspace = H5::DataSpace(1, chunkSizeDataDims);
             
+            std::cout << "Run: chunkSizeDataset.write(&chunkSize, H5::PredType::NATIVE_UINT, newChunkSizeDataspace, chunkSizeWriteDataSpace);\n";
             chunkSizeDataset.write(&chunkSize, H5::PredType::NATIVE_UINT, newChunkSizeDataspace, chunkSizeWriteDataSpace);
+            std::cout << "Ran: chunkSizeDataset.write(&chunkSize, H5::PredType::NATIVE_UINT, newChunkSizeDataspace, chunkSizeWriteDataSpace);\n";
             chunkSizeDataset.close();
             chunkSizeWriteDataSpace.close();
             newChunkSizeDataspace.close();
@@ -1758,7 +1786,9 @@ namespace libkea{
             attSize[2] = this->numIntFields;
             attSize[3] = this->numFloatFields;
             attSize[4] = this->numStringFields;
+            std::cout << "Run: sizeDataset.write(attSize, H5::PredType::NATIVE_HSIZE, newSizeDataspace, sizeWriteDataSpace)\n";
             sizeDataset.write(attSize, H5::PredType::NATIVE_HSIZE, newSizeDataspace, sizeWriteDataSpace);
+            std::cout << "Ran: sizeDataset.write(attSize, H5::PredType::NATIVE_HSIZE, newSizeDataspace, sizeWriteDataSpace)\n";
             sizeDataset.close();
             sizeWriteDataSpace.close();
             newSizeDataspace.close();
