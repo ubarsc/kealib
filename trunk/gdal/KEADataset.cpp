@@ -125,7 +125,6 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
 // 
 int KEADataset::Identify( GDALOpenInfo * poOpenInfo )
 {
-    fprintf( stderr, "identify %s\n", poOpenInfo->pszFilename );
     bool isKEA = false;
     try
     {
