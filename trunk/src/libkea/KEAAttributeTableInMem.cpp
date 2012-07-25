@@ -355,14 +355,6 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        /*
-        std::cout << "FID: " << fid << std::endl;
-        std::cout << "Column: " << colIdx << std::endl;
-        std::cout << "attRows->size(): " << attRows->size() << std::endl;
-        std::cout << "attRows->at(fid)->floatFields->size(): " << attRows->at(fid)->floatFields->size() << std::endl;
-        std::cout << "this->numFloatFields = " << this->numFloatFields << std::endl;
-        */
-        
         try 
         {
             attRows->at(fid)->floatFields->at(colIdx) = value;
@@ -458,9 +450,7 @@ namespace libkea{
     }
     
     void KEAAttributeTableInMem::exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize, unsigned int deflate)throw(KEAATTException, KEAIOException)
-    {
-        std::cout << "Exporting to image band " << band << std::endl;
-        
+    {        
         try
         {
             if(attRows->size() == 0)
@@ -486,18 +476,6 @@ namespace libkea{
             {
                 throw KEAIOException("The attribute table size field is not present.");
             }
-            
-            std::cout << "attSize[0] = " << attSize[0] << std::endl;
-            std::cout << "attSize[1] = " << attSize[1] << std::endl;
-            std::cout << "attSize[2] = " << attSize[2] << std::endl;
-            std::cout << "attSize[3] = " << attSize[3] << std::endl;
-            std::cout << "attSize[4] = " << attSize[4] << std::endl;
-            
-            std::cout << "this->attRows->size() = " << this->attRows->size() << std::endl;
-            std::cout << "this->numBoolFields = " << this->numBoolFields << std::endl;
-            std::cout << "this->numIntFields = " << this->numIntFields << std::endl;
-            std::cout << "this->numFloatFields = " << this->numFloatFields << std::endl;
-            std::cout << "this->numStringFields = " << this->numStringFields << std::endl;
                         
             KEAAttributeIdx *boolFields = NULL;
             if(this->numBoolFields > 0)
@@ -1433,9 +1411,7 @@ namespace libkea{
                 neighboursDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_NEIGHBOURS_DATA), intVarLenDiskDT, neighboursDataspace, creationNeighboursDSPList));
                 neighboursDataspace.close();
             }
-            
-            std::cout << "Written header info. Now going to write the data\n";
-            
+                        
             // WRITE DATA INTO THE STRUCTURE.
             size_t numOfBlocks = 0;
             numOfBlocks = floor(((double)attRows->size()/chunkSize));
@@ -1505,31 +1481,25 @@ namespace libkea{
                 KEAATTFeature *keaFeat = NULL;
                 for(size_t n = 0; n < numOfBlocks; ++n)
                 {
-                    //std::cout << "n = " << n << std::endl;
                     rowOff = n * chunkSize;
                     
                     for(size_t i = 0; i < chunkSize; ++i)
                     {
-                        //std::cout << "i = " << i << std::endl;
                         keaFeat = attRows->at(rowOff+i);
                         for(size_t j = 0; j < this->numBoolFields; ++j)
                         {
-                            //std::cout << "BOOL j = " << j << std::endl;
                             boolData[(i*this->numBoolFields)+j] = keaFeat->boolFields->at(j);
                         }
                         for(size_t j = 0; j < this->numIntFields; ++j)
                         {
-                            //std::cout << "INT j = " << j << std::endl;
                             intData[(i*this->numIntFields)+j] = keaFeat->intFields->at(j);
                         }
                         for(size_t j = 0; j < this->numFloatFields; ++j)
                         {
-                            //std::cout << "FLOAT j = " << j << std::endl;
                             floatData[(i*this->numFloatFields)+j] = keaFeat->floatFields->at(j);
                         }
                         for(size_t j = 0; j < this->numStringFields; ++j)
                         {
-                            //std::cout << "STRING j = " << j << std::endl;
                             stringData[(i*this->numStringFields)+j].str = const_cast<char*>(keaFeat->strFields->at(j).c_str());
                         }
                         
@@ -1541,7 +1511,6 @@ namespace libkea{
                             neighbourVals[i].p = new hsize_t[keaFeat->neighbours->size()];
                             for(unsigned int k = 0; k < keaFeat->neighbours->size(); ++k)
                             {
-                                //std::cout << "NEIGHBOURS k = " << k << std::endl;
                                 ((hsize_t*)neighbourVals[i].p)[k] = keaFeat->neighbours->at(k);
                             }
                         }
@@ -1851,7 +1820,6 @@ namespace libkea{
         KEAAttributeTableInMem *att = new KEAAttributeTableInMem();
         
         std::string bandPathBase = KEA_DATASETNAME_BAND + uint2Str(band);
-        std::cout << "bandPathBase = " << bandPathBase << std::endl;
         try
         {
             // Read header size.
@@ -1870,13 +1838,6 @@ namespace libkea{
             {
                 throw KEAIOException("The attribute table size field is not present.");
             }
-            
-            std::cout << "attSize[0] = " << attSize[0] << std::endl;
-            std::cout << "attSize[1] = " << attSize[1] << std::endl;
-            std::cout << "attSize[2] = " << attSize[2] << std::endl;
-            std::cout << "attSize[3] = " << attSize[3] << std::endl;
-            std::cout << "attSize[4] = " << attSize[4] << std::endl;
-            
             
             if(attSize[0] > 0)
             {
@@ -2174,9 +2135,6 @@ namespace libkea{
                 size_t numOfBlocks = 0;
                 numOfBlocks = floor(((double)attSize[0]/chunkSize));
                 size_t remainRows = attSize[0] - (numOfBlocks * chunkSize);
-                
-                std::cout << "Num of Blocks: " << numOfBlocks << std::endl;
-                std::cout << "Number Remaining: " << remainRows << std::endl;
                 
                 KEAATTFeature *feat = NULL;
                 size_t cFid = 0;

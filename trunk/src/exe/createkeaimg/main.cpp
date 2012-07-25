@@ -401,7 +401,7 @@ int main (int argc, char * const argv[])
         }
          */
         
-        /*
+        
         keaImgFile = libkea::KEAImageIO::openKeaH5RW(sFilename);
         
         imageIO.openKEAImageHeader(keaImgFile);
@@ -420,7 +420,7 @@ int main (int argc, char * const argv[])
         imageIO.setAttributeTable(newAttTable, 1);
         
         imageIO.close();
-        */
+        
         
         /*
         keaImgFile = libkea::KEAImageIO::openKeaH5RW(sFilename);

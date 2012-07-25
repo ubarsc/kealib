@@ -159,14 +159,6 @@ namespace libkea{
             {
                 throw KEAIOException("The spatial reference was not specified.");
             }
-            /*
-            std::cout << "Number of Bands: " << this->numImgBands << std::endl;
-            std::cout << "TL Coords: [" << this->spatialInfoFile->tlX << "," << this->spatialInfoFile->tlY << "]" << std::endl;
-            std::cout << "Resolution: [" << this->spatialInfoFile->xRes << "," << this->spatialInfoFile->yRes << "]" << std::endl;
-            std::cout << "Rotation: [" << this->spatialInfoFile->xRot << "," << this->spatialInfoFile->yRot << "]" << std::endl;
-            std::cout << "Size: [" << this->spatialInfoFile->xSize << "," << this->spatialInfoFile->ySize << "]" << std::endl;
-            std::cout << "WKT: \'" << this->spatialInfoFile->wktString << "\'" << std::endl;
-            */
         } 
         catch (KEAIOException &e) 
         {
@@ -217,14 +209,6 @@ namespace libkea{
             {
                 throw KEAIOException("End Y Pixel is not within image.");  
             }
-            
-            /*
-            std::cout << "Band: " << band << std::endl;
-            std::cout << "Start: [" << xPxlOff << "," << yPxlOff << "]\n";
-            std::cout << "End: [" << endXPxl << "," << endYPxl << "]\n";
-            std::cout << "Size Out: [" << xSizeOut << "," << ySizeOut << "]\n";
-            std::cout << "Size Buf: [" << xSizeBuf << "," << ySizeBuf << "]\n";
-            */
             
             // GET NATIVE DATASET
             H5::DataType imgBandDT = H5::PredType::NATIVE_FLOAT;
@@ -293,11 +277,11 @@ namespace libkea{
                     hsize_t dataSelectMemDims[2];
                     dataSelectMemDims[0] = ySizeOut;
                     dataSelectMemDims[1] = 1;
-                    //std::cout << "Count: [" << dataSelectMemDims[1] << "," << dataSelectMemDims[0] << "]\n";
+
                     hsize_t dataOffDims[2];
                     dataOffDims[0] = 0;
                     dataOffDims[1] = 0;
-                    //std::cout << "Offset: [" << dataOffDims[1] << "," << dataOffDims[0] << "]\n";
+
                     hsize_t dataSelectStrideDims[2];
                     dataSelectStrideDims[0] = 1;
                     if(xSizeBuf == xSizeOut)
@@ -308,11 +292,10 @@ namespace libkea{
                     {
                         dataSelectStrideDims[1] = xSizeBuf - xSizeOut;
                     }
-                    //std::cout << "Stride: [" << dataSelectStrideDims[1] << "," << dataSelectStrideDims[0] << "]\n";
+
                     hsize_t dataSelectBlockSizeDims[2];
                     dataSelectBlockSizeDims[0] = 1;
                     dataSelectBlockSizeDims[1] = xSizeOut;
-                    //std::cout << "Block: [" << dataSelectBlockSizeDims[1] << "," << dataSelectBlockSizeDims[0] << "]\n";
                     write2BandDataspace.selectHyperslab(H5S_SELECT_SET, dataSelectMemDims, dataOffDims, dataSelectStrideDims, dataSelectBlockSizeDims);
                     
                     hsize_t dataOutDims[2];
@@ -400,14 +383,6 @@ namespace libkea{
                 throw KEAIOException("End Y Pixel is not within image.");  
             }
             
-            /*
-            std::cout << "Band: " << band << std::endl;
-            std::cout << "Start: [" << xPxlOff << "," << yPxlOff << "]\n";
-            std::cout << "End: [" << endXPxl << "," << endYPxl << "]\n";
-            std::cout << "Size In: [" << xSizeIn << "," << ySizeIn << "]\n";
-            std::cout << "Size Buf: [" << xSizeBuf << "," << ySizeBuf << "]\n";
-            */
-            
             // GET NATIVE DATASET
             H5::DataType imgBandDT = H5::PredType::NATIVE_FLOAT;
             if(inDataType == kea_8int)
@@ -475,11 +450,11 @@ namespace libkea{
                     hsize_t dataSelectMemDims[2];
                     dataSelectMemDims[0] = ySizeIn;
                     dataSelectMemDims[1] = 1;
-                    //std::cout << "Count: [" << dataSelectMemDims[1] << "," << dataSelectMemDims[0] << "]\n";
+
                     hsize_t dataOffDims[2];
                     dataOffDims[0] = 0;
                     dataOffDims[1] = 0;
-                    //std::cout << "Offset: [" << dataOffDims[1] << "," << dataOffDims[0] << "]\n";
+
                     hsize_t dataSelectStrideDims[2];
                     dataSelectStrideDims[0] = 1;
                     if(xSizeBuf == xSizeIn)
@@ -490,11 +465,10 @@ namespace libkea{
                     {
                         dataSelectStrideDims[1] = xSizeBuf - xSizeIn;
                     }
-                    //std::cout << "Stride: [" << dataSelectStrideDims[1] << "," << dataSelectStrideDims[0] << "]\n";
+
                     hsize_t dataSelectBlockSizeDims[2];
                     dataSelectBlockSizeDims[0] = 1;
                     dataSelectBlockSizeDims[1] = xSizeIn;
-                    //std::cout << "Block: [" << dataSelectBlockSizeDims[1] << "," << dataSelectBlockSizeDims[0] << "]\n";
                     read2BandDataspace.selectHyperslab(H5S_SELECT_SET, dataSelectMemDims, dataOffDims, dataSelectStrideDims, dataSelectBlockSizeDims);
                     
                     hsize_t dataInDims[2];
@@ -633,7 +607,6 @@ namespace libkea{
             for(hsize_t i = 0; i < numMetaDataItems; ++i)
             {
                 metaDataNames.push_back(imgBandMetaDataGrp.getObjnameByIdx(i));
-                //std::cout << "Name: " << imgBandMetaDataGrp.getObjnameByIdx(i) << std::endl;
             }
         }
         catch (H5::Exception &e)
@@ -798,7 +771,6 @@ namespace libkea{
             for(hsize_t i = 0; i < numMetaDataItems; ++i)
             {
                 metaDataNames.push_back(imgBandMetaDataGrp.getObjnameByIdx(i));
-                //std::cout << "Name: " << imgBandMetaDataGrp.getObjnameByIdx(i) << std::endl;
             }
         }
         catch (H5::Exception &e)
@@ -1228,7 +1200,6 @@ namespace libkea{
                 H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( imageBandPath + KEA_BANDNAME_DATA );
                 H5::Attribute blockSizeAtt = imgBandDataset.openAttribute(KEA_ATTRIBUTENAME_BLOCK_SIZE);
                 blockSizeAtt.read(H5::PredType::NATIVE_UINT, &imgBlockSize);
-                //std::cout << "Band " << band << " imgBlockSize = " << imgBlockSize << std::endl;
                 imgBandDataset.close();
                 blockSizeAtt.close();
             } 
@@ -1348,9 +1319,7 @@ namespace libkea{
         }
         
         std::string overviewName = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_OVERVIEWSNAME_OVERVIEW + uint2Str(overview);
-        
-        //std::cout << "overviewName: " << overviewName << std::endl;
-        
+                
         try 
         {
             // Try to open dataset with overviewName
@@ -1650,11 +1619,11 @@ namespace libkea{
                     hsize_t dataSelectMemDims[2];
                     dataSelectMemDims[0] = ySizeOut;
                     dataSelectMemDims[1] = 1;
-                    //std::cout << "Count: [" << dataSelectMemDims[1] << "," << dataSelectMemDims[0] << "]\n";
+
                     hsize_t dataOffDims[2];
                     dataOffDims[0] = 0;
                     dataOffDims[1] = 0;
-                    //std::cout << "Offset: [" << dataOffDims[1] << "," << dataOffDims[0] << "]\n";
+
                     hsize_t dataSelectStrideDims[2];
                     dataSelectStrideDims[0] = 1;
                     if(xSizeBuf == xSizeOut)
@@ -1665,11 +1634,10 @@ namespace libkea{
                     {
                         dataSelectStrideDims[1] = xSizeBuf - xSizeOut;
                     }
-                    //std::cout << "Stride: [" << dataSelectStrideDims[1] << "," << dataSelectStrideDims[0] << "]\n";
+
                     hsize_t dataSelectBlockSizeDims[2];
                     dataSelectBlockSizeDims[0] = 1;
                     dataSelectBlockSizeDims[1] = xSizeOut;
-                    //std::cout << "Block: [" << dataSelectBlockSizeDims[1] << "," << dataSelectBlockSizeDims[0] << "]\n";
                     write2BandDataspace.selectHyperslab(H5S_SELECT_SET, dataSelectMemDims, dataOffDims, dataSelectStrideDims, dataSelectBlockSizeDims);
                     
                     hsize_t dataOutDims[2];
@@ -1801,11 +1769,11 @@ namespace libkea{
                     hsize_t dataSelectMemDims[2];
                     dataSelectMemDims[0] = ySizeIn;
                     dataSelectMemDims[1] = 1;
-                    //std::cout << "Count: [" << dataSelectMemDims[1] << "," << dataSelectMemDims[0] << "]\n";
+
                     hsize_t dataOffDims[2];
                     dataOffDims[0] = 0;
                     dataOffDims[1] = 0;
-                    //std::cout << "Offset: [" << dataOffDims[1] << "," << dataOffDims[0] << "]\n";
+
                     hsize_t dataSelectStrideDims[2];
                     dataSelectStrideDims[0] = 1;
                     if(xSizeBuf == xSizeIn)
@@ -1816,11 +1784,10 @@ namespace libkea{
                     {
                         dataSelectStrideDims[1] = xSizeBuf - xSizeIn;
                     }
-                    //std::cout << "Stride: [" << dataSelectStrideDims[1] << "," << dataSelectStrideDims[0] << "]\n";
+
                     hsize_t dataSelectBlockSizeDims[2];
                     dataSelectBlockSizeDims[0] = 1;
                     dataSelectBlockSizeDims[1] = xSizeIn;
-                    //std::cout << "Block: [" << dataSelectBlockSizeDims[1] << "," << dataSelectBlockSizeDims[0] << "]\n";
                     read2BandDataspace.selectHyperslab(H5S_SELECT_SET, dataSelectMemDims, dataOffDims, dataSelectStrideDims, dataSelectBlockSizeDims);
                     
                     hsize_t dataInDims[2];
