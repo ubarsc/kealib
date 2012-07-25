@@ -505,17 +505,24 @@ namespace libkea{
                     try 
                     {
                         H5::DataSet boolFieldsDataset = keaImg->openDataSet(bandPathBase + KEA_ATT_BOOL_FIELDS_HEADER);
+                        H5::DataSpace boolFieldsWriteDataSpace = boolFieldsDataset.getSpace();
                         
-                        hsize_t extendBoolFieldsDatasetTo[1];
-                        extendBoolFieldsDatasetTo[0] = this->numBoolFields;
-                        boolFieldsDataset.extend( extendBoolFieldsDatasetTo );
+                        hsize_t boolFieldsDataDims[1];
+                        boolFieldsWriteDataSpace.getSimpleExtentDims(boolFieldsDataDims);
+                        
+                        if(this->numBoolFields > boolFieldsDataDims[0])
+                        {
+                            hsize_t extendBoolFieldsDatasetTo[1];
+                            extendBoolFieldsDatasetTo[0] = this->numBoolFields;
+                            boolFieldsDataset.extend( extendBoolFieldsDatasetTo );
+                        }
                         
                         hsize_t boolFieldsOffset[1];
                         boolFieldsOffset[0] = 0;
-                        hsize_t boolFieldsDataDims[1];
                         boolFieldsDataDims[0] = this->numBoolFields;
                         
-                        H5::DataSpace boolFieldsWriteDataSpace = boolFieldsDataset.getSpace();
+                        boolFieldsWriteDataSpace.close();
+                        boolFieldsWriteDataSpace = boolFieldsDataset.getSpace();
                         boolFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, boolFieldsDataDims, boolFieldsOffset);
                         H5::DataSpace newBoolFieldsDataspace = H5::DataSpace(1, boolFieldsDataDims);
                         
@@ -568,17 +575,24 @@ namespace libkea{
                     try 
                     {
                         H5::DataSet intFieldsDataset = keaImg->openDataSet(bandPathBase + KEA_ATT_INT_FIELDS_HEADER);
+                        H5::DataSpace intFieldsWriteDataSpace = intFieldsDataset.getSpace();
                         
-                        hsize_t extendIntFieldsDatasetTo[1];
-                        extendIntFieldsDatasetTo[0] = this->numIntFields;
-                        intFieldsDataset.extend( extendIntFieldsDatasetTo );
+                        hsize_t intFieldsDataDims[1];
+                        intFieldsWriteDataSpace.getSimpleExtentDims(intFieldsDataDims);
+                        
+                        if(this->numIntFields > intFieldsDataDims[0])
+                        {
+                            hsize_t extendIntFieldsDatasetTo[1];
+                            extendIntFieldsDatasetTo[0] = this->numIntFields;
+                            intFieldsDataset.extend( extendIntFieldsDatasetTo );
+                        }
                         
                         hsize_t intFieldsOffset[1];
                         intFieldsOffset[0] = 0;
-                        hsize_t intFieldsDataDims[1];
                         intFieldsDataDims[0] = this->numIntFields;
                         
-                        H5::DataSpace intFieldsWriteDataSpace = intFieldsDataset.getSpace();
+                        intFieldsWriteDataSpace.close();
+                        intFieldsWriteDataSpace = intFieldsDataset.getSpace();
                         intFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, intFieldsDataDims, intFieldsOffset);
                         H5::DataSpace newIntFieldsDataspace = H5::DataSpace(1, intFieldsDataDims);
                         
@@ -633,17 +647,24 @@ namespace libkea{
                     try
                     {
                         H5::DataSet floatFieldsDataset = keaImg->openDataSet(bandPathBase + KEA_ATT_FLOAT_FIELDS_HEADER);
+                        H5::DataSpace floatFieldsWriteDataSpace = floatFieldsDataset.getSpace();
                         
-                        hsize_t extendFloatFieldsDatasetTo[1];
-                        extendFloatFieldsDatasetTo[0] = this->numFloatFields;
-                        floatFieldsDataset.extend( extendFloatFieldsDatasetTo );
+                        hsize_t floatFieldsDataDims[1];
+                        floatFieldsWriteDataSpace.getSimpleExtentDims(floatFieldsDataDims);
+                        
+                        if(this->numFloatFields > floatFieldsDataDims[0])
+                        {
+                            hsize_t extendFloatFieldsDatasetTo[1];
+                            extendFloatFieldsDatasetTo[0] = this->numFloatFields;
+                            floatFieldsDataset.extend( extendFloatFieldsDatasetTo );
+                        }
                         
                         hsize_t floatFieldsOffset[1];
                         floatFieldsOffset[0] = 0;
-                        hsize_t floatFieldsDataDims[1];
                         floatFieldsDataDims[0] = this->numFloatFields;
                         
-                        H5::DataSpace floatFieldsWriteDataSpace = floatFieldsDataset.getSpace();
+                        floatFieldsWriteDataSpace.close();
+                        floatFieldsWriteDataSpace = floatFieldsDataset.getSpace();
                         floatFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, floatFieldsDataDims, floatFieldsOffset);
                         H5::DataSpace newFloatFieldsDataspace = H5::DataSpace(1, floatFieldsDataDims);
                         
@@ -697,17 +718,24 @@ namespace libkea{
                     try
                     {
                         H5::DataSet stringFieldsDataset = keaImg->openDataSet(bandPathBase + KEA_ATT_STRING_FIELDS_HEADER);
+                        H5::DataSpace stringFieldsWriteDataSpace = stringFieldsDataset.getSpace();
                         
-                        hsize_t extendStringFieldsDatasetTo[1];
-                        extendStringFieldsDatasetTo[0] = this->numStringFields;
-                        stringFieldsDataset.extend( extendStringFieldsDatasetTo );
+                        hsize_t stringFieldsDataDims[1];
+                        stringFieldsWriteDataSpace.getSimpleExtentDims(stringFieldsDataDims);
+                        
+                        if(this->numStringFields > stringFieldsDataDims[0])
+                        {
+                            hsize_t extendStringFieldsDatasetTo[1];
+                            extendStringFieldsDatasetTo[0] = this->numStringFields;
+                            stringFieldsDataset.extend( extendStringFieldsDatasetTo );
+                        }
                         
                         hsize_t stringFieldsOffset[1];
                         stringFieldsOffset[0] = 0;
-                        hsize_t stringFieldsDataDims[1];
                         stringFieldsDataDims[0] = this->numStringFields;
                         
-                        H5::DataSpace stringFieldsWriteDataSpace = stringFieldsDataset.getSpace();
+                        stringFieldsWriteDataSpace.close();
+                        stringFieldsWriteDataSpace = stringFieldsDataset.getSpace();
                         stringFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, stringFieldsDataDims, stringFieldsOffset);
                         H5::DataSpace newStringFieldsDataspace = H5::DataSpace(1, stringFieldsDataDims);
                         
@@ -767,11 +795,39 @@ namespace libkea{
                     try
                     {
                         boolDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_BOOL_DATA));
+                        H5::DataSpace dimsDataSpace = boolDataset->getSpace();
                         
-                        hsize_t extendBoolDatasetTo[2];
-                        extendBoolDatasetTo[0] = this->attRows->size();
-                        extendBoolDatasetTo[1] = this->numBoolFields;
-                        boolDataset->extend( extendBoolDatasetTo );
+                        hsize_t dataDims[2];
+                        dimsDataSpace.getSimpleExtentDims(dataDims);
+                        hsize_t extendDatasetTo[2];
+                        bool extend = false;
+                        
+                        if(this->attRows->size() > dataDims[0])
+                        {
+                            extendDatasetTo[0] = this->attRows->size();
+                            extend = true;
+                        }
+                        else
+                        {
+                            extendDatasetTo[0] = dataDims[0];
+                        }
+                        
+                        if(this->numBoolFields > dataDims[1])
+                        {
+                            extendDatasetTo[1] = this->numBoolFields;
+                            extend = true;
+                        }
+                        else
+                        {
+                            extendDatasetTo[1] = dataDims[1];
+                        }
+                        
+                        if(extend)
+                        {
+                            boolDataset->extend(extendDatasetTo);
+                        }
+                        
+                        dimsDataSpace.close();
                     }
                     catch(H5::Exception &e)
                     {
@@ -805,11 +861,39 @@ namespace libkea{
                     try
                     {
                         intDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_INT_DATA));
+                        H5::DataSpace dimsDataSpace = intDataset->getSpace();
                         
-                        hsize_t extendIntDatasetTo[2];
-                        extendIntDatasetTo[0] = this->attRows->size();
-                        extendIntDatasetTo[1] = this->numIntFields;
-                        intDataset->extend( extendIntDatasetTo );
+                        hsize_t dataDims[2];
+                        dimsDataSpace.getSimpleExtentDims(dataDims);
+                        hsize_t extendDatasetTo[2];
+                        bool extend = false;
+                        
+                        if(this->attRows->size() > dataDims[0])
+                        {
+                            extendDatasetTo[0] = this->attRows->size();
+                            extend = true;
+                        }
+                        else
+                        {
+                            extendDatasetTo[0] = dataDims[0];
+                        }
+                        
+                        if(this->numIntFields > dataDims[1])
+                        {
+                            extendDatasetTo[1] = this->numIntFields;
+                            extend = true;
+                        }
+                        else
+                        {
+                            extendDatasetTo[1] = dataDims[1];
+                        }
+                        
+                        if(extend)
+                        {
+                            intDataset->extend(extendDatasetTo);
+                        }
+                        
+                        dimsDataSpace.close();
                     }
                     catch(H5::Exception &e)
                     {
@@ -842,11 +926,39 @@ namespace libkea{
                     try
                     {
                         floatDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_FLOAT_DATA));
+                        H5::DataSpace dimsDataSpace = floatDataset->getSpace();
                         
-                        hsize_t extendFloatDatasetTo[2];
-                        extendFloatDatasetTo[0] = this->attRows->size();
-                        extendFloatDatasetTo[1] = this->numFloatFields;
-                        floatDataset->extend( extendFloatDatasetTo );
+                        hsize_t dataDims[2];
+                        dimsDataSpace.getSimpleExtentDims(dataDims);
+                        hsize_t extendDatasetTo[2];
+                        bool extend = false;
+                        
+                        if(this->attRows->size() > dataDims[0])
+                        {
+                            extendDatasetTo[0] = this->attRows->size();
+                            extend = true;
+                        }
+                        else
+                        {
+                            extendDatasetTo[0] = dataDims[0];
+                        }
+                        
+                        if(this->numFloatFields > dataDims[1])
+                        {
+                            extendDatasetTo[1] = this->numFloatFields;
+                            extend = true;
+                        }
+                        else
+                        {
+                            extendDatasetTo[1] = dataDims[1];
+                        }
+                        
+                        if(extend)
+                        {
+                            floatDataset->extend(extendDatasetTo);
+                        }
+                        
+                        dimsDataSpace.close();
                     }
                     catch(H5::Exception &e)
                     {
@@ -879,11 +991,39 @@ namespace libkea{
                     try
                     {
                         strDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_STRING_DATA));
+                        H5::DataSpace dimsDataSpace = strDataset->getSpace();
                         
-                        hsize_t extendStringDatasetTo[2];
-                        extendStringDatasetTo[0] = this->attRows->size();
-                        extendStringDatasetTo[1] = this->numStringFields;
-                        strDataset->extend( extendStringDatasetTo );
+                        hsize_t dataDims[2];
+                        dimsDataSpace.getSimpleExtentDims(dataDims);
+                        hsize_t extendDatasetTo[2];
+                        bool extend = false;
+                        
+                        if(this->attRows->size() > dataDims[0])
+                        {
+                            extendDatasetTo[0] = this->attRows->size();
+                            extend = true;
+                        }
+                        else
+                        {
+                            extendDatasetTo[0] = dataDims[0];
+                        }
+                        
+                        if(this->numStringFields > dataDims[1])
+                        {
+                            extendDatasetTo[1] = this->numStringFields;
+                            extend = true;
+                        }
+                        else
+                        {
+                            extendDatasetTo[1] = dataDims[1];
+                        }
+                        
+                        if(extend)
+                        {
+                            strDataset->extend(extendDatasetTo);
+                        }
+                        
+                        dimsDataSpace.close();
                     }
                     catch(H5::Exception &e)
                     {
@@ -914,10 +1054,19 @@ namespace libkea{
                 try
                 {
                     neighboursDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_NEIGHBOURS_DATA));
+                    H5::DataSpace dimsDataSpace = neighboursDataset->getSpace();
                     
-                    hsize_t extendNeighboursDatasetTo[1];
-                    extendNeighboursDatasetTo[0] = this->attRows->size();
-                    neighboursDataset->extend( extendNeighboursDatasetTo );
+                    hsize_t dataDims[1];
+                    dimsDataSpace.getSimpleExtentDims(dataDims);
+                    hsize_t extendDatasetTo[1];
+                    
+                    if(this->attRows->size() > dataDims[0])
+                    {
+                        extendDatasetTo[0] = this->attRows->size();
+                        neighboursDataset->extend(extendDatasetTo);
+                    }
+                    
+                    dimsDataSpace.close();
                 }
                 catch(H5::Exception &e)
                 {
