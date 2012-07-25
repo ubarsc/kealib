@@ -1169,7 +1169,7 @@ namespace libkea{
             
             // WRITE DATA INTO THE STRUCTURE.
             size_t numOfBlocks = 0;
-            numOfBlocks = floor(attRows->size()/chunkSize);
+            numOfBlocks = floor(((double)attRows->size()/chunkSize));
             size_t remainRows = attRows->size() - (numOfBlocks * chunkSize);
                         
             int *boolData = NULL;
@@ -1809,7 +1809,7 @@ namespace libkea{
                 att->attRows->reserve(attSize[0]);
                 
                 size_t numOfBlocks = 0;
-                numOfBlocks = floor(attSize[0]/chunkSize);
+                numOfBlocks = floor(((double)attSize[0]/chunkSize));
                 size_t remainRows = attSize[0] - (numOfBlocks * chunkSize);
                 
                 KEAATTFeature *feat = NULL;
