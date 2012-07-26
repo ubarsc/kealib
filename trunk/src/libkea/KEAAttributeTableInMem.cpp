@@ -2133,7 +2133,13 @@ namespace libkea{
                 
                 H5::DataSet boolDataset;
                 H5::DataSpace boolDataspace;
+                H5::DataSpace boolFieldsMemspace;
                 int *boolVals = NULL;
+                hsize_t boolFieldsOffset[2];
+                hsize_t boolFieldsCount[2];
+                hsize_t boolFieldsDimsRead[2];
+                hsize_t boolFieldsOffset_out[2];
+                hsize_t boolFieldsCount_out[2];
                 if(att->numBoolFields > 0)
                 {
                     boolDataset = keaImg->openDataSet( (bandPathBase + KEA_ATT_BOOL_DATA) );
@@ -2161,37 +2167,37 @@ namespace libkea{
                     delete[] boolDims;
                     
                     boolVals = new int[chunkSize*att->numBoolFields];
-                }
-                hsize_t boolFieldsOffset[2];
-                boolFieldsOffset[0] = 0;
-                boolFieldsOffset[1] = 0;
-                hsize_t boolFieldsCount[2];
-                boolFieldsCount[0] = chunkSize;
-                boolFieldsCount[1] = att->numBoolFields;
-                if(att->numBoolFields > 0)
-                {
+                    
+                    boolFieldsOffset[0] = 0;
+                    boolFieldsOffset[1] = 0;
+                    
+                    boolFieldsCount[0] = chunkSize;
+                    boolFieldsCount[1] = att->numBoolFields;
+                    
                     boolDataspace.selectHyperslab( H5S_SELECT_SET, boolFieldsCount, boolFieldsOffset );
-                }
-                
-                hsize_t boolFieldsDimsRead[2]; 
-                boolFieldsDimsRead[0] = chunkSize;
-                boolFieldsDimsRead[1] = att->numBoolFields;
-                H5::DataSpace boolFieldsMemspace( 2, boolFieldsDimsRead );
-                
-                hsize_t boolFieldsOffset_out[2];
-                boolFieldsOffset_out[0] = 0;
-                boolFieldsOffset_out[1] = 0;
-                hsize_t boolFieldsCount_out[2];
-                boolFieldsCount_out[0] = chunkSize;
-                boolFieldsCount_out[1] = att->numBoolFields;
-                if(att->numBoolFields > 0)
-                {
+                    
+                    boolFieldsDimsRead[0] = chunkSize;
+                    boolFieldsDimsRead[1] = att->numBoolFields;
+                    boolFieldsMemspace = H5::DataSpace( 2, boolFieldsDimsRead );
+                    
+                    boolFieldsOffset_out[0] = 0;
+                    boolFieldsOffset_out[1] = 0;
+                    
+                    boolFieldsCount_out[0] = chunkSize;
+                    boolFieldsCount_out[1] = att->numBoolFields;
+                    
                     boolFieldsMemspace.selectHyperslab( H5S_SELECT_SET, boolFieldsCount_out, boolFieldsOffset_out );
                 }
                 
                 H5::DataSet intDataset;
                 H5::DataSpace intDataspace;
+                H5::DataSpace intFieldsMemspace;
                 long *intVals = NULL;
+                hsize_t intFieldsOffset[2];
+                hsize_t intFieldsCount[2];
+                hsize_t intFieldsDimsRead[2];
+                hsize_t intFieldsOffset_out[2];
+                hsize_t intFieldsCount_out[2];
                 if(att->numIntFields > 0)
                 {
                     intDataset = keaImg->openDataSet( (bandPathBase + KEA_ATT_INT_DATA) );
@@ -2218,38 +2224,38 @@ namespace libkea{
                     }
                     delete[] intDims;
                     
-                    intVals = new long[chunkSize*att->numFloatFields];
-                }
-                hsize_t intFieldsOffset[2];
-                intFieldsOffset[0] = 0;
-                intFieldsOffset[1] = 0;
-                hsize_t intFieldsCount[2];
-                intFieldsCount[0] = chunkSize;
-                intFieldsCount[1] = att->numIntFields;
-                if(att->numIntFields > 0)
-                {
+                    intVals = new long[chunkSize*att->numIntFields];
+                    
+                    intFieldsOffset[0] = 0;
+                    intFieldsOffset[1] = 0;
+                    
+                    intFieldsCount[0] = chunkSize;
+                    intFieldsCount[1] = att->numIntFields;
+                    
                     intDataspace.selectHyperslab( H5S_SELECT_SET, intFieldsCount, intFieldsOffset );
-                }
-                
-                hsize_t intFieldsDimsRead[2]; 
-                intFieldsDimsRead[0] = chunkSize;
-                intFieldsDimsRead[1] = att->numIntFields;
-                H5::DataSpace intFieldsMemspace( 2, intFieldsDimsRead );
-                
-                hsize_t intFieldsOffset_out[2];
-                intFieldsOffset_out[0] = 0;
-                intFieldsOffset_out[1] = 0;
-                hsize_t intFieldsCount_out[2];
-                intFieldsCount_out[0] = chunkSize;
-                intFieldsCount_out[1] = att->numIntFields;
-                if(att->numIntFields > 0)
-                {
+                    
+                    intFieldsDimsRead[0] = chunkSize;
+                    intFieldsDimsRead[1] = att->numIntFields;
+                    intFieldsMemspace = H5::DataSpace( 2, intFieldsDimsRead );
+                    
+                    intFieldsOffset_out[0] = 0;
+                    intFieldsOffset_out[1] = 0;
+                    
+                    intFieldsCount_out[0] = chunkSize;
+                    intFieldsCount_out[1] = att->numIntFields;
+                    
                     intFieldsMemspace.selectHyperslab( H5S_SELECT_SET, intFieldsCount_out, intFieldsOffset_out );
                 }
                 
                 H5::DataSet floatDataset;
                 H5::DataSpace floatDataspace;
+                H5::DataSpace floatFieldsMemspace;
                 double *floatVals = NULL;
+                hsize_t floatFieldsOffset[2];
+                hsize_t floatFieldsCount[2];
+                hsize_t floatFieldsDimsRead[2];
+                hsize_t floatFieldsOffset_out[2];
+                hsize_t floatFieldsCount_out[2];
                 if(att->numFloatFields > 0)
                 {
                     floatDataset = keaImg->openDataSet( (bandPathBase + KEA_ATT_FLOAT_DATA) );
@@ -2277,38 +2283,40 @@ namespace libkea{
                     delete[] floatDims;
                     
                     floatVals = new double[chunkSize*att->numFloatFields];
-                }
-                hsize_t floatFieldsOffset[2];
-                floatFieldsOffset[0] = 0;
-                floatFieldsOffset[1] = 0;
-                hsize_t floatFieldsCount[2];
-                floatFieldsCount[0] = chunkSize;
-                floatFieldsCount[1] = att->numFloatFields;
-                if(att->numFloatFields > 0)
-                {
+                    
+                    floatFieldsOffset[0] = 0;
+                    floatFieldsOffset[1] = 0;
+                    
+                    floatFieldsCount[0] = chunkSize;
+                    floatFieldsCount[1] = att->numFloatFields;
+                    
                     floatDataspace.selectHyperslab( H5S_SELECT_SET, floatFieldsCount, floatFieldsOffset );
-                }
-                
-                hsize_t floatFieldsDimsRead[2]; 
-                floatFieldsDimsRead[0] = chunkSize;
-                floatFieldsDimsRead[1] = att->numFloatFields;
-                H5::DataSpace floatFieldsMemspace( 2, floatFieldsDimsRead );
-                
-                hsize_t floatFieldsOffset_out[2];
-                floatFieldsOffset_out[0] = 0;
-                floatFieldsOffset_out[1] = 0;
-                hsize_t floatFieldsCount_out[2];
-                floatFieldsCount_out[0] = chunkSize;
-                floatFieldsCount_out[1] = att->numFloatFields;
-                if(att->numFloatFields > 0)
-                {
+                    
+                    floatFieldsDimsRead[0] = chunkSize;
+                    floatFieldsDimsRead[1] = att->numFloatFields;
+                    
+                    floatFieldsMemspace = H5::DataSpace( 2, floatFieldsDimsRead );
+                    
+                    floatFieldsOffset_out[0] = 0;
+                    floatFieldsOffset_out[1] = 0;
+                    
+                    floatFieldsCount_out[0] = chunkSize;
+                    floatFieldsCount_out[1] = att->numFloatFields;
+                    
                     floatFieldsMemspace.selectHyperslab( H5S_SELECT_SET, floatFieldsCount_out, floatFieldsOffset_out );
                 }
+
                 
                 H5::DataSet strDataset;
                 H5::DataSpace strDataspace;
+                H5::DataSpace strFieldsMemspace;
                 H5::CompType *strTypeMem = KEAAttributeTable::createKeaStringCompTypeMem();
                 KEAAttString *stringVals = NULL;
+                hsize_t strFieldsOffset[2];
+                hsize_t strFieldsCount[2];
+                hsize_t strFieldsDimsRead[2];
+                hsize_t strFieldsOffset_out[2];
+                hsize_t strFieldsCount_out[2];
                 if(att->numStringFields > 0)
                 {
                     strDataset = keaImg->openDataSet( (bandPathBase + KEA_ATT_STRING_DATA) );
@@ -2336,31 +2344,24 @@ namespace libkea{
                     delete[] strDims;
                     
                     stringVals = new KEAAttString[chunkSize*att->numStringFields];
-                }
-                hsize_t strFieldsOffset[2];
-                strFieldsOffset[0] = 0;
-                strFieldsOffset[1] = 0;
-                hsize_t strFieldsCount[2];
-                strFieldsCount[0] = chunkSize;
-                strFieldsCount[1] = att->numStringFields;
-                if(att->numStringFields > 0)
-                {
+                    
+                    strFieldsOffset[0] = 0;
+                    strFieldsOffset[1] = 0;
+                    
+                    strFieldsCount[0] = chunkSize;
+                    strFieldsCount[1] = att->numStringFields;
                     strDataspace.selectHyperslab( H5S_SELECT_SET, strFieldsCount, strFieldsOffset );
-                }
-                
-                hsize_t strFieldsDimsRead[2]; 
-                strFieldsDimsRead[0] = chunkSize;
-                strFieldsDimsRead[1] = att->numStringFields;
-                H5::DataSpace strFieldsMemspace( 2, strFieldsDimsRead );
-                
-                hsize_t strFieldsOffset_out[2];
-                strFieldsOffset_out[0] = 0;
-                strFieldsOffset_out[1] = 0;
-                hsize_t strFieldsCount_out[2];
-                strFieldsCount_out[0] = chunkSize;
-                strFieldsCount_out[1] = att->numStringFields;
-                if(att->numStringFields > 0)
-                {
+                    
+                    strFieldsDimsRead[0] = chunkSize;
+                    strFieldsDimsRead[1] = att->numStringFields;
+                    strFieldsMemspace = H5::DataSpace( 2, strFieldsDimsRead );
+                    
+                    strFieldsOffset_out[0] = 0;
+                    strFieldsOffset_out[1] = 0;
+                    
+                    strFieldsCount_out[0] = chunkSize;
+                    strFieldsCount_out[1] = att->numStringFields;
+                    
                     strFieldsMemspace.selectHyperslab( H5S_SELECT_SET, strFieldsCount_out, strFieldsOffset_out );
                 }
                 
