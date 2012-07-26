@@ -51,7 +51,7 @@ else()
 endif()
 
 option (BUILD_SHARED_LIBS "Build with shared library" ON)
-set(LIBKEA_WITH_UTILITIES TRUE CACHE BOOL "Choose if KeaLib utilities should be built")
+set(LIBKEA_WITH_TESTMAIN FALSE CACHE BOOL "Choose if libkea experimental test main should be built")
 set(LIBKEA_WITH_GDAL TRUE CACHE BOOL "Choose if .kea GDAL driver should be built")
 
 set(HDF5_INCLUDE_DIR /usr/local/include CACHE PATH "Include PATH for HDF5")
@@ -181,24 +181,17 @@ endif(LIBKEA_WITH_GDAL)
 
 ###############################################################################
 # Build executables
-if (LIBKEA_WITH_UTILITIES)
-	include_directories(${GDAL_INCLUDE_DIR})
+if (LIBKEA_WITH_TESTMAIN)
 	add_executable(createkeaimg ${PROJECT_SOURCE_DIR}/exe/createkeaimg/main.cpp)
 	target_link_libraries (createkeaimg ${LIBKEA_LIB_NAME} )
-	add_executable(gdal2kea ${PROJECT_SOURCE_DIR}/exe/gdal2kea/main.cpp)
-	target_link_libraries (gdal2kea ${LIBKEA_LIB_NAME} ${GDAL_LIBRARIES} )
-	add_executable(kea2gdal ${PROJECT_SOURCE_DIR}/exe/kea2gdal/main.cpp)
-	target_link_libraries (kea2gdal ${LIBKEA_LIB_NAME} ${GDAL_LIBRARIES} )
-endif(LIBKEA_WITH_UTILITIES)
+endif(LIBKEA_WITH_TESTMAIN)
 ###############################################################################
 
 ###############################################################################
 # Installation
-if (LIBKEA_WITH_UTILITIES)
+if (LIBKEA_WITH_TESTMAIN)
 	install (TARGETS createkeaimg DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-	install (TARGETS gdal2kea DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-	install (TARGETS kea2gdal DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-endif(LIBKEA_WITH_UTILITIES)
+endif(LIBKEA_WITH_TESTMAIN)
 
 install (FILES "${PROJECT_BINARY_DIR}/kea-config" DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 ###############################################################################
