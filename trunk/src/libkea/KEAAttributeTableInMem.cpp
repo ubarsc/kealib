@@ -906,7 +906,7 @@ namespace libkea{
                         creationBoolDSPList.setChunk(2, dimsBoolChunk);
                         creationBoolDSPList.setShuffle();
                         creationBoolDSPList.setDeflate(deflate);
-                        creationBoolDSPList.setFillValue( H5::PredType::STD_I8LE, &fillValueBool);
+                        creationBoolDSPList.setFillValue( H5::PredType::NATIVE_INT, &fillValueBool);
                         
                         boolDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_BOOL_DATA), H5::PredType::STD_I8LE, boolDataSpace, creationBoolDSPList));
                         boolDataSpace.close();
@@ -971,7 +971,7 @@ namespace libkea{
                         creationIntDSPList.setChunk(2, dimsIntChunk);
                         creationIntDSPList.setShuffle();
                         creationIntDSPList.setDeflate(deflate);
-                        creationIntDSPList.setFillValue( H5::PredType::STD_I64LE, &fillValueInt);
+                        creationIntDSPList.setFillValue( H5::PredType::NATIVE_LONG, &fillValueInt);
                         
                         intDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_INT_DATA), H5::PredType::STD_I64LE, intDataSpace, creationIntDSPList));
                         intDataSpace.close();
@@ -1036,7 +1036,7 @@ namespace libkea{
                         creationFloatDSPList.setChunk(2, dimsFloatChunk);
                         creationFloatDSPList.setShuffle();
                         creationFloatDSPList.setDeflate(deflate);
-                        creationFloatDSPList.setFillValue( H5::PredType::IEEE_F64LE, &fillValueFloat);
+                        creationFloatDSPList.setFillValue( H5::PredType::NATIVE_DOUBLE, &fillValueFloat);
                         
                         floatDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_FLOAT_DATA), H5::PredType::IEEE_F64LE, floatDataSpace, creationFloatDSPList));
                         floatDataSpace.close();
@@ -1305,7 +1305,7 @@ namespace libkea{
                     creationBoolDSPList.setChunk(2, dimsBoolChunk);
                     creationBoolDSPList.setShuffle();
                     creationBoolDSPList.setDeflate(deflate);
-                    creationBoolDSPList.setFillValue( H5::PredType::STD_I8LE, &fillValueBool);
+                    creationBoolDSPList.setFillValue( H5::PredType::NATIVE_INT, &fillValueBool);
                     
                     boolDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_BOOL_DATA), H5::PredType::STD_I8LE, boolDataSpace, creationBoolDSPList));
                     boolDataSpace.close();
@@ -1331,7 +1331,7 @@ namespace libkea{
                     creationIntDSPList.setChunk(2, dimsIntChunk);
                     creationIntDSPList.setShuffle();
                     creationIntDSPList.setDeflate(deflate);
-                    creationIntDSPList.setFillValue( H5::PredType::STD_I64LE, &fillValueInt);
+                    creationIntDSPList.setFillValue( H5::PredType::NATIVE_LONG, &fillValueInt);
                     
                     intDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_INT_DATA), H5::PredType::STD_I64LE, intDataSpace, creationIntDSPList));
                     intDataSpace.close();
@@ -1357,7 +1357,7 @@ namespace libkea{
                     creationFloatDSPList.setChunk(2, dimsFloatChunk);
                     creationFloatDSPList.setShuffle();
                     creationFloatDSPList.setDeflate(deflate);
-                    creationFloatDSPList.setFillValue( H5::PredType::IEEE_F64LE, &fillValueFloat);
+                    creationFloatDSPList.setFillValue( H5::PredType::NATIVE_DOUBLE, &fillValueFloat);
                     
                     floatDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_FLOAT_DATA), H5::PredType::IEEE_F64LE, floatDataSpace, creationFloatDSPList));
                     floatDataSpace.close();
@@ -1400,6 +1400,7 @@ namespace libkea{
                 dimsNeighboursChunk[0] = chunkSize;
                 
                 H5::DataType intVarLenDiskDT = H5::VarLenType(&H5::PredType::STD_U64LE);
+                H5::DataType intVarLenMemDT = H5::VarLenType(&H5::PredType::NATIVE_HSIZE);
                 VarLenFieldHDF neighboursDataFillVal[1];
                 neighboursDataFillVal[0].p = NULL;
                 neighboursDataFillVal[0].length = 0;
@@ -1407,7 +1408,7 @@ namespace libkea{
                 creationNeighboursDSPList.setChunk(1, dimsNeighboursChunk);
                 creationNeighboursDSPList.setShuffle();
                 creationNeighboursDSPList.setDeflate(deflate);
-                creationNeighboursDSPList.setFillValue( intVarLenDiskDT, &neighboursDataFillVal);
+                creationNeighboursDSPList.setFillValue( intVarLenMemDT, &neighboursDataFillVal);
                 
                 neighboursDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_NEIGHBOURS_DATA), intVarLenDiskDT, neighboursDataspace, creationNeighboursDSPList));
                 neighboursDataspace.close();
@@ -1843,7 +1844,7 @@ namespace libkea{
                     H5::DataSpace valueDataSpace(1, dimsValue);
                     H5::DataSet datasetAttSize = keaImg->openDataSet( bandPathBase + KEA_ATT_CHUNKSIZE_HEADER );
                     hsize_t hChunkSize = 0;
-                    datasetAttSize.read(&hChunkSize, H5::PredType::STD_U64LE, valueDataSpace);
+                    datasetAttSize.read(&hChunkSize, H5::PredType::NATIVE_HSIZE, valueDataSpace);
                     datasetAttSize.close();
                     valueDataSpace.close();
                     if(hChunkSize > 0)
