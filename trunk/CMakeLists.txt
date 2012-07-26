@@ -16,9 +16,6 @@
 # Set Project name and version
 project (LIBKEA)
 
-#  Get the Subversion revision number for the project's source code.  The
-#  VersionControl.cmake file tests the variable WINDOWS for the Windows
-#  platform, so it needs to be set before including the file.
 if (WIN32)
   set (WINDOWS ${WIN32})
 endif()
@@ -33,7 +30,7 @@ set (PROJECT_GDAL_DIR gdal)
 # The version number.
 set (LIBKEA_HG_VERSION 1)
 set (LIBKEA_VERSION_MAJOR 1)
-set (LIBKEA_VERSION_MINOR 0)
+set (LIBKEA_VERSION_MINOR 1)
 set (LIBKEA_VERSION_PATCH 0)
 set (LIBKEA_VERSION "${LIBKEA_VERSION_MAJOR}.${LIBKEA_VERSION_MINOR}.${LIBKEA_VERSION_PATCH}")
 set (LIBKEA_PACKAGE_VERSION "${LIBKEA_VERSION_MAJOR}.${LIBKEA_VERSION_MINOR}.${LIBKEA_VERSION_PATCH}")

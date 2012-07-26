@@ -370,6 +370,8 @@ int main (int argc, char * const argv[])
         
         imageIO.close();
         
+        delete attTable;
+        
         keaImgFile->close();
         /*
         if(libkea::KEAImageIO::isKEAImage("/Users/pete/Desktop/TestImage.kea"))
@@ -411,6 +413,7 @@ int main (int argc, char * const argv[])
         readAtt->addAttFloatField("another float field", 50.3);
         
         imageIO.setAttributeTable(readAtt, 1);
+        delete readAtt;
         
         libkea::KEAAttributeTable *newAttTable = new libkea::KEAAttributeTableInMem();
         newAttTable->addRows(200);
@@ -420,6 +423,7 @@ int main (int argc, char * const argv[])
         imageIO.setAttributeTable(newAttTable, 1);
         
         imageIO.close();
+        delete newAttTable;
         
         
         /*

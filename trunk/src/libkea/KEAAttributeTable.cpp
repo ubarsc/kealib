@@ -472,6 +472,16 @@ namespace libkea{
         return feat;
     }
     
+    void KEAAttributeTable::deleteKeaFeature(KEAATTFeature *feat) throw(KEAATTException)
+    {
+        delete feat->boolFields;
+        delete feat->intFields;
+        delete feat->floatFields;
+        delete feat->strFields;
+        delete feat->neighbours;
+        delete feat;
+    }
+    
     void KEAAttributeTable::exportToASCII(std::string outputFile)throw(KEAATTException, KEAIOException)
     {
         
@@ -643,7 +653,7 @@ namespace libkea{
         
     KEAAttributeTable::~KEAAttributeTable()
     {
-        
+        delete fields;
     }
     
 }

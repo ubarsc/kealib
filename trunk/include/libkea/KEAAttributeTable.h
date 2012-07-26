@@ -173,7 +173,8 @@ namespace libkea{
         virtual void addAttIntField(KEAATTField field, int val) throw(KEAATTException)=0;
         virtual void addAttFloatField(KEAATTField field, float val) throw(KEAATTException)=0;
         virtual void addAttStringField(KEAATTField field, std::string val) throw(KEAATTException)=0;
-        KEAATTFeature* createKeaFeature() throw(KEAATTException);
+        virtual KEAATTFeature* createKeaFeature() throw(KEAATTException);
+        virtual void deleteKeaFeature(KEAATTFeature *feat) throw(KEAATTException);
         
         std::map<std::string, KEAATTField> *fields;
         KEAATTType attType;

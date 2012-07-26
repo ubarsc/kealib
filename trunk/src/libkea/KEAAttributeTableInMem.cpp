@@ -2698,7 +2698,11 @@ namespace libkea{
     
     KEAAttributeTableInMem::~KEAAttributeTableInMem()
     {
-        
+        for(std::vector<KEAATTFeature*>::iterator iterFeats = attRows->begin(); iterFeats != attRows->end(); ++iterFeats)
+        {
+            this->deleteKeaFeature(*iterFeats);
+        }
+        delete attRows;
     }
     
 }
