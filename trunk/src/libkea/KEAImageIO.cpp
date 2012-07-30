@@ -313,6 +313,8 @@ namespace libkea{
                 imgBandDataset.close();
                 imgBandDataspace.close();
                 write2BandDataspace.close();
+                
+                this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
             } 
             catch ( H5::Exception &e) 
             {
@@ -548,6 +550,8 @@ namespace libkea{
             datasetMetaData.write((void*)wStrdata, strTypeAll);
             datasetMetaData.close();
             delete[] wStrdata;
+            
+            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
         catch (H5::Exception &e) 
         {
@@ -666,6 +670,8 @@ namespace libkea{
             {
                 this->setImageMetaData(iterMetaData->first, iterMetaData->second);
             }
+            
+            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
         catch (KEAIOException &e)
         {
@@ -711,6 +717,8 @@ namespace libkea{
             datasetMetaData.write((void*)wStrdata, strTypeAll);
             datasetMetaData.close();
             delete[] wStrdata;
+            
+            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
         catch (H5::Exception &e) 
         {
@@ -831,6 +839,8 @@ namespace libkea{
             {
                 this->setImageBandMetaData(band, iterMetaData->first, iterMetaData->second);
             }
+            
+            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
         catch (KEAIOException &e)
         {
@@ -861,6 +871,7 @@ namespace libkea{
             datasetBandDescription.write((void*)wStrdata, strTypeAll);
             datasetBandDescription.close();
             delete[] wStrdata;
+            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
         catch (H5::Exception &e) 
         {
@@ -1024,6 +1035,7 @@ namespace libkea{
             
             datasetImgNDV.write( data, dataDT );
             datasetImgNDV.close();
+            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         } 
         catch ( H5::Exception &e) 
         {
@@ -1145,6 +1157,8 @@ namespace libkea{
 			datasetSpatialReference.write((void*)wStrdata, strDataType);
 			datasetSpatialReference.close();
 			delete[] wStrdata;
+            
+            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         } 
         catch (H5::Exception &e)
         {
@@ -1274,6 +1288,7 @@ namespace libkea{
             H5::DataSet datasetImgLT = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_TYPE );
             datasetImgLT.write(&imgLayerType, H5::PredType::NATIVE_UINT);
             datasetImgLT.close();
+            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         } 
         catch ( H5::Exception &e) 
         {
@@ -1443,7 +1458,8 @@ namespace libkea{
             
             attr_dataspace.close();
             imgBandDataSet.close();
-
+            
+            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
         catch (H5::Exception &e)
         {
@@ -1465,6 +1481,7 @@ namespace libkea{
             // Try to open dataset with overviewName
             H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( overviewName );
             this->keaImgFile->unlink(overviewName);
+            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
         catch (H5::Exception &e)
         {
@@ -1659,7 +1676,9 @@ namespace libkea{
             catch ( H5::Exception &e) 
             {
                 throw KEAIOException("Could not write image data.");
-            }            
+            }
+            
+            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
         catch(KEAIOException &e)
         {
@@ -1954,6 +1973,7 @@ namespace libkea{
         try 
         {
             att->exportToKeaFile(this->keaImgFile, band, chunkSize, deflate);
+            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
         catch(KEAIOException &e)
         {
@@ -2019,7 +2039,7 @@ namespace libkea{
         try 
         {
             delete this->spatialInfoFile;
-            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+            this->keaImgFile->close();
             this->keaImgFile = NULL;
             this->fileOpen = false;
         }
@@ -2027,6 +2047,10 @@ namespace libkea{
         {
             throw e;
         }
+        catch( H5::Exception &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
     }
         
     H5::H5File* KEAImageIO::createKEAImage(std::string fileName, KEADataType dataType, unsigned int xSize, unsigned int ySize, unsigned int numImgBands, std::vector<std::string> *bandDescrips, KEAImageSpatialInfo * spatialInfo, unsigned int imageBlockSize, unsigned int attBlockSize, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize, unsigned int deflate)throw(KEAIOException)
@@ -2369,8 +2393,8 @@ namespace libkea{
             dataspaceStrAll.close();
             attr_dataspace.close();
             //////////// CREATED IMAGE BANDS ////////////////
-        
             
+            keaImgH5File->flush(H5F_SCOPE_GLOBAL);
         }
         catch (KEAIOException &e) 
         {
