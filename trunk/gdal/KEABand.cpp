@@ -767,14 +767,16 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
             // internal datastruct
             libkea::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
 
-            // get the GDAL entry
-            const GDALColorEntry *pColorEntry = poCT->GetColorEntry(nRowIndex);
-
-            // set the value
-            pKEAFeature->intFields->at(vecKEAField[0].idx) = pColorEntry->c1;
-            pKEAFeature->intFields->at(vecKEAField[1].idx) = pColorEntry->c2;
-            pKEAFeature->intFields->at(vecKEAField[2].idx) = pColorEntry->c3;
-            pKEAFeature->intFields->at(vecKEAField[3].idx) = pColorEntry->c4;
+            // get the GDAL entry - as RGB to be sure
+            GDALColorEntry colorEntry;
+            if( poCT->GetColorEntryAsRGB(nRowIndex, &colorEntry) )
+            {
+                // set the value
+                pKEAFeature->intFields->at(vecKEAField[0].idx) = colorEntry.c1;
+                pKEAFeature->intFields->at(vecKEAField[1].idx) = colorEntry.c2;
+                pKEAFeature->intFields->at(vecKEAField[2].idx) = colorEntry.c3;
+                pKEAFeature->intFields->at(vecKEAField[3].idx) = colorEntry.c4;
+            }
         }
 
         this->m_pImageIO->setAttributeTable(pKEATable, this->nBand);
