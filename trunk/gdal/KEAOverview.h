@@ -18,6 +18,9 @@ public:
     const GDALRasterAttributeTable *GetDefaultRAT();
     CPLErr SetDefaultRAT(const GDALRasterAttributeTable *poRAT);
 
+    // note that Color Table stuff implemented in base class
+    // so could be some duplication if overview asked for color table
+
 protected:
     // we just override these functions from KEARasterBand
     virtual CPLErr IReadBlock( int, int, void * );

@@ -34,6 +34,7 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, libkea::KEAIma
     this->sDescription = pImageIO->getImageBandDescription(nSrcBand);
 
     this->m_pAttributeTable = NULL;  // no RAT yet
+    this->m_pColorTable = NULL;     // no color table yet
 
     // initialise the metadata as a CPLStringList
     m_papszMetadataList = NULL;
@@ -45,6 +46,8 @@ KEARasterBand::~KEARasterBand()
 {
     // destroy RAT if any
     delete this->m_pAttributeTable;
+    // destroy color table if any
+    delete this->m_pColorTable;
     // destroy the metadata
     CSLDestroy(this->m_papszMetadataList);
     // delete any overview bands
@@ -413,7 +416,7 @@ const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
                     vecKEAField.push_back(sKEAField);
                 }
 
-                // OK now we have filled in mapNumberField we can go through each row and fill in the fields
+                // OK now we have filled in vecKEAField we can go through each row and fill in the fields
                 for( size_t nRowIndex = 0; nRowIndex < pKEATable->getSize(); nRowIndex++ )
                 {
                     // get the feature
@@ -599,6 +602,199 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
     return CE_None;
 }
 
+GDALColorTable *KEARasterBand::GetColorTable()
+{
+    if( this->m_pColorTable == NULL )
+    {
+        try
+        {
+            // see if there is a suitable attribute table with color columns
+            if( this->m_pImageIO->attributeTablePresent(this->nBand) )
+            {
+                // we assume this is never NULL - creates a new one if none exists
+                libkea::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(libkea::kea_att_mem, this->nBand);
+    
+                // create a mapping between color entry number and the field info
+                std::vector<libkea::KEAATTField> vecKEAField(4);
+                for( size_t nColumnIndex = 0; nColumnIndex < pKEATable->getMaxGlobalColIdx(); nColumnIndex++ )
+                {
+                    libkea::KEAATTField sKEAField;
+                    try
+                    {
+                        sKEAField = pKEATable->getField(nColumnIndex);
+                    }
+                    catch(libkea::KEAATTException &e)
+                    {
+                        // pKEATable->getField raised exception because we have a missing column
+                        continue;
+                    }
+
+                    // color tables are only int as far as I am aware
+                    if( sKEAField.dataType == libkea::kea_att_int )
+                    {
+                        // check the 'usage' column
+                        // we don't check the name also (maybe we should?)
+                        // store in the right place in our vector
+                        if( sKEAField.usage == "Red" )
+                            vecKEAField[0] = sKEAField;
+                        if( sKEAField.usage == "Green" )
+                            vecKEAField[1] = sKEAField;
+                        if( sKEAField.usage == "Blue" )
+                            vecKEAField[2] = sKEAField;
+                        if( sKEAField.usage == "Alpha" )
+                            vecKEAField[3] = sKEAField;
+                    }
+
+                }
+
+                // check that we did get a valid field for each color
+                // the usage field will still be empty if not set above
+                bool bHaveCT = true;
+                for( std::vector<libkea::KEAATTField>::iterator itr = vecKEAField.begin(); (itr != vecKEAField.end()) && bHaveCT; itr++ )
+                {
+                    if( (*itr).usage.empty() )
+                        bHaveCT = false;
+                }
+
+                if( bHaveCT )
+                {
+                    // we need to create one - only do RGB palettes
+                    this->m_pColorTable = new GDALColorTable(GPI_RGB);
+
+                    // OK go through each row and fill in the fields
+                    for( size_t nRowIndex = 0; nRowIndex < pKEATable->getSize(); nRowIndex++ )
+                    {
+                        // get the feature
+                        libkea::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
+
+                        GDALColorEntry colorEntry;
+                        colorEntry.c1 = pKEAFeature->intFields->at(vecKEAField[0].idx);
+                        colorEntry.c2 = pKEAFeature->intFields->at(vecKEAField[1].idx);
+                        colorEntry.c3 = pKEAFeature->intFields->at(vecKEAField[2].idx);
+                        colorEntry.c4 = pKEAFeature->intFields->at(vecKEAField[3].idx);
+
+                        this->m_pColorTable->SetColorEntry(nRowIndex, &colorEntry);
+                    }
+                }
+
+                delete pKEATable;
+            }
+        }
+        catch(libkea::KEAException &e)
+        {
+            CPLError( CE_Failure, CPLE_AppDefined, "Failed to read color table: %s", e.what() );
+            delete this->m_pColorTable;
+            this->m_pColorTable = NULL;
+        }
+    }
+    return this->m_pColorTable;
+}
+
+CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
+{
+    if( poCT == NULL )
+        return CE_Failure;
+
+    try
+    {
+        // we assume this is never NULL - creates a new one if none exists
+        libkea::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(libkea::kea_att_mem, this->nBand);
+
+        // add rows to the table if needed
+        if( pKEATable->getSize() < (size_t)poCT->GetColorEntryCount() )
+        {
+            pKEATable->addRows( poCT->GetColorEntryCount() - pKEATable->getSize() );
+        }
+
+        // create a mapping between color entry number and the field info
+        std::vector<libkea::KEAATTField> vecKEAField(4);
+        for( size_t nColumnIndex = 0; nColumnIndex < pKEATable->getMaxGlobalColIdx(); nColumnIndex++ )
+        {
+            libkea::KEAATTField sKEAField;
+            try
+            {
+                sKEAField = pKEATable->getField(nColumnIndex);
+            }
+            catch(libkea::KEAATTException &e)
+            {
+                // pKEATable->getField raised exception because we have a missing column
+                continue;
+            }
+
+            // color tables are only int as far as I am aware
+            if( sKEAField.dataType == libkea::kea_att_int )
+            {
+                // check the 'usage' column
+                // we don't check the name also (maybe we should?)
+                // store in the right place in our vector
+                if( sKEAField.usage == "Red" )
+                    vecKEAField[0] = sKEAField;
+                else if( sKEAField.usage == "Green" )
+                    vecKEAField[1] = sKEAField;
+                else if( sKEAField.usage == "Blue" )
+                    vecKEAField[2] = sKEAField;
+                else if( sKEAField.usage == "Alpha" )
+                    vecKEAField[3] = sKEAField;
+            }
+        }
+
+        // create any missing fields
+        if( vecKEAField[0].usage.empty() )
+        {
+            pKEATable->addAttIntField("Red", 0, "Red");
+            vecKEAField[0] = pKEATable->getField("Red");
+        }
+        if( vecKEAField[1].usage.empty() )
+        {
+            pKEATable->addAttIntField("Green", 0, "Green");
+            vecKEAField[1] = pKEATable->getField("Green");
+        }
+        if( vecKEAField[2].usage.empty() )
+        {
+            pKEATable->addAttIntField("Blue", 0, "Blue");
+            vecKEAField[2] = pKEATable->getField("Blue");
+        }
+        if( vecKEAField[3].usage.empty() )
+        {
+            pKEATable->addAttIntField("Alpha", 0, "Alpha");
+            vecKEAField[3] = pKEATable->getField("Alpha");
+        }
+
+        // go through each row to be added
+        for( int nRowIndex = 0; nRowIndex < poCT->GetColorEntryCount(); nRowIndex++ )
+        {
+            // get the feature - don't need to set this back since it is a pointer to 
+            // internal datastruct
+            libkea::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
+
+            // get the GDAL entry - as RGB to be sure
+            GDALColorEntry colorEntry;
+            if( poCT->GetColorEntryAsRGB(nRowIndex, &colorEntry) )
+            {
+                // set the value
+                pKEAFeature->intFields->at(vecKEAField[0].idx) = colorEntry.c1;
+                pKEAFeature->intFields->at(vecKEAField[1].idx) = colorEntry.c2;
+                pKEAFeature->intFields->at(vecKEAField[2].idx) = colorEntry.c3;
+                pKEAFeature->intFields->at(vecKEAField[3].idx) = colorEntry.c4;
+            }
+        }
+
+        this->m_pImageIO->setAttributeTable(pKEATable, this->nBand);
+        delete pKEATable;
+
+        // replace our color table with the one passed in
+        // unlike attributes there are no extra fields present in the file etc
+        // so should be safe to do this
+        delete this->m_pColorTable;
+        this->m_pColorTable = poCT->Clone();
+    }
+    catch(libkea::KEAException &e)
+    {
+        CPLError( CE_Failure, CPLE_AppDefined, "Failed to write color table: %s", e.what() );
+        return CE_Failure;
+    }
+    return CE_None;
+}
 
 // clean up our overview objects
 void KEARasterBand::deleteOverviewObjects()

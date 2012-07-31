@@ -18,6 +18,8 @@ private:
 
     GDALRasterAttributeTable  *m_pAttributeTable; // pointer to the attribute table
                                                  // created on first call to GetDefaultRAT()
+    GDALColorTable      *m_pColorTable;     // pointer to the color table
+                                            // created on first call to GetColorTable()
 
 public:
     // constructor/destructor
@@ -45,6 +47,10 @@ public:
     // virtual methods for RATs
     const GDALRasterAttributeTable *GetDefaultRAT();
     CPLErr SetDefaultRAT(const GDALRasterAttributeTable *poRAT);
+
+    // virtual methods for color tables
+    GDALColorTable *GetColorTable();
+    CPLErr SetColorTable(GDALColorTable *poCT);
 
     // internal methods for overviews
     void readExistingOverviews();
