@@ -48,7 +48,7 @@ else()
 endif()
 
 option (BUILD_SHARED_LIBS "Build with shared library" ON)
-set(LIBKEA_WITH_TESTMAIN FALSE CACHE BOOL "Choose if libkea experimental test main should be built")
+set(LIBKEA_WITH_UTILS TRUE CACHE BOOL "Choose if libkea utilities should be built")
 set(LIBKEA_WITH_GDAL TRUE CACHE BOOL "Choose if .kea GDAL driver should be built")
 
 set(HDF5_INCLUDE_DIR /usr/local/include CACHE PATH "Include PATH for HDF5")
@@ -178,17 +178,17 @@ endif(LIBKEA_WITH_GDAL)
 
 ###############################################################################
 # Build executables
-if (LIBKEA_WITH_TESTMAIN)
-	add_executable(createkeaimg ${PROJECT_SOURCE_DIR}/exe/createkeaimg/main.cpp)
-	target_link_libraries (createkeaimg ${LIBKEA_LIB_NAME} )
-endif(LIBKEA_WITH_TESTMAIN)
+if (LIBKEA_WITH_UTILS)
+	add_executable(img2kea ${PROJECT_SOURCE_DIR}/exe/img2kea/main.cpp)
+	target_link_libraries (img2kea ${LIBKEA_LIB_NAME} ${GDAL_LIBRARIES} )
+endif(LIBKEA_WITH_UTILS)
 ###############################################################################
 
 ###############################################################################
 # Installation
-if (LIBKEA_WITH_TESTMAIN)
-	install (TARGETS createkeaimg DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-endif(LIBKEA_WITH_TESTMAIN)
+if (LIBKEA_WITH_UTILS)
+	install (TARGETS img2kea DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+endif(LIBKEA_WITH_UTILS)
 
 install (FILES "${PROJECT_BINARY_DIR}/kea-config" DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 ###############################################################################
