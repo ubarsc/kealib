@@ -32,7 +32,10 @@
 #include <stdlib.h>
 #include <cmath>
 #include "gdal_priv.h"
+#include "gdal_rat.h"
 #include "libkea/KEAImageIO.h"
+#include "libkea/KEAAttributeTable.h"
+#include "libkea/KEAAttributeTableInMem.h"
 
 // function for converting a GDAL type to a libkea type
 // copied from 
@@ -135,6 +138,140 @@ void CopyRasterData( GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nB
     fprintf( stderr, "\n" );
 }
 
+void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
+{
+    const GDALRasterAttributeTable *gdalAtt = pBand->GetDefaultRAT();
+    if((gdalAtt != NULL) && (gdalAtt->GetRowCount() > 0))
+    {
+        libkea::KEAAttributeTable *keaAtt = new libkea::KEAAttributeTableInMem();
+        
+        bool redDef = false;
+        int redIdx = -1;
+        bool greenDef = false;
+        int greenIdx = -1;
+        bool blueDef = false;
+        int blueIdx = -1;
+        
+        int numCols = gdalAtt->GetColumnCount();
+        std::vector<libkea::KEAATTField*> *fields = new std::vector<libkea::KEAATTField*>();
+        libkea::KEAATTField *field;
+        for(int i = 0; i < numCols; ++i)
+        {
+            field = new libkea::KEAATTField();
+            field->name = gdalAtt->GetNameOfCol(i);
+            
+            field->dataType = libkea::kea_att_string;
+            switch(gdalAtt->GetTypeOfCol(i))
+            {
+                case GFT_Integer:
+                    field->dataType = libkea::kea_att_int;
+                    break;
+                case GFT_Real:
+                    field->dataType = libkea::kea_att_float;
+                    break;
+                case GFT_String:
+                    field->dataType = libkea::kea_att_string;
+                    break;
+                default:
+                    // leave as "kea_att_string"
+                    break;
+            }
+            
+            field->usage = "Generic";
+            switch(gdalAtt->GetUsageOfCol(i))
+            {
+                case GFU_PixelCount:
+                    field->usage = "PixelCount";
+                    break;
+                case GFU_Name:
+                    field->usage = "Name";
+                    break;
+                case GFU_Red:
+                    field->usage = "Red";
+                    field->dataType = libkea::kea_att_int;
+                    redDef = true;
+                    redIdx = i;
+                    break;
+                case GFU_Green:
+                    field->usage = "Green";
+                    field->dataType = libkea::kea_att_int;
+                    greenDef = true;
+                    greenIdx = i;
+                    break;
+                case GFU_Blue:
+                    field->usage = "Blue";
+                    field->dataType = libkea::kea_att_int;
+                    blueDef = true;
+                    blueIdx = i;
+                    break;
+                case GFU_Alpha:
+                    field->usage = "Alpha";
+                    break;
+                default:
+                    // leave as "Generic"
+                    break;
+            }
+            
+            fields->push_back(field);
+        }
+        
+        keaAtt->addFields(fields); // This function will populate the field indexs used within the KEA RAT.
+        
+        int numRows = gdalAtt->GetRowCount();
+        keaAtt->addRows(numRows);
+        
+        libkea::KEAATTFeature *keaFeat = NULL;
+        for(int i = 0; i < numRows; ++i)
+        {
+            keaFeat = keaAtt->getFeature(i);
+            for(int j = 0; j < numCols; ++j)
+            {
+                field = fields->at(j);
+                
+                if(redDef && (redIdx == j))
+                {
+                    keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(i, j)*255);
+                }
+                else if(greenDef && (greenIdx == j))
+                {
+                    keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(i, j)*255);
+                }
+                else if(blueDef && (blueIdx == j))
+                {
+                    keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(i, j)*255);
+                }
+                else
+                {
+                    switch(field->dataType)
+                    {
+                        case libkea::kea_att_int:
+                            keaFeat->intFields->at(field->idx) = gdalAtt->GetValueAsInt(i, j);
+                            break;
+                        case libkea::kea_att_float:
+                            keaFeat->floatFields->at(field->idx) = gdalAtt->GetValueAsDouble(i, j);
+                            break;
+                        case libkea::kea_att_string:
+                            keaFeat->strFields->at(field->idx) = std::string(gdalAtt->GetValueAsString(i, j));
+                            break;
+                        default:
+                            // Ignore as data type is not known or available from a HFA/GDAL RAT."
+                            break;
+                    }
+                }
+            }
+        }
+        
+        pImageIO->setAttributeTable(keaAtt, nBand);
+        
+        delete keaAtt;
+        for(std::vector<libkea::KEAATTField*>::iterator iterField = fields->begin(); iterField != fields->end(); ++iterField)
+        {
+            delete *iterField;
+        }
+        delete fields;
+    }
+}
+
 void CopyBand( GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
 {
     // first copy the raster data over
@@ -154,6 +291,7 @@ void CopyBand( GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
     // now metadata 
 
     // and attributes
+    CopyRAT(pBand, pImageIO, nBand);
 }
 
 void CopySpatialInfo(GDALDataset *pDataset, libkea::KEAImageIO *pImageIO)
@@ -177,6 +315,8 @@ void CopySpatialInfo(GDALDataset *pDataset, libkea::KEAImageIO *pImageIO)
 
     pImageIO->setSpatialInfo( pSpatialInfo );
 }
+
+
 
 
 int main (int argc, char * const argv[]) 
