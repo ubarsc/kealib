@@ -151,6 +151,8 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
         int greenIdx = -1;
         bool blueDef = false;
         int blueIdx = -1;
+        bool histoDef = false;
+        int histoIdx = -1;
         
         int numCols = gdalAtt->GetColumnCount();
         std::vector<libkea::KEAATTField*> *fields = new std::vector<libkea::KEAATTField*>();
@@ -177,39 +179,49 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
                     break;
             }
             
-            field->usage = "Generic";
-            switch(gdalAtt->GetUsageOfCol(i))
+            if(field->name == "Histogram")
             {
-                case GFU_PixelCount:
-                    field->usage = "PixelCount";
-                    break;
-                case GFU_Name:
-                    field->usage = "Name";
-                    break;
-                case GFU_Red:
-                    field->usage = "Red";
-                    field->dataType = libkea::kea_att_int;
-                    redDef = true;
-                    redIdx = i;
-                    break;
-                case GFU_Green:
-                    field->usage = "Green";
-                    field->dataType = libkea::kea_att_int;
-                    greenDef = true;
-                    greenIdx = i;
-                    break;
-                case GFU_Blue:
-                    field->usage = "Blue";
-                    field->dataType = libkea::kea_att_int;
-                    blueDef = true;
-                    blueIdx = i;
-                    break;
-                case GFU_Alpha:
-                    field->usage = "Alpha";
-                    break;
-                default:
-                    // leave as "Generic"
-                    break;
+                field->usage = "PixelCount";
+                field->dataType = libkea::kea_att_int;
+                histoDef = true;
+                histoIdx = i;
+            }
+            else
+            {
+                field->usage = "Generic";
+                switch(gdalAtt->GetUsageOfCol(i))
+                {
+                    case GFU_PixelCount:
+                        field->usage = "PixelCount";
+                        break;
+                    case GFU_Name:
+                        field->usage = "Name";
+                        break;
+                    case GFU_Red:
+                        field->usage = "Red";
+                        field->dataType = libkea::kea_att_int;
+                        redDef = true;
+                        redIdx = i;
+                        break;
+                    case GFU_Green:
+                        field->usage = "Green";
+                        field->dataType = libkea::kea_att_int;
+                        greenDef = true;
+                        greenIdx = i;
+                        break;
+                    case GFU_Blue:
+                        field->usage = "Blue";
+                        field->dataType = libkea::kea_att_int;
+                        blueDef = true;
+                        blueIdx = i;
+                        break;
+                    case GFU_Alpha:
+                        field->usage = "Alpha";
+                        break;
+                    default:
+                        // leave as "Generic"
+                        break;
+                }
             }
             
             fields->push_back(field);
