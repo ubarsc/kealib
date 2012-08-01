@@ -38,7 +38,7 @@
 #include "libkea/KEAAttributeTableInMem.h"
 
 // function for converting a GDAL type to a libkea type
-// copied from 
+// copied from KEADataset.cpp - naughty naughty
 libkea::KEADataType GDAL_to_KEA_Type( GDALDataType gdalType )
 {
     libkea::KEADataType keaType = libkea::kea_undefined;
@@ -128,7 +128,10 @@ void CopyRasterData( GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nB
             int nPercent = std::ceil( ((double)nBlocksComplete / (double)nTotalBlocks) * 100.0);
             if( nPercent != nLastPercent )
             {
-                fprintf( stderr, "band %d overview %d %d%%\r", nBand, nOverview, nPercent );
+                if( nOverview == -1 )
+                    fprintf( stderr, "band %d %d%%\r", nBand, nPercent );
+                else
+                    fprintf( stderr, "band %d overview %d %d%%\r", nBand, nOverview, nPercent );
                 nLastPercent = nPercent;
             }
         }
@@ -138,6 +141,7 @@ void CopyRasterData( GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nB
     fprintf( stderr, "\n" );
 }
 
+// copies the raster attribute table
 void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
 {
     const GDALRasterAttributeTable *gdalAtt = pBand->GetDefaultRAT();
@@ -284,6 +288,69 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
     }
 }
 
+// copies the metadata
+// pass nBand == -1 to copy a dataset's metadata
+// or band index to copy a band's metadata
+void CopyMetadata( GDALMajorObject *pObject, libkea::KEAImageIO *pImageIO, int nBand)
+{
+    char **ppszMetadata = pObject->GetMetadata();
+    if( ppszMetadata != NULL )
+    {
+        char *pszName;
+        const char *pszValue;
+        int nCount = 0;
+        while( ppszMetadata[nCount] != NULL )
+        {
+            pszValue = CPLParseNameValue( ppszMetadata[nCount], &pszName );
+
+            // it is LAYER_TYPE and a Band? if so handle seperately
+            if( ( nBand != -1 ) && EQUAL( pszName, "LAYER_TYPE" ) )
+            {
+                if( EQUAL( pszValue, "athematic" ) )
+                {
+                    pImageIO->setImageBandLayerType(nBand, libkea::kea_continuous );
+                }
+                else
+                {
+                    pImageIO->setImageBandLayerType(nBand, libkea::kea_thematic );
+                }
+            }
+            else if( ( nBand != -1 ) && EQUAL( pszName, "STATISTICS_HISTOBINVALUES") )
+            {
+                // this gets copied accross as part of the attributes
+                // so ignore for now
+            }
+            else
+            {
+                // write it into the image
+                if( nBand != -1 )
+                    pImageIO->setImageBandMetaData(nBand, pszName, pszValue );
+                else
+                    pImageIO->setImageMetaData(pszName, pszValue );
+            }
+            nCount++;
+        }
+    }
+}
+
+// copies the description over
+void CopyDescription(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
+{
+    const char *pszDesc = pBand->GetDescription();
+    pImageIO->setImageBandDescription(nBand, pszDesc);
+}
+
+// copies the no data value accross
+void CopyNoData(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
+{
+    int bSuccess = 0;
+    double dNoData = pBand->GetNoDataValue(&bSuccess);
+    if( bSuccess )
+    {
+        pImageIO->setNoDataValue(nBand, &dNoData, libkea::kea_64float);
+    }
+}
+
 void CopyBand( GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
 {
     // first copy the raster data over
@@ -301,9 +368,16 @@ void CopyBand( GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
     }
 
     // now metadata 
+    CopyMetadata(pBand, pImageIO, nBand);
 
     // and attributes
     CopyRAT(pBand, pImageIO, nBand);
+
+    // and description
+    CopyDescription(pBand, pImageIO, nBand);
+
+    // and no data
+    CopyNoData(pBand, pImageIO, nBand);
 }
 
 void CopySpatialInfo(GDALDataset *pDataset, libkea::KEAImageIO *pImageIO)
@@ -374,7 +448,9 @@ int main (int argc, char * const argv[])
         // copy accross the spatial info
         CopySpatialInfo( pDataset, pImageIO);
 
-
+        // dataset metadata
+        CopyMetadata(pDataset, pImageIO, -1);
+    
         // now copy all the bands over
         for( int nBand = 0; nBand < nBands; nBand++ )
         {
@@ -389,6 +465,7 @@ int main (int argc, char * const argv[])
         // ignore and close datasets as per normal
     }
 
+    pImageIO->close();
     delete pImageIO;
     GDALClose( (GDALDatasetH)pDataset );
 }
