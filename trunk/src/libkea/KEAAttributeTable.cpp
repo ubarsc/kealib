@@ -409,27 +409,66 @@ namespace libkea{
         }
     }
     
-    void KEAAttributeTable::addFields(std::vector<KEAATTField> fields) throw(KEAATTException)
+    void KEAAttributeTable::addFields(std::vector<KEAATTField*> *inFields) throw(KEAATTException)
     {
         try 
         {
-            for(std::vector<KEAATTField>::iterator iterFields = fields.begin(); iterFields != fields.end(); ++iterFields)
+            KEAATTField field;
+            for(std::vector<KEAATTField*>::iterator iterFields = inFields->begin(); iterFields != inFields->end(); ++iterFields)
+            {
+                if((*iterFields)->dataType == kea_att_bool)
+                {
+                    this->addAttBoolField((*iterFields)->name, false, (*iterFields)->usage);
+                }
+                else if((*iterFields)->dataType == kea_att_int)
+                {
+                    this->addAttIntField((*iterFields)->name, 0, (*iterFields)->usage);
+                }
+                else if((*iterFields)->dataType == kea_att_float)
+                {
+                    this->addAttFloatField((*iterFields)->name, 0.0, (*iterFields)->usage);
+                }
+                else if((*iterFields)->dataType == kea_att_string)
+                {
+                    this->addAttStringField((*iterFields)->name, "", (*iterFields)->usage);
+                }
+                else
+                {
+                    throw KEAATTException("Data type was not recognised.");
+                }
+                
+                field = this->getField((*iterFields)->name);
+                (*iterFields)->idx = field.idx;
+                (*iterFields)->colNum = field.colNum;
+            }
+        }
+        catch (KEAATTException &e)
+        {
+            throw e;
+        }
+    }
+    
+    void KEAAttributeTable::addFields(std::vector<KEAATTField> inFields) throw(KEAATTException)
+    {
+        try 
+        {
+            for(std::vector<KEAATTField>::iterator iterFields = inFields.begin(); iterFields != inFields.end(); ++iterFields)
             {
                 if((*iterFields).dataType == kea_att_bool)
                 {
-                    this->addAttBoolField((*iterFields).name, false);
+                    this->addAttBoolField((*iterFields).name, false, (*iterFields).usage);
                 }
                 else if((*iterFields).dataType == kea_att_int)
                 {
-                    this->addAttIntField((*iterFields).name, 0);
+                    this->addAttIntField((*iterFields).name, 0, (*iterFields).usage);
                 }
                 else if((*iterFields).dataType == kea_att_float)
                 {
-                    this->addAttFloatField((*iterFields).name, 0);
+                    this->addAttFloatField((*iterFields).name, 0.0, (*iterFields).usage);
                 }
                 else if((*iterFields).dataType == kea_att_string)
                 {
-                    this->addAttStringField((*iterFields).name, "");
+                    this->addAttStringField((*iterFields).name, "", (*iterFields).usage);
                 }
                 else
                 {

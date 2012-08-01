@@ -140,7 +140,8 @@ namespace libkea{
         virtual void addAttIntField(std::string name, long val, std::string usage="") throw(KEAATTException);
         virtual void addAttFloatField(std::string name, double val, std::string usage="") throw(KEAATTException);
         virtual void addAttStringField(std::string name, std::string val, std::string usage="") throw(KEAATTException);
-        virtual void addFields(std::vector<KEAATTField> fields) throw(KEAATTException);
+        virtual void addFields(std::vector<KEAATTField*> *inFields) throw(KEAATTException);
+        virtual void addFields(std::vector<KEAATTField> inFields) throw(KEAATTException);
         
         virtual KEAFieldDataType getDataFieldType(std::string name) throw(KEAATTException);
         virtual size_t getFieldIndex(std::string name) throw(KEAATTException);
