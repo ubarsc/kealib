@@ -1451,7 +1451,8 @@ namespace libkea{
             imgVerAttribute.close();
             
             H5::Attribute blockSizeAttribute = imgBandDataSet.createAttribute(KEA_ATTRIBUTENAME_BLOCK_SIZE, H5::PredType::STD_U16LE, attr_dataspace);
-            blockSizeAttribute.write(H5::PredType::NATIVE_UINT, &dimsImageBandChunk[0]);
+            unsigned int blockSizeTmp = dimsImageBandChunk[0]; // copy into a temporary variable to write to the file - fixing a bug on solaris.
+            blockSizeAttribute.write(H5::PredType::NATIVE_UINT, &blockSizeTmp);
             blockSizeAttribute.close();
             
             imgBandDataSet.close();
