@@ -147,6 +147,13 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
                                   GDALDataType eType,
                                   char ** papszParmList  )
 {
+    GDALDriverH hDriver = GDALGetDriverByName( "KEA" );
+    if( ( hDriver == NULL ) || !GDALValidateCreationOptions( hDriver, papszParmList ) )
+    {
+        CPLError( CE_Failure, CPLE_OpenFailed,
+                  "Attempt to create file `%s' failed. Invalid creation option(s)\n", pszFilename);
+        return NULL;
+    }
     // process any creation options in papszParmList
     // default value
     unsigned int imageblockSize = libkea::KEA_IMAGE_CHUNK_SIZE;
