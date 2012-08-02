@@ -155,6 +155,8 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
         int greenIdx = -1;
         bool blueDef = false;
         int blueIdx = -1;
+        bool alphaDef = false;
+        int alphaIdx = -1;
         bool histoDef = false;
         int histoIdx = -1;
         
@@ -189,6 +191,14 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
                 field->dataType = libkea::kea_att_int;
                 histoDef = true;
                 histoIdx = i;
+            }
+            else if(field->name == "Opacity")
+            {
+                field->name = "Alpha";
+                field->usage = "Alpha";
+                field->dataType = libkea::kea_att_int;
+                alphaDef = true;
+                alphaIdx = i;
             }
             else
             {
@@ -253,6 +263,10 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
                     keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(i, j)*255);
                 }
                 else if(blueDef && (blueIdx == j))
+                {
+                    keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(i, j)*255);
+                }
+                else if(alphaDef && (alphaIdx == j))
                 {
                     keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(i, j)*255);
                 }
