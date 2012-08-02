@@ -66,6 +66,11 @@ protected:
     // updates m_papszMetadataList
     void UpdateMetadataList();
 
+    // functions for getting and setting the histogram as part of the 
+    // metadata - uses the RAT
+    void SetHistogramFromMetadata(const char *pszHistogram);
+    std::string GetHistogramAsMetadata();
+
     libkea::KEAImageIO  *m_pImageIO; // our image access pointer - refcounted
     char               **m_papszMetadataList; // CPLStringList of metadata
     libkea::KEADataType  m_eKEADataType; // data type as KEA enum
