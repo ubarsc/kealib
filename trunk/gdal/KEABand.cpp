@@ -88,6 +88,12 @@ void KEARasterBand::UpdateMetadataList()
     {
         m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "LAYER_TYPE", "thematic" );
     }
+    // another one for the histogram
+    std::string sHistogram = GetHistogramAsMetadata();
+    if( !sHistogram.empty() )
+    {
+        m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "STATISTICS_HISTOBINVALUES", sHistogram.c_str() );
+    }
 }
 
 // internal method to create the overviews
@@ -224,6 +230,11 @@ CPLErr KEARasterBand::SetMetadataItem(const char *pszName, const char *pszValue,
                 this->m_pImageIO->setImageBandLayerType(this->nBand, libkea::kea_thematic );
             }
         }
+        // STATISTICS_HISTOBINVALUES handled separately also
+        else if( EQUAL( pszName, "STATISTICS_HISTOBINVALUES" ) )
+        {
+            SetHistogramFromMetadata( pszValue );
+        }
         else
         {
             // otherwise set it as normal
@@ -286,6 +297,11 @@ CPLErr KEARasterBand::SetMetadata(char **papszMetadata, const char *pszDomain)
                 {
                     this->m_pImageIO->setImageBandLayerType(this->nBand, libkea::kea_thematic );
                 }
+            }
+            // STATISTICS_HISTOBINVALUES handled separately also
+            else if( EQUAL( pszName, "STATISTICS_HISTOBINVALUES" ) )
+            {
+                SetHistogramFromMetadata( pszValue );
             }
             else
             {
@@ -845,4 +861,153 @@ GDALRasterBand* KEARasterBand::GetOverview(int nOverview)
     {
         return m_panOverviewBands[nOverview];
     }
+}
+
+void KEARasterBand::SetHistogramFromMetadata(const char *pszHistogram)
+{
+    try
+    {
+        // we assume this is never NULL - creates a new one if none exists
+        libkea::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(libkea::kea_att_mem, this->nBand);
+
+        // how many elements in pszHistogram? '|' seperated
+        size_t nItems = 0, nIndex = 0, nStartIndex;
+        while( pszHistogram[nIndex] != '\0' )
+        {
+            nStartIndex = nIndex;
+            while( ( pszHistogram[nIndex] != '|' ) && ( pszHistogram[nIndex] != '\0' ) )
+                nIndex++;
+            if( nStartIndex != nIndex )
+                nItems++;
+            if( pszHistogram[nIndex] != '\0' )
+                nIndex++;
+        }
+
+        // add rows to the table if needed
+        if( pKEATable->getSize() < nItems )
+        {
+            pKEATable->addRows( nItems - pKEATable->getSize() );
+        }
+    
+        // create a mapping between histogram entry and the field info
+        bool bFoundHisto = false;
+        libkea::KEAATTField sKEAField;
+        for( size_t nColumnIndex = 0; (nColumnIndex < pKEATable->getMaxGlobalColIdx()) && !bFoundHisto; nColumnIndex++ )
+        {
+            try
+            {
+                sKEAField = pKEATable->getField(nColumnIndex);
+            }
+            catch(libkea::KEAATTException &e)
+            {
+                // pKEATable->getField raised exception because we have a missing column
+                continue;
+            }
+
+            // does it look like the histogram column?
+            if( ( sKEAField.dataType == libkea::kea_att_int ) && ( sKEAField.usage == "PixelCount" ) 
+                && ( sKEAField.name == "Histogram" ) )
+            {
+                bFoundHisto = true;
+            }
+        }
+
+        if( !bFoundHisto )
+        {
+            // need to create it
+            pKEATable->addAttIntField("Histogram", 0, "PixelCount");
+            sKEAField = pKEATable->getField("Histogram");
+        }
+
+        // ok go through pszHistogram for real and insert items
+        nIndex = 0;
+        size_t nRowIndex = 0;
+        char szBuf[12];
+        int nBufIndex;
+        while( pszHistogram[nIndex] != '\0' )
+        {
+            nStartIndex = nIndex;
+            nBufIndex = 0;
+            while( ( pszHistogram[nIndex] != '|' ) && ( pszHistogram[nIndex] != '\0' ) )
+            {
+                szBuf[nBufIndex] = pszHistogram[nIndex];
+                nBufIndex++;
+                nIndex++;
+            }
+            if( nStartIndex != nIndex )
+            {
+                szBuf[nBufIndex] = '\0';
+                libkea::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
+                pKEAFeature->intFields->at(sKEAField.idx) = atol( szBuf );
+                nRowIndex++;
+            }
+            if( pszHistogram[nIndex] != '\0' )
+                nIndex++;
+        }
+        this->m_pImageIO->setAttributeTable(pKEATable, this->nBand);
+        delete pKEATable;
+    }
+    catch(libkea::KEAException &e)
+    {
+        CPLError( CE_Failure, CPLE_AppDefined, "Failed to write histogram table: %s", e.what() );
+    }
+}
+
+std::string KEARasterBand::GetHistogramAsMetadata()
+{
+    std::string sHistogram;
+    try
+    {
+        // see if there is a suitable attribute table with color columns
+        if( this->m_pImageIO->attributeTablePresent(this->nBand) )
+        {
+            // we assume this is never NULL - creates a new one if none exists
+            libkea::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(libkea::kea_att_mem, this->nBand);
+
+            // create a mapping between histogram entry and the field info
+            bool bFoundHisto = false;
+            libkea::KEAATTField sKEAField;
+            for( size_t nColumnIndex = 0; (nColumnIndex < pKEATable->getMaxGlobalColIdx()) && !bFoundHisto; nColumnIndex++ )
+            {
+                try
+                {
+                    sKEAField = pKEATable->getField(nColumnIndex);
+                }
+                catch(libkea::KEAATTException &e)
+                {
+                    // pKEATable->getField raised exception because we have a missing column
+                    continue;
+                }
+
+                // does it look like the histogram column?
+                if( ( sKEAField.dataType == libkea::kea_att_int ) && ( sKEAField.usage == "PixelCount" ) 
+                    && ( sKEAField.name == "Histogram" ) )
+                {
+                    bFoundHisto = true;
+                }
+            }
+            // if we found a histogram column, read it
+            char szBuf[12];
+            if( bFoundHisto )
+            {
+                // OK go through each row and fill in the fields
+                for( size_t nRowIndex = 0; nRowIndex < pKEATable->getSize(); nRowIndex++ )
+                {
+                    // get the feature
+                    libkea::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
+                    long nValue = pKEAFeature->intFields->at(sKEAField.idx);
+                    sprintf( szBuf, "%ld|", nValue );
+                    sHistogram.append(szBuf); // dunno how fast this is...
+                }
+            }
+
+            delete pKEATable;
+        }
+    }
+    catch(libkea::KEAException &e)
+    {
+        CPLError( CE_Failure, CPLE_AppDefined, "Failed to read histogram table: %s", e.what() );
+        sHistogram = "";
+    }
+    return sHistogram;
 }
