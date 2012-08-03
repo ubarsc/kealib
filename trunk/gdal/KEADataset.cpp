@@ -1,6 +1,35 @@
+/*
+ *  KEADataset.cpp
+ *
+ *  Created by Pete Bunting on 01/08/2012.
+ *  Copyright 2012 LibKEA. All rights reserved.
+ *
+ *  This file is part of LibKEA.
+ *
+ *  Permission is hereby granted, free of charge, to any person 
+ *  obtaining a copy of this software and associated documentation 
+ *  files (the "Software"), to deal in the Software without restriction, 
+ *  including without limitation the rights to use, copy, modify, 
+ *  merge, publish, distribute, sublicense, and/or sell copies of the 
+ *  Software, and to permit persons to whom the Software is furnished 
+ *  to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be 
+ *  included in all copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+ *  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+ *  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+ *  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
+ *  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+ *  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+ *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ */
 
 #include "KEADataset.h"
 #include "KEABand.h"
+#include "KEACopy.h"
 
 // Function for converting a libkea type into a GDAL type
 GDALDataType KEA_to_GDAL_Type( libkea::KEADataType keaType )
@@ -224,6 +253,117 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
                   pszFilename, e.what() );
         return NULL;
     }
+}
+
+GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrcDs,
+                                int bStrict, char **  papszParmList, 
+                                GDALProgressFunc pfnProgress, void *pProgressData )
+{
+    GDALDriverH hDriver = GDALGetDriverByName( "KEA" );
+    if( ( hDriver == NULL ) || !GDALValidateCreationOptions( hDriver, papszParmList ) )
+    {
+        CPLError( CE_Failure, CPLE_OpenFailed,
+                  "Attempt to create file `%s' failed. Invalid creation option(s)\n", pszFilename);
+        return NULL;
+    }
+    // process any creation options in papszParmList
+    // default value
+    unsigned int imageblockSize = libkea::KEA_IMAGE_CHUNK_SIZE;
+    // see if they have provided a different value
+    const char *pszValue = CSLFetchNameValue( papszParmList, "IMAGEBLOCKSIZE" );
+    if( pszValue != NULL )
+        imageblockSize = atol( pszValue );
+
+    unsigned int attblockSize = libkea::KEA_ATT_CHUNK_SIZE;
+    pszValue = CSLFetchNameValue( papszParmList, "ATTBLOCKSIZE" );
+    if( pszValue != NULL )
+        attblockSize = atol( pszValue );
+
+    unsigned int mdcElmts = libkea::KEA_MDC_NELMTS;
+    pszValue = CSLFetchNameValue( papszParmList, "MDC_NELMTS" );
+    if( pszValue != NULL )
+        mdcElmts = atol( pszValue );
+
+    hsize_t rdccNElmts = libkea::KEA_RDCC_NELMTS;
+    pszValue = CSLFetchNameValue( papszParmList, "RDCC_NELMTS" );
+    if( pszValue != NULL )
+        rdccNElmts = atol( pszValue );
+
+    hsize_t rdccNBytes = libkea::KEA_RDCC_NBYTES;
+    pszValue = CSLFetchNameValue( papszParmList, "RDCC_NBYTES" );
+    if( pszValue != NULL )
+        rdccNBytes = atol( pszValue );
+
+    double rdccW0 = libkea::KEA_RDCC_W0;
+    pszValue = CSLFetchNameValue( papszParmList, "RDCC_W0" );
+    if( pszValue != NULL )
+        rdccW0 = atof( pszValue );
+
+    hsize_t sieveBuf = libkea::KEA_SIEVE_BUF;
+    pszValue = CSLFetchNameValue( papszParmList, "SIEVE_BUF" );
+    if( pszValue != NULL )
+        sieveBuf = atol( pszValue );
+
+    hsize_t metaBlockSize = libkea::KEA_META_BLOCKSIZE;
+    pszValue = CSLFetchNameValue( papszParmList, "META_BLOCKSIZE" );
+    if( pszValue != NULL )
+        metaBlockSize = atol( pszValue );
+
+    unsigned int deflate = libkea::KEA_DEFLATE;
+    pszValue = CSLFetchNameValue( papszParmList, "DEFLATE" );
+    if( pszValue != NULL )
+        deflate = atol( pszValue );
+
+    // get the data out of the input dataset
+    int nXSize = pSrcDs->GetRasterXSize();
+    int nYSize = pSrcDs->GetRasterYSize();
+    int nBands = pSrcDs->GetRasterCount();
+    GDALDataType eType = pSrcDs->GetRasterBand(1)->GetRasterDataType();
+
+    try
+    {
+        // now create it
+        H5::H5File *keaImgH5File = libkea::KEAImageIO::createKEAImage( pszFilename,
+                                                    GDAL_to_KEA_Type( eType ),
+                                                    nXSize, nYSize, nBands,
+                                                    NULL, NULL, imageblockSize, attblockSize, mdcElmts, rdccNElmts,
+                                                    rdccNBytes, rdccW0, sieveBuf, metaBlockSize, deflate );
+
+        // create the imageio
+        libkea::KEAImageIO *pImageIO = new libkea::KEAImageIO();
+        
+        // open the file
+        pImageIO->openKEAImageHeader( keaImgH5File );
+
+        // copy file
+        if( !CopyFile( pSrcDs, pImageIO, pfnProgress, pProgressData) )
+        {
+            delete pImageIO;
+            return NULL;
+        }
+
+        // close it
+        pImageIO->close();
+        delete pImageIO;
+
+        // now open it again - because the constructor loads all the info
+        // in we need to copy the data first....
+        keaImgH5File = libkea::KEAImageIO::openKeaH5RW( pszFilename );
+
+        // and wrap it in a dataset
+        KEADataset *pDataset = new KEADataset( keaImgH5File );
+        pDataset->SetDescription( pszFilename );
+
+        return pDataset;
+    }
+    catch (libkea::KEAException &e)
+    {
+        CPLError( CE_Failure, CPLE_OpenFailed,
+                  "Attempt to create file `%s' failed. Error: %s\n",
+                  pszFilename, e.what() );
+        return NULL;
+    }
+
 }
 
 // constructor
