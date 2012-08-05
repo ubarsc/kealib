@@ -51,7 +51,7 @@ private:
 
 public:
     // constructor/destructor
-    KEARasterBand( KEADataset *pDataset, int nSrcBand, libkea::KEAImageIO *pImageIO, int *pRefCount );
+    KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAccess, libkea::KEAImageIO *pImageIO, int *pRefCount );
     ~KEARasterBand();
 
     // virtual methods for overview support

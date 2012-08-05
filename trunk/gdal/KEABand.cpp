@@ -37,7 +37,7 @@
 #include <vector>
 
 // constructor
-KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, libkea::KEAImageIO *pImageIO, int *pRefCount )
+KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAccess, libkea::KEAImageIO *pImageIO, int *pRefCount )
 {
     this->poDS = pDataset; // our pointer onto the dataset
     this->nBand = nSrcBand; // this is the band we are
@@ -47,6 +47,7 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, libkea::KEAIma
     this->nBlockYSize = pImageIO->getImageBlockSize(nSrcBand);
     this->nRasterXSize = this->poDS->GetRasterXSize();          // ask the dataset for the total image size
     this->nRasterYSize = this->poDS->GetRasterYSize();
+    this->eAccess = eAccess;
 
     // grab the imageio class and its refcount
     this->m_pImageIO = pImageIO;
@@ -147,7 +148,7 @@ void KEARasterBand::CreateOverviews(int nOverviews, int *panOverviewList)
         this->m_pImageIO->createOverview(this->nBand, nCount + 1, nXSize, nYSize);
 
         // create one of our objects to represent it
-        m_panOverviewBands[nCount] = new KEAOverview((KEADataset*)this->poDS, this->nBand, 
+        m_panOverviewBands[nCount] = new KEAOverview((KEADataset*)this->poDS, this->nBand, GA_Update,
                                         this->m_pImageIO, this->m_pnRefCount, nCount + 1, nXSize, nYSize);
     }
 }
@@ -867,7 +868,7 @@ void KEARasterBand::readExistingOverviews()
     for( int nCount = 0; nCount < m_nOverviews; nCount++ )
     {
         this->m_pImageIO->getOverviewSize(this->nBand, nCount + 1, &nXSize, &nYSize);
-        m_panOverviewBands[nCount] = new KEAOverview((KEADataset*)this->poDS, this->nBand, 
+        m_panOverviewBands[nCount] = new KEAOverview((KEADataset*)this->poDS, this->nBand, GA_ReadOnly,
                                         this->m_pImageIO, this->m_pnRefCount, nCount + 1, nXSize, nYSize);
     }
 }

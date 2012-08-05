@@ -38,7 +38,7 @@ class KEADataset : public GDALPamDataset
 {
 public:
     // constructor/destructor
-    KEADataset( H5::H5File *keaImgH5File );
+    KEADataset( H5::H5File *keaImgH5File, GDALAccess eAccess );
     ~KEADataset();
     
     // static methods that handle open and creation

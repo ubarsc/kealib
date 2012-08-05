@@ -129,7 +129,7 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
                 pH5File = libkea::KEAImageIO::openKeaH5RW( poOpenInfo->pszFilename );
             }
             // create the KEADataset object
-            KEADataset *pDataset = new KEADataset( pH5File );
+            KEADataset *pDataset = new KEADataset( pH5File, poOpenInfo->eAccess );
 
             // set the description as the name
             pDataset->SetDescription( poOpenInfo->pszFilename );
@@ -240,7 +240,7 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
                                                     NULL, NULL, imageblockSize, attblockSize, mdcElmts, rdccNElmts,
                                                     rdccNBytes, rdccW0, sieveBuf, metaBlockSize, deflate );
         // create our dataset object                            
-        KEADataset *pDataset = new KEADataset( keaImgH5File );
+        KEADataset *pDataset = new KEADataset( keaImgH5File, GA_Update );
 
         pDataset->SetDescription( pszFilename );
 
@@ -351,7 +351,7 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
         keaImgH5File = libkea::KEAImageIO::openKeaH5RW( pszFilename );
 
         // and wrap it in a dataset
-        KEADataset *pDataset = new KEADataset( keaImgH5File );
+        KEADataset *pDataset = new KEADataset( keaImgH5File, GA_Update );
         pDataset->SetDescription( pszFilename );
 
         return pDataset;
@@ -367,7 +367,7 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
 }
 
 // constructor
-KEADataset::KEADataset( H5::H5File *keaImgH5File )
+KEADataset::KEADataset( H5::H5File *keaImgH5File, GDALAccess eAccess )
 {
     try
     {
@@ -380,16 +380,17 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File )
         libkea::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
 
         // get the dimensions
-        nBands = m_pImageIO->getNumOfImageBands();
-        nRasterXSize = pSpatialInfo->xSize;
-        nRasterYSize = pSpatialInfo->ySize;
+        this->nBands = m_pImageIO->getNumOfImageBands();
+        this->nRasterXSize = pSpatialInfo->xSize;
+        this->nRasterYSize = pSpatialInfo->ySize;
+        this->eAccess = eAccess;
 
         // create all the bands
         for( int nCount = 0; nCount < nBands; nCount++ )
         {
             // note GDAL uses indices starting at 1 and so does libkea
             // create band object
-            KEARasterBand *pBand = new KEARasterBand( this, nCount + 1, m_pImageIO, m_pnRefcount );
+            KEARasterBand *pBand = new KEARasterBand( this, nCount + 1, eAccess, m_pImageIO, m_pnRefcount );
             // read in overviews
             pBand->readExistingOverviews();
             // set the band into this dataset
