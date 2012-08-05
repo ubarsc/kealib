@@ -1016,7 +1016,7 @@ std::string KEARasterBand::GetHistogramAsMetadata()
                 }
             }
             // if we found a histogram column, read it
-            char szBuf[12];
+            char szBuf[24];
             if( bFoundHisto )
             {
                 // OK go through each row and fill in the fields
