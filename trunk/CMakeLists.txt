@@ -103,12 +103,8 @@ if(WIN32)
             add_definitions(-D_SCL_SECURE_NO_WARNINGS)
         endif()
         
-        if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
-            string(REGEX REPLACE "/W[0-4]" "/W4"
-                   CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-        else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-        endif()
+        # by default the compiler produces gratuitous warnings. Disable some of them
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4290 /wd4005 /wd4101 /wd4244 /wd4800 /wd4251 /wd4996")
 
         # Generate dot-user file with user-specific settings for Visual Studio project
         set(MSVC_ENVIRONMENT_PATH "" CACHE STRING
