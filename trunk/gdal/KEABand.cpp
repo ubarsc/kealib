@@ -846,13 +846,13 @@ GDALColorInterp KEARasterBand::GetColorInterpretation()
     libkea::KEALayerUsage keainterp;
     try
     {
-        this->m_pImageIO->getImageBandUsage(this->nBand);
+        keainterp = this->m_pImageIO->getImageBandUsage(this->nBand);
     }
     catch(libkea::KEAException &e)
     {
         return GCI_GrayIndex;
     }
-
+        
     GDALColorInterp gdalinterp;
     switch(keainterp)
     {
@@ -864,6 +864,9 @@ GDALColorInterp KEARasterBand::GetColorInterpretation()
             gdalinterp = GCI_PaletteIndex;
             break;
         case libkea::kea_redband:
+            gdalinterp = GCI_RedBand;
+            break;
+        case libkea::kea_greenband:
             gdalinterp = GCI_GreenBand;
             break;
         case libkea::kea_blueband:
@@ -906,6 +909,7 @@ GDALColorInterp KEARasterBand::GetColorInterpretation()
             gdalinterp = GCI_GrayIndex;
             break;
     }
+        
     return gdalinterp;
 }
 
