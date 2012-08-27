@@ -841,6 +841,143 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
     return CE_None;
 }
 
+GDALColorInterp KEARasterBand::GetColorInterpretation()
+{
+    libkea::KEALayerUsage keainterp;
+    try
+    {
+        this->m_pImageIO->getImageBandUsage(this->nBand);
+    }
+    catch(libkea::KEAException &e)
+    {
+        return GCI_GrayIndex;
+    }
+
+    GDALColorInterp gdalinterp;
+    switch(keainterp)
+    {
+        case libkea::kea_generic:
+        case libkea::kea_greyindex:
+            gdalinterp = GCI_GrayIndex;
+            break;
+        case libkea::kea_paletteindex:
+            gdalinterp = GCI_PaletteIndex;
+            break;
+        case libkea::kea_redband:
+            gdalinterp = GCI_GreenBand;
+            break;
+        case libkea::kea_blueband:
+            gdalinterp = GCI_BlueBand;
+            break;
+        case libkea::kea_alphaband:
+            gdalinterp = GCI_AlphaBand;
+            break;
+        case libkea::kea_hueband:
+            gdalinterp = GCI_HueBand;
+            break;
+        case libkea::kea_saturationband:
+            gdalinterp = GCI_SaturationBand;
+            break;
+        case libkea::kea_lightnessband:
+            gdalinterp = GCI_LightnessBand;
+            break;
+        case libkea::kea_cyanband:
+            gdalinterp = GCI_CyanBand;
+            break;
+        case libkea::kea_magentaband:
+            gdalinterp = GCI_MagentaBand;
+            break;
+        case libkea::kea_yellowband:
+            gdalinterp = GCI_YellowBand;
+            break;
+        case libkea::kea_blackband:
+            gdalinterp = GCI_BlackBand;
+            break;
+        case libkea::kea_ycbcr_yband:
+            gdalinterp = GCI_YCbCr_YBand;
+            break;
+        case libkea::kea_ycbcr_cbband:
+            gdalinterp = GCI_YCbCr_CbBand;
+            break;
+        case libkea::kea_ycbcr_crband:
+            gdalinterp = GCI_YCbCr_CrBand;
+            break;
+        default:
+            gdalinterp = GCI_GrayIndex;
+            break;
+    }
+    return gdalinterp;
+}
+
+CPLErr KEARasterBand::SetColorInterpretation(GDALColorInterp gdalinterp)
+{
+    libkea::KEALayerUsage keainterp;
+    switch(gdalinterp)
+    {
+        case GCI_GrayIndex:
+            keainterp = libkea::kea_greyindex;
+            break;
+        case GCI_PaletteIndex:
+            keainterp = libkea::kea_paletteindex;
+            break;
+        case GCI_RedBand:
+            keainterp = libkea::kea_redband;
+            break;
+        case GCI_GreenBand:
+            keainterp = libkea::kea_greenband;
+            break;
+        case GCI_BlueBand:
+            keainterp = libkea::kea_blueband;
+            break;
+        case GCI_AlphaBand:
+            keainterp = libkea::kea_alphaband;
+            break;
+        case GCI_HueBand:
+            keainterp = libkea::kea_hueband;
+            break;
+        case GCI_SaturationBand:
+            keainterp = libkea::kea_saturationband;
+            break;
+        case GCI_LightnessBand:
+            keainterp = libkea::kea_lightnessband;
+            break;
+        case GCI_CyanBand:
+            keainterp = libkea::kea_cyanband;
+            break;
+        case GCI_MagentaBand:
+            keainterp = libkea::kea_magentaband;
+            break;
+        case GCI_YellowBand:
+            keainterp = libkea::kea_yellowband;
+            break;
+        case GCI_BlackBand:
+            keainterp = libkea::kea_blackband;
+            break;
+        case GCI_YCbCr_YBand:
+            keainterp = libkea::kea_ycbcr_yband;
+            break;
+        case GCI_YCbCr_CbBand:
+            keainterp = libkea::kea_ycbcr_cbband;
+            break;
+        case GCI_YCbCr_CrBand:
+            keainterp = libkea::kea_ycbcr_crband;
+            break;
+        default:
+            keainterp = libkea::kea_greyindex;
+            break;
+    }
+
+    try
+    {
+        this->m_pImageIO->setImageBandUsage(this->nBand, keainterp);
+    }
+    catch(libkea::KEAException &e)
+    {
+        // do nothing? The docs say CE_Failure only if unsupporte by format
+    }
+    return CE_None;
+}
+
 // clean up our overview objects
 void KEARasterBand::deleteOverviewObjects()
 {

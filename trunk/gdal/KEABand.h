@@ -80,6 +80,10 @@ public:
     GDALColorTable *GetColorTable();
     CPLErr SetColorTable(GDALColorTable *poCT);
 
+    // virtual methods for color interpretation
+    GDALColorInterp GetColorInterpretation();
+    CPLErr SetColorInterpretation(GDALColorInterp gdalinterp);
+
     // internal methods for overviews
     void readExistingOverviews();
     void deleteOverviewObjects();
