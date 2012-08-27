@@ -84,8 +84,8 @@ namespace libkea{
         void setImageBandLayerType(unsigned int band, KEALayerType imgLayerType) throw(KEAIOException);
         KEALayerType getImageBandLayerType(unsigned int band) throw(KEAIOException);
         
-        void setImageBandUsage(unsigned int band, KEALayerUsage imgLayerUsage) throw(KEAIOException);
-        KEALayerUsage getImageBandUsage(unsigned int band) throw(KEAIOException);
+        void setImageBandClrInterp(unsigned int band, KEABandClrInterp imgLayerClrInterp) throw(KEAIOException);
+        KEABandClrInterp getImageBandClrInterp(unsigned int band) throw(KEAIOException);
         
         void createOverview(unsigned int band, unsigned int overview, unsigned long xSize, unsigned long ySize) throw(KEAIOException);
         void removeOverview(unsigned int band, unsigned int overview) throw(KEAIOException);

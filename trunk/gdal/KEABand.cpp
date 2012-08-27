@@ -843,10 +843,10 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
 
 GDALColorInterp KEARasterBand::GetColorInterpretation()
 {
-    libkea::KEALayerUsage keainterp;
+    libkea::KEABandClrInterp keainterp;
     try
     {
-        keainterp = this->m_pImageIO->getImageBandUsage(this->nBand);
+        keainterp = this->m_pImageIO->getImageBandClrInterp(this->nBand);
     }
     catch(libkea::KEAException &e)
     {
@@ -915,7 +915,7 @@ GDALColorInterp KEARasterBand::GetColorInterpretation()
 
 CPLErr KEARasterBand::SetColorInterpretation(GDALColorInterp gdalinterp)
 {
-    libkea::KEALayerUsage keainterp;
+    libkea::KEABandClrInterp keainterp;
     switch(gdalinterp)
     {
         case GCI_GrayIndex:
@@ -973,7 +973,7 @@ CPLErr KEARasterBand::SetColorInterpretation(GDALColorInterp gdalinterp)
 
     try
     {
-        this->m_pImageIO->setImageBandUsage(this->nBand, keainterp);
+        this->m_pImageIO->setImageBandClrInterp(this->nBand, keainterp);
     }
     catch(libkea::KEAException &e)
     {

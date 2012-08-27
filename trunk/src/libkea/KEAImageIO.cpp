@@ -1326,7 +1326,7 @@ namespace libkea{
         return imgLayerType;
     }
     
-    void KEAImageIO::setImageBandUsage(unsigned int band, KEALayerUsage imgLayerUsage) throw(KEAIOException)
+    void KEAImageIO::setImageBandClrInterp(unsigned int band, KEABandClrInterp imgLayerClrInterp) throw(KEAIOException)
     {
         if(!this->fileOpen)
         {
@@ -1337,7 +1337,7 @@ namespace libkea{
         try 
         {
             H5::DataSet datasetImgLU = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_USAGE );
-            datasetImgLU.write(&imgLayerUsage, H5::PredType::NATIVE_UINT);
+            datasetImgLU.write(&imgLayerClrInterp, H5::PredType::NATIVE_UINT);
             datasetImgLU.close();
             this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         } 
@@ -1347,19 +1347,19 @@ namespace libkea{
             dimsUsage[0] = 1;
             H5::DataSpace usageDataSpace(1, dimsUsage);
             H5::DataSet usageDataset = this->keaImgFile->createDataSet((KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_USAGE), H5::PredType::STD_U8LE, usageDataSpace);
-            usageDataset.write( &imgLayerUsage, H5::PredType::NATIVE_UINT );
+            usageDataset.write( &imgLayerClrInterp, H5::PredType::NATIVE_UINT );
             usageDataset.close();
         } 
     }
     
-    KEALayerUsage KEAImageIO::getImageBandUsage(unsigned int band) throw(KEAIOException)
+    KEABandClrInterp KEAImageIO::getImageBandClrInterp(unsigned int band) throw(KEAIOException)
     {
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
         }
         
-        KEALayerUsage imgLayerUsage = kea_generic;
+        KEABandClrInterp imgLayerClrInterp = kea_generic;
         
         // READ IMAGE LAYER USAGE
         try 
@@ -1370,17 +1370,17 @@ namespace libkea{
             unsigned int value[1];
             H5::DataSet datasetImgLU = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_USAGE );
             datasetImgLU.read(value, H5::PredType::NATIVE_UINT, valueDataSpace);
-            imgLayerUsage = (KEALayerUsage)value[0];
+            imgLayerClrInterp = (KEABandClrInterp)value[0];
             datasetImgLU.close();
             valueDataSpace.close();
         } 
         catch ( H5::Exception &e) 
         {
             //throw KEAIOException("The image band data type was not specified.");
-            imgLayerUsage = kea_generic; // Field was not present within the file.
+            imgLayerClrInterp = kea_generic; // Field was not present within the file.
         }
         
-        return imgLayerUsage;
+        return imgLayerClrInterp;
     }
     
     void KEAImageIO::createOverview(unsigned int band, unsigned int overview, unsigned long xSize, unsigned long ySize) throw(KEAIOException)

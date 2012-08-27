@@ -144,7 +144,7 @@ namespace libkea{
         kea_thematic = 1
     };
     
-    enum KEALayerUsage
+    enum KEABandClrInterp
     {
         kea_generic = 0,
         kea_greyindex = 1,
