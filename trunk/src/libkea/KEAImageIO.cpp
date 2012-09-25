@@ -2313,6 +2313,38 @@ namespace libkea{
         return h5Datatype;
     }
 
+    void KEAImageIO::updateNumImgBands() const throw(KEAIOException)
+    {
+        if(!this->fileOpen) {
+            throw KEAIOException("Image was not open.");
+        }
+
+        try {
+            H5::DataSet numBandsDataset;
+            try {
+                // open the dataset
+                numBandsDataset = this->keaImgFile->openDataSet(
+                        KEA_DATASETNAME_HEADER_NUMBANDS);
+            } catch (H5::Exception &e) {
+                // if the dataset does not exist, which really should not
+                // happen, then create it
+                hsize_t dimsNumBands[] = { 1 };
+                H5::DataSpace numBandsDataSpace(1, dimsNumBands);
+                numBandsDataset = this->keaImgFile->createDataSet(
+                        KEA_DATASETNAME_HEADER_NUMBANDS,
+                        H5::PredType::STD_U16LE, numBandsDataSpace);
+                numBandsDataSpace.close();
+            }
+            numBandsDataset.write(&this->numImgBands,
+                    H5::PredType::NATIVE_UINT);
+
+            numBandsDataset.close();
+            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+        } catch (H5::Exception &e) {
+            throw KEAIOException("Could not update band count metadata.");
+        }
+    }
+
 } // namespace libkea
 
 

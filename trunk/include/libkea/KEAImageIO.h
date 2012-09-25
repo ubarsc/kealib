@@ -119,6 +119,11 @@ namespace libkea{
         static H5::DataType convertDatatypeKeaToH5Native(
                 const KEADataType dataType) throw(KEAIOException);
 
+        /**
+         * Updates the number of image bands in the file metadata.
+         */
+        virtual void updateNumImgBands() const throw(KEAIOException);
+
         bool fileOpen;
         H5::H5File *keaImgFile;
         KEAImageSpatialInfo *spatialInfoFile;
