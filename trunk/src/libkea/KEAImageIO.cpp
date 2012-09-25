@@ -211,52 +211,8 @@ namespace libkea{
             }
             
             // GET NATIVE DATASET
-            H5::DataType imgBandDT = H5::PredType::NATIVE_FLOAT;
-            if(inDataType == kea_8int)
-            {
-                imgBandDT = H5::PredType::NATIVE_INT8;
-            }
-            else if(inDataType == kea_16int)
-            {
-                imgBandDT = H5::PredType::NATIVE_INT16;
-            }
-            else if(inDataType == kea_32int)
-            {
-                imgBandDT = H5::PredType::NATIVE_INT32;
-            }
-            else if(inDataType == kea_64int)
-            {
-                imgBandDT = H5::PredType::NATIVE_INT64;
-            }
-            else if(inDataType == kea_8uint)
-            {
-                imgBandDT = H5::PredType::NATIVE_UINT8;
-            }
-            else if(inDataType == kea_16uint)
-            {
-                imgBandDT = H5::PredType::NATIVE_UINT16;
-            }
-            else if(inDataType == kea_32uint)
-            {
-                imgBandDT = H5::PredType::NATIVE_UINT32;
-            }
-            else if(inDataType == kea_64uint)
-            {
-                imgBandDT = H5::PredType::NATIVE_UINT64;
-            }
-            else if(inDataType == kea_32float)
-            {
-                imgBandDT = H5::PredType::NATIVE_FLOAT;
-            }
-            else if(inDataType == kea_64float)
-            {
-                imgBandDT = H5::PredType::NATIVE_DOUBLE;
-            }
-            else
-            {
-                throw KEAIOException("The specified data type was not recognised.");
-            }
-            
+            H5::DataType imgBandDT = convertDatatypeKeaToH5Native(inDataType);
+
             // OPEN BAND DATASET AND WRITE IMAGE DATA
             try 
             {
@@ -386,52 +342,8 @@ namespace libkea{
             }
             
             // GET NATIVE DATASET
-            H5::DataType imgBandDT = H5::PredType::NATIVE_FLOAT;
-            if(inDataType == kea_8int)
-            {
-                imgBandDT = H5::PredType::NATIVE_INT8;
-            }
-            else if(inDataType == kea_16int)
-            {
-                imgBandDT = H5::PredType::NATIVE_INT16;
-            }
-            else if(inDataType == kea_32int)
-            {
-                imgBandDT = H5::PredType::NATIVE_INT32;
-            }
-            else if(inDataType == kea_64int)
-            {
-                imgBandDT = H5::PredType::NATIVE_INT64;
-            }
-            else if(inDataType == kea_8uint)
-            {
-                imgBandDT = H5::PredType::NATIVE_UINT8;
-            }
-            else if(inDataType == kea_16uint)
-            {
-                imgBandDT = H5::PredType::NATIVE_UINT16;
-            }
-            else if(inDataType == kea_32uint)
-            {
-                imgBandDT = H5::PredType::NATIVE_UINT32;
-            }
-            else if(inDataType == kea_64uint)
-            {
-                imgBandDT = H5::PredType::NATIVE_UINT64;
-            }
-            else if(inDataType == kea_32float)
-            {
-                imgBandDT = H5::PredType::NATIVE_FLOAT;
-            }
-            else if(inDataType == kea_64float)
-            {
-                imgBandDT = H5::PredType::NATIVE_DOUBLE;
-            }
-            else
-            {
-                throw KEAIOException("The specified data type was not recognised.");
-            }
-            
+            H5::DataType imgBandDT = convertDatatypeKeaToH5Native(inDataType);
+
             // OPEN BAND DATASET AND READ IMAGE DATA
             try 
             {
@@ -937,102 +849,12 @@ namespace libkea{
                 H5::DataSpace dataspaceNDV(1, dimsForNDV);
                 
                 KEADataType imgDataType = this->getImageBandDataType(band);
-                
-                H5::DataType imgBandDT = H5::PredType::IEEE_F32LE;
-                if(imgDataType == kea_8int)
-                {
-                    imgBandDT = H5::PredType::STD_I8LE;
-                }
-                else if(imgDataType == kea_16int)
-                {
-                    imgBandDT = H5::PredType::STD_I16LE;
-                }
-                else if(imgDataType == kea_32int)
-                {
-                    imgBandDT = H5::PredType::STD_I32LE;
-                }
-                else if(imgDataType == kea_64int)
-                {
-                    imgBandDT = H5::PredType::STD_I64LE;
-                }
-                else if(imgDataType == kea_8uint)
-                {
-                    imgBandDT = H5::PredType::STD_U8LE;
-                }
-                else if(imgDataType == kea_16uint)
-                {
-                    imgBandDT = H5::PredType::STD_U16LE;
-                }
-                else if(imgDataType == kea_32uint)
-                {
-                    imgBandDT = H5::PredType::STD_U32LE;
-                }
-                else if(imgDataType == kea_64uint)
-                {
-                    imgBandDT = H5::PredType::STD_U64LE;
-                }
-                else if(imgDataType == kea_32float)
-                {
-                    imgBandDT = H5::PredType::IEEE_F32LE;
-                }
-                else if(imgDataType == kea_64float)
-                {
-                    imgBandDT = H5::PredType::IEEE_F64LE;
-                }
-                else
-                {
-                    throw KEAIOException("The specified data type was not recognised.");
-                }
-                
+                H5::DataType imgBandDT = convertDatatypeKeaToH5STD(imgDataType);
+
                 datasetImgNDV = this->keaImgFile->createDataSet(noDataValPath, imgBandDT, dataspaceNDV);
             }
                         
-            H5::DataType dataDT = H5::PredType::IEEE_F32LE;
-            if(inDataType == kea_8int)
-            {
-                dataDT = H5::PredType::STD_I8LE;
-            }
-            else if(inDataType == kea_16int)
-            {
-                dataDT = H5::PredType::STD_I16LE;
-            }
-            else if(inDataType == kea_32int)
-            {
-                dataDT = H5::PredType::STD_I32LE;
-            }
-            else if(inDataType == kea_64int)
-            {
-                dataDT = H5::PredType::STD_I64LE;
-            }
-            else if(inDataType == kea_8uint)
-            {
-                dataDT = H5::PredType::STD_U8LE;
-            }
-            else if(inDataType == kea_16uint)
-            {
-                dataDT = H5::PredType::STD_U16LE;
-            }
-            else if(inDataType == kea_32uint)
-            {
-                dataDT = H5::PredType::STD_U32LE;
-            }
-            else if(inDataType == kea_64uint)
-            {
-                dataDT = H5::PredType::STD_U64LE;
-            }
-            else if(inDataType == kea_32float)
-            {
-                dataDT = H5::PredType::IEEE_F32LE;
-            }
-            else if(inDataType == kea_64float)
-            {
-                dataDT = H5::PredType::IEEE_F64LE;
-            }
-            else
-            {
-                throw KEAIOException("The specified data type was not recognised.");
-            }
-            
+            H5::DataType dataDT = convertDatatypeKeaToH5STD(inDataType);
             datasetImgNDV.write( data, dataDT );
             datasetImgNDV.close();
             this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
@@ -1054,52 +876,7 @@ namespace libkea{
         // READ IMAGE BAND NO DATA VALUE
         try 
         {            
-            H5::DataType imgBandDT = H5::PredType::IEEE_F32LE;
-            if(inDataType == kea_8int)
-            {
-                imgBandDT = H5::PredType::STD_I8LE;
-            }
-            else if(inDataType == kea_16int)
-            {
-                imgBandDT = H5::PredType::STD_I16LE;
-            }
-            else if(inDataType == kea_32int)
-            {
-                imgBandDT = H5::PredType::STD_I32LE;
-            }
-            else if(inDataType == kea_64int)
-            {
-                imgBandDT = H5::PredType::STD_I64LE;
-            }
-            else if(inDataType == kea_8uint)
-            {
-                imgBandDT = H5::PredType::STD_U8LE;
-            }
-            else if(inDataType == kea_16uint)
-            {
-                imgBandDT = H5::PredType::STD_U16LE;
-            }
-            else if(inDataType == kea_32uint)
-            {
-                imgBandDT = H5::PredType::STD_U32LE;
-            }
-            else if(inDataType == kea_64uint)
-            {
-                imgBandDT = H5::PredType::STD_U64LE;
-            }
-            else if(inDataType == kea_32float)
-            {
-                imgBandDT = H5::PredType::IEEE_F32LE;
-            }
-            else if(inDataType == kea_64float)
-            {
-                imgBandDT = H5::PredType::IEEE_F64LE;
-            }
-            else
-            {
-                throw KEAIOException("The specified data type was not recognised.");
-            }
-            
+            H5::DataType imgBandDT = convertDatatypeKeaToH5STD(inDataType);
             hsize_t dimsValue[1];
             dimsValue[0] = 1;
             H5::DataSpace valueDataSpace(1, dimsValue);
@@ -1407,52 +1184,7 @@ namespace libkea{
         {
             KEADataType imgDataType = this->getImageBandDataType(band);
             
-            H5::DataType imgBandDT = H5::PredType::IEEE_F32LE;
-            if(imgDataType == kea_8int)
-            {
-                imgBandDT = H5::PredType::STD_I8LE;
-            }
-            else if(imgDataType == kea_16int)
-            {
-                imgBandDT = H5::PredType::STD_I16LE;
-            }
-            else if(imgDataType == kea_32int)
-            {
-                imgBandDT = H5::PredType::STD_I32LE;
-            }
-            else if(imgDataType == kea_64int)
-            {
-                imgBandDT = H5::PredType::STD_I64LE;
-            }
-            else if(imgDataType == kea_8uint)
-            {
-                imgBandDT = H5::PredType::STD_U8LE;
-            }
-            else if(imgDataType == kea_16uint)
-            {
-                imgBandDT = H5::PredType::STD_U16LE;
-            }
-            else if(imgDataType == kea_32uint)
-            {
-                imgBandDT = H5::PredType::STD_U32LE;
-            }
-            else if(imgDataType == kea_64uint)
-            {
-                imgBandDT = H5::PredType::STD_U64LE;
-            }
-            else if(imgDataType == kea_32float)
-            {
-                imgBandDT = H5::PredType::IEEE_F32LE;
-            }
-            else if(imgDataType == kea_64float)
-            {
-                imgBandDT = H5::PredType::IEEE_F64LE;
-            }
-            else
-            {
-                throw KEAIOException("The specified data type was not recognised.");
-            }
-            
+            H5::DataType imgBandDT = convertDatatypeKeaToH5STD(imgDataType);
             int initFillVal = 0;
             
             hsize_t imageBandDims[2];
@@ -1628,52 +1360,8 @@ namespace libkea{
             }
             
             // GET NATIVE DATASET
-            H5::DataType imgBandDT = H5::PredType::NATIVE_FLOAT;
-            if(inDataType == kea_8int)
-            {
-                imgBandDT = H5::PredType::NATIVE_INT8;
-            }
-            else if(inDataType == kea_16int)
-            {
-                imgBandDT = H5::PredType::NATIVE_INT16;
-            }
-            else if(inDataType == kea_32int)
-            {
-                imgBandDT = H5::PredType::NATIVE_INT32;
-            }
-            else if(inDataType == kea_64int)
-            {
-                imgBandDT = H5::PredType::NATIVE_INT64;
-            }
-            else if(inDataType == kea_8uint)
-            {
-                imgBandDT = H5::PredType::NATIVE_UINT8;
-            }
-            else if(inDataType == kea_16uint)
-            {
-                imgBandDT = H5::PredType::NATIVE_UINT16;
-            }
-            else if(inDataType == kea_32uint)
-            {
-                imgBandDT = H5::PredType::NATIVE_UINT32;
-            }
-            else if(inDataType == kea_64uint)
-            {
-                imgBandDT = H5::PredType::NATIVE_UINT64;
-            }
-            else if(inDataType == kea_32float)
-            {
-                imgBandDT = H5::PredType::NATIVE_FLOAT;
-            }
-            else if(inDataType == kea_64float)
-            {
-                imgBandDT = H5::PredType::NATIVE_DOUBLE;
-            }
-            else
-            {
-                throw KEAIOException("The specified data type was not recognised.");
-            }
-            
+            H5::DataType imgBandDT = convertDatatypeKeaToH5Native(inDataType);
+
             // OPEN BAND DATASET AND WRITE IMAGE DATA
             try 
             {
@@ -1780,51 +1468,7 @@ namespace libkea{
             }
             
             // GET NATIVE DATASET
-            H5::DataType imgBandDT = H5::PredType::NATIVE_FLOAT;
-            if(inDataType == kea_8int)
-            {
-                imgBandDT = H5::PredType::NATIVE_INT8;
-            }
-            else if(inDataType == kea_16int)
-            {
-                imgBandDT = H5::PredType::NATIVE_INT16;
-            }
-            else if(inDataType == kea_32int)
-            {
-                imgBandDT = H5::PredType::NATIVE_INT32;
-            }
-            else if(inDataType == kea_64int)
-            {
-                imgBandDT = H5::PredType::NATIVE_INT64;
-            }
-            else if(inDataType == kea_8uint)
-            {
-                imgBandDT = H5::PredType::NATIVE_UINT8;
-            }
-            else if(inDataType == kea_16uint)
-            {
-                imgBandDT = H5::PredType::NATIVE_UINT16;
-            }
-            else if(inDataType == kea_32uint)
-            {
-                imgBandDT = H5::PredType::NATIVE_UINT32;
-            }
-            else if(inDataType == kea_64uint)
-            {
-                imgBandDT = H5::PredType::NATIVE_UINT64;
-            }
-            else if(inDataType == kea_32float)
-            {
-                imgBandDT = H5::PredType::NATIVE_FLOAT;
-            }
-            else if(inDataType == kea_64float)
-            {
-                imgBandDT = H5::PredType::NATIVE_DOUBLE;
-            }
-            else
-            {
-                throw KEAIOException("The specified data type was not recognised.");
-            }
+            H5::DataType imgBandDT = convertDatatypeKeaToH5Native(inDataType);
             
             // OPEN BAND DATASET AND READ IMAGE DATA
             try 
@@ -2265,52 +1909,7 @@ namespace libkea{
                 bandDescriptsDefined = false;
             }
             
-            H5::DataType imgBandDT = H5::PredType::IEEE_F32LE;
-            if(dataType == kea_8int)
-            {
-                imgBandDT = H5::PredType::STD_I8LE;
-            }
-            else if(dataType == kea_16int)
-            {
-                imgBandDT = H5::PredType::STD_I16LE;
-            }
-            else if(dataType == kea_32int)
-            {
-                imgBandDT = H5::PredType::STD_I32LE;
-            }
-            else if(dataType == kea_64int)
-            {
-                imgBandDT = H5::PredType::STD_I64LE;
-            }
-            else if(dataType == kea_8uint)
-            {
-                imgBandDT = H5::PredType::STD_U8LE;
-            }
-            else if(dataType == kea_16uint)
-            {
-                imgBandDT = H5::PredType::STD_U16LE;
-            }
-            else if(dataType == kea_32uint)
-            {
-                imgBandDT = H5::PredType::STD_U32LE;
-            }
-            else if(dataType == kea_64uint)
-            {
-                imgBandDT = H5::PredType::STD_U64LE;
-            }
-            else if(dataType == kea_32float)
-            {
-                imgBandDT = H5::PredType::IEEE_F32LE;
-            }
-            else if(dataType == kea_64float)
-            {
-                imgBandDT = H5::PredType::IEEE_F64LE;
-            }
-            else
-            {
-                throw KEAIOException("The specified data type was not recognised.");
-            }
-            
+            H5::DataType imgBandDT = convertDatatypeKeaToH5STD(dataType);
             int initFillVal = 0;
             
             hsize_t imageBandDims[2];
@@ -2649,7 +2248,72 @@ namespace libkea{
     {
         
     }
-}
+
+    H5::DataType KEAImageIO::convertDatatypeKeaToH5STD(
+            const KEADataType dataType) throw(KEAIOException)
+    {
+        H5::DataType h5Datatype = H5::PredType::IEEE_F32LE;
+        switch (dataType) {
+            case kea_8int:
+                h5Datatype = H5::PredType::STD_I8LE; break;
+            case kea_16int:
+                h5Datatype = H5::PredType::STD_I16LE; break;
+            case kea_32int:
+                h5Datatype = H5::PredType::STD_I32LE; break;
+            case kea_64int:
+                h5Datatype = H5::PredType::STD_I64LE; break;
+            case kea_8uint:
+                h5Datatype = H5::PredType::STD_U8LE; break;
+            case kea_16uint:
+                h5Datatype = H5::PredType::STD_U16LE; break;
+            case kea_32uint:
+                h5Datatype = H5::PredType::STD_U32LE; break;
+            case kea_64uint:
+                h5Datatype = H5::PredType::STD_U64LE; break;
+            case kea_32float:
+                h5Datatype = H5::PredType::IEEE_F32LE; break;
+            case kea_64float:
+                h5Datatype = H5::PredType::IEEE_F64LE; break;
+            default:
+                throw KEAIOException(
+                        "The specified data type was not recognised.");
+        }
+        return h5Datatype;
+    }
+
+    H5::DataType KEAImageIO::convertDatatypeKeaToH5Native(
+            const KEADataType dataType) throw(KEAIOException)
+    {
+        H5::DataType h5Datatype = H5::PredType::NATIVE_FLOAT;
+        switch (dataType) {
+            case kea_8int:
+                h5Datatype = H5::PredType::NATIVE_INT8; break;
+            case kea_16int:
+                h5Datatype = H5::PredType::NATIVE_INT16; break;
+            case kea_32int:
+                h5Datatype = H5::PredType::NATIVE_INT32; break;
+            case kea_64int:
+                h5Datatype = H5::PredType::NATIVE_INT64; break;
+            case kea_8uint:
+                h5Datatype = H5::PredType::NATIVE_UINT8; break;
+            case kea_16uint:
+                h5Datatype = H5::PredType::NATIVE_UINT16; break;
+            case kea_32uint:
+                h5Datatype = H5::PredType::NATIVE_UINT32; break;
+            case kea_64uint:
+                h5Datatype = H5::PredType::NATIVE_UINT64; break;
+            case kea_32float:
+                h5Datatype = H5::PredType::NATIVE_FLOAT; break;
+            case kea_64float:
+                h5Datatype = H5::PredType::NATIVE_DOUBLE; break;
+            default:
+                throw KEAIOException(
+                        "The specified data type was not recognised.");
+        }
+        return h5Datatype;
+    }
+
+} // namespace libkea
 
 
 

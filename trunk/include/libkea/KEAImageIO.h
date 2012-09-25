@@ -107,6 +107,18 @@ namespace libkea{
         static H5::H5File* openKeaH5RDOnly(std::string fileName, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE)throw(KEAIOException);
         virtual ~KEAImageIO();
     protected:
+        /**
+         * Converts KEA datatypes to the respective standard HDF5 datatypes.
+         */
+        static H5::DataType convertDatatypeKeaToH5STD(
+                const KEADataType dataType) throw(KEAIOException);
+
+        /**
+         * Converts KEA datatypes to the respective native HDF5 datatypes.
+         */
+        static H5::DataType convertDatatypeKeaToH5Native(
+                const KEADataType dataType) throw(KEAIOException);
+
         bool fileOpen;
         H5::H5File *keaImgFile;
         KEAImageSpatialInfo *spatialInfoFile;
