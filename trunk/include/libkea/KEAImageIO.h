@@ -69,7 +69,7 @@ namespace libkea{
         void setImageBandDescription(unsigned int band, std::string description)throw(KEAIOException);
         std::string getImageBandDescription(unsigned int band)throw(KEAIOException);
         
-        void setNoDataValue(unsigned int band, void *data, KEADataType inDataType)throw(KEAIOException);
+        void setNoDataValue(unsigned int band, const void *data, KEADataType inDataType)throw(KEAIOException);
         void getNoDataValue(unsigned int band, void *data, KEADataType inDataType)throw(KEAIOException);
         
         void setSpatialInfo(KEAImageSpatialInfo *spatialInfo)throw(KEAIOException);

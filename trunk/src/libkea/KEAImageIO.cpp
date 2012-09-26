@@ -825,7 +825,7 @@ namespace libkea{
         return description;
     }
         
-    void KEAImageIO::setNoDataValue(unsigned int band, void *data, KEADataType inDataType)throw(KEAIOException)
+    void KEAImageIO::setNoDataValue(unsigned int band, const void *data, KEADataType inDataType)throw(KEAIOException)
     {
         if(!this->fileOpen)
         {
