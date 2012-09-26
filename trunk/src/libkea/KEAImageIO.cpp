@@ -1901,170 +1901,25 @@ namespace libkea{
 			keaImgH5File->createGroup( KEA_DATASETNAME_METADATA );
             //////////// CREATED GLOBAL META-DATA ////////////////
             
-            
             //////////// CREATE IMAGE BANDS ////////////////
-            bool bandDescriptsDefined = true;
-            if(bandDescrips == NULL)
-            {
-                bandDescriptsDefined = false;
-            }
-            
-            H5::DataType imgBandDT = convertDatatypeKeaToH5STD(dataType);
-            int initFillVal = 0;
-            
-            hsize_t imageBandDims[2];
-            imageBandDims[0] = ySize;
-            imageBandDims[1] = xSize;
-            H5::DataSpace imgBandDataSpace(2, imageBandDims);
-            
-            // Find the smallest axis of the image.
-            unsigned long minImgDim = ySize; 
-            if(xSize < ySize)
-            {
-                minImgDim = xSize;
-            }
-            
-            unsigned int blockSize2Use = imageBlockSize;
-            if(imageBlockSize > minImgDim)
-            {
-                blockSize2Use = minImgDim;
-            }
-            
-            hsize_t dimsImageBandChunk[2];
-			dimsImageBandChunk[0] = blockSize2Use;
-			dimsImageBandChunk[1] = blockSize2Use;
-            
-            H5::DSetCreatPropList initParamsImgBand;
-			initParamsImgBand.setChunk(2, dimsImageBandChunk);			
-			initParamsImgBand.setShuffle();
-            initParamsImgBand.setDeflate(deflate);
-			initParamsImgBand.setFillValue( H5::PredType::NATIVE_INT, &initFillVal);
-            
-            H5::StrType strdatatypeLen6(H5::PredType::C_S1, 6);
-            H5::StrType strdatatypeLen4(H5::PredType::C_S1, 4);
-            const H5std_string strClassVal ("IMAGE");
-            const H5std_string strImgVerVal ("1.2");
-            H5::DataSpace attr_dataspace = H5::DataSpace(H5S_SCALAR);
-            
-            unsigned int bandType = kea_continuous;
-            unsigned int bandUsage = kea_generic;
-            std::string bandName = "";
-            std::string bandDescrip = "";
-            for(unsigned int i = 0; i < numImgBands; ++i)
-            {
-                bandName = KEA_DATASETNAME_BAND + uint2Str(i+1);
-                
-                // CREATE IMAGE BAND HDF5 GROUP
-                keaImgH5File->createGroup( bandName );
-                
-                
-                // CREATE THE IMAGE DATA ARRAY
-                H5::DataSet imgBandDataSet = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_DATA), imgBandDT, imgBandDataSpace, initParamsImgBand);
-                H5::Attribute classAttribute = imgBandDataSet.createAttribute(KEA_ATTRIBUTENAME_CLASS, strdatatypeLen6, attr_dataspace);
-                classAttribute.write(strdatatypeLen6, strClassVal); 
-                classAttribute.close();
-                
-                H5::Attribute imgVerAttribute = imgBandDataSet.createAttribute(KEA_ATTRIBUTENAME_IMAGE_VERSION, strdatatypeLen4, attr_dataspace);
-                imgVerAttribute.write(strdatatypeLen4, strImgVerVal);
-                imgVerAttribute.close();
-                
-                H5::Attribute blockSizeAttribute = imgBandDataSet.createAttribute(KEA_ATTRIBUTENAME_BLOCK_SIZE, H5::PredType::STD_U16LE, attr_dataspace);
-                blockSizeAttribute.write(H5::PredType::NATIVE_UINT, &blockSize2Use);
-                blockSizeAttribute.close();
-                imgBandDataSet.close();
-                
-                // SET BAND NAME / DESCRIPTION
-                if(bandDescriptsDefined && (i < bandDescrips->size()))
-                {
-                    bandDescrip = bandDescrips->at(i);
+            for(unsigned int i = 0; i < numImgBands; ++i) {
+                std::string bandDescription = "";
+                if (bandDescrips != NULL && i < bandDescrips->size()) {
+                    bandDescription = bandDescrips->at(i);
                 }
-                else
-                {
-                    bandDescriptsDefined = false;
-                }
-                
-                if(!bandDescriptsDefined)
-                {
-                    bandDescrip = "Band " + uint2Str(i+1);
-                }
-                
-                H5::DataSet datasetBandDescription = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_DESCRIP), strTypeAll, dataspaceStrAll);
-                wStrdata = new const char*[1];
-                wStrdata[0] = bandDescrip.c_str();			
-                datasetBandDescription.write((void*)wStrdata, strTypeAll);
-                datasetBandDescription.close();
-                delete[] wStrdata;
-                
-                // SET IMAGE BAND DATA TYPE IN IMAGE BAND
-                hsize_t dimsDT[1];
-                dimsDT[0] = 1;
-                H5::DataSpace dtDataSpace(1, dimsDT);
-                H5::DataSet dtDataset = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_DT), H5::PredType::STD_U16LE, dtDataSpace);
-                dtDataset.write( &dataType, H5::PredType::NATIVE_UINT );
-                dtDataset.close();
-                
-                // SET IMAGE BAND TYPE IN IMAGE BAND (I.E., CONTINUOUS (0) OR THEMATIC (1))
-                hsize_t dimsType[1];
-                dimsType[0] = 1;
-                H5::DataSpace typeDataSpace(1, dimsType);
-                H5::DataSet typeDataset = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_TYPE), H5::PredType::STD_U8LE, typeDataSpace);
-                typeDataset.write( &bandType, H5::PredType::NATIVE_UINT );
-                typeDataset.close();
-                
-                // SET IMAGE BAND USAGE IN IMAGE BAND
-                hsize_t dimsUsage[1];
-                dimsUsage[0] = 1;
-                H5::DataSpace usageDataSpace(1, dimsUsage);
-                H5::DataSet usageDataset = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_USAGE), H5::PredType::STD_U8LE, usageDataSpace);
-                usageDataset.write( &bandUsage, H5::PredType::NATIVE_UINT );
-                usageDataset.close();
-                
-                // CREATE META-DATA
-                keaImgH5File->createGroup( bandName+KEA_BANDNAME_METADATA );
-                
-                // CREATE OVERVIEWS GROUP
-                keaImgH5File->createGroup( bandName+KEA_BANDNAME_OVERVIEWS );
-                
-                // CREATE ATTRIBUTE TABLE GROUP
-                keaImgH5File->createGroup( bandName+KEA_BANDNAME_ATT );
-                keaImgH5File->createGroup( bandName+KEA_ATT_GROUPNAME_DATA );
-                keaImgH5File->createGroup( bandName+KEA_ATT_GROUPNAME_NEIGHBOURS );
-                keaImgH5File->createGroup( bandName+KEA_ATT_GROUPNAME_HEADER );
-                
-                // SET ATTRIBUTE TABLE CHUNK SIZE
-                int attChunkSize = 0;
-                hsize_t dimsAttChunkSize[1];
-                dimsAttChunkSize[0] = 1;
-                H5::DataSpace attChunkSizeDataSpace(1, dimsAttChunkSize);
-                H5::DataSet attChunkSizeDataset = keaImgH5File->createDataSet((bandName+KEA_ATT_CHUNKSIZE_HEADER), H5::PredType::STD_U64LE, attChunkSizeDataSpace);
-                attChunkSizeDataset.write( &attChunkSize, H5::PredType::NATIVE_INT );
-                attChunkSizeDataset.close();
-                attChunkSizeDataSpace.close();
-                
-                // SET ATTRIBUTE TABLE SIZE
-                int *attSize = new int[5];
-                attSize[0] = 0;
-                attSize[1] = 0;
-                attSize[2] = 0;
-                attSize[3] = 0;
-                attSize[4] = 0;
-                hsize_t dimsAttSize[1];
-                dimsAttSize[0] = 5;
-                H5::DataSpace attSizeDataSpace(1, dimsAttSize);
-                H5::DataSet attSizeDataset = keaImgH5File->createDataSet((bandName+KEA_ATT_SIZE_HEADER), H5::PredType::STD_U64LE, attSizeDataSpace);
-                attSizeDataset.write( attSize, H5::PredType::NATIVE_INT );
-                attSizeDataset.close();
-                attSizeDataSpace.close();
+
+                addImageBandToFile(keaImgH5File, dataType, xSize, ySize,
+                        i+1, bandDescription, imageBlockSize, attBlockSize,
+                        deflate);
             }
-            dataspaceStrAll.close();
-            attr_dataspace.close();
             //////////// CREATED IMAGE BANDS ////////////////
             
+            dataspaceStrAll.close();
             keaImgH5File->flush(H5F_SCOPE_GLOBAL);
         }
         catch (KEAIOException &e) 
         {
-            throw e;
+            throw;
         }
         catch( H5::FileIException &e )
 		{
@@ -2249,6 +2104,62 @@ namespace libkea{
         
     }
 
+    void KEAImageIO::addImageBand(const KEADataType dataType,
+            std::string bandDescrip, const unsigned int imageBlockSize,
+            const unsigned int attBlockSize, const unsigned int deflate)
+        throw(KEAIOException)
+    {
+        if(!this->fileOpen) {
+            throw KEAIOException("Image was not open.");
+        }
+
+        const unsigned int xSize = this->spatialInfoFile->xSize;
+        const unsigned int ySize = this->spatialInfoFile->ySize;
+
+        // add a new image band to the file and update the band counter and file
+        // metadata
+        KEAImageIO::addImageBandToFile(this->keaImgFile, dataType, xSize, ySize,
+                this->numImgBands + 1, bandDescrip, imageBlockSize,
+                attBlockSize, deflate);
+        ++this->numImgBands;
+        updateNumImgBands();
+
+        this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+    }
+
+    void KEAImageIO::updateNumImgBands() const throw(KEAIOException)
+    {
+        if(!this->fileOpen) {
+            throw KEAIOException("Image was not open.");
+        }
+
+        try {
+            H5::DataSet numBandsDataset;
+            try {
+                // open the dataset
+                numBandsDataset = this->keaImgFile->openDataSet(
+                        KEA_DATASETNAME_HEADER_NUMBANDS);
+            } catch (H5::Exception &e) {
+                // if the dataset does not exist, which really should not
+                // happen, then create it
+                hsize_t dimsNumBands[] = { 1 };
+                H5::DataSpace numBandsDataSpace(1, dimsNumBands);
+                numBandsDataset = this->keaImgFile->createDataSet(
+                        KEA_DATASETNAME_HEADER_NUMBANDS,
+                        H5::PredType::STD_U16LE, numBandsDataSpace);
+                numBandsDataSpace.close();
+            }
+            numBandsDataset.write(&this->numImgBands,
+                    H5::PredType::NATIVE_UINT);
+
+            numBandsDataset.close();
+            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+        } catch (H5::Exception &e) {
+            throw KEAIOException("Could not update the number of bands "
+                    "in the file metadata.");
+        }
+    }
+
     H5::DataType KEAImageIO::convertDatatypeKeaToH5STD(
             const KEADataType dataType) throw(KEAIOException)
     {
@@ -2313,35 +2224,162 @@ namespace libkea{
         return h5Datatype;
     }
 
-    void KEAImageIO::updateNumImgBands() const throw(KEAIOException)
+    void KEAImageIO::addImageBandToFile(H5::H5File *keaImgH5File,
+            const KEADataType dataType, const unsigned int xSize, 
+            const unsigned int ySize, const unsigned int bandIndex,
+            std::string bandDescrip, const unsigned int imageBlockSize,
+            const unsigned int attBlockSize,
+            const unsigned int deflate) throw(KEAIOException)
     {
-        if(!this->fileOpen) {
-            throw KEAIOException("Image was not open.");
-        }
+        int initFillVal = 0;
+
+        // Find the smallest axis of the image.
+        unsigned long minImgDim = xSize < ySize ? xSize : ySize; 
+        unsigned int blockSize2Use = imageBlockSize > minImgDim ?
+            minImgDim : imageBlockSize;
 
         try {
-            H5::DataSet numBandsDataset;
-            try {
-                // open the dataset
-                numBandsDataset = this->keaImgFile->openDataSet(
-                        KEA_DATASETNAME_HEADER_NUMBANDS);
-            } catch (H5::Exception &e) {
-                // if the dataset does not exist, which really should not
-                // happen, then create it
-                hsize_t dimsNumBands[] = { 1 };
-                H5::DataSpace numBandsDataSpace(1, dimsNumBands);
-                numBandsDataset = this->keaImgFile->createDataSet(
-                        KEA_DATASETNAME_HEADER_NUMBANDS,
-                        H5::PredType::STD_U16LE, numBandsDataSpace);
-                numBandsDataSpace.close();
-            }
-            numBandsDataset.write(&this->numImgBands,
-                    H5::PredType::NATIVE_UINT);
+            hsize_t dimsImageBandChunk[] = { blockSize2Use, blockSize2Use };
+            H5::DSetCreatPropList initParamsImgBand;
+            initParamsImgBand.setChunk(2, dimsImageBandChunk);			
+            initParamsImgBand.setShuffle();
+            initParamsImgBand.setDeflate(deflate);
+            initParamsImgBand.setFillValue( H5::PredType::NATIVE_INT,
+                    &initFillVal);
 
-            numBandsDataset.close();
-            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
-        } catch (H5::Exception &e) {
-            throw KEAIOException("Could not update band count metadata.");
+            H5::StrType strdatatypeLen6(H5::PredType::C_S1, 6);
+            H5::StrType strdatatypeLen4(H5::PredType::C_S1, 4);
+            const H5std_string strClassVal ("IMAGE");
+            const H5std_string strImgVerVal ("1.2");
+            H5::DataSpace attr_dataspace = H5::DataSpace(H5S_SCALAR);
+
+            unsigned int bandType = kea_continuous;
+            unsigned int bandUsage = kea_generic;
+
+            // CREATE IMAGE BAND HDF5 GROUP
+            std::string bandName = KEA_DATASETNAME_BAND + uint2Str(bandIndex);
+            keaImgH5File->createGroup( bandName );
+
+            // CREATE THE IMAGE DATA ARRAY
+            H5::DataType imgBandDT = convertDatatypeKeaToH5STD(dataType);
+            hsize_t imageBandDims[] = { ySize, xSize };
+            H5::DataSpace imgBandDataSpace(2, imageBandDims);
+            H5::DataSet imgBandDataSet =
+                keaImgH5File->createDataSet((bandName+KEA_BANDNAME_DATA),
+                        imgBandDT, imgBandDataSpace, initParamsImgBand);
+            H5::Attribute classAttribute =
+                imgBandDataSet.createAttribute(KEA_ATTRIBUTENAME_CLASS,
+                        strdatatypeLen6, attr_dataspace);
+            classAttribute.write(strdatatypeLen6, strClassVal); 
+            classAttribute.close();
+
+            H5::Attribute imgVerAttribute =
+                imgBandDataSet.createAttribute(KEA_ATTRIBUTENAME_IMAGE_VERSION,
+                        strdatatypeLen4, attr_dataspace);
+            imgVerAttribute.write(strdatatypeLen4, strImgVerVal);
+            imgVerAttribute.close();
+
+            H5::Attribute blockSizeAttribute =
+                imgBandDataSet.createAttribute(KEA_ATTRIBUTENAME_BLOCK_SIZE,
+                        H5::PredType::STD_U16LE, attr_dataspace);
+            blockSizeAttribute.write(H5::PredType::NATIVE_UINT, &blockSize2Use);
+            blockSizeAttribute.close();
+            imgBandDataSet.close();
+            imgBandDataSpace.close();
+
+            // SET BAND NAME / DESCRIPTION
+            if (bandDescrip == "") {
+                bandDescrip = "Band " + uint2Str(bandIndex);
+            }
+
+            hsize_t	dimsForStr[] = { 1 }; // number of lines;
+            H5::DataSpace dataspaceStrAll(1, dimsForStr);
+            H5::StrType strTypeAll(0, H5T_VARIABLE);
+            H5::DataSet datasetBandDescription =
+                keaImgH5File->createDataSet((bandName+KEA_BANDNAME_DESCRIP),
+                        strTypeAll, dataspaceStrAll);
+            const char **wStrdata = new const char*[1];
+            wStrdata[0] = bandDescrip.c_str();			
+            datasetBandDescription.write((void*)wStrdata, strTypeAll);
+            datasetBandDescription.close();
+            dataspaceStrAll.close();
+            delete[] wStrdata;
+
+            // SET IMAGE BAND DATA TYPE IN IMAGE BAND
+            hsize_t dimsDT[] = { 1 };
+            H5::DataSpace dtDataSpace(1, dimsDT);
+            H5::DataSet dtDataset = keaImgH5File->createDataSet(
+                    (bandName+KEA_BANDNAME_DT), H5::PredType::STD_U16LE,
+                    dtDataSpace);
+            dtDataset.write( &dataType, H5::PredType::NATIVE_UINT );
+            dtDataset.close();
+            dtDataSpace.close();
+
+            // SET IMAGE BAND TYPE IN IMAGE BAND (I.E., CONTINUOUS (0) OR
+            // THEMATIC (1))
+            hsize_t dimsType[] = { 1 };
+            H5::DataSpace typeDataSpace(1, dimsType);
+            H5::DataSet typeDataset =
+                keaImgH5File->createDataSet((bandName+KEA_BANDNAME_TYPE),
+                        H5::PredType::STD_U8LE, typeDataSpace);
+            typeDataset.write( &bandType, H5::PredType::NATIVE_UINT );
+            typeDataset.close();
+            typeDataSpace.close();
+
+            // SET IMAGE BAND USAGE IN IMAGE BAND
+            hsize_t dimsUsage[] = { 1 };
+            H5::DataSpace usageDataSpace(1, dimsUsage);
+            H5::DataSet usageDataset =
+                keaImgH5File->createDataSet((bandName+KEA_BANDNAME_USAGE),
+                        H5::PredType::STD_U8LE, usageDataSpace);
+            usageDataset.write( &bandUsage, H5::PredType::NATIVE_UINT );
+            usageDataset.close();
+            usageDataSpace.close();
+
+            // CREATE META-DATA
+            keaImgH5File->createGroup( bandName+KEA_BANDNAME_METADATA );
+
+            // CREATE OVERVIEWS GROUP
+            keaImgH5File->createGroup( bandName+KEA_BANDNAME_OVERVIEWS );
+
+            // CREATE ATTRIBUTE TABLE GROUP
+            keaImgH5File->createGroup( bandName+KEA_BANDNAME_ATT );
+            keaImgH5File->createGroup( bandName+KEA_ATT_GROUPNAME_DATA );
+            keaImgH5File->createGroup( bandName+KEA_ATT_GROUPNAME_NEIGHBOURS );
+            keaImgH5File->createGroup( bandName+KEA_ATT_GROUPNAME_HEADER );
+
+            // SET ATTRIBUTE TABLE CHUNK SIZE
+            int attChunkSize = 0;
+            hsize_t dimsAttChunkSize[] = { 1 };
+            H5::DataSpace attChunkSizeDataSpace(1, dimsAttChunkSize);
+            H5::DataSet attChunkSizeDataset =
+                keaImgH5File->createDataSet((bandName+KEA_ATT_CHUNKSIZE_HEADER),
+                        H5::PredType::STD_U64LE, attChunkSizeDataSpace);
+            attChunkSizeDataset.write( &attChunkSize, H5::PredType::NATIVE_INT);
+            attChunkSizeDataset.close();
+            attChunkSizeDataSpace.close();
+
+            // SET ATTRIBUTE TABLE SIZE
+            int attSize[] = { 0, 0, 0, 0, 0 };
+            hsize_t dimsAttSize[] = { 5 };
+            H5::DataSpace attSizeDataSpace(1, dimsAttSize);
+            H5::DataSet attSizeDataset =
+                keaImgH5File->createDataSet((bandName+KEA_ATT_SIZE_HEADER),
+                        H5::PredType::STD_U64LE, attSizeDataSpace);
+            attSizeDataset.write( attSize, H5::PredType::NATIVE_INT );
+            attSizeDataset.close();
+            attSizeDataSpace.close();
+
+            attr_dataspace.close();
+        }
+        catch (H5::FileIException &e) {
+            throw KEAIOException(e.getCDetailMsg());
+        } catch (H5::DataSetIException &e) {
+            throw KEAIOException(e.getCDetailMsg());
+        } catch (H5::DataSpaceIException &e) {
+            throw KEAIOException(e.getCDetailMsg());
+        } catch (H5::DataTypeIException &e) {
+            throw KEAIOException(e.getCDetailMsg());
         }
     }
 
