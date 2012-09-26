@@ -70,6 +70,9 @@ public:
     char **GetMetadata(const char *pszDomain="");
     CPLErr SetMetadata(char **papszMetadata, const char *pszDomain="");
 
+    // virtual method for adding new image bands
+    CPLErr AddBand(GDALDataType eType, char **papszOptions = NULL);
+
 protected:
     // this method builds overviews for the specified bands. 
     virtual CPLErr IBuildOverviews(const char *pszResampling, int nOverviews, int *panOverviewList, 

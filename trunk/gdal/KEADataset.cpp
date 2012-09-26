@@ -634,3 +634,37 @@ CPLErr KEADataset::SetMetadata(char **papszMetadata, const char *pszDomain)
     m_papszMetadataList = CSLDuplicate(papszMetadata);
     return CE_None;
 }
+
+CPLErr KEADataset::AddBand(GDALDataType eType, char **papszOptions)
+{
+    // process any creation options in papszOptions
+    unsigned int imageBlockSize = libkea::KEA_IMAGE_CHUNK_SIZE;
+    unsigned int attBlockSize = libkea::KEA_ATT_CHUNK_SIZE;
+    unsigned int deflate = libkea::KEA_DEFLATE;
+    if (papszOptions != NULL) {
+        const char *pszValue = CSLFetchNameValue(papszOptions,"IMAGEBLOCKSIZE");
+        if ( pszValue != NULL ) {
+            imageBlockSize = atol(pszValue);
+        }
+
+        pszValue = CSLFetchNameValue(papszOptions, "ATTBLOCKSIZE");
+        if (pszValue != NULL) {
+            attBlockSize = atol(pszValue);
+        }
+
+        pszValue = CSLFetchNameValue(papszOptions, "DEFLATE");
+        if (pszValue != NULL) {
+            deflate = atol(pszValue);
+        }
+    }
+
+    try {
+        m_pImageIO->addImageBand(GDAL_to_KEA_Type(eType), "", imageBlockSize,
+                attBlockSize, deflate);
+    } catch (libkea::KEAIOException &e) {
+        return CE_Failure;
+    }
+
+    return CE_None;
+}
+
