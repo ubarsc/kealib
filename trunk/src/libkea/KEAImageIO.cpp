@@ -2099,7 +2099,7 @@ namespace libkea{
     }
 
     void KEAImageIO::addImageBand(const KEADataType dataType,
-            std::string bandDescrip, const unsigned int imageBlockSize,
+            const std::string bandDescrip, const unsigned int imageBlockSize,
             const unsigned int attBlockSize, const unsigned int deflate)
         throw(KEAIOException)
     {

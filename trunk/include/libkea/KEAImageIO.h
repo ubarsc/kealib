@@ -105,7 +105,7 @@ namespace libkea{
          * Adds a new image band to the file.
          */
         virtual void addImageBand(const KEADataType dataType,
-                std::string bandDescrip,
+                const std::string bandDescrip,
                 const unsigned int imageBlockSize = KEA_IMAGE_CHUNK_SIZE,
                 const unsigned int attBlockSize = KEA_ATT_CHUNK_SIZE,
                 const unsigned int deflate = KEA_DEFLATE)
