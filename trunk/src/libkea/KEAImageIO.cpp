@@ -854,7 +854,7 @@ namespace libkea{
                 datasetImgNDV = this->keaImgFile->createDataSet(noDataValPath, imgBandDT, dataspaceNDV);
             }
                         
-            H5::DataType dataDT = convertDatatypeKeaToH5STD(inDataType);
+            H5::DataType dataDT = convertDatatypeKeaToH5Native(inDataType);
             datasetImgNDV.write( data, dataDT );
             datasetImgNDV.close();
             this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
@@ -876,7 +876,7 @@ namespace libkea{
         // READ IMAGE BAND NO DATA VALUE
         try 
         {            
-            H5::DataType imgBandDT = convertDatatypeKeaToH5STD(inDataType);
+            H5::DataType imgBandDT = convertDatatypeKeaToH5Native(inDataType);
             hsize_t dimsValue[1];
             dimsValue[0] = 1;
             H5::DataSpace valueDataSpace(1, dimsValue);
