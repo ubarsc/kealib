@@ -145,13 +145,15 @@ namespace libkea{
                 const unsigned int attBlockSize,
                 const unsigned int deflate) throw(KEAIOException);
 
-        /********** PROTECTED MEMBERS **********/
         /**
-         * Updates the number of image bands in the file metadata.
+         * Updates the number of image bands in the file metadata. Does NOT
+         * flush the file buffer.
          */
-        virtual void updateNumImgBands() const throw(KEAIOException);
+        static void setNumImgBandsInFileMetadata(H5::H5File *keaImgH5File,
+                const unsigned int numImgBands) throw(KEAIOException);
 
 
+        /********** PROTECTED MEMBERS **********/
         bool fileOpen;
         H5::H5File *keaImgFile;
         KEAImageSpatialInfo *spatialInfoFile;

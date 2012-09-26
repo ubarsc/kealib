@@ -1793,13 +1793,7 @@ namespace libkea{
             spatialInfo->ySize = ySize;
                         
             // SET NUMBER OF IMAGE BANDS IN GLOBAL HEADER
-            hsize_t dimsNumBands[1];
-			dimsNumBands[0] = 1;
-            H5::DataSpace numBandsDataSpace(1, dimsNumBands);
-            H5::DataSet numBandsDataset = keaImgH5File->createDataSet(KEA_DATASETNAME_HEADER_NUMBANDS, H5::PredType::STD_U16LE, numBandsDataSpace);
-			numBandsDataset.write( &numImgBands, H5::PredType::NATIVE_UINT );
-            numBandsDataset.close();
-            numBandsDataSpace.close();
+            KEAImageIO::setNumImgBandsInFileMetadata(keaImgH5File, numImgBands);
                                     
             // SET X AND Y TL IN GLOBAL HEADER
             double *doubleVals = new double[2];
@@ -2116,48 +2110,17 @@ namespace libkea{
         const unsigned int xSize = this->spatialInfoFile->xSize;
         const unsigned int ySize = this->spatialInfoFile->ySize;
 
-        // add a new image band to the file and update the band counter and file
-        // metadata
+        // add a new image band to the file
         KEAImageIO::addImageBandToFile(this->keaImgFile, dataType, xSize, ySize,
                 this->numImgBands + 1, bandDescrip, imageBlockSize,
                 attBlockSize, deflate);
         ++this->numImgBands;
-        updateNumImgBands();
+
+        // update the band counter in the file metadata
+        KEAImageIO::setNumImgBandsInFileMetadata(this->keaImgFile,
+                this->numImgBands);
 
         this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
-    }
-
-    void KEAImageIO::updateNumImgBands() const throw(KEAIOException)
-    {
-        if(!this->fileOpen) {
-            throw KEAIOException("Image was not open.");
-        }
-
-        try {
-            H5::DataSet numBandsDataset;
-            try {
-                // open the dataset
-                numBandsDataset = this->keaImgFile->openDataSet(
-                        KEA_DATASETNAME_HEADER_NUMBANDS);
-            } catch (H5::Exception &e) {
-                // if the dataset does not exist, which really should not
-                // happen, then create it
-                hsize_t dimsNumBands[] = { 1 };
-                H5::DataSpace numBandsDataSpace(1, dimsNumBands);
-                numBandsDataset = this->keaImgFile->createDataSet(
-                        KEA_DATASETNAME_HEADER_NUMBANDS,
-                        H5::PredType::STD_U16LE, numBandsDataSpace);
-                numBandsDataSpace.close();
-            }
-            numBandsDataset.write(&this->numImgBands,
-                    H5::PredType::NATIVE_UINT);
-
-            numBandsDataset.close();
-            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
-        } catch (H5::Exception &e) {
-            throw KEAIOException("Could not update the number of bands "
-                    "in the file metadata.");
-        }
     }
 
     H5::DataType KEAImageIO::convertDatatypeKeaToH5STD(
@@ -2380,6 +2343,33 @@ namespace libkea{
             throw KEAIOException(e.getCDetailMsg());
         } catch (H5::DataTypeIException &e) {
             throw KEAIOException(e.getCDetailMsg());
+        }
+    }
+
+    void KEAImageIO::setNumImgBandsInFileMetadata(H5::H5File *keaImgH5File,
+            const unsigned int numImgBands) throw(KEAIOException)
+    {
+        try {
+            H5::DataSet numBandsDataset;
+            try {
+                // open the dataset
+                numBandsDataset = keaImgH5File->openDataSet(
+                        KEA_DATASETNAME_HEADER_NUMBANDS);
+            } catch (H5::Exception &e) {
+                // create the dataset if it does not exist
+                hsize_t dimsNumBands[] = { 1 };
+                H5::DataSpace numBandsDataSpace(1, dimsNumBands);
+                numBandsDataset = keaImgH5File->createDataSet(
+                        KEA_DATASETNAME_HEADER_NUMBANDS,
+                        H5::PredType::STD_U16LE, numBandsDataSpace);
+                numBandsDataSpace.close();
+            }
+            numBandsDataset.write(&numImgBands, H5::PredType::NATIVE_UINT);
+
+            numBandsDataset.close();
+        } catch (H5::Exception &e) {
+            throw KEAIOException("Could not write the number of bands "
+                    "to the file metadata.");
         }
     }
 
