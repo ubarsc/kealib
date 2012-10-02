@@ -668,13 +668,10 @@ CPLErr KEADataset::AddBand(GDALDataType eType, char **papszOptions)
     // update the GDALDataset
     this->nBands = m_pImageIO->getNumOfImageBands();
 
+    // create a new band and add it to the dataset
     // note GDAL uses indices starting at 1 and so does libkea
-    // create band object
     KEARasterBand *pBand = new KEARasterBand(this, this->nBands, this->eAccess,
             m_pImageIO, m_pnRefcount);
-    // read in overviews
-    pBand->readExistingOverviews();
-    // set the band into this dataset
     this->SetBand(this->nBands, pBand);            
 
     return CE_None;
