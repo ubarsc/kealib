@@ -28,7 +28,7 @@ set (PROJECT_TOOLS_DIR tools)
 set (PROJECT_GDAL_DIR gdal)
 
 # The version number.
-set (LIBKEA_HG_VERSION 1)
+set (LIBKEA_HG_VERSION 158)
 set (LIBKEA_VERSION_MAJOR 1)
 set (LIBKEA_VERSION_MINOR 1)
 set (LIBKEA_VERSION_PATCH 0)
@@ -174,18 +174,11 @@ endif(LIBKEA_WITH_GDAL)
 
 ###############################################################################
 # Build executables
-if (LIBKEA_WITH_UTILS)
-	include_directories(${GDAL_INCLUDE_DIR})
-	add_executable(img2kea ${PROJECT_SOURCE_DIR}/exe/img2kea/main.cpp)
-	target_link_libraries (img2kea ${LIBKEA_LIB_NAME} ${GDAL_LIBRARIES} )
-endif(LIBKEA_WITH_UTILS)
+
 ###############################################################################
 
 ###############################################################################
 # Installation
-if (LIBKEA_WITH_UTILS)
-	install (TARGETS img2kea DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-endif(LIBKEA_WITH_UTILS)
 
 install (FILES "${PROJECT_BINARY_DIR}/kea-config" DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 ###############################################################################

@@ -6,6 +6,7 @@ usage()
 Usage: spd-config [OPTIONS]
 Options:
      [--prefix]
+     [--hgversion]
      [--version]
      [--libs]
      [--cflags]
@@ -26,7 +27,10 @@ case $1 in
     --prefix)
     echo @CMAKE_INSTALL_PREFIX@
      ;;
-    --version)
+    --hgversion)
+    echo @LIBKEA_HG_VERSION@
+     ;;
+	--version)
     echo @LIBKEA_VERSION@
      ;;
     --cflags)
