@@ -400,7 +400,7 @@ namespace libkea{
         return attRows->at(fid);
     }
         
-    size_t KEAAttributeTableInMem::getSize()
+    size_t KEAAttributeTableInMem::getSize() const
     {
         return attRows->size();
     }
