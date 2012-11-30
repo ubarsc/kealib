@@ -211,14 +211,7 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        try 
-        {
-            return attRows->at(fid)->boolFields->at(colIdx);
-        }
-        catch (std::exception &e)
-        {
-            throw KEAATTException("Failed to read boolean value to field.");
-        }
+        return attRows->at(fid)->boolFields->at(colIdx);
     }
     
     long KEAAttributeTableInMem::getIntField(size_t fid, size_t colIdx) throw(KEAATTException)
@@ -235,14 +228,7 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        try 
-        {
-            return attRows->at(fid)->intFields->at(colIdx);
-        }
-        catch (std::exception &e)
-        {
-            throw KEAATTException("Failed to read integer value to field.");
-        }
+        return attRows->at(fid)->intFields->at(colIdx);
     }
     
     double KEAAttributeTableInMem::getFloatField(size_t fid, size_t colIdx) throw(KEAATTException)
@@ -259,14 +245,7 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        try 
-        {
-            return attRows->at(fid)->floatFields->at(colIdx);
-        }
-        catch (std::exception &e)
-        {
-            throw KEAATTException("Failed to read float value to field.");
-        }
+        return attRows->at(fid)->floatFields->at(colIdx);
     }
     
     std::string KEAAttributeTableInMem::getStringField(size_t fid, size_t colIdx) throw(KEAATTException)
@@ -283,14 +262,7 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        try 
-        {
-            return attRows->at(fid)->strFields->at(colIdx);
-        }
-        catch (std::exception &e)
-        {
-            throw KEAATTException("Failed to read string value to field.");
-        }
+        return attRows->at(fid)->strFields->at(colIdx);
     }
     
     void KEAAttributeTableInMem::setBoolField(size_t fid, size_t colIdx, bool value) throw(KEAATTException)
@@ -307,14 +279,7 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        try 
-        {
-            attRows->at(fid)->boolFields->at(colIdx) = value;
-        }
-        catch (std::exception &e)
-        {
-            throw KEAATTException("Failed to write boolean value to field.");
-        }
+        attRows->at(fid)->boolFields->at(colIdx) = value;
     }
     
     void KEAAttributeTableInMem::setIntField(size_t fid, size_t colIdx, long value) throw(KEAATTException)
@@ -331,14 +296,7 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        try 
-        {
-            attRows->at(fid)->intFields->at(colIdx) = value;
-        }
-        catch (std::exception &e)
-        {
-            throw KEAATTException("Failed to write integer value to field.");
-        }
+        attRows->at(fid)->intFields->at(colIdx) = value;
     }
     
     void KEAAttributeTableInMem::setFloatField(size_t fid, size_t colIdx, double value) throw(KEAATTException)
@@ -355,14 +313,7 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        try 
-        {
-            attRows->at(fid)->floatFields->at(colIdx) = value;
-        }
-        catch (std::exception &e)
-        {
-            throw KEAATTException("Failed to write float value to field.");
-        }
+        attRows->at(fid)->floatFields->at(colIdx) = value;
     }
     
     void KEAAttributeTableInMem::setStringField(size_t fid, size_t colIdx, std::string value) throw(KEAATTException)
@@ -379,14 +330,7 @@ namespace libkea{
             throw KEAATTException(message);
         }
         
-        try
-        {
-            attRows->at(fid)->strFields->at(colIdx) = value;
-        }
-        catch (std::exception &e)
-        {
-            throw KEAATTException("Failed to write string value to field.");
-        }
+        attRows->at(fid)->strFields->at(colIdx) = value;
     }
     
     KEAATTFeature* KEAAttributeTableInMem::getFeature(size_t fid) throw(KEAATTException)
