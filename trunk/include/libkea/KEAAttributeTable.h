@@ -102,65 +102,65 @@ namespace libkea{
     {
     public:
         KEAAttributeTable(KEAATTType keaAttType);
-        virtual KEAATTType getKEAATTType();
+        virtual KEAATTType getKEAATTType() const;
         
-        virtual bool getBoolField(size_t fid, std::string name) throw(KEAATTException)=0;
-        virtual long getIntField(size_t fid, std::string name) throw(KEAATTException)=0;
-        virtual double getFloatField(size_t fid, std::string name) throw(KEAATTException)=0;
-        virtual std::string getStringField(size_t fid, std::string name) throw(KEAATTException)=0;
+        virtual bool getBoolField(size_t fid, const std::string &name) const throw(KEAATTException)=0;
+        virtual long getIntField(size_t fid, const std::string &name) const throw(KEAATTException)=0;
+        virtual double getFloatField(size_t fid, const std::string &name) const throw(KEAATTException)=0;
+        virtual std::string getStringField(size_t fid, const std::string &name) const throw(KEAATTException)=0;
         
-        virtual void setBoolField(size_t fid, std::string name, bool value) throw(KEAATTException)=0;
-        virtual void setIntField(size_t fid, std::string name, long value) throw(KEAATTException)=0;
-        virtual void setFloatField(size_t fid, std::string name, double value) throw(KEAATTException)=0;
-        virtual void setStringField(size_t fid, std::string name, std::string value) throw(KEAATTException)=0;
+        virtual void setBoolField(size_t fid, const std::string &name, bool value) throw(KEAATTException)=0;
+        virtual void setIntField(size_t fid, const std::string &name, long value) throw(KEAATTException)=0;
+        virtual void setFloatField(size_t fid, const std::string &name, double value) throw(KEAATTException)=0;
+        virtual void setStringField(size_t fid, const std::string &name, const std::string &value) throw(KEAATTException)=0;
         
-        virtual void setBoolValue(std::string name, bool value) throw(KEAATTException);
-        virtual void setIntValue(std::string name, long value) throw(KEAATTException);
-        virtual void setFloatValue(std::string name, double value) throw(KEAATTException);
-        virtual void setStringValue(std::string name, std::string value) throw(KEAATTException);
+        virtual void setBoolValue(const std::string &name, bool value) throw(KEAATTException);
+        virtual void setIntValue(const std::string &name, long value) throw(KEAATTException);
+        virtual void setFloatValue(const std::string &name, double value) throw(KEAATTException);
+        virtual void setStringValue(const std::string &name, const std::string &value) throw(KEAATTException);
         
-        virtual bool getBoolField(size_t fid, size_t colIdx) throw(KEAATTException)=0;
-        virtual long getIntField(size_t fid, size_t colIdx) throw(KEAATTException)=0;
-        virtual double getFloatField(size_t fid, size_t colIdx) throw(KEAATTException)=0;
-        virtual std::string getStringField(size_t fid, size_t colIdx) throw(KEAATTException)=0;
+        virtual bool getBoolField(size_t fid, size_t colIdx) const throw(KEAATTException)=0;
+        virtual long getIntField(size_t fid, size_t colIdx) const throw(KEAATTException)=0;
+        virtual double getFloatField(size_t fid, size_t colIdx) const throw(KEAATTException)=0;
+        virtual std::string getStringField(size_t fid, size_t colIdx) const throw(KEAATTException)=0;
         
         virtual void setBoolField(size_t fid, size_t colIdx, bool value) throw(KEAATTException)=0;
         virtual void setIntField(size_t fid, size_t colIdx, long value) throw(KEAATTException)=0;
         virtual void setFloatField(size_t fid, size_t colIdx, double value) throw(KEAATTException)=0;
-        virtual void setStringField(size_t fid, size_t colIdx, std::string value) throw(KEAATTException)=0;
+        virtual void setStringField(size_t fid, size_t colIdx, const std::string &value) throw(KEAATTException)=0;
         
         virtual void setBoolValue(size_t colIdx, bool value) throw(KEAATTException);
         virtual void setIntValue(size_t colIdx, long value) throw(KEAATTException);
         virtual void setFloatValue(size_t colIdx, double value) throw(KEAATTException);
-        virtual void setStringValue(size_t colIdx, std::string value) throw(KEAATTException);
+        virtual void setStringValue(size_t colIdx, const std::string &value) throw(KEAATTException);
         
-        virtual KEAATTFeature* getFeature(size_t fid) throw(KEAATTException)=0;
+        virtual KEAATTFeature* getFeature(size_t fid) const throw(KEAATTException)=0;
         
-        virtual void addAttBoolField(std::string name, bool val, std::string usage="") throw(KEAATTException);
-        virtual void addAttIntField(std::string name, long val, std::string usage="") throw(KEAATTException);
-        virtual void addAttFloatField(std::string name, double val, std::string usage="") throw(KEAATTException);
-        virtual void addAttStringField(std::string name, std::string val, std::string usage="") throw(KEAATTException);
+        virtual void addAttBoolField(const std::string &name, bool val, std::string usage="") throw(KEAATTException);
+        virtual void addAttIntField(const std::string &name, long val, std::string usage="") throw(KEAATTException);
+        virtual void addAttFloatField(const std::string &name, double val, std::string usage="") throw(KEAATTException);
+        virtual void addAttStringField(const std::string &name, const std::string &val, std::string usage="") throw(KEAATTException);
         virtual void addFields(std::vector<KEAATTField*> *inFields) throw(KEAATTException);
         virtual void addFields(std::vector<KEAATTField> inFields) throw(KEAATTException);
         
-        virtual KEAFieldDataType getDataFieldType(std::string name) throw(KEAATTException);
-        virtual size_t getFieldIndex(std::string name) throw(KEAATTException);
-        virtual KEAATTField getField(std::string name) throw(KEAATTException);
-        virtual KEAATTField getField(size_t globalColIdx) throw(KEAATTException);
-        virtual std::vector<std::string> getFieldNames();
-        virtual bool hasField(std::string name);
-        virtual size_t getNumBoolFields();
-        virtual size_t getNumIntFields();
-        virtual size_t getNumFloatFields();
-        virtual size_t getNumStringFields();
+        virtual KEAFieldDataType getDataFieldType(const std::string &name) const throw(KEAATTException);
+        virtual size_t getFieldIndex(const std::string &name) const throw(KEAATTException);
+        virtual KEAATTField getField(const std::string &name) const throw(KEAATTException);
+        virtual KEAATTField getField(size_t globalColIdx) const throw(KEAATTException);
+        virtual std::vector<std::string> getFieldNames() const;
+        virtual bool hasField(const std::string &name) const;
+        virtual size_t getNumBoolFields() const;
+        virtual size_t getNumIntFields() const;
+        virtual size_t getNumFloatFields() const;
+        virtual size_t getNumStringFields() const;
         
         virtual size_t getSize() const =0;
-        virtual size_t getTotalNumOfCols();
-        virtual size_t getMaxGlobalColIdx();
+        virtual size_t getTotalNumOfCols() const;
+        virtual size_t getMaxGlobalColIdx() const;
         virtual void addRows(size_t numRows)=0;
         
         virtual void exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE)throw(KEAATTException, KEAIOException)=0;
-        virtual void exportToASCII(std::string outputFile)throw(KEAATTException, KEAIOException);
+        virtual void exportToASCII(const std::string &outputFile)throw(KEAATTException, KEAIOException);
         
         virtual void printAttributeTableHeaderInfo();
         
@@ -173,7 +173,7 @@ namespace libkea{
         virtual void addAttBoolField(KEAATTField field, bool val) throw(KEAATTException)=0;
         virtual void addAttIntField(KEAATTField field, int val) throw(KEAATTException)=0;
         virtual void addAttFloatField(KEAATTField field, float val) throw(KEAATTException)=0;
-        virtual void addAttStringField(KEAATTField field, std::string val) throw(KEAATTException)=0;
+        virtual void addAttStringField(KEAATTField field, const std::string &val) throw(KEAATTException)=0;
         virtual KEAATTFeature* createKeaFeature() throw(KEAATTException);
         virtual void deleteKeaFeature(KEAATTFeature *feat) throw(KEAATTException);
         

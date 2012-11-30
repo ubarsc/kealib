@@ -44,12 +44,12 @@ namespace libkea{
         fields = new std::map<std::string, KEAATTField>();
     }
     
-    KEAATTType KEAAttributeTable::getKEAATTType()
+    KEAATTType KEAAttributeTable::getKEAATTType() const
     {
         return this->attType;
     }
     
-    void KEAAttributeTable::setBoolValue(std::string name, bool value) throw(KEAATTException)
+    void KEAAttributeTable::setBoolValue(const std::string &name, bool value) throw(KEAATTException)
     {
         try 
         {
@@ -68,7 +68,7 @@ namespace libkea{
         }
     }
     
-    void KEAAttributeTable::setIntValue(std::string name, long value) throw(KEAATTException)
+    void KEAAttributeTable::setIntValue(const std::string &name, long value) throw(KEAATTException)
     {
         try 
         {
@@ -87,7 +87,7 @@ namespace libkea{
         }
     }
     
-    void KEAAttributeTable::setFloatValue(std::string name, double value) throw(KEAATTException)
+    void KEAAttributeTable::setFloatValue(const std::string &name, double value) throw(KEAATTException)
     {
         try 
         {
@@ -106,7 +106,7 @@ namespace libkea{
         }
     }
     
-    void KEAAttributeTable::setStringValue(std::string name, std::string value) throw(KEAATTException)
+    void KEAAttributeTable::setStringValue(const std::string &name, const std::string &value) throw(KEAATTException)
     {
         try 
         {
@@ -158,7 +158,7 @@ namespace libkea{
         throw KEAATTException("Setting all has not be implemented yet as needs an iterator...");
     }
     
-    void KEAAttributeTable::setStringValue(size_t colIdx, std::string value) throw(KEAATTException)
+    void KEAAttributeTable::setStringValue(size_t colIdx, const std::string &value) throw(KEAATTException)
     {
         if(colIdx > numStringFields)
         {
@@ -169,7 +169,7 @@ namespace libkea{
         throw KEAATTException("Setting all has not be implemented yet as needs an iterator...");
     }
     
-    KEAFieldDataType KEAAttributeTable::getDataFieldType(std::string name) throw(KEAATTException)
+    KEAFieldDataType KEAAttributeTable::getDataFieldType(const std::string &name) const throw(KEAATTException)
     {
         std::map<std::string, KEAATTField>::iterator iterField = fields->find(name);
         if(iterField == fields->end())
@@ -181,7 +181,7 @@ namespace libkea{
         return (*iterField).second.dataType;
     }
     
-    size_t KEAAttributeTable::getFieldIndex(std::string name) throw(KEAATTException)
+    size_t KEAAttributeTable::getFieldIndex(const std::string &name) const throw(KEAATTException)
     {
         std::map<std::string, KEAATTField>::iterator iterField = fields->find(name);
         if(iterField == fields->end())
@@ -193,7 +193,7 @@ namespace libkea{
         return (*iterField).second.idx;
     }
     
-    KEAATTField KEAAttributeTable::getField(std::string name) throw(KEAATTException)
+    KEAATTField KEAAttributeTable::getField(const std::string &name) const throw(KEAATTException)
     {
         std::map<std::string, KEAATTField>::iterator iterField = fields->find(name);
         if(iterField == fields->end())
@@ -205,7 +205,7 @@ namespace libkea{
         return (*iterField).second;
     }
     
-    KEAATTField KEAAttributeTable::getField(size_t globalColIdx) throw(KEAATTException)
+    KEAATTField KEAAttributeTable::getField(size_t globalColIdx) const throw(KEAATTException)
     {
         KEAATTField field;
         bool found = false;
@@ -227,7 +227,7 @@ namespace libkea{
         return field;
     }
     
-    std::vector<std::string> KEAAttributeTable::getFieldNames()
+    std::vector<std::string> KEAAttributeTable::getFieldNames() const
     {
         std::vector<std::string> names;
         for(std::map<std::string, KEAATTField>::iterator iterField = fields->begin(); iterField != fields->end(); ++iterField)
@@ -237,7 +237,7 @@ namespace libkea{
         return names;
     }
     
-    bool KEAAttributeTable::hasField(std::string name)
+    bool KEAAttributeTable::hasField(const std::string &name) const
     {
         bool found = false;
         if(fields->count(name) > 0)
@@ -247,37 +247,37 @@ namespace libkea{
         return found;
     }
     
-    size_t KEAAttributeTable::getNumBoolFields()
+    size_t KEAAttributeTable::getNumBoolFields() const
     {
         return this->numBoolFields;
     }
     
-    size_t KEAAttributeTable::getNumIntFields()
+    size_t KEAAttributeTable::getNumIntFields() const
     {
         return this->numIntFields;
     }
     
-    size_t KEAAttributeTable::getNumFloatFields()
+    size_t KEAAttributeTable::getNumFloatFields() const
     {
         return this->numFloatFields;
     }
     
-    size_t KEAAttributeTable::getNumStringFields()
+    size_t KEAAttributeTable::getNumStringFields() const
     {
         return this->numStringFields;
     }
     
-    size_t KEAAttributeTable::getTotalNumOfCols()
+    size_t KEAAttributeTable::getTotalNumOfCols() const
     {
         return this->numBoolFields + this->numIntFields + this->numFloatFields + this->numStringFields;
     }
     
-    size_t KEAAttributeTable::getMaxGlobalColIdx()
+    size_t KEAAttributeTable::getMaxGlobalColIdx() const
     {
         return numOfCols;
     }
     
-    void KEAAttributeTable::addAttBoolField(std::string name, bool val, std::string usage) throw(KEAATTException)
+    void KEAAttributeTable::addAttBoolField(const std::string &name, bool val, std::string usage) throw(KEAATTException)
     {
         try 
         {
@@ -310,7 +310,7 @@ namespace libkea{
         }
     }
     
-    void KEAAttributeTable::addAttIntField(std::string name, long val, std::string usage) throw(KEAATTException)
+    void KEAAttributeTable::addAttIntField(const std::string &name, long val, std::string usage) throw(KEAATTException)
     {
         try 
         {
@@ -343,7 +343,7 @@ namespace libkea{
         }
     }
     
-    void KEAAttributeTable::addAttFloatField(std::string name, double val, std::string usage) throw(KEAATTException)
+    void KEAAttributeTable::addAttFloatField(const std::string &name, double val, std::string usage) throw(KEAATTException)
     {
         try 
         {
@@ -376,7 +376,7 @@ namespace libkea{
         }
     }
     
-    void KEAAttributeTable::addAttStringField(std::string name, std::string val, std::string usage) throw(KEAATTException)
+    void KEAAttributeTable::addAttStringField(const std::string &name, const std::string &val, std::string usage) throw(KEAATTException)
     {
         try 
         {
@@ -521,7 +521,7 @@ namespace libkea{
         delete feat;
     }
     
-    void KEAAttributeTable::exportToASCII(std::string outputFile)throw(KEAATTException, KEAIOException)
+    void KEAAttributeTable::exportToASCII(const std::string &outputFile)throw(KEAATTException, KEAIOException)
     {
         
     }

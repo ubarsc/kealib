@@ -37,7 +37,7 @@ namespace libkea{
         attRows = new std::vector<KEAATTFeature*>();
     }
     
-    bool KEAAttributeTableInMem::getBoolField(size_t fid, std::string name) throw(KEAATTException)
+    bool KEAAttributeTableInMem::getBoolField(size_t fid, const std::string &name) const throw(KEAATTException)
     {
         bool value = false;
         try 
@@ -58,7 +58,7 @@ namespace libkea{
         return value;
     }
     
-    long KEAAttributeTableInMem::getIntField(size_t fid, std::string name) throw(KEAATTException)
+    long KEAAttributeTableInMem::getIntField(size_t fid, const std::string &name) const throw(KEAATTException)
     {
         long value = 0;
         try 
@@ -79,7 +79,7 @@ namespace libkea{
         return value;
     }
     
-    double KEAAttributeTableInMem::getFloatField(size_t fid, std::string name) throw(KEAATTException)
+    double KEAAttributeTableInMem::getFloatField(size_t fid, const std::string &name) const throw(KEAATTException)
     {
         double value = 0.;
         try 
@@ -100,7 +100,7 @@ namespace libkea{
         return value;
     }
     
-    std::string KEAAttributeTableInMem::getStringField(size_t fid, std::string name) throw(KEAATTException)
+    std::string KEAAttributeTableInMem::getStringField(size_t fid, const std::string &name) const throw(KEAATTException)
     {
         std::string value = "";
         try 
@@ -121,7 +121,7 @@ namespace libkea{
         return value;
     }
     
-    void KEAAttributeTableInMem::setBoolField(size_t fid, std::string name, bool value) throw(KEAATTException)
+    void KEAAttributeTableInMem::setBoolField(size_t fid, const std::string &name, bool value) throw(KEAATTException)
     {
         try 
         {
@@ -140,7 +140,7 @@ namespace libkea{
         }
     }
     
-    void KEAAttributeTableInMem::setIntField(size_t fid, std::string name, long value) throw(KEAATTException)
+    void KEAAttributeTableInMem::setIntField(size_t fid, const std::string &name, long value) throw(KEAATTException)
     {
         try 
         {
@@ -159,7 +159,7 @@ namespace libkea{
         }
     }
     
-    void KEAAttributeTableInMem::setFloatField(size_t fid, std::string name, double value) throw(KEAATTException)
+    void KEAAttributeTableInMem::setFloatField(size_t fid, const std::string &name, double value) throw(KEAATTException)
     {
         try 
         {
@@ -178,7 +178,7 @@ namespace libkea{
         }
     }
     
-    void KEAAttributeTableInMem::setStringField(size_t fid, std::string name, std::string value) throw(KEAATTException)
+    void KEAAttributeTableInMem::setStringField(size_t fid, const std::string &name, const std::string &value) throw(KEAATTException)
     {
         try 
         {
@@ -197,7 +197,7 @@ namespace libkea{
         }
     }
     
-    bool KEAAttributeTableInMem::getBoolField(size_t fid, size_t colIdx) throw(KEAATTException)
+    bool KEAAttributeTableInMem::getBoolField(size_t fid, size_t colIdx) const throw(KEAATTException)
     {
         if(fid >= attRows->size())
         {
@@ -214,7 +214,7 @@ namespace libkea{
         return attRows->at(fid)->boolFields->at(colIdx);
     }
     
-    long KEAAttributeTableInMem::getIntField(size_t fid, size_t colIdx) throw(KEAATTException)
+    long KEAAttributeTableInMem::getIntField(size_t fid, size_t colIdx) const throw(KEAATTException)
     {
         if(fid >= attRows->size())
         {
@@ -231,7 +231,7 @@ namespace libkea{
         return attRows->at(fid)->intFields->at(colIdx);
     }
     
-    double KEAAttributeTableInMem::getFloatField(size_t fid, size_t colIdx) throw(KEAATTException)
+    double KEAAttributeTableInMem::getFloatField(size_t fid, size_t colIdx) const throw(KEAATTException)
     {
         if(fid >= attRows->size())
         {
@@ -248,7 +248,7 @@ namespace libkea{
         return attRows->at(fid)->floatFields->at(colIdx);
     }
     
-    std::string KEAAttributeTableInMem::getStringField(size_t fid, size_t colIdx) throw(KEAATTException)
+    std::string KEAAttributeTableInMem::getStringField(size_t fid, size_t colIdx) const throw(KEAATTException)
     {
         if(fid >= attRows->size())
         {
@@ -316,7 +316,7 @@ namespace libkea{
         attRows->at(fid)->floatFields->at(colIdx) = value;
     }
     
-    void KEAAttributeTableInMem::setStringField(size_t fid, size_t colIdx, std::string value) throw(KEAATTException)
+    void KEAAttributeTableInMem::setStringField(size_t fid, size_t colIdx, const std::string &value) throw(KEAATTException)
     {
         if(fid >= attRows->size())
         {
@@ -333,7 +333,7 @@ namespace libkea{
         attRows->at(fid)->strFields->at(colIdx) = value;
     }
     
-    KEAATTFeature* KEAAttributeTableInMem::getFeature(size_t fid) throw(KEAATTException)
+    KEAATTFeature* KEAAttributeTableInMem::getFeature(size_t fid) const throw(KEAATTException)
     {
         if(fid >= attRows->size())
         {
@@ -373,7 +373,7 @@ namespace libkea{
         }
     }
     
-    void KEAAttributeTableInMem::addAttStringField(KEAATTField field, std::string val) throw(KEAATTException)
+    void KEAAttributeTableInMem::addAttStringField(KEAATTField field, const std::string &val) throw(KEAATTException)
     {
         for(std::vector<KEAATTFeature*>::iterator iterFeat = attRows->begin(); iterFeat != attRows->end(); ++iterFeat)
         {
