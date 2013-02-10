@@ -640,8 +640,8 @@ namespace libkea{
         {
             H5::StrType strTypeDisk(0, H5T_VARIABLE);
             
-            H5::CompType *keaStrDataType = new H5::CompType( sizeof(KEAAttString) );
-            keaStrDataType->insertMember(KEA_ATT_STRING_FIELD, HOFFSET(KEAAttString, str), strTypeDisk);
+            H5::CompType *keaStrDataType = new H5::CompType( sizeof(KEAString) );
+            keaStrDataType->insertMember(KEA_ATT_STRING_FIELD, HOFFSET(KEAString, str), strTypeDisk);
             return keaStrDataType;
         }
         catch( H5::FileIException &e )
@@ -668,8 +668,8 @@ namespace libkea{
         {
             H5::StrType strTypeMem(0, H5T_VARIABLE);
             
-            H5::CompType *keaStrDataType = new H5::CompType( sizeof(KEAAttString) );
-            keaStrDataType->insertMember(KEA_ATT_STRING_FIELD, HOFFSET(KEAAttString, str), strTypeMem);
+            H5::CompType *keaStrDataType = new H5::CompType( sizeof(KEAString) );
+            keaStrDataType->insertMember(KEA_ATT_STRING_FIELD, HOFFSET(KEAString, str), strTypeMem);
             return keaStrDataType;
         }
         catch( H5::FileIException &e )

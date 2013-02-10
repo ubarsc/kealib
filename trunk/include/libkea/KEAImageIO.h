@@ -71,6 +71,14 @@ namespace libkea{
         
         void setNoDataValue(unsigned int band, const void *data, KEADataType inDataType)throw(KEAIOException);
         void getNoDataValue(unsigned int band, void *data, KEADataType inDataType)throw(KEAIOException);
+        void undefineNoDataValue(unsigned int band)throw(KEAIOException);
+        
+        
+        std::vector<KEAImageGCP*>* getGCPs()throw(KEAIOException);
+        void setGCPs(std::vector<KEAImageGCP*> *gcps, std::string projWKT)throw(KEAIOException);
+        unsigned int getGCPCount()throw(KEAIOException);
+        std::string getGCPProjection()throw(KEAIOException);
+        void setGCPProjection(std::string projWKT)throw(KEAIOException);
         
         void setSpatialInfo(KEAImageSpatialInfo *spatialInfo)throw(KEAIOException);
         KEAImageSpatialInfo* getSpatialInfo() throw(KEAIOException);

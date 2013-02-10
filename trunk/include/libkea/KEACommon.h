@@ -109,9 +109,16 @@ namespace libkea{
     static const std::string KEA_BANDNAME_OVERVIEWS( "/OVERVIEWS" );
     static const std::string KEA_OVERVIEWSNAME_OVERVIEW( "/OVERVIEWS/OVERVIEW" );
     
+    static const std::string KEA_GCPS( "/GCPS" );
+    static const std::string KEA_GCPS_DATA( "/GCPS/GCPS" );
+    static const std::string KEA_GCPS_NUM( "/GCPS/NOGCPS" );
+    static const std::string KEA_GCPS_PROJ( "/GCPS/PROJ" );
+    
     static const std::string KEA_ATTRIBUTENAME_CLASS( "CLASS" );
 	static const std::string KEA_ATTRIBUTENAME_IMAGE_VERSION( "IMAGE_VERSION" );
     static const std::string KEA_ATTRIBUTENAME_BLOCK_SIZE( "BLOCK_SIZE" );
+    
+    static const std::string KEA_NODATA_DEFINED( "NO_DATA_DEFINED" );
     
     static const int KEA_MDC_NELMTS( 0 ); // 0
     static const hsize_t  KEA_RDCC_NELMTS( 512 ); // 512
@@ -176,6 +183,33 @@ namespace libkea{
         float yRot;
         unsigned int xSize;
         unsigned int ySize;
+    };
+    
+    struct KEAImageGCP
+    {
+        std::string pszId;
+        std::string pszInfo;
+        double dfGCPPixel;
+        double dfGCPLine;
+        double dfGCPX;
+        double dfGCPY;
+        double dfGCPZ;
+    };
+    
+    struct KEAImageGCP_HDF5
+    {
+        char *pszId;
+        char *pszInfo;
+        double dfGCPPixel;
+        double dfGCPLine;
+        double dfGCPX;
+        double dfGCPY;
+        double dfGCPZ;
+    };
+    
+    struct KEAString
+    {
+        char *str;
     };
     
     inline std::string int2Str(int num)

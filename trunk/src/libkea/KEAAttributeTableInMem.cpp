@@ -1040,7 +1040,7 @@ namespace libkea{
                         dimsStringChunk[0] = chunkSize;
                         dimsStringChunk[1] = 1;
                         
-                        KEAAttString fillValueStr = KEAAttString();
+                        KEAString fillValueStr = KEAString();
                         fillValueStr.str = const_cast<char*>(std::string("").c_str());
                         H5::DSetCreatPropList creationStringDSPList;
                         creationStringDSPList.setChunk(2, dimsStringChunk);
@@ -1322,7 +1322,7 @@ namespace libkea{
                     dimsStringChunk[0] = chunkSize;
                     dimsStringChunk[1] = 1;
                     
-                    KEAAttString fillValueStr = KEAAttString();
+                    KEAString fillValueStr = KEAString();
                     fillValueStr.str = const_cast<char*>(std::string("").c_str());
                     H5::DSetCreatPropList creationStringDSPList;
                     creationStringDSPList.setChunk(2, dimsStringChunk);
@@ -1378,10 +1378,10 @@ namespace libkea{
             {
                 floatData = new double[this->numFloatFields*chunkSize];
             }
-            KEAAttString *stringData = NULL;
+            KEAString *stringData = NULL;
             if(this->numStringFields > 0)
             {
-                stringData = new KEAAttString[this->numStringFields*chunkSize];
+                stringData = new KEAString[this->numStringFields*chunkSize];
             }
             
             VarLenFieldHDF *neighbourVals = new VarLenFieldHDF[chunkSize];
@@ -2256,7 +2256,7 @@ namespace libkea{
                 H5::DataSpace strDataspace;
                 H5::DataSpace strFieldsMemspace;
                 H5::CompType *strTypeMem = KEAAttributeTable::createKeaStringCompTypeMem();
-                KEAAttString *stringVals = NULL;
+                KEAString *stringVals = NULL;
                 hsize_t strFieldsOffset[2];
                 hsize_t strFieldsCount[2];
                 hsize_t strFieldsDimsRead[2];
@@ -2288,7 +2288,7 @@ namespace libkea{
                     }
                     delete[] strDims;
                     
-                    stringVals = new KEAAttString[chunkSize*att->numStringFields];
+                    stringVals = new KEAString[chunkSize*att->numStringFields];
                     
                     strFieldsOffset[0] = 0;
                     strFieldsOffset[1] = 0;

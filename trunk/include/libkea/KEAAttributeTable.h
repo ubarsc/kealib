@@ -87,10 +87,10 @@ namespace libkea{
         unsigned int colNum;
     };
     
-    struct KEAAttString
+    /*struct KEAAttString
     {
         char *str;
-    };
+    };*/
     
     typedef struct 
     {

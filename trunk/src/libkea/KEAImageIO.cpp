@@ -160,9 +160,13 @@ namespace libkea{
                 throw KEAIOException("The spatial reference was not specified.");
             }
         } 
-        catch (KEAIOException &e) 
+        catch ( KEAIOException &e)
         {
             throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
         }
         
         this->fileOpen = true;
@@ -297,6 +301,10 @@ namespace libkea{
 		{
 			throw KEAIOException(e.getCDetailMsg());
 		}
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
     }
     
     void KEAImageIO::readImageBlock2Band(unsigned int band, void *data, unsigned long xPxlOff, unsigned long yPxlOff, unsigned long xSizeIn, unsigned long ySizeIn, unsigned long xSizeBuf, unsigned long ySizeBuf, KEADataType inDataType)throw(KEAIOException)
@@ -426,6 +434,10 @@ namespace libkea{
 		{
 			throw KEAIOException(e.getCDetailMsg());
 		}
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
     }
     
     void KEAImageIO::setImageMetaData(std::string name, std::string value)throw(KEAIOException)
@@ -469,6 +481,14 @@ namespace libkea{
         {
             throw KEAIOException("Could not set image meta-data.");
         }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
     }
     
     std::string KEAImageIO::getImageMetaData(std::string name)throw(KEAIOException)
@@ -501,6 +521,14 @@ namespace libkea{
         {
             throw KEAIOException("Meta-data variable was not accessable.");
         }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
         
         return value;
     }
@@ -528,6 +556,14 @@ namespace libkea{
         catch (H5::Exception &e)
         {
             throw KEAIOException("Could not retrieve image meta data.");
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
         }
         
         return metaDataNames;
@@ -565,6 +601,10 @@ namespace libkea{
         {
             throw KEAIOException("Could not retrieve image meta data.");
         }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
         
         return metaData;
     }
@@ -585,13 +625,17 @@ namespace libkea{
             
             this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
-        catch (KEAIOException &e)
-        {
-            throw e;
-        }
         catch (H5::Exception &e)
         {
             throw KEAIOException("Could not set image band meta data.");
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
         }
     }
     
@@ -636,6 +680,14 @@ namespace libkea{
         {
             throw KEAIOException("Could not set image band meta-data.");
         }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
     }
     
     std::string KEAImageIO::getImageBandMetaData(unsigned int band, std::string name)throw(KEAIOException)
@@ -668,6 +720,14 @@ namespace libkea{
         {
             throw KEAIOException("Meta-data variable was not accessable.");
         }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
         
         return value;
     }
@@ -696,6 +756,14 @@ namespace libkea{
         catch (H5::Exception &e)
         {
             throw KEAIOException("Could not retrieve image band meta data.");
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
         }
         
         return metaDataNames;
@@ -726,13 +794,17 @@ namespace libkea{
                 metaData.push_back(std::pair<std::string, std::string>(name,value));
             }
         }
-        catch (KEAIOException &e)
-        {
-            throw e;
-        }
         catch (H5::Exception &e)
         {
             throw KEAIOException("Could not retrieve image band meta data.");
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
         }
         
         return metaData;
@@ -754,13 +826,17 @@ namespace libkea{
             
             this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
-        catch (KEAIOException &e)
-        {
-            throw e;
-        }
         catch (H5::Exception &e)
         {
             throw KEAIOException("Could not set image band meta data.");
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
         }
     }
     
@@ -788,6 +864,14 @@ namespace libkea{
         catch (H5::Exception &e) 
         {
             throw KEAIOException("Could not set image band description.");
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
         }
     }
     
@@ -821,10 +905,20 @@ namespace libkea{
         {
             throw KEAIOException("Could not read band description.");
         }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
         
         return description;
     }
-        
+    
+    
+    
     void KEAImageIO::setNoDataValue(unsigned int band, const void *data, KEADataType inDataType)throw(KEAIOException)
     {
         if(!this->fileOpen)
@@ -837,6 +931,7 @@ namespace libkea{
         {    
             std::string noDataValPath = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_NO_DATA_VAL;
             H5::DataSet datasetImgNDV;
+            H5::Attribute noDataDefAttribute;
             
             try 
             {
@@ -853,7 +948,21 @@ namespace libkea{
 
                 datasetImgNDV = this->keaImgFile->createDataSet(noDataValPath, imgBandDT, dataspaceNDV);
             }
-                        
+            
+            try
+            {
+                noDataDefAttribute = datasetImgNDV.openAttribute(KEA_NODATA_DEFINED);
+            }
+            catch (H5::Exception &e)
+            {
+                H5::DataSpace attr_dataspace = H5::DataSpace(H5S_SCALAR);
+                noDataDefAttribute = datasetImgNDV.createAttribute(KEA_NODATA_DEFINED, H5::PredType::STD_I8LE, attr_dataspace);
+            }
+            
+            int val = 1;
+            noDataDefAttribute.write(H5::PredType::NATIVE_INT, &val);
+            noDataDefAttribute.close();
+            
             H5::DataType dataDT = convertDatatypeKeaToH5Native(inDataType);
             datasetImgNDV.write( data, dataDT );
             datasetImgNDV.close();
@@ -862,7 +971,15 @@ namespace libkea{
         catch ( H5::Exception &e) 
         {
             throw KEAIOException("The image data type was not specified.");
-        }  
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
     }
     
     void KEAImageIO::getNoDataValue(unsigned int band, void *data, KEADataType inDataType)throw(KEAIOException)
@@ -881,14 +998,142 @@ namespace libkea{
             dimsValue[0] = 1;
             H5::DataSpace valueDataSpace(1, dimsValue);
             H5::DataSet datasetImgNDV = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_NO_DATA_VAL );
-            datasetImgNDV.read(data, imgBandDT, valueDataSpace);
+            
+            bool noDataDefined = true;
+            try
+            {
+                H5::Attribute noDataDefAttribute = datasetImgNDV.openAttribute(KEA_NODATA_DEFINED);
+                int val = 1;
+                noDataDefAttribute.read(H5::PredType::NATIVE_INT, &val);
+                noDataDefAttribute.close();
+                
+                if(val == 0)
+                {
+                    noDataDefined = false;
+                }
+            }
+            catch ( H5::Exception &e)
+            {
+                noDataDefined = true;
+            }
+            
+            if(noDataDefined)
+            {
+                datasetImgNDV.read(data, imgBandDT, valueDataSpace);
+            }
+            else
+            {
+                throw KEAIOException("The image band no data value was not defined.");
+            }
             datasetImgNDV.close();
             valueDataSpace.close();
         } 
         catch ( H5::Exception &e) 
         {
-            throw KEAIOException("The image band no data vakue was not specified.");
+            throw KEAIOException("The image band no data value was not specified.");
         }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
+    }
+    
+    void KEAImageIO::undefineNoDataValue(unsigned int band)throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        
+        // UNDEFINE THE NO DATA VALUE
+        try
+        {
+            H5::DataSet datasetImgNDV = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_NO_DATA_VAL );
+            try
+            {
+                H5::Attribute noDataDefAttribute = datasetImgNDV.openAttribute(KEA_NODATA_DEFINED);
+                int val = 0;
+                noDataDefAttribute.write(H5::PredType::NATIVE_INT, &val);
+                noDataDefAttribute.close();
+            }
+            catch ( H5::Exception &e)
+            {
+                H5::DataSpace attr_dataspace = H5::DataSpace(H5S_SCALAR);
+                H5::Attribute noDataDefAttribute = datasetImgNDV.createAttribute(KEA_NODATA_DEFINED, H5::PredType::STD_I8LE, attr_dataspace);
+                int val = 0;
+                noDataDefAttribute.write(H5::PredType::NATIVE_INT, &val);
+                noDataDefAttribute.close();
+            }
+            
+            datasetImgNDV.close();
+        }
+        catch ( H5::Exception &e)
+        {
+            throw KEAIOException("The image band no data value was not specified.");
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
+    }
+    
+    std::vector<KEAImageGCP*>* KEAImageIO::getGCPs()throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        std::vector<KEAImageGCP*> *gcps = new std::vector<KEAImageGCP*>();
+        
+        return gcps;
+    }
+    
+    void KEAImageIO::setGCPs(std::vector<KEAImageGCP*> *gcps, std::string projWKT)throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+    }
+    
+    unsigned int KEAImageIO::getGCPCount()throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        return 0;
+    }
+    
+    std::string KEAImageIO::getGCPProjection()throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        return "";
+    }
+    
+    void KEAImageIO::setGCPProjection(std::string projWKT)throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
     }
     
     void KEAImageIO::setSpatialInfo(KEAImageSpatialInfo *inSpatialInfo)throw(KEAIOException)
@@ -940,6 +1185,14 @@ namespace libkea{
         catch (H5::Exception &e)
         {
             throw KEAIOException(e.getCDetailMsg());
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
         }
     }
     
@@ -1019,6 +1272,10 @@ namespace libkea{
 		{
 			throw KEAIOException(e.getCDetailMsg());
 		}
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
         
         return imgBlockSize;
     }
@@ -1048,6 +1305,14 @@ namespace libkea{
         {
             throw KEAIOException("The image band data type was not specified.");
         }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
         
         return imgDataType;
     }
@@ -1070,7 +1335,15 @@ namespace libkea{
         catch ( H5::Exception &e) 
         {
             throw KEAIOException("The image band data type was not specified.");
-        }        
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
     }
     
     KEALayerType KEAImageIO::getImageBandLayerType(unsigned int band) throw(KEAIOException)
@@ -1099,6 +1372,14 @@ namespace libkea{
         {
             throw KEAIOException("The image band data type was not specified.");
         }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
         
         return imgLayerType;
     }
@@ -1126,7 +1407,15 @@ namespace libkea{
             H5::DataSet usageDataset = this->keaImgFile->createDataSet((KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_USAGE), H5::PredType::STD_U8LE, usageDataSpace);
             usageDataset.write( &imgLayerClrInterp, H5::PredType::NATIVE_UINT );
             usageDataset.close();
-        } 
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
     }
     
     KEABandClrInterp KEAImageIO::getImageBandClrInterp(unsigned int band) throw(KEAIOException)
@@ -1155,6 +1444,14 @@ namespace libkea{
         {
             //throw KEAIOException("The image band data type was not specified.");
             imgLayerClrInterp = kea_generic; // Field was not present within the file.
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
         }
         
         return imgLayerClrInterp;
@@ -1255,6 +1552,14 @@ namespace libkea{
         {
             throw KEAIOException(e.getCDetailMsg());
         }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
     }
     
     void KEAImageIO::removeOverview(unsigned int band, unsigned int overview) throw(KEAIOException)
@@ -1276,6 +1581,14 @@ namespace libkea{
         catch (H5::Exception &e)
         {
             // Do nothing as dataset does not exist.
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
         }
         
     }
@@ -1336,6 +1649,10 @@ namespace libkea{
 		{
 			throw KEAIOException(e.getCDetailMsg());
 		}
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
         
         return ovBlockSize;
     }
@@ -1446,6 +1763,10 @@ namespace libkea{
 		{
 			throw KEAIOException(e.getCDetailMsg());
 		}
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
     }
     
     void KEAImageIO::readFromOverview(unsigned int band, unsigned int overview, void *data, unsigned long xPxlOff, unsigned long yPxlOff, unsigned long xSizeIn, unsigned long ySizeIn, unsigned long xSizeBuf, unsigned long ySizeBuf, KEADataType inDataType) throw(KEAIOException)
@@ -1551,6 +1872,10 @@ namespace libkea{
 		{
 			throw KEAIOException(e.getCDetailMsg());
 		}
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
     }
     
     unsigned int KEAImageIO::getNumOfOverviews(unsigned int band) throw(KEAIOException)
@@ -1571,6 +1896,14 @@ namespace libkea{
         catch (H5::Exception &e)
         {
             throw KEAIOException("Could not retrieve the number of image band overviews.");
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
         }
         
         return numOverviews;
@@ -1625,14 +1958,18 @@ namespace libkea{
                 throw KEAIOException("Could not read from image overview.");
             }            
         }
-        catch(KEAIOException &e)
-        {
-            throw e;
-        }
         catch( H5::Exception &e )
 		{
 			throw KEAIOException("Could not get the overview size.");
 		}
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
     }
     
     KEAAttributeTable* KEAImageIO::getAttributeTable(KEAATTType type, unsigned int band) throw(KEAATTException, KEAIOException)
@@ -1653,13 +1990,17 @@ namespace libkea{
                 throw KEAATTException("The attribute table type was not recognised.");
             }
         }
-        catch(KEAIOException &e)
-        {
-            throw e;
-        }
         catch(KEAATTException &e)
         {
             throw e;
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
         }
         
         return att;
@@ -1677,13 +2018,17 @@ namespace libkea{
             att->exportToKeaFile(this->keaImgFile, band, chunkSize, deflate);
             this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
-        catch(KEAIOException &e)
-        {
-            throw e;
-        }
         catch(KEAATTException &e)
         {
             throw e;
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
         }
     }
     
@@ -1733,6 +2078,10 @@ namespace libkea{
 		{
 			throw KEAIOException(e.getCDetailMsg());
 		}
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
         return attPresent;
     }
     
@@ -1753,6 +2102,10 @@ namespace libkea{
 		{
 			throw KEAIOException(e.getCDetailMsg());
 		}
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
     }
         
     H5::H5File* KEAImageIO::createKEAImage(std::string fileName, KEADataType dataType, unsigned int xSize, unsigned int ySize, unsigned int numImgBands, std::vector<std::string> *bandDescrips, KEAImageSpatialInfo * spatialInfo, unsigned int imageBlockSize, unsigned int attBlockSize, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize, unsigned int deflate)throw(KEAIOException)
@@ -1895,6 +2248,10 @@ namespace libkea{
 			keaImgH5File->createGroup( KEA_DATASETNAME_METADATA );
             //////////// CREATED GLOBAL META-DATA ////////////////
             
+            //////////// CREATE GCPS ////////////////
+			keaImgH5File->createGroup( KEA_GCPS );
+            //////////// CREATED GCPS ////////////////
+            
             //////////// CREATE IMAGE BANDS ////////////////
             for(unsigned int i = 0; i < numImgBands; ++i) {
                 std::string bandDescription = "";
@@ -1931,6 +2288,10 @@ namespace libkea{
 		{
 			throw KEAIOException(e.getCDetailMsg());
 		}
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
         
         return keaImgH5File;
     }
@@ -1970,6 +2331,10 @@ namespace libkea{
 		{
 			throw KEAIOException(e.getCDetailMsg());
 		}
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
         
         return keaImgH5File;
     }
@@ -2009,6 +2374,10 @@ namespace libkea{
 		{
 			throw KEAIOException(e.getCDetailMsg());
 		}
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
         
         return keaImgH5File;
     }
@@ -2089,6 +2458,14 @@ namespace libkea{
 		{
 			keaImageFound = false;
 		}
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
         
         return keaImageFound;
     }
@@ -2344,6 +2721,10 @@ namespace libkea{
         } catch (H5::DataTypeIException &e) {
             throw KEAIOException(e.getCDetailMsg());
         }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
     }
 
     void KEAImageIO::setNumImgBandsInFileMetadata(H5::H5File *keaImgH5File,
@@ -2370,6 +2751,14 @@ namespace libkea{
         } catch (H5::Exception &e) {
             throw KEAIOException("Could not write the number of bands "
                     "to the file metadata.");
+        }
+        catch ( KEAIOException &e)
+        {
+            throw e;
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
         }
     }
 
