@@ -53,7 +53,12 @@ namespace libkea{
         
         void writeImageBlock2Band(unsigned int band, void *data, unsigned long xPxlOff, unsigned long yPxlOff, unsigned long xSizeOut, unsigned long ySizeOut, unsigned long xSizeBuf, unsigned long ySizeBuf, KEADataType inDataType)throw(KEAIOException);
         void readImageBlock2Band(unsigned int band, void *data, unsigned long xPxlOff, unsigned long yPxlOff, unsigned long xSizeIn, unsigned long ySizeIn, unsigned long xSizeBuf, unsigned long ySizeBuf, KEADataType inDataType)throw(KEAIOException);
-
+        
+        void createMask(unsigned int band, unsigned int deflate=KEA_DEFLATE)throw(KEAIOException);
+        void writeImageBlock2BandMask(unsigned int band, void *data, unsigned long xPxlOff, unsigned long yPxlOff, unsigned long xSizeOut, unsigned long ySizeOut, unsigned long xSizeBuf, unsigned long ySizeBuf, KEADataType inDataType)throw(KEAIOException);
+        void readImageBlock2BandMask(unsigned int band, void *data, unsigned long xPxlOff, unsigned long yPxlOff, unsigned long xSizeIn, unsigned long ySizeIn, unsigned long xSizeBuf, unsigned long ySizeBuf, KEADataType inDataType)throw(KEAIOException);
+        bool maskCreated(unsigned int band)throw(KEAIOException);
+        
         void setImageMetaData(std::string name, std::string value)throw(KEAIOException);
         std::string getImageMetaData(std::string name)throw(KEAIOException);
         std::vector<std::string> getImageMetaDataNames()throw(KEAIOException);
@@ -150,8 +155,6 @@ namespace libkea{
 
         static H5::CompType* createGCPCompTypeDisk() throw(KEAIOException);
         static H5::CompType* createGCPCompTypeMem() throw(KEAIOException);
-        //static H5::CompType* createKeaStringCompTypeDisk() throw(KEAIOException);
-        //static H5::CompType* createKeaStringCompTypeMem() throw(KEAIOException);
         
         /********** PROTECTED MEMBERS **********/
         bool fileOpen;

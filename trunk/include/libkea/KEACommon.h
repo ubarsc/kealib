@@ -64,6 +64,7 @@ namespace libkea{
     static const std::string KEA_DATASETNAME_BAND( "/BAND" );
     
     static const std::string KEA_BANDNAME_DATA( "/DATA" );
+    static const std::string KEA_BANDNAME_MASK( "/MASK" );
     static const std::string KEA_BANDNAME_DESCRIP( "/DESCRIPTION" );
     static const std::string KEA_BANDNAME_DT( "/DATATYPE" );
     static const std::string KEA_BANDNAME_TYPE( "/LAYER_TYPE" );

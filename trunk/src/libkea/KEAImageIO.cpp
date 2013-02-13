@@ -462,6 +462,351 @@ namespace libkea{
             throw KEAIOException(e.what());
         }
     }
+  
+    
+    
+    void KEAImageIO::createMask(unsigned int band, unsigned int deflate)throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        if(!this->maskCreated(band))
+        {
+            unsigned int blockSize2Use = getImageBlockSize(band);
+            int initFillVal = 0;
+            hsize_t dimsImageBandChunk[] = { blockSize2Use, blockSize2Use };
+            H5::DSetCreatPropList initParamsImgBand;
+            initParamsImgBand.setChunk(2, dimsImageBandChunk);
+            initParamsImgBand.setShuffle();
+            initParamsImgBand.setDeflate(deflate);
+            initParamsImgBand.setFillValue( H5::PredType::NATIVE_INT, &initFillVal);
+            
+            H5::StrType strdatatypeLen6(H5::PredType::C_S1, 6);
+            H5::StrType strdatatypeLen4(H5::PredType::C_S1, 4);
+            const H5std_string strClassVal ("IMAGE");
+            const H5std_string strImgVerVal ("1.2");
+            H5::DataSpace attr_dataspace = H5::DataSpace(H5S_SCALAR);
+            
+            std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band);
+            hsize_t imageBandDims[] = { spatialInfoFile->ySize, spatialInfoFile->xSize };
+            H5::DataSpace imgBandDataSpace(2, imageBandDims);
+            H5::DataSet imgBandDataSet = this->keaImgFile->createDataSet((imageBandPath+KEA_BANDNAME_MASK), H5::PredType::STD_I8LE, imgBandDataSpace, initParamsImgBand);
+            H5::Attribute classAttribute = imgBandDataSet.createAttribute(KEA_ATTRIBUTENAME_CLASS, strdatatypeLen6, attr_dataspace);
+            classAttribute.write(strdatatypeLen6, strClassVal);
+            classAttribute.close();
+            
+            H5::Attribute imgVerAttribute = imgBandDataSet.createAttribute(KEA_ATTRIBUTENAME_IMAGE_VERSION, strdatatypeLen4, attr_dataspace);
+            imgVerAttribute.write(strdatatypeLen4, strImgVerVal);
+            imgVerAttribute.close();
+            
+            imgBandDataSet.close();
+            imgBandDataSpace.close();
+        }
+    }
+    
+    void KEAImageIO::writeImageBlock2BandMask(unsigned int band, void *data, unsigned long xPxlOff, unsigned long yPxlOff, unsigned long xSizeOut, unsigned long ySizeOut, unsigned long xSizeBuf, unsigned long ySizeBuf, KEADataType inDataType)throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        try
+        {
+            // CHECK PARAMETERS PROVIDED FIT WITHIN IMAGE
+            if(band == 0)
+            {
+                throw KEAIOException("KEA Image Bands start at 1.");
+            }
+            else if(band > this->numImgBands)
+            {
+                throw KEAIOException("Band is not present within image.");
+            }
+            
+            unsigned long endXPxl = xPxlOff + xSizeOut;
+            unsigned long endYPxl = yPxlOff + ySizeOut;
+            
+            if(xPxlOff > this->spatialInfoFile->xSize)
+            {
+                throw KEAIOException("Start X Pixel is not within image.");
+            }
+            
+            if(endXPxl > this->spatialInfoFile->xSize)
+            {
+                throw KEAIOException("End X Pixel is not within image.");
+            }
+            
+            if(yPxlOff > this->spatialInfoFile->ySize)
+            {
+                throw KEAIOException("Start Y Pixel is not within image.");
+            }
+            
+            if(endYPxl > this->spatialInfoFile->ySize)
+            {
+                throw KEAIOException("End Y Pixel is not within image.");
+            }
+            
+            // GET NATIVE DATASET
+            H5::DataType imgBandDT = convertDatatypeKeaToH5Native(inDataType);
+            
+            // OPEN BAND DATASET AND WRITE IMAGE DATA
+            try
+            {
+                std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band);
+                H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( imageBandPath + KEA_BANDNAME_MASK );
+                H5::DataSpace imgBandDataspace = imgBandDataset.getSpace();
+                
+                hsize_t imgOffset[2];
+                imgOffset[0] = yPxlOff;
+                imgOffset[1] = xPxlOff;
+                hsize_t dataDims[2];
+                dataDims[0] = ySizeBuf;
+                dataDims[1] = xSizeBuf;
+                H5::DataSpace write2BandDataspace = H5::DataSpace(2, dataDims);
+                
+                if((ySizeOut != ySizeBuf) | (xSizeOut != xSizeBuf))
+                {
+                    hsize_t dataSelectMemDims[2];
+                    dataSelectMemDims[0] = ySizeOut;
+                    dataSelectMemDims[1] = 1;
+                    
+                    hsize_t dataOffDims[2];
+                    dataOffDims[0] = 0;
+                    dataOffDims[1] = 0;
+                    
+                    hsize_t dataSelectStrideDims[2];
+                    dataSelectStrideDims[0] = 1;
+                    if(xSizeBuf == xSizeOut)
+                    {
+                        dataSelectStrideDims[1] = 1;
+                    }
+                    else
+                    {
+                        dataSelectStrideDims[1] = xSizeBuf - xSizeOut;
+                    }
+                    
+                    hsize_t dataSelectBlockSizeDims[2];
+                    dataSelectBlockSizeDims[0] = 1;
+                    dataSelectBlockSizeDims[1] = xSizeOut;
+                    write2BandDataspace.selectHyperslab(H5S_SELECT_SET, dataSelectMemDims, dataOffDims, dataSelectStrideDims, dataSelectBlockSizeDims);
+                    
+                    hsize_t dataOutDims[2];
+                    dataOutDims[0] = ySizeOut;
+                    dataOutDims[1] = xSizeOut;
+                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataOutDims, imgOffset);
+                }
+                else
+                {
+                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataDims, imgOffset);
+                }
+                
+                imgBandDataset.write( data, imgBandDT, write2BandDataspace, imgBandDataspace);
+                
+                imgBandDataset.close();
+                imgBandDataspace.close();
+                write2BandDataspace.close();
+                
+                this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+            }
+            catch ( H5::Exception &e)
+            {
+                throw KEAIOException("Could not write image data.");
+            }
+        }
+        catch(KEAIOException &e)
+        {
+            throw e;
+        }
+        catch( H5::FileIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+		catch( H5::DataSetIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+		catch( H5::DataSpaceIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+		catch( H5::DataTypeIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
+    }
+    
+    void KEAImageIO::readImageBlock2BandMask(unsigned int band, void *data, unsigned long xPxlOff, unsigned long yPxlOff, unsigned long xSizeIn, unsigned long ySizeIn, unsigned long xSizeBuf, unsigned long ySizeBuf, KEADataType inDataType)throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        try
+        {
+            // CHECK PARAMETERS PROVIDED FIT WITHIN IMAGE
+            if(band == 0)
+            {
+                throw KEAIOException("KEA Image Bands start at 1.");
+            }
+            else if(band > this->numImgBands)
+            {
+                throw KEAIOException("Band is not present within image.");
+            }
+            
+            unsigned long endXPxl = xPxlOff + xSizeIn;
+            unsigned long endYPxl = yPxlOff + ySizeIn;
+            
+            if(xPxlOff > this->spatialInfoFile->xSize)
+            {
+                throw KEAIOException("Start X Pixel is not within image.");
+            }
+            
+            if(endXPxl > this->spatialInfoFile->xSize)
+            {
+                throw KEAIOException("End X Pixel is not within image.");
+            }
+            
+            if(yPxlOff > this->spatialInfoFile->ySize)
+            {
+                throw KEAIOException("Start Y Pixel is not within image.");
+            }
+            
+            if(endYPxl > this->spatialInfoFile->ySize)
+            {
+                throw KEAIOException("End Y Pixel is not within image.");
+            }
+            
+            // GET NATIVE DATASET
+            H5::DataType imgBandDT = convertDatatypeKeaToH5Native(inDataType);
+            
+            // OPEN BAND DATASET AND READ IMAGE DATA
+            try
+            {
+                std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band);
+                H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( imageBandPath + KEA_BANDNAME_MASK );
+                H5::DataSpace imgBandDataspace = imgBandDataset.getSpace();
+                
+                hsize_t dataOffset[2];
+                dataOffset[0] = yPxlOff;
+                dataOffset[1] = xPxlOff;
+                hsize_t dataDims[2];
+                dataDims[0] = ySizeBuf;
+                dataDims[1] = xSizeBuf;
+                H5::DataSpace read2BandDataspace = H5::DataSpace(2, dataDims);
+                
+                if((ySizeBuf != ySizeIn) | (xSizeBuf != xSizeIn))
+                {
+                    hsize_t dataSelectMemDims[2];
+                    dataSelectMemDims[0] = ySizeIn;
+                    dataSelectMemDims[1] = 1;
+                    
+                    hsize_t dataOffDims[2];
+                    dataOffDims[0] = 0;
+                    dataOffDims[1] = 0;
+                    
+                    hsize_t dataSelectStrideDims[2];
+                    dataSelectStrideDims[0] = 1;
+                    if(xSizeBuf == xSizeIn)
+                    {
+                        dataSelectStrideDims[1] = 1;
+                    }
+                    else
+                    {
+                        dataSelectStrideDims[1] = xSizeBuf - xSizeIn;
+                    }
+                    
+                    hsize_t dataSelectBlockSizeDims[2];
+                    dataSelectBlockSizeDims[0] = 1;
+                    dataSelectBlockSizeDims[1] = xSizeIn;
+                    read2BandDataspace.selectHyperslab(H5S_SELECT_SET, dataSelectMemDims, dataOffDims, dataSelectStrideDims, dataSelectBlockSizeDims);
+                    
+                    hsize_t dataInDims[2];
+                    dataInDims[0] = ySizeIn;
+                    dataInDims[1] = xSizeIn;
+                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataInDims, dataOffset);
+                }
+                else
+                {
+                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataDims, dataOffset);
+                }
+                
+                imgBandDataset.read( data, imgBandDT, read2BandDataspace, imgBandDataspace);
+                
+                imgBandDataset.close();
+                imgBandDataspace.close();
+                read2BandDataspace.close();
+            }
+            catch ( H5::Exception &e)
+            {
+                throw KEAIOException("Could not read image data.");
+            }
+        }
+        catch(KEAIOException &e)
+        {
+            throw e;
+        }
+        catch( H5::FileIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+		catch( H5::DataSetIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+		catch( H5::DataSpaceIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+		catch( H5::DataTypeIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
+    }
+    
+    bool KEAImageIO::maskCreated(unsigned int band)throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        // CHECK PARAMETERS PROVIDED FIT WITHIN IMAGE
+        if(band == 0)
+        {
+            throw KEAIOException("KEA Image Bands start at 1.");
+        }
+        else if(band > this->numImgBands)
+        {
+            throw KEAIOException("Band is not present within image.");
+        }
+        
+        bool maskPresent = false;
+        std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band);
+        try
+        {
+            H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( imageBandPath + KEA_BANDNAME_MASK );
+            imgBandDataset.close();
+            maskPresent = true;
+        }
+        catch (H5::Exception &e)
+        {
+            maskPresent = false;
+        }
+        
+        return maskPresent;
+    }
+    
     
     void KEAImageIO::setImageMetaData(std::string name, std::string value)throw(KEAIOException)
     {
