@@ -111,8 +111,16 @@ namespace libkea{
     
     static const std::string KEA_GCPS( "/GCPS" );
     static const std::string KEA_GCPS_DATA( "/GCPS/GCPS" );
-    static const std::string KEA_GCPS_NUM( "/GCPS/NOGCPS" );
+    static const std::string KEA_GCPS_NUM( "/GCPS/NUM_GCPS" );
     static const std::string KEA_GCPS_PROJ( "/GCPS/PROJ" );
+    
+    static const std::string KEA_GCPS_PSZID( "PSZ_ID" );
+    static const std::string KEA_GCPS_PSZINFO( "PSZ_INFO" );
+    static const std::string KEA_GCPS_DFPIXEL( "DF_PIXEL" );
+    static const std::string KEA_GCPS_DFLINE( "DF_LINE" );
+    static const std::string KEA_GCPS_DFX( "DF_X" );
+    static const std::string KEA_GCPS_DFY( "DF_Y" );
+    static const std::string KEA_GCPS_DFZ( "DF_Z" );
     
     static const std::string KEA_ATTRIBUTENAME_CLASS( "CLASS" );
 	static const std::string KEA_ATTRIBUTENAME_IMAGE_VERSION( "IMAGE_VERSION" );
@@ -177,10 +185,10 @@ namespace libkea{
         std::string wktString;
         double tlX;
         double tlY;
-        float xRes;
-        float yRes;
-        float xRot;
-        float yRot;
+        double xRes;
+        double yRes;
+        double xRot;
+        double yRot;
         unsigned int xSize;
         unsigned int ySize;
     };

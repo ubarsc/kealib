@@ -89,6 +89,8 @@ namespace libkea{
         
         KEADataType getImageBandDataType(unsigned int band) throw(KEAIOException);
         
+        std::string getKEAImageVersion() throw(KEAIOException);
+        
         void setImageBandLayerType(unsigned int band, KEALayerType imgLayerType) throw(KEAIOException);
         KEALayerType getImageBandLayerType(unsigned int band) throw(KEAIOException);
         
@@ -112,13 +114,8 @@ namespace libkea{
         /**
          * Adds a new image band to the file.
          */
-        virtual void addImageBand(const KEADataType dataType,
-                const std::string bandDescrip,
-                const unsigned int imageBlockSize = KEA_IMAGE_CHUNK_SIZE,
-                const unsigned int attBlockSize = KEA_ATT_CHUNK_SIZE,
-                const unsigned int deflate = KEA_DEFLATE)
-            throw(KEAIOException);
-        
+        virtual void addImageBand(const KEADataType dataType, const std::string bandDescrip, const unsigned int imageBlockSize = KEA_IMAGE_CHUNK_SIZE, const unsigned int attBlockSize = KEA_ATT_CHUNK_SIZE, const unsigned int deflate = KEA_DEFLATE) throw(KEAIOException);
+
         static H5::H5File* createKEAImage(std::string fileName, KEADataType dataType, unsigned int xSize, unsigned int ySize, unsigned int numImgBands, std::vector<std::string> *bandDescrips=NULL, KEAImageSpatialInfo *spatialInfo=NULL, unsigned int imageBlockSize=KEA_IMAGE_CHUNK_SIZE, unsigned int attBlockSize=KEA_ATT_CHUNK_SIZE, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE, unsigned int deflate=KEA_DEFLATE)throw(KEAIOException);
         static bool isKEAImage(std::string fileName)throw(KEAIOException);
         static H5::H5File* openKeaH5RW(std::string fileName, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE)throw(KEAIOException);
@@ -130,14 +127,12 @@ namespace libkea{
         /**
          * Converts KEA datatypes to the respective standard HDF5 datatypes.
          */
-        static H5::DataType convertDatatypeKeaToH5STD(
-                const KEADataType dataType) throw(KEAIOException);
+        static H5::DataType convertDatatypeKeaToH5STD(const KEADataType dataType) throw(KEAIOException);
 
         /**
          * Converts KEA datatypes to the respective native HDF5 datatypes.
          */
-        static H5::DataType convertDatatypeKeaToH5Native(
-                const KEADataType dataType) throw(KEAIOException);
+        static H5::DataType convertDatatypeKeaToH5Native( const KEADataType dataType) throw(KEAIOException);
 
         /**
          * Adds an image band to the specified file. Does NOT flush the file
@@ -145,27 +140,25 @@ namespace libkea{
          *
          * NOTE: attBlockSize doesn't have any effect at the moment
          */
-        static void addImageBandToFile(H5::H5File *keaImgH5File,
-                const KEADataType dataType, const unsigned int xSize, 
-                const unsigned int ySize, const unsigned int bandIndex,
-                std::string bandDescrip,
-                const unsigned int imageBlockSize,
-                const unsigned int attBlockSize,
-                const unsigned int deflate) throw(KEAIOException);
+        static void addImageBandToFile(H5::H5File *keaImgH5File, const KEADataType dataType, const unsigned int xSize, const unsigned int ySize, const unsigned int bandIndex, std::string bandDescrip, const unsigned int imageBlockSize, const unsigned int attBlockSize, const unsigned int deflate) throw(KEAIOException);
 
         /**
          * Updates the number of image bands in the file metadata. Does NOT
          * flush the file buffer.
          */
-        static void setNumImgBandsInFileMetadata(H5::H5File *keaImgH5File,
-                const unsigned int numImgBands) throw(KEAIOException);
+        static void setNumImgBandsInFileMetadata(H5::H5File *keaImgH5File, const unsigned int numImgBands) throw(KEAIOException);
 
-
+        static H5::CompType* createGCPCompTypeDisk() throw(KEAIOException);
+        static H5::CompType* createGCPCompTypeMem() throw(KEAIOException);
+        //static H5::CompType* createKeaStringCompTypeDisk() throw(KEAIOException);
+        //static H5::CompType* createKeaStringCompTypeMem() throw(KEAIOException);
+        
         /********** PROTECTED MEMBERS **********/
         bool fileOpen;
         H5::H5File *keaImgFile;
         KEAImageSpatialInfo *spatialInfoFile;
         unsigned int numImgBands;
+        std::string keaVersion;
     };
     
 }
