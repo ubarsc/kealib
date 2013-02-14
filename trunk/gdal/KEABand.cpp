@@ -36,6 +36,8 @@
 #include <map>
 #include <vector>
 
+#include <limits.h>
+
 // constructor
 KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAccess, libkea::KEAImageIO *pImageIO, int *pRefCount )
 {
@@ -374,9 +376,41 @@ double KEARasterBand::GetNoDataValue(int *pbSuccess)
 // set the no data value
 CPLErr KEARasterBand::SetNoDataValue(double dfNoData)
 {
+    // need to check for out of range values
+    bool bSet = true;
+    GDALDataType dtype = this->GetRasterDataType();
+    switch( dtype )
+    {
+        case GDT_Byte:
+            bSet = (dfNoData >= 0) && (dfNoData <= UCHAR_MAX);
+            break;
+        case GDT_UInt16:
+            bSet = (dfNoData >= 0) && (dfNoData <= USHRT_MAX);
+            break;
+        case GDT_Int16:
+            bSet = (dfNoData >= SHRT_MIN) && (dfNoData <= SHRT_MAX);
+            break;
+        case GDT_UInt32:
+            bSet = (dfNoData >= 0) && (dfNoData <= UINT_MAX);
+            break;
+        case GDT_Int32:
+            bSet = (dfNoData >= INT_MIN) && (dfNoData <= INT_MAX);
+            break;
+        default:
+            // for other types we can't really tell if outside the range
+            break;
+    }
+
     try
     {
-        this->m_pImageIO->setNoDataValue(this->nBand, &dfNoData, libkea::kea_64float);
+        if( bSet )
+        {
+            this->m_pImageIO->setNoDataValue(this->nBand, &dfNoData, libkea::kea_64float);
+        }
+        else
+        {
+            this->m_pImageIO->undefineNoDataValue(this->nBand);
+        }
         return CE_None;
     }
     catch (libkea::KEAIOException &e)

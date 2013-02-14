@@ -73,6 +73,12 @@ public:
     // virtual method for adding new image bands
     CPLErr AddBand(GDALDataType eType, char **papszOptions = NULL);
 
+    // GCPs
+    int GetGCPCount();
+    const char* GetGCPProjection();
+    const GDAL_GCP* GetGCPs();
+    CPLErr SetGCPs(int nGCPCount, const GDAL_GCP *pasGCPList, const char *pszGCPProjection);
+
 protected:
     // this method builds overviews for the specified bands. 
     virtual CPLErr IBuildOverviews(const char *pszResampling, int nOverviews, int *panOverviewList, 
@@ -82,12 +88,15 @@ protected:
     // internal method to update m_papszMetadataList
     void UpdateMetadataList();
 
+    void DestroyGCPs();
+
 private:
     // pointer to KEAImageIO class and the refcount for it
     libkea::KEAImageIO  *m_pImageIO;
     int                 *m_pnRefcount;
     char               **m_papszMetadataList; // CSLStringList for metadata
-
+    GDAL_GCP            *m_pGCPs;
+    char                *m_pszGCPProjection;
 };
 
 // conversion functions

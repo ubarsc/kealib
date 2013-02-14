@@ -30,6 +30,8 @@
 
 #include "libkea/KEAImageIO.h"
 
+#include <string.h>
+
 namespace libkea{
     
     KEAImageIO::KEAImageIO()

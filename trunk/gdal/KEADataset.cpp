@@ -31,6 +31,8 @@
 #include "KEABand.h"
 #include "KEACopy.h"
 
+#include "libkea/KEACommon.h"
+
 // Function for converting a libkea type into a GDAL type
 GDALDataType KEA_to_GDAL_Type( libkea::KEADataType keaType )
 {
@@ -400,6 +402,10 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File, GDALAccess eAccess )
         // read in the metadata
         m_papszMetadataList = NULL;
         this->UpdateMetadataList();
+
+        // NULL until we read them in 
+        m_pGCPs = NULL;
+        m_pszGCPProjection = NULL;
     }
     catch (libkea::KEAIOException &e)
     {
@@ -421,6 +427,8 @@ KEADataset::~KEADataset()
         delete m_pImageIO;
         delete m_pnRefcount;
     }
+    this->DestroyGCPs();
+    free( m_pszGCPProjection );
 }
 
 // read in the metadata into our CSLStringList
@@ -677,3 +685,124 @@ CPLErr KEADataset::AddBand(GDALDataType eType, char **papszOptions)
     return CE_None;
 }
 
+
+int KEADataset::GetGCPCount()
+{
+    try
+    {
+        return m_pImageIO->getGCPCount();
+    }
+    catch (libkea::KEAIOException &e) 
+    {
+        return 0;
+    }
+
+}
+
+const char* KEADataset::GetGCPProjection()
+{
+    if( m_pszGCPProjection == NULL )
+    {
+        try
+        {
+            std::string sProj = m_pImageIO->getGCPProjection();
+            m_pszGCPProjection = strdup( sProj.c_str() );
+        }
+        catch (libkea::KEAIOException &e) 
+        {
+            return NULL;
+        }
+    }
+    return m_pszGCPProjection;
+}
+
+const GDAL_GCP* KEADataset::GetGCPs()
+{
+    if( m_pGCPs == NULL )
+    {
+        // convert to GDAL data structures
+        try
+        {
+            unsigned int nCount = m_pImageIO->getGCPCount();
+            std::vector<libkea::KEAImageGCP*> *pKEAGCPs = m_pImageIO->getGCPs();
+
+            m_pGCPs = (GDAL_GCP*)calloc(nCount, sizeof(GDAL_GCP));
+            for( unsigned int nIndex = 0; nIndex < nCount; nIndex++)
+            {
+                GDAL_GCP *pGCP = &m_pGCPs[nIndex];
+                libkea::KEAImageGCP *pKEAGCP = pKEAGCPs->at(nIndex);
+                pGCP->pszId = strdup( pKEAGCP->pszId.c_str() );
+                pGCP->pszInfo = strdup( pKEAGCP->pszInfo.c_str() );
+                pGCP->dfGCPPixel = pKEAGCP->dfGCPPixel;
+                pGCP->dfGCPLine = pKEAGCP->dfGCPLine;
+                pGCP->dfGCPX = pKEAGCP->dfGCPX;
+                pGCP->dfGCPY = pKEAGCP->dfGCPY;
+                pGCP->dfGCPZ = pKEAGCP->dfGCPZ;
+            }
+        }
+        catch (libkea::KEAIOException &e) 
+        {
+            return NULL;
+        }
+    }
+    return m_pGCPs;
+}
+
+CPLErr KEADataset::SetGCPs(int nGCPCount, const GDAL_GCP *pasGCPList, const char *pszGCPProjection)
+{
+    this->DestroyGCPs();
+    free( m_pszGCPProjection );
+    m_pszGCPProjection = NULL;
+    CPLErr result = CE_None;
+
+    std::vector<libkea::KEAImageGCP*> *pKEAGCPs = new std::vector<libkea::KEAImageGCP*>(nGCPCount);
+    for( int nIndex = 0; nIndex < nGCPCount; nIndex++ )
+    {
+        const GDAL_GCP *pGCP = &pasGCPList[nIndex];
+        libkea::KEAImageGCP *pKEA = new libkea::KEAImageGCP;
+        pKEA->pszId = pGCP->pszId;
+        pKEA->pszInfo = pGCP->pszInfo;
+        pKEA->dfGCPPixel = pGCP->dfGCPPixel;
+        pKEA->dfGCPLine = pGCP->dfGCPLine;
+        pKEA->dfGCPX = pGCP->dfGCPX;
+        pKEA->dfGCPY = pGCP->dfGCPY;
+        pKEA->dfGCPZ = pGCP->dfGCPZ;
+        pKEAGCPs->at(nIndex) = pKEA;
+    }
+    try
+    {
+        m_pImageIO->setGCPs(pKEAGCPs, pszGCPProjection);
+    }
+    catch (libkea::KEAIOException &e) 
+    {
+        CPLError( CE_Warning, CPLE_AppDefined,
+                "Unable to write GCPs: %s", e.what() );
+        result = CE_Failure;
+    }
+
+    for( std::vector<libkea::KEAImageGCP*>::iterator itr = pKEAGCPs->begin(); itr != pKEAGCPs->end(); itr++)
+    {
+        libkea::KEAImageGCP *pKEA = (*itr);
+        delete pKEA;
+    }
+    delete pKEAGCPs;
+
+    return result;
+}
+
+void KEADataset::DestroyGCPs()
+{
+    if( m_pGCPs != NULL )
+    {
+        // we assume this is always the same as the internal list...
+        int nCount = this->GetGCPCount();
+        for( int nIndex = 0; nIndex < nCount; nIndex++ )
+        {
+            GDAL_GCP *pGCP = &m_pGCPs[nIndex];
+            free( pGCP->pszId );
+            free( pGCP->pszInfo );
+        }
+        free( m_pGCPs );
+        m_pGCPs = NULL;
+    }
+}
