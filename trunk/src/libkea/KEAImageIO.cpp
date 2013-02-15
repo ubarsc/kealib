@@ -477,7 +477,7 @@ namespace libkea{
         if(!this->maskCreated(band))
         {
             unsigned int blockSize2Use = getImageBlockSize(band);
-            int initFillVal = 0;
+            int initFillVal = 255;
             hsize_t dimsImageBandChunk[] = { blockSize2Use, blockSize2Use };
             H5::DSetCreatPropList initParamsImgBand;
             initParamsImgBand.setChunk(2, dimsImageBandChunk);
@@ -797,9 +797,20 @@ namespace libkea{
         std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band);
         try
         {
-            H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( imageBandPath + KEA_BANDNAME_MASK );
-            imgBandDataset.close();
-            maskPresent = true;
+            H5::Group imgBandGrp = this->keaImgFile->openGroup(imageBandPath);
+            hsize_t numItems = imgBandGrp.getNumObjs();
+            for(hsize_t i = 0; i < numItems; ++i)
+            {
+                std::cout << "Item: " << imgBandGrp.getObjnameByIdx(i) << std::endl;
+                if(imgBandGrp.getObjnameByIdx(i) == KEA_BANDNAME_MASK)
+                {
+                    maskPresent = true;
+                }
+            }
+            imgBandGrp.close();
+            //H5::DataSet imgBandDataset = this->keaImgFile->openDataSet(imageBandPath+KEA_BANDNAME_MASK);
+            //imgBandDataset.close();
+            
         }
         catch (H5::Exception &e)
         {
