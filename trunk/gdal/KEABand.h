@@ -34,6 +34,7 @@
 #include "KEADataset.h"
 
 class KEAOverview;
+class KEAMaskBand;
 
 // Provides the implementation of a GDAL raster band
 class KEARasterBand : public GDALPamRasterBand
@@ -43,6 +44,7 @@ private:
 
     int                  m_nOverviews; // number of overviews
     KEAOverview        **m_panOverviewBands; // array of overview objects
+    KEAMaskBand         *m_pMaskBand;   // pointer to mask band if one exists (and been requested)
 
     GDALRasterAttributeTable  *m_pAttributeTable; // pointer to the attribute table
                                                  // created on first call to GetDefaultRAT()
@@ -83,6 +85,11 @@ public:
     // virtual methods for color interpretation
     GDALColorInterp GetColorInterpretation();
     CPLErr SetColorInterpretation(GDALColorInterp gdalinterp);
+
+    // virtual mthods for band masks
+    CPLErr CreateMaskBand(int nFlags);
+    GDALRasterBand* GetMaskBand();
+    int GetMaskFlags();
 
     // internal methods for overviews
     void readExistingOverviews();

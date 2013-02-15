@@ -29,6 +29,7 @@
 
 #include "KEABand.h"
 #include "KEAOverview.h"
+#include "KEAMaskBand.h"
 
 #include "gdal_rat.h"
 #include "libkea/KEAAttributeTable.h"
@@ -57,9 +58,12 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAc
     // increment the refcount as we now have a reference to imageio
     (*this->m_pnRefCount)++;
 
-    // initialis overview variables
+    // initialise overview variables
     m_nOverviews = 0;
     m_panOverviewBands = NULL;
+
+    // mask band
+    m_pMaskBand = NULL;
 
     // grab the description here
     this->sDescription = pImageIO->getImageBandDescription(nSrcBand);
@@ -83,6 +87,8 @@ KEARasterBand::~KEARasterBand()
     CSLDestroy(this->m_papszMetadataList);
     // delete any overview bands
     this->deleteOverviewObjects();
+
+    delete m_pMaskBand;
 
     // according to the docs, this is required
     this->FlushCache();
@@ -1215,3 +1221,46 @@ std::string KEARasterBand::GetHistogramAsMetadata()
     }
     return sHistogram;
 }
+
+CPLErr KEARasterBand::CreateMaskBand(int nFlags)
+{
+    delete m_pMaskBand;
+    m_pMaskBand = NULL;
+    try
+    {
+        this->m_pImageIO->createMask(this->nBand);
+    }
+    catch(libkea::KEAException &e)
+    {
+        CPLError( CE_Failure, CPLE_AppDefined, "Failed to create mask band: %s", e.what());
+        return CE_Failure;
+    }
+    return CE_None;
+}
+
+GDALRasterBand* KEARasterBand::GetMaskBand()
+{
+    if( m_pMaskBand == NULL )
+    {
+        try
+        {
+            if( this->m_pImageIO->maskCreated(this->nBand) )
+            {
+                m_pMaskBand = new KEAMaskBand((KEADataset*)this->poDS, this->nBand, this->eAccess,
+                                        this->m_pImageIO, this->m_pnRefCount);
+            }
+        }
+        catch(libkea::KEAException &e)
+        {
+            // do nothing?
+        }
+    }
+    return m_pMaskBand;
+}
+
+int KEARasterBand::GetMaskFlags()
+{
+    // none of the other flags seem to make sense...
+    return 0;
+}
+
