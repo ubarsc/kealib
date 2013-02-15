@@ -801,10 +801,11 @@ namespace libkea{
             hsize_t numItems = imgBandGrp.getNumObjs();
             for(hsize_t i = 0; i < numItems; ++i)
             {
-                std::cout << "Item: " << imgBandGrp.getObjnameByIdx(i) << std::endl;
-                if(imgBandGrp.getObjnameByIdx(i) == KEA_BANDNAME_MASK)
+                //std::cout << "Item: " << imgBandGrp.getObjnameByIdx(i) << std::endl;
+                if(imgBandGrp.getObjnameByIdx(i) == "MASK")
                 {
                     maskPresent = true;
+                    break;
                 }
             }
             imgBandGrp.close();
