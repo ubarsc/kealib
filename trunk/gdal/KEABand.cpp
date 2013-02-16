@@ -88,7 +88,19 @@ KEARasterBand::~KEARasterBand()
     // delete any overview bands
     this->deleteOverviewObjects();
 
-    delete m_pMaskBand;
+    try
+    {
+        if( this->m_pImageIO->maskCreated(this->nBand) )
+        {
+            delete m_pMaskBand;
+        }
+        // otherwise gdal seems to delete it when we 
+        // are using the base class implementation
+    }
+    catch (libkea::KEAIOException &e)
+    {
+        
+    }
 
     // according to the docs, this is required
     this->FlushCache();
@@ -1249,6 +1261,12 @@ GDALRasterBand* KEARasterBand::GetMaskBand()
                 m_pMaskBand = new KEAMaskBand((KEADataset*)this->poDS, this->nBand, this->eAccess,
                                         this->m_pImageIO, this->m_pnRefCount);
             }
+            else
+            {
+                // use the base class implementation
+                fprintf( stderr, "returning base GetMaskBand()\n" );
+                m_pMaskBand = GDALPamRasterBand::GetMaskBand();
+            }
         }
         catch(libkea::KEAException &e)
         {
@@ -1260,6 +1278,21 @@ GDALRasterBand* KEARasterBand::GetMaskBand()
 
 int KEARasterBand::GetMaskFlags()
 {
+    try
+    {
+        if( ! this->m_pImageIO->maskCreated(this->nBand) )
+        {
+            // need to return the base class one since we are using
+            // the base class implementation of GetMaskBand()
+            fprintf( stderr, "returning base GetMaskFlags()\n" );
+            return GDALPamRasterBand::GetMaskFlags();
+        }
+    }
+    catch(libkea::KEAException &e)
+    {
+        // do nothing?
+    }
+
     // none of the other flags seem to make sense...
     return 0;
 }
