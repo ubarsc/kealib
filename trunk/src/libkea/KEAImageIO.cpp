@@ -494,7 +494,7 @@ namespace libkea{
             std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band);
             hsize_t imageBandDims[] = { spatialInfoFile->ySize, spatialInfoFile->xSize };
             H5::DataSpace imgBandDataSpace(2, imageBandDims);
-            H5::DataSet imgBandDataSet = this->keaImgFile->createDataSet((imageBandPath+KEA_BANDNAME_MASK), H5::PredType::STD_I8LE, imgBandDataSpace, initParamsImgBand);
+            H5::DataSet imgBandDataSet = this->keaImgFile->createDataSet((imageBandPath+KEA_BANDNAME_MASK), H5::PredType::STD_U8LE, imgBandDataSpace, initParamsImgBand);
             H5::Attribute classAttribute = imgBandDataSet.createAttribute(KEA_ATTRIBUTENAME_CLASS, strdatatypeLen6, attr_dataspace);
             classAttribute.write(strdatatypeLen6, strClassVal);
             classAttribute.close();
