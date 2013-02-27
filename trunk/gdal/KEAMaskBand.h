@@ -30,23 +30,20 @@
 #ifndef KEAMASKBAND_H
 #define KEAMASKBAND_H
 
-#include "KEABand.h"
+#include "gdal_priv.h"
+#include "libkea/KEAImageIO.h"
 
-// mask class. Derives from our band class
-// and just override the read/write block functions
-class KEAMaskBand : public KEARasterBand
+class KEAMaskBand : public GDALRasterBand
 {
+    int m_nSrcBand;
+    libkea::KEAImageIO  *m_pImageIO; // our image access pointer - refcounted
+    int                 *m_pnRefCount; // reference count of m_pImageIO
 public:
-    KEAMaskBand(KEADataset *pDataset, int nSrcBand, GDALAccess eAccess, 
-                libkea::KEAImageIO *pImageIO, int *pRefCount );
+    KEAMaskBand(GDALRasterBand *pParent, libkea::KEAImageIO *pImageIO, int *pRefCount );
     ~KEAMaskBand();
 
-    // virtual methods for RATs - not implemented for masks
-    const GDALRasterAttributeTable *GetDefaultRAT();
-    CPLErr SetDefaultRAT(const GDALRasterAttributeTable *poRAT);
-
 protected:
-    // we just override these functions from KEARasterBand
+    // we just override these functions from GDALRasterBand
     virtual CPLErr IReadBlock( int, int, void * );
     virtual CPLErr IWriteBlock( int, int, void * );
 

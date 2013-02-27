@@ -1258,13 +1258,12 @@ GDALRasterBand* KEARasterBand::GetMaskBand()
         {
             if( this->m_pImageIO->maskCreated(this->nBand) )
             {
-                m_pMaskBand = new KEAMaskBand((KEADataset*)this->poDS, this->nBand, this->eAccess,
-                                        this->m_pImageIO, this->m_pnRefCount);
+                m_pMaskBand = new KEAMaskBand(this, this->m_pImageIO, this->m_pnRefCount);
             }
             else
             {
                 // use the base class implementation
-                fprintf( stderr, "returning base GetMaskBand()\n" );
+                //fprintf( stderr, "returning base GetMaskBand()\n" );
                 m_pMaskBand = GDALPamRasterBand::GetMaskBand();
             }
         }
@@ -1284,7 +1283,7 @@ int KEARasterBand::GetMaskFlags()
         {
             // need to return the base class one since we are using
             // the base class implementation of GetMaskBand()
-            fprintf( stderr, "returning base GetMaskFlags()\n" );
+            //fprintf( stderr, "returning base GetMaskFlags()\n" );
             return GDALPamRasterBand::GetMaskFlags();
         }
     }

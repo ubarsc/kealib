@@ -30,16 +30,37 @@
 #include "KEAMaskBand.h"
 
 // constructor
-KEAMaskBand::KEAMaskBand(KEADataset *pDataset, int nSrcBand, GDALAccess eAccess,
+KEAMaskBand::KEAMaskBand(GDALRasterBand *pParent, 
                 libkea::KEAImageIO *pImageIO, int *pRefCount)
- : KEARasterBand( pDataset, nSrcBand, eAccess, pImageIO, pRefCount )
 {
+    m_nSrcBand = pParent->GetBand();
+    poDS = NULL;
+    nBand = 0;
 
+    nRasterXSize = pParent->GetXSize();
+    nRasterYSize = pParent->GetYSize();
+
+    eDataType = GDT_Byte;
+    pParent->GetBlockSize( &nBlockXSize, &nBlockYSize );
+    eAccess = pParent->GetAccess();
+
+    // grab the imageio class and its refcount
+    this->m_pImageIO = pImageIO;
+    this->m_pnRefCount = pRefCount;
+    // increment the refcount as we now have a reference to imageio
+    (*this->m_pnRefCount)++;
 }
 
 KEAMaskBand::~KEAMaskBand()
 {
-
+    // decrement the recount and delete if needed
+    (*m_pnRefCount)--;
+    if( *m_pnRefCount == 0 )
+    {
+        m_pImageIO->close();
+        delete m_pImageIO;
+        delete m_pnRefCount;
+    }
 }
 
 // overridden implementation - calls readImageBlock2BandMask instead
@@ -61,12 +82,11 @@ CPLErr KEAMaskBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
         {
             ysize -= (ytotalsize - this->nRasterYSize);
         }
-        this->m_pImageIO->readImageBlock2BandMask( this->nBand,
+        this->m_pImageIO->readImageBlock2BandMask( this->m_nSrcBand,
                                             pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
                                             xsize, ysize, this->nBlockXSize, this->nBlockYSize, 
-                                            this->m_eKEADataType );
-        return CE_None;
+                                            libkea::kea_8uint );
     }
     catch (libkea::KEAIOException &e)
     {
@@ -74,6 +94,7 @@ CPLErr KEAMaskBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
                 "Failed to read file: %s", e.what() );
         return CE_Failure;
     }
+    return CE_None;
 }
 
 // overridden implementation - calls writeImageBlock2BandMask instead
@@ -96,12 +117,11 @@ CPLErr KEAMaskBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage )
             ysize -= (ytotalsize - this->nRasterYSize);
         }
 
-        this->m_pImageIO-> writeImageBlock2BandMask( this->nBand, 
+        this->m_pImageIO-> writeImageBlock2BandMask( this->m_nSrcBand, 
                                             pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
                                             xsize, ysize, this->nBlockXSize, this->nBlockYSize,
-                                            this->m_eKEADataType );
-        return CE_None;
+                                            libkea::kea_8uint );
     }
     catch (libkea::KEAIOException &e)
     {
@@ -109,16 +129,5 @@ CPLErr KEAMaskBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage )
                 "Failed to write file: %s", e.what() );
         return CE_Failure;
     }
-}
-
-const GDALRasterAttributeTable *KEAMaskBand::GetDefaultRAT()
-{
-    // KEARasterBand implements this, but we don't want to
-    return NULL;
-}
-
-CPLErr KEAMaskBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
-{
-    // KEARasterBand implements this, but we don't want to
-    return CE_Failure;    
+    return CE_None;
 }
