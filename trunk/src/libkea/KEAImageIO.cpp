@@ -31,6 +31,7 @@
 #include "libkea/KEAImageIO.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 namespace libkea{
     
@@ -59,7 +60,7 @@ namespace libkea{
                 }
                 datasetFileVersion.read((void*)strVerData, strVerDataType);
                 keaVersion = std::string(strVerData[0]);
-                delete strVerData[0];
+                free(strVerData[0]);
                 delete[] strVerData;
                 datasetFileVersion.close();
             }
@@ -98,6 +99,7 @@ namespace libkea{
                 datasetSpatialTL.read(values, H5::PredType::NATIVE_DOUBLE, valueDataSpace);
                 this->spatialInfoFile->tlX = values[0];
                 this->spatialInfoFile->tlY = values[1];
+                delete[] values;
                 datasetSpatialTL.close();
                 valueDataSpace.close();
             } 
@@ -117,6 +119,7 @@ namespace libkea{
                 spatialResDataset.read(values, H5::PredType::NATIVE_DOUBLE, valueDataSpace);
                 this->spatialInfoFile->xRes = values[0];
                 this->spatialInfoFile->yRes = values[1];
+                delete[] values;
                 spatialResDataset.close();
                 valueDataSpace.close();
             } 
@@ -136,6 +139,7 @@ namespace libkea{
                 spatialRotDataset.read(values, H5::PredType::NATIVE_DOUBLE, valueDataSpace);
                 this->spatialInfoFile->xRot = values[0];
                 this->spatialInfoFile->yRot = values[1];
+                delete[] values;
                 spatialRotDataset.close();
                 valueDataSpace.close();
             } 
@@ -155,6 +159,7 @@ namespace libkea{
                 spatialSizeDataset.read(values, H5::PredType::NATIVE_ULONG, valueDataSpace);
                 this->spatialInfoFile->xSize = values[0];
                 this->spatialInfoFile->ySize = values[1];
+                delete[] values;
                 spatialSizeDataset.close();
                 valueDataSpace.close();
             } 
@@ -176,7 +181,7 @@ namespace libkea{
                 }
                 datasetSpatialReference.read((void*)strData, strDataType);
                 this->spatialInfoFile->wktString = std::string(strData[0]);
-                delete strData[0];
+                free(strData[0]);
                 delete[] strData;
                 datasetSpatialReference.close();
             } 
@@ -1094,7 +1099,7 @@ namespace libkea{
             }
             datasetMetaData.read((void*)strData, strDataType);
             value = std::string(strData[0]);
-            delete strData[0];
+            free(strData[0]);
             delete[] strData;
             datasetMetaData.close();
         } 
@@ -1279,7 +1284,7 @@ namespace libkea{
             }
             datasetBandDescription.read((void*)strData, strDataType);
             description = std::string(strData[0]);
-            delete strData[0];
+            free(strData[0]);
             delete[] strData;
             datasetBandDescription.close();
         } 
@@ -2808,6 +2813,7 @@ namespace libkea{
         {
             delete this->spatialInfoFile;
             this->keaImgFile->close();
+            delete this->keaImgFile;
             this->keaImgFile = NULL;
             this->fileOpen = false;
         }
@@ -3124,7 +3130,7 @@ namespace libkea{
                 }
                 datasetFileType.read((void*)strFTData, strFTDataType);
                 std::string fileType = std::string(strFTData[0]);
-                delete strFTData[0];
+                free(strFTData[0]);
                 delete[] strFTData;
                 datasetFileType.close();
                                 
@@ -3142,11 +3148,11 @@ namespace libkea{
                         }
                         datasetFileVersion.read((void*)strVerData, strVerDataType);
                         std::string fileVersion = std::string(strVerData[0]);
-                        delete strVerData[0];
+                        free(strVerData[0]);
                         delete[] strVerData;
                         datasetFileVersion.close();
                         
-                        if((fileVersion == "1.0") | fileVersion == "1.1")
+                        if((fileVersion == "1.0") || (fileVersion == "1.1"))
                         {
                             keaImageFound = true;
                         }
@@ -3172,6 +3178,7 @@ namespace libkea{
             }
             
             keaImgH5File->close();
+            delete keaImgH5File;
         } 
         catch( H5::Exception &e ) // WILL BE THROWN WHEN THE HDF LIBRARY CANNOT OPEN THE FILE - IE IT IS NOT A HDF5 FILE!
 		{
