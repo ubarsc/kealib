@@ -133,8 +133,6 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
         int blueIdx = -1;
         bool alphaDef = false;
         int alphaIdx = -1;
-        bool histoDef = false;
-        int histoIdx = -1;
         
         int numCols = gdalAtt->GetColumnCount();
         std::vector<libkea::KEAATTField*> *fields = new std::vector<libkea::KEAATTField*>();
@@ -165,8 +163,6 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
             {
                 field->usage = "PixelCount";
                 field->dataType = libkea::kea_att_int;
-                histoDef = true;
-                histoIdx = i;
             }
             else if(bInputHFA && (field->name == "Opacity"))
             {
