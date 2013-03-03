@@ -64,6 +64,7 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAc
 
     // mask band
     m_pMaskBand = NULL;
+    m_bMaskBandOwned = false;
 
     // grab the description here
     this->sDescription = pImageIO->getImageBandDescription(nSrcBand);
@@ -88,18 +89,10 @@ KEARasterBand::~KEARasterBand()
     // delete any overview bands
     this->deleteOverviewObjects();
 
-    try
+    // if GDAL created the mask it will delete it
+    if( m_bMaskBandOwned )
     {
-        if( this->m_pImageIO->maskCreated(this->nBand) )
-        {
-            delete m_pMaskBand;
-        }
-        // otherwise gdal seems to delete it when we 
-        // are using the base class implementation
-    }
-    catch (libkea::KEAIOException &e)
-    {
-        
+        delete m_pMaskBand;
     }
 
     // according to the docs, this is required
@@ -1259,10 +1252,11 @@ GDALRasterBand* KEARasterBand::GetMaskBand()
             if( this->m_pImageIO->maskCreated(this->nBand) )
             {
                 m_pMaskBand = new KEAMaskBand(this, this->m_pImageIO, this->m_pnRefCount);
+                m_bMaskBandOwned = true;
             }
             else
             {
-                // use the base class implementation
+                // use the base class implementation - GDAL will delete
                 //fprintf( stderr, "returning base GetMaskBand()\n" );
                 m_pMaskBand = GDALPamRasterBand::GetMaskBand();
             }

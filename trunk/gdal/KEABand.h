@@ -45,6 +45,7 @@ private:
     int                  m_nOverviews; // number of overviews
     KEAOverview        **m_panOverviewBands; // array of overview objects
     GDALRasterBand      *m_pMaskBand;   // pointer to mask band if one exists (and been requested)
+    bool                 m_bMaskBandOwned; // do we delete it or not?
 
     GDALRasterAttributeTable  *m_pAttributeTable; // pointer to the attribute table
                                                  // created on first call to GetDefaultRAT()

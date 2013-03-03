@@ -53,6 +53,9 @@ KEAMaskBand::KEAMaskBand(GDALRasterBand *pParent,
 
 KEAMaskBand::~KEAMaskBand()
 {
+    // according to the docs, this is required
+    this->FlushCache();
+
     // decrement the recount and delete if needed
     (*m_pnRefCount)--;
     if( *m_pnRefCount == 0 )
