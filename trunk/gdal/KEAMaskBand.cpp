@@ -60,7 +60,13 @@ KEAMaskBand::~KEAMaskBand()
     (*m_pnRefCount)--;
     if( *m_pnRefCount == 0 )
     {
-        m_pImageIO->close();
+        try
+        {
+            m_pImageIO->close();
+        }
+        catch (kealib::KEAIOException &e)
+        {
+        }
         delete m_pImageIO;
         delete m_pnRefCount;
     }

@@ -345,7 +345,13 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
         }
 
         // close it
-        pImageIO->close();
+        try
+        {
+            pImageIO->close();
+        }
+        catch (kealib::KEAIOException &e)
+        {
+        }
         delete pImageIO;
 
         // now open it again - because the constructor loads all the info
@@ -423,7 +429,13 @@ KEADataset::~KEADataset()
     (*m_pnRefcount)--;
     if( *m_pnRefcount == 0 )
     {
-        m_pImageIO->close();
+        try
+        {
+            m_pImageIO->close();
+        }
+        catch (kealib::KEAIOException &e)
+        {
+        }
         delete m_pImageIO;
         delete m_pnRefcount;
     }
