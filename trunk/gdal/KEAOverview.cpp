@@ -31,8 +31,8 @@
 
 // constructor
 KEAOverview::KEAOverview(KEADataset *pDataset, int nSrcBand, GDALAccess eAccess,
-                libkea::KEAImageIO *pImageIO, int *pRefCount,
-                int nOverviewIndex, int nXSize, int nYSize)
+                kealib::KEAImageIO *pImageIO, int *pRefCount,
+                int nOverviewIndex, uint64_t nXSize, uint64_t nYSize)
  : KEARasterBand( pDataset, nSrcBand, eAccess, pImageIO, pRefCount )
 {
     this->m_nOverviewIndex = nOverviewIndex;
@@ -74,7 +74,7 @@ CPLErr KEAOverview::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
                                             this->m_eKEADataType );
         return CE_None;
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined,
                 "Failed to read file: %s", e.what() );
@@ -109,7 +109,7 @@ CPLErr KEAOverview::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage )
                                             this->m_eKEADataType );
         return CE_None;
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined,
                 "Failed to write file: %s", e.what() );

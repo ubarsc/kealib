@@ -39,8 +39,8 @@ class KEAOverview : public KEARasterBand
     int         m_nOverviewIndex; // the index of this overview
 public:
     KEAOverview(KEADataset *pDataset, int nSrcBand, GDALAccess eAccess, 
-                libkea::KEAImageIO *pImageIO, int *pRefCount,
-                int nOverviewIndex, int nXSize, int nYSize );
+                kealib::KEAImageIO *pImageIO, int *pRefCount,
+                int nOverviewIndex, uint64_t nXSize, uint64_t nYSize );
     ~KEAOverview();
 
     // virtual methods for RATs - not implemented for overviews

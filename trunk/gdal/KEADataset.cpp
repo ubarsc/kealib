@@ -34,31 +34,31 @@
 #include "libkea/KEACommon.h"
 
 // Function for converting a libkea type into a GDAL type
-GDALDataType KEA_to_GDAL_Type( libkea::KEADataType keaType )
+GDALDataType KEA_to_GDAL_Type( kealib::KEADataType keaType )
 {
     GDALDataType gdalType = GDT_Unknown;
     switch( keaType )
     {
-        case libkea::kea_8int:
-        case libkea::kea_8uint:
+        case kealib::kea_8int:
+        case kealib::kea_8uint:
             gdalType = GDT_Byte;
             break;
-        case libkea::kea_16int:
+        case kealib::kea_16int:
             gdalType = GDT_Int16;
             break;
-        case libkea::kea_32int:
+        case kealib::kea_32int:
             gdalType = GDT_Int32;
             break;
-        case libkea::kea_16uint:
+        case kealib::kea_16uint:
             gdalType = GDT_UInt16;
             break;
-        case libkea::kea_32uint:
+        case kealib::kea_32uint:
             gdalType = GDT_UInt32;
             break;
-        case libkea::kea_32float:
+        case kealib::kea_32float:
             gdalType = GDT_Float32;
             break;
-        case libkea::kea_64float:
+        case kealib::kea_64float:
             gdalType = GDT_Float64;
             break;
         default:
@@ -68,35 +68,35 @@ GDALDataType KEA_to_GDAL_Type( libkea::KEADataType keaType )
     return gdalType;
 }
 
-// function for converting a GDAL type to a libkea type
-libkea::KEADataType GDAL_to_KEA_Type( GDALDataType gdalType )
+// function for converting a GDAL type to a kealib type
+kealib::KEADataType GDAL_to_KEA_Type( GDALDataType gdalType )
 {
-    libkea::KEADataType keaType = libkea::kea_undefined;
+    kealib::KEADataType keaType = kealib::kea_undefined;
     switch( gdalType )
     {
         case GDT_Byte:
-            keaType = libkea::kea_8uint;
+            keaType = kealib::kea_8uint;
             break;
         case GDT_Int16:
-            keaType = libkea::kea_16int;
+            keaType = kealib::kea_16int;
             break;
         case GDT_Int32:
-            keaType = libkea::kea_32int;
+            keaType = kealib::kea_32int;
             break;
         case GDT_UInt16:
-            keaType = libkea::kea_16uint;
+            keaType = kealib::kea_16uint;
             break;
         case GDT_UInt32:
-            keaType = libkea::kea_32uint;
+            keaType = kealib::kea_32uint;
             break;
         case GDT_Float32:
-            keaType = libkea::kea_32float;
+            keaType = kealib::kea_32float;
             break;
         case GDT_Float64:
-            keaType = libkea::kea_64float;
+            keaType = kealib::kea_64float;
             break;
         default:
-            keaType = libkea::kea_undefined;
+            keaType = kealib::kea_undefined;
             break;
     }
     return keaType;
@@ -109,9 +109,9 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
     try
     {
         // is this a KEA file?
-        isKEA = libkea::KEAImageIO::isKEAImage( poOpenInfo->pszFilename );
+        isKEA = kealib::KEAImageIO::isKEAImage( poOpenInfo->pszFilename );
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         isKEA = false;
     }
@@ -124,11 +124,11 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
             H5::H5File *pH5File;
             if( poOpenInfo->eAccess == GA_ReadOnly )
             {
-                pH5File = libkea::KEAImageIO::openKeaH5RDOnly( poOpenInfo->pszFilename );
+                pH5File = kealib::KEAImageIO::openKeaH5RDOnly( poOpenInfo->pszFilename );
             }
             else
             {
-                pH5File = libkea::KEAImageIO::openKeaH5RW( poOpenInfo->pszFilename );
+                pH5File = kealib::KEAImageIO::openKeaH5RW( poOpenInfo->pszFilename );
             }
             // create the KEADataset object
             KEADataset *pDataset = new KEADataset( pH5File, poOpenInfo->eAccess );
@@ -138,7 +138,7 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
 
             return pDataset;
         }
-        catch (libkea::KEAIOException &e)
+        catch (kealib::KEAIOException &e)
         {
             // was a problem - can't be a valid file
             return NULL;
@@ -160,9 +160,9 @@ int KEADataset::Identify( GDALOpenInfo * poOpenInfo )
     try
     {
         // is this a KEA file?
-        isKEA = libkea::KEAImageIO::isKEAImage( poOpenInfo->pszFilename );
+        isKEA = kealib::KEAImageIO::isKEAImage( poOpenInfo->pszFilename );
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         isKEA = false;
     }
@@ -187,48 +187,48 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
     }
     // process any creation options in papszParmList
     // default value
-    unsigned int imageblockSize = libkea::KEA_IMAGE_CHUNK_SIZE;
+    unsigned int imageblockSize = kealib::KEA_IMAGE_CHUNK_SIZE;
     // see if they have provided a different value
     const char *pszValue = CSLFetchNameValue( papszParmList, "IMAGEBLOCKSIZE" );
     if( pszValue != NULL )
         imageblockSize = atol( pszValue );
 
-    unsigned int attblockSize = libkea::KEA_ATT_CHUNK_SIZE;
+    unsigned int attblockSize = kealib::KEA_ATT_CHUNK_SIZE;
     pszValue = CSLFetchNameValue( papszParmList, "ATTBLOCKSIZE" );
     if( pszValue != NULL )
         attblockSize = atol( pszValue );
 
-    unsigned int mdcElmts = libkea::KEA_MDC_NELMTS;
+    unsigned int mdcElmts = kealib::KEA_MDC_NELMTS;
     pszValue = CSLFetchNameValue( papszParmList, "MDC_NELMTS" );
     if( pszValue != NULL )
         mdcElmts = atol( pszValue );
 
-    hsize_t rdccNElmts = libkea::KEA_RDCC_NELMTS;
+    hsize_t rdccNElmts = kealib::KEA_RDCC_NELMTS;
     pszValue = CSLFetchNameValue( papszParmList, "RDCC_NELMTS" );
     if( pszValue != NULL )
         rdccNElmts = atol( pszValue );
 
-    hsize_t rdccNBytes = libkea::KEA_RDCC_NBYTES;
+    hsize_t rdccNBytes = kealib::KEA_RDCC_NBYTES;
     pszValue = CSLFetchNameValue( papszParmList, "RDCC_NBYTES" );
     if( pszValue != NULL )
         rdccNBytes = atol( pszValue );
 
-    double rdccW0 = libkea::KEA_RDCC_W0;
+    double rdccW0 = kealib::KEA_RDCC_W0;
     pszValue = CSLFetchNameValue( papszParmList, "RDCC_W0" );
     if( pszValue != NULL )
         rdccW0 = atof( pszValue );
 
-    hsize_t sieveBuf = libkea::KEA_SIEVE_BUF;
+    hsize_t sieveBuf = kealib::KEA_SIEVE_BUF;
     pszValue = CSLFetchNameValue( papszParmList, "SIEVE_BUF" );
     if( pszValue != NULL )
         sieveBuf = atol( pszValue );
 
-    hsize_t metaBlockSize = libkea::KEA_META_BLOCKSIZE;
+    hsize_t metaBlockSize = kealib::KEA_META_BLOCKSIZE;
     pszValue = CSLFetchNameValue( papszParmList, "META_BLOCKSIZE" );
     if( pszValue != NULL )
         metaBlockSize = atol( pszValue );
 
-    unsigned int deflate = libkea::KEA_DEFLATE;
+    unsigned int deflate = kealib::KEA_DEFLATE;
     pszValue = CSLFetchNameValue( papszParmList, "DEFLATE" );
     if( pszValue != NULL )
         deflate = atol( pszValue );
@@ -236,7 +236,7 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
     try
     {
         // now create it
-        H5::H5File *keaImgH5File = libkea::KEAImageIO::createKEAImage( pszFilename,
+        H5::H5File *keaImgH5File = kealib::KEAImageIO::createKEAImage( pszFilename,
                                                     GDAL_to_KEA_Type( eType ),
                                                     nXSize, nYSize, nBands,
                                                     NULL, NULL, imageblockSize, attblockSize, mdcElmts, rdccNElmts,
@@ -248,7 +248,7 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
 
         return pDataset;
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         CPLError( CE_Failure, CPLE_OpenFailed,
                   "Attempt to create file `%s' failed. Error: %s\n",
@@ -270,48 +270,48 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
     }
     // process any creation options in papszParmList
     // default value
-    unsigned int imageblockSize = libkea::KEA_IMAGE_CHUNK_SIZE;
+    unsigned int imageblockSize = kealib::KEA_IMAGE_CHUNK_SIZE;
     // see if they have provided a different value
     const char *pszValue = CSLFetchNameValue( papszParmList, "IMAGEBLOCKSIZE" );
     if( pszValue != NULL )
         imageblockSize = atol( pszValue );
 
-    unsigned int attblockSize = libkea::KEA_ATT_CHUNK_SIZE;
+    unsigned int attblockSize = kealib::KEA_ATT_CHUNK_SIZE;
     pszValue = CSLFetchNameValue( papszParmList, "ATTBLOCKSIZE" );
     if( pszValue != NULL )
         attblockSize = atol( pszValue );
 
-    unsigned int mdcElmts = libkea::KEA_MDC_NELMTS;
+    unsigned int mdcElmts = kealib::KEA_MDC_NELMTS;
     pszValue = CSLFetchNameValue( papszParmList, "MDC_NELMTS" );
     if( pszValue != NULL )
         mdcElmts = atol( pszValue );
 
-    hsize_t rdccNElmts = libkea::KEA_RDCC_NELMTS;
+    hsize_t rdccNElmts = kealib::KEA_RDCC_NELMTS;
     pszValue = CSLFetchNameValue( papszParmList, "RDCC_NELMTS" );
     if( pszValue != NULL )
         rdccNElmts = atol( pszValue );
 
-    hsize_t rdccNBytes = libkea::KEA_RDCC_NBYTES;
+    hsize_t rdccNBytes = kealib::KEA_RDCC_NBYTES;
     pszValue = CSLFetchNameValue( papszParmList, "RDCC_NBYTES" );
     if( pszValue != NULL )
         rdccNBytes = atol( pszValue );
 
-    double rdccW0 = libkea::KEA_RDCC_W0;
+    double rdccW0 = kealib::KEA_RDCC_W0;
     pszValue = CSLFetchNameValue( papszParmList, "RDCC_W0" );
     if( pszValue != NULL )
         rdccW0 = atof( pszValue );
 
-    hsize_t sieveBuf = libkea::KEA_SIEVE_BUF;
+    hsize_t sieveBuf = kealib::KEA_SIEVE_BUF;
     pszValue = CSLFetchNameValue( papszParmList, "SIEVE_BUF" );
     if( pszValue != NULL )
         sieveBuf = atol( pszValue );
 
-    hsize_t metaBlockSize = libkea::KEA_META_BLOCKSIZE;
+    hsize_t metaBlockSize = kealib::KEA_META_BLOCKSIZE;
     pszValue = CSLFetchNameValue( papszParmList, "META_BLOCKSIZE" );
     if( pszValue != NULL )
         metaBlockSize = atol( pszValue );
 
-    unsigned int deflate = libkea::KEA_DEFLATE;
+    unsigned int deflate = kealib::KEA_DEFLATE;
     pszValue = CSLFetchNameValue( papszParmList, "DEFLATE" );
     if( pszValue != NULL )
         deflate = atol( pszValue );
@@ -325,14 +325,14 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
     try
     {
         // now create it
-        H5::H5File *keaImgH5File = libkea::KEAImageIO::createKEAImage( pszFilename,
+        H5::H5File *keaImgH5File = kealib::KEAImageIO::createKEAImage( pszFilename,
                                                     GDAL_to_KEA_Type( eType ),
                                                     nXSize, nYSize, nBands,
                                                     NULL, NULL, imageblockSize, attblockSize, mdcElmts, rdccNElmts,
                                                     rdccNBytes, rdccW0, sieveBuf, metaBlockSize, deflate );
 
         // create the imageio
-        libkea::KEAImageIO *pImageIO = new libkea::KEAImageIO();
+        kealib::KEAImageIO *pImageIO = new kealib::KEAImageIO();
         
         // open the file
         pImageIO->openKEAImageHeader( keaImgH5File );
@@ -350,7 +350,7 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
 
         // now open it again - because the constructor loads all the info
         // in we need to copy the data first....
-        keaImgH5File = libkea::KEAImageIO::openKeaH5RW( pszFilename );
+        keaImgH5File = kealib::KEAImageIO::openKeaH5RW( pszFilename );
 
         // and wrap it in a dataset
         KEADataset *pDataset = new KEADataset( keaImgH5File, GA_Update );
@@ -358,7 +358,7 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
 
         return pDataset;
     }
-    catch (libkea::KEAException &e)
+    catch (kealib::KEAException &e)
     {
         CPLError( CE_Failure, CPLE_OpenFailed,
                   "Attempt to create file `%s' failed. Error: %s\n",
@@ -374,12 +374,12 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File, GDALAccess eAccess )
     try
     {
         // create the image IO and initilize the refcount
-        m_pImageIO = new libkea::KEAImageIO();
+        m_pImageIO = new kealib::KEAImageIO();
         m_pnRefcount = new int(1);
 
         // open the file
         m_pImageIO->openKEAImageHeader( keaImgH5File );
-        libkea::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
+        kealib::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
 
         // get the dimensions
         this->nBands = m_pImageIO->getNumOfImageBands();
@@ -390,7 +390,7 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File, GDALAccess eAccess )
         // create all the bands
         for( int nCount = 0; nCount < nBands; nCount++ )
         {
-            // note GDAL uses indices starting at 1 and so does libkea
+            // note GDAL uses indices starting at 1 and so does kealib
             // create band object
             KEARasterBand *pBand = new KEARasterBand( this, nCount + 1, eAccess, m_pImageIO, m_pnRefcount );
             // read in overviews
@@ -407,7 +407,7 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File, GDALAccess eAccess )
         m_pGCPs = NULL;
         m_pszGCPProjection = NULL;
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         // ignore?
         CPLError( CE_Warning, CPLE_AppDefined,
@@ -448,7 +448,7 @@ CPLErr KEADataset::GetGeoTransform( double * padfTransform )
 {
     try
     {
-        libkea::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
+        kealib::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
         // GDAL uses an array format
         padfTransform[0] = pSpatialInfo->tlX;
         padfTransform[1] = pSpatialInfo->xRes;
@@ -459,7 +459,7 @@ CPLErr KEADataset::GetGeoTransform( double * padfTransform )
     
         return CE_None;
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         CPLError( CE_Warning, CPLE_AppDefined,
                 "Unable to read geotransform: %s", e.what() );
@@ -472,11 +472,11 @@ const char *KEADataset::GetProjectionRef()
 {
     try
     {
-        libkea::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
+        kealib::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
         // should be safe since pSpatialInfo should be around a while...
         return pSpatialInfo->wktString.c_str();
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         return NULL;
     }
@@ -488,7 +488,7 @@ CPLErr KEADataset::SetGeoTransform (double *padfTransform )
     try
     {
         // get the spatial info and update it
-        libkea::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
+        kealib::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
         // convert back from GDAL's array format
         pSpatialInfo->tlX = padfTransform[0];
         pSpatialInfo->xRes = padfTransform[1];
@@ -500,7 +500,7 @@ CPLErr KEADataset::SetGeoTransform (double *padfTransform )
         m_pImageIO->setSpatialInfo( pSpatialInfo );
         return CE_None;
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         CPLError( CE_Warning, CPLE_AppDefined,
                 "Unable to write geotransform: %s", e.what() );
@@ -514,14 +514,14 @@ CPLErr KEADataset::SetProjection( const char *pszWKT )
     try
     {
         // get the spatial info and update it
-        libkea::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
+        kealib::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
 
         pSpatialInfo->wktString = pszWKT;
 
         m_pImageIO->setSpatialInfo( pSpatialInfo );
         return CE_None;
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         CPLError( CE_Warning, CPLE_AppDefined,
                 "Unable to write projection: %s", e.what() );
@@ -584,7 +584,7 @@ CPLErr KEADataset::SetMetadataItem(const char *pszName, const char *pszValue, co
         m_papszMetadataList = CSLSetNameValue( m_papszMetadataList, pszName, pszValue );
         return CE_None;
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         return CE_Failure;
     }
@@ -632,7 +632,7 @@ CPLErr KEADataset::SetMetadata(char **papszMetadata, const char *pszDomain)
             nIndex++;
         }
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         return CE_Failure;
     }
@@ -646,9 +646,9 @@ CPLErr KEADataset::SetMetadata(char **papszMetadata, const char *pszDomain)
 CPLErr KEADataset::AddBand(GDALDataType eType, char **papszOptions)
 {
     // process any creation options in papszOptions
-    unsigned int imageBlockSize = libkea::KEA_IMAGE_CHUNK_SIZE;
-    unsigned int attBlockSize = libkea::KEA_ATT_CHUNK_SIZE;
-    unsigned int deflate = libkea::KEA_DEFLATE;
+    unsigned int imageBlockSize = kealib::KEA_IMAGE_CHUNK_SIZE;
+    unsigned int attBlockSize = kealib::KEA_ATT_CHUNK_SIZE;
+    unsigned int deflate = kealib::KEA_DEFLATE;
     if (papszOptions != NULL) {
         const char *pszValue = CSLFetchNameValue(papszOptions,"IMAGEBLOCKSIZE");
         if ( pszValue != NULL ) {
@@ -669,7 +669,7 @@ CPLErr KEADataset::AddBand(GDALDataType eType, char **papszOptions)
     try {
         m_pImageIO->addImageBand(GDAL_to_KEA_Type(eType), "", imageBlockSize,
                 attBlockSize, deflate);
-    } catch (libkea::KEAIOException &e) {
+    } catch (kealib::KEAIOException &e) {
         return CE_Failure;
     }
 
@@ -677,7 +677,7 @@ CPLErr KEADataset::AddBand(GDALDataType eType, char **papszOptions)
     this->nBands = m_pImageIO->getNumOfImageBands();
 
     // create a new band and add it to the dataset
-    // note GDAL uses indices starting at 1 and so does libkea
+    // note GDAL uses indices starting at 1 and so does kealib
     KEARasterBand *pBand = new KEARasterBand(this, this->nBands, this->eAccess,
             m_pImageIO, m_pnRefcount);
     this->SetBand(this->nBands, pBand);            
@@ -692,7 +692,7 @@ int KEADataset::GetGCPCount()
     {
         return m_pImageIO->getGCPCount();
     }
-    catch (libkea::KEAIOException &e) 
+    catch (kealib::KEAIOException &e) 
     {
         return 0;
     }
@@ -708,7 +708,7 @@ const char* KEADataset::GetGCPProjection()
             std::string sProj = m_pImageIO->getGCPProjection();
             m_pszGCPProjection = strdup( sProj.c_str() );
         }
-        catch (libkea::KEAIOException &e) 
+        catch (kealib::KEAIOException &e) 
         {
             return NULL;
         }
@@ -724,13 +724,13 @@ const GDAL_GCP* KEADataset::GetGCPs()
         try
         {
             unsigned int nCount = m_pImageIO->getGCPCount();
-            std::vector<libkea::KEAImageGCP*> *pKEAGCPs = m_pImageIO->getGCPs();
+            std::vector<kealib::KEAImageGCP*> *pKEAGCPs = m_pImageIO->getGCPs();
 
             m_pGCPs = (GDAL_GCP*)calloc(nCount, sizeof(GDAL_GCP));
             for( unsigned int nIndex = 0; nIndex < nCount; nIndex++)
             {
                 GDAL_GCP *pGCP = &m_pGCPs[nIndex];
-                libkea::KEAImageGCP *pKEAGCP = pKEAGCPs->at(nIndex);
+                kealib::KEAImageGCP *pKEAGCP = pKEAGCPs->at(nIndex);
                 pGCP->pszId = strdup( pKEAGCP->pszId.c_str() );
                 pGCP->pszInfo = strdup( pKEAGCP->pszInfo.c_str() );
                 pGCP->dfGCPPixel = pKEAGCP->dfGCPPixel;
@@ -740,7 +740,7 @@ const GDAL_GCP* KEADataset::GetGCPs()
                 pGCP->dfGCPZ = pKEAGCP->dfGCPZ;
             }
         }
-        catch (libkea::KEAIOException &e) 
+        catch (kealib::KEAIOException &e) 
         {
             return NULL;
         }
@@ -755,11 +755,11 @@ CPLErr KEADataset::SetGCPs(int nGCPCount, const GDAL_GCP *pasGCPList, const char
     m_pszGCPProjection = NULL;
     CPLErr result = CE_None;
 
-    std::vector<libkea::KEAImageGCP*> *pKEAGCPs = new std::vector<libkea::KEAImageGCP*>(nGCPCount);
+    std::vector<kealib::KEAImageGCP*> *pKEAGCPs = new std::vector<kealib::KEAImageGCP*>(nGCPCount);
     for( int nIndex = 0; nIndex < nGCPCount; nIndex++ )
     {
         const GDAL_GCP *pGCP = &pasGCPList[nIndex];
-        libkea::KEAImageGCP *pKEA = new libkea::KEAImageGCP;
+        kealib::KEAImageGCP *pKEA = new kealib::KEAImageGCP;
         pKEA->pszId = pGCP->pszId;
         pKEA->pszInfo = pGCP->pszInfo;
         pKEA->dfGCPPixel = pGCP->dfGCPPixel;
@@ -773,16 +773,16 @@ CPLErr KEADataset::SetGCPs(int nGCPCount, const GDAL_GCP *pasGCPList, const char
     {
         m_pImageIO->setGCPs(pKEAGCPs, pszGCPProjection);
     }
-    catch (libkea::KEAIOException &e) 
+    catch (kealib::KEAIOException &e) 
     {
         CPLError( CE_Warning, CPLE_AppDefined,
                 "Unable to write GCPs: %s", e.what() );
         result = CE_Failure;
     }
 
-    for( std::vector<libkea::KEAImageGCP*>::iterator itr = pKEAGCPs->begin(); itr != pKEAGCPs->end(); itr++)
+    for( std::vector<kealib::KEAImageGCP*>::iterator itr = pKEAGCPs->begin(); itr != pKEAGCPs->end(); itr++)
     {
-        libkea::KEAImageGCP *pKEA = (*itr);
+        kealib::KEAImageGCP *pKEA = (*itr);
         delete pKEA;
     }
     delete pKEAGCPs;

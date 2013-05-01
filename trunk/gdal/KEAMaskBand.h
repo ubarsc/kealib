@@ -36,10 +36,10 @@
 class KEAMaskBand : public GDALRasterBand
 {
     int m_nSrcBand;
-    libkea::KEAImageIO  *m_pImageIO; // our image access pointer - refcounted
+    kealib::KEAImageIO  *m_pImageIO; // our image access pointer - refcounted
     int                 *m_pnRefCount; // reference count of m_pImageIO
 public:
-    KEAMaskBand(GDALRasterBand *pParent, libkea::KEAImageIO *pImageIO, int *pRefCount );
+    KEAMaskBand(GDALRasterBand *pParent, kealib::KEAImageIO *pImageIO, int *pRefCount );
     ~KEAMaskBand();
 
 protected:
