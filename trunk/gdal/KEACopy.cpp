@@ -38,10 +38,10 @@
 
 // Copies GDAL Band to KEA Band if nOverview == -1
 // Otherwise it is assumed we are writing to the specified overview
-bool CopyRasterData( GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand, int nOverview, int nTotalBands, GDALProgressFunc pfnProgress, void *pProgressData)
+bool CopyRasterData( GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand, int nOverview, int nTotalBands, GDALProgressFunc pfnProgress, void *pProgressData)
 {
     // get some info
-    libkea::KEADataType eKeaType = pImageIO->getImageBandDataType(nBand);
+    kealib::KEADataType eKeaType = pImageIO->getImageBandDataType(nBand);
     unsigned int nBlockSize;
     if( nOverview == -1 )
         nBlockSize = pImageIO->getImageBlockSize( nBand );
@@ -115,7 +115,7 @@ bool CopyRasterData( GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nB
 }
 
 // copies the raster attribute table
-void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
+void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
 {
     const GDALRasterAttributeTable *gdalAtt = pBand->GetDefaultRAT();
     if((gdalAtt != NULL) && (gdalAtt->GetRowCount() > 0))
@@ -123,7 +123,7 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
         // some operations depend on whether the input dataset is HFA
         int bInputHFA = EQUAL(pBand->GetDataset()->GetDriver()->GetDescription(), "HFA");
 
-        libkea::KEAAttributeTable *keaAtt = new libkea::KEAAttributeTableInMem();
+        kealib::KEAAttributeTable *keaAtt = new kealib::KEAAttributeTableInMem();
         
         bool redDef = false;
         int redIdx = -1;
@@ -135,24 +135,24 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
         int alphaIdx = -1;
         
         int numCols = gdalAtt->GetColumnCount();
-        std::vector<libkea::KEAATTField*> *fields = new std::vector<libkea::KEAATTField*>();
-        libkea::KEAATTField *field;
+        std::vector<kealib::KEAATTField*> *fields = new std::vector<kealib::KEAATTField*>();
+        kealib::KEAATTField *field;
         for(int i = 0; i < numCols; ++i)
         {
-            field = new libkea::KEAATTField();
+            field = new kealib::KEAATTField();
             field->name = gdalAtt->GetNameOfCol(i);
             
-            field->dataType = libkea::kea_att_string;
+            field->dataType = kealib::kea_att_string;
             switch(gdalAtt->GetTypeOfCol(i))
             {
                 case GFT_Integer:
-                    field->dataType = libkea::kea_att_int;
+                    field->dataType = kealib::kea_att_int;
                     break;
                 case GFT_Real:
-                    field->dataType = libkea::kea_att_float;
+                    field->dataType = kealib::kea_att_float;
                     break;
                 case GFT_String:
-                    field->dataType = libkea::kea_att_string;
+                    field->dataType = kealib::kea_att_string;
                     break;
                 default:
                     // leave as "kea_att_string"
@@ -162,13 +162,13 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
             if(bInputHFA && (field->name == "Histogram"))
             {
                 field->usage = "PixelCount";
-                field->dataType = libkea::kea_att_int;
+                field->dataType = kealib::kea_att_int;
             }
             else if(bInputHFA && (field->name == "Opacity"))
             {
                 field->name = "Alpha";
                 field->usage = "Alpha";
-                field->dataType = libkea::kea_att_int;
+                field->dataType = kealib::kea_att_int;
                 alphaDef = true;
                 alphaIdx = i;
             }
@@ -187,7 +187,7 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
                         field->usage = "Red";
                         if( bInputHFA )
                         {
-                            field->dataType = libkea::kea_att_int;
+                            field->dataType = kealib::kea_att_int;
                             redDef = true;
                             redIdx = i;
                         }
@@ -196,7 +196,7 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
                         field->usage = "Green";
                         if( bInputHFA )
                         {
-                            field->dataType = libkea::kea_att_int;
+                            field->dataType = kealib::kea_att_int;
                             greenDef = true;
                             greenIdx = i;
                         }
@@ -205,7 +205,7 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
                         field->usage = "Blue";
                         if( bInputHFA )
                         {
-                            field->dataType = libkea::kea_att_int;
+                            field->dataType = kealib::kea_att_int;
                             blueDef = true;
                             blueIdx = i;
                         }
@@ -227,7 +227,7 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
         int numRows = gdalAtt->GetRowCount();
         keaAtt->addRows(numRows);
         
-        libkea::KEAATTFeature *keaFeat = NULL;
+        kealib::KEAATTFeature *keaFeat = NULL;
         for(int i = 0; i < numRows; ++i)
         {
             keaFeat = keaAtt->getFeature(i);
@@ -255,13 +255,13 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
                 {
                     switch(field->dataType)
                     {
-                        case libkea::kea_att_int:
+                        case kealib::kea_att_int:
                             keaFeat->intFields->at(field->idx) = gdalAtt->GetValueAsInt(i, j);
                             break;
-                        case libkea::kea_att_float:
+                        case kealib::kea_att_float:
                             keaFeat->floatFields->at(field->idx) = gdalAtt->GetValueAsDouble(i, j);
                             break;
-                        case libkea::kea_att_string:
+                        case kealib::kea_att_string:
                             keaFeat->strFields->at(field->idx) = std::string(gdalAtt->GetValueAsString(i, j));
                             break;
                         default:
@@ -275,7 +275,7 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
         pImageIO->setAttributeTable(keaAtt, nBand);
         
         delete keaAtt;
-        for(std::vector<libkea::KEAATTField*>::iterator iterField = fields->begin(); iterField != fields->end(); ++iterField)
+        for(std::vector<kealib::KEAATTField*>::iterator iterField = fields->begin(); iterField != fields->end(); ++iterField)
         {
             delete *iterField;
         }
@@ -286,7 +286,7 @@ void CopyRAT(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
 // copies the metadata
 // pass nBand == -1 to copy a dataset's metadata
 // or band index to copy a band's metadata
-void CopyMetadata( GDALMajorObject *pObject, libkea::KEAImageIO *pImageIO, int nBand)
+void CopyMetadata( GDALMajorObject *pObject, kealib::KEAImageIO *pImageIO, int nBand)
 {
     char **ppszMetadata = pObject->GetMetadata();
     if( ppszMetadata != NULL )
@@ -303,11 +303,11 @@ void CopyMetadata( GDALMajorObject *pObject, libkea::KEAImageIO *pImageIO, int n
             {
                 if( EQUAL( pszValue, "athematic" ) )
                 {
-                    pImageIO->setImageBandLayerType(nBand, libkea::kea_continuous );
+                    pImageIO->setImageBandLayerType(nBand, kealib::kea_continuous );
                 }
                 else
                 {
-                    pImageIO->setImageBandLayerType(nBand, libkea::kea_thematic );
+                    pImageIO->setImageBandLayerType(nBand, kealib::kea_thematic );
                 }
             }
             else if( ( nBand != -1 ) && EQUAL( pszName, "STATISTICS_HISTOBINVALUES") )
@@ -329,24 +329,24 @@ void CopyMetadata( GDALMajorObject *pObject, libkea::KEAImageIO *pImageIO, int n
 }
 
 // copies the description over
-void CopyDescription(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
+void CopyDescription(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
 {
     const char *pszDesc = pBand->GetDescription();
     pImageIO->setImageBandDescription(nBand, pszDesc);
 }
 
 // copies the no data value accross
-void CopyNoData(GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand)
+void CopyNoData(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
 {
     int bSuccess = 0;
     double dNoData = pBand->GetNoDataValue(&bSuccess);
     if( bSuccess )
     {
-        pImageIO->setNoDataValue(nBand, &dNoData, libkea::kea_64float);
+        pImageIO->setNoDataValue(nBand, &dNoData, kealib::kea_64float);
     }
 }
 
-bool CopyBand( GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand, int nTotalbands, GDALProgressFunc pfnProgress, void *pProgressData)
+bool CopyBand( GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand, int nTotalbands, GDALProgressFunc pfnProgress, void *pProgressData)
 {
     // first copy the raster data over
     if( !CopyRasterData( pBand, pImageIO, nBand, -1, nTotalbands, pfnProgress, pProgressData) )
@@ -379,9 +379,9 @@ bool CopyBand( GDALRasterBand *pBand, libkea::KEAImageIO *pImageIO, int nBand, i
     return true;
 }
 
-void CopySpatialInfo(GDALDataset *pDataset, libkea::KEAImageIO *pImageIO)
+void CopySpatialInfo(GDALDataset *pDataset, kealib::KEAImageIO *pImageIO)
 {
-    libkea::KEAImageSpatialInfo *pSpatialInfo = pImageIO->getSpatialInfo();
+    kealib::KEAImageSpatialInfo *pSpatialInfo = pImageIO->getSpatialInfo();
 
     double padfTransform[6];
     if( pDataset->GetGeoTransform(padfTransform) == CE_None )
@@ -402,7 +402,7 @@ void CopySpatialInfo(GDALDataset *pDataset, libkea::KEAImageIO *pImageIO)
 }
 
 
-bool CopyFile( GDALDataset *pDataset, libkea::KEAImageIO *pImageIO, GDALProgressFunc pfnProgress, void *pProgressData )
+bool CopyFile( GDALDataset *pDataset, kealib::KEAImageIO *pImageIO, GDALProgressFunc pfnProgress, void *pProgressData )
 {
     // Main function - copies pDataset to pImageIO
 

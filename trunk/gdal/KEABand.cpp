@@ -40,7 +40,7 @@
 #include <limits.h>
 
 // constructor
-KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAccess, libkea::KEAImageIO *pImageIO, int *pRefCount )
+KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAccess, kealib::KEAImageIO *pImageIO, int *pRefCount )
 {
     this->poDS = pDataset; // our pointer onto the dataset
     this->nBand = nSrcBand; // this is the band we are
@@ -102,7 +102,13 @@ KEARasterBand::~KEARasterBand()
     (*m_pnRefCount)--;
     if( *m_pnRefCount == 0 )
     {
-        m_pImageIO->close();
+        try
+        {
+            m_pImageIO->close();
+        }
+        catch (kealib::KEAIOException &e)
+        {
+        }
         delete m_pImageIO;
         delete m_pnRefCount;
     }
@@ -122,7 +128,7 @@ void KEARasterBand::UpdateMetadataList()
     }
     // we have a pseudo metadata item that tells if we are thematic 
     // or continuous like the HFA driver
-    if( this->m_pImageIO->getImageBandLayerType(this->nBand) == libkea::kea_continuous )
+    if( this->m_pImageIO->getImageBandLayerType(this->nBand) == kealib::kea_continuous )
     {
         m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "LAYER_TYPE", "athematic" );
     }
@@ -191,7 +197,7 @@ CPLErr KEARasterBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage 
                                             this->m_eKEADataType );
         return CE_None;
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined,
                 "Failed to read file: %s", e.what() );
@@ -225,7 +231,7 @@ CPLErr KEARasterBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage
                                             this->m_eKEADataType );
         return CE_None;
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined,
                 "Failed to write file: %s", e.what() );
@@ -240,7 +246,7 @@ void KEARasterBand::SetDescription(const char *pszDescription)
         this->m_pImageIO->setImageBandDescription(this->nBand, pszDescription);
         this->sDescription = pszDescription;
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         // ignore?
     }
@@ -265,11 +271,11 @@ CPLErr KEARasterBand::SetMetadataItem(const char *pszName, const char *pszValue,
         {
             if( EQUAL( pszValue, "athematic" ) )
             {
-                this->m_pImageIO->setImageBandLayerType(this->nBand, libkea::kea_continuous );
+                this->m_pImageIO->setImageBandLayerType(this->nBand, kealib::kea_continuous );
             }
             else
             {
-                this->m_pImageIO->setImageBandLayerType(this->nBand, libkea::kea_thematic );
+                this->m_pImageIO->setImageBandLayerType(this->nBand, kealib::kea_thematic );
             }
         }
         // STATISTICS_HISTOBINVALUES handled separately also
@@ -286,7 +292,7 @@ CPLErr KEARasterBand::SetMetadataItem(const char *pszName, const char *pszValue,
         m_papszMetadataList = CSLSetNameValue( m_papszMetadataList, pszName, pszValue );
         return CE_None;
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         return CE_Failure;
     }
@@ -333,11 +339,11 @@ CPLErr KEARasterBand::SetMetadata(char **papszMetadata, const char *pszDomain)
             {
                 if( EQUAL( pszValue, "athematic" ) )
                 {
-                    this->m_pImageIO->setImageBandLayerType(this->nBand, libkea::kea_continuous );
+                    this->m_pImageIO->setImageBandLayerType(this->nBand, kealib::kea_continuous );
                 }
                 else
                 {
-                    this->m_pImageIO->setImageBandLayerType(this->nBand, libkea::kea_thematic );
+                    this->m_pImageIO->setImageBandLayerType(this->nBand, kealib::kea_thematic );
                 }
             }
             // STATISTICS_HISTOBINVALUES handled separately also
@@ -353,7 +359,7 @@ CPLErr KEARasterBand::SetMetadata(char **papszMetadata, const char *pszDomain)
             nIndex++;
         }
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         return CE_Failure;
     }
@@ -370,13 +376,13 @@ double KEARasterBand::GetNoDataValue(int *pbSuccess)
     try
     {
         double dVal;
-        this->m_pImageIO->getNoDataValue(this->nBand, &dVal, libkea::kea_64float);
+        this->m_pImageIO->getNoDataValue(this->nBand, &dVal, kealib::kea_64float);
         if( pbSuccess != NULL )
             *pbSuccess = 1;
 
         return dVal;
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         if( pbSuccess != NULL )
             *pbSuccess = 0;
@@ -416,7 +422,7 @@ CPLErr KEARasterBand::SetNoDataValue(double dfNoData)
     {
         if( bSet )
         {
-            this->m_pImageIO->setNoDataValue(this->nBand, &dfNoData, libkea::kea_64float);
+            this->m_pImageIO->setNoDataValue(this->nBand, &dfNoData, kealib::kea_64float);
         }
         else
         {
@@ -424,7 +430,7 @@ CPLErr KEARasterBand::SetNoDataValue(double dfNoData)
         }
         return CE_None;
     }
-    catch (libkea::KEAIOException &e)
+    catch (kealib::KEAIOException &e)
     {
         return CE_Failure;
     }
@@ -443,18 +449,18 @@ const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
                 this->m_pAttributeTable = new GDALRasterAttributeTable();
 
                 // we assume this is never NULL - creates a new one if none exists
-                libkea::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(libkea::kea_att_mem, this->nBand);
+                kealib::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(kealib::kea_att_mem, this->nBand);
     
                 // create a mapping between GDAL column number and the field info
-                std::vector<libkea::KEAATTField> vecKEAField;
+                std::vector<kealib::KEAATTField> vecKEAField;
                 for( size_t nColumnIndex = 0; nColumnIndex < pKEATable->getMaxGlobalColIdx(); nColumnIndex++ )
                 {
-                    libkea::KEAATTField sKEAField;
+                    kealib::KEAATTField sKEAField;
                     try
                     {
                         sKEAField = pKEATable->getField(nColumnIndex);
                     }
-                    catch(libkea::KEAATTException &e)
+                    catch(kealib::KEAATTException &e)
                     {
                         // pKEATable->getField raised exception because we have a missing column
                         continue;
@@ -463,14 +469,14 @@ const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
                     GDALRATFieldType eGDALType;
                     switch( sKEAField.dataType )
                     {
-                        case libkea::kea_att_bool:
-                        case libkea::kea_att_int:
+                        case kealib::kea_att_bool:
+                        case kealib::kea_att_int:
                             eGDALType = GFT_Integer;
                             break;
-                        case libkea::kea_att_float:
+                        case kealib::kea_att_float:
                             eGDALType = GFT_Real;
                             break;
-                        case libkea::kea_att_string:
+                        case kealib::kea_att_string:
                             eGDALType = GFT_String;
                             break;
                         default:
@@ -510,25 +516,25 @@ const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
                 for( size_t nRowIndex = 0; nRowIndex < pKEATable->getSize(); nRowIndex++ )
                 {
                     // get the feature
-                    libkea::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
+                    kealib::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
 
                     // iterate through the columns - same order as we added columns to GDAL
                     int nGDALColNum = 0;
-                    for( std::vector<libkea::KEAATTField>::iterator itr = vecKEAField.begin(); itr != vecKEAField.end(); itr++ )
+                    for( std::vector<kealib::KEAATTField>::iterator itr = vecKEAField.begin(); itr != vecKEAField.end(); itr++ )
                     {
-                        libkea::KEAATTField sKEAField = (*itr);
-                        if( sKEAField.dataType == libkea::kea_att_bool )
+                        kealib::KEAATTField sKEAField = (*itr);
+                        if( sKEAField.dataType == kealib::kea_att_bool )
                         {
                             bool bVal = pKEAFeature->boolFields->at(sKEAField.idx);
                             int nVal = bVal? 1 : 0; // convert to int - GDAL doesn't do bool
                             this->m_pAttributeTable->SetValue(nRowIndex, nGDALColNum, nVal);
                         }
-                        else if( sKEAField.dataType == libkea::kea_att_int )
+                        else if( sKEAField.dataType == kealib::kea_att_int )
                         {
                             int nVal = pKEAFeature->intFields->at(sKEAField.idx);
                             this->m_pAttributeTable->SetValue(nRowIndex, nGDALColNum, nVal);
                         }
-                        else if( sKEAField.dataType == libkea::kea_att_float )
+                        else if( sKEAField.dataType == kealib::kea_att_float )
                         {
                             double dVal = pKEAFeature->floatFields->at(sKEAField.idx);
                             this->m_pAttributeTable->SetValue(nRowIndex, nGDALColNum, dVal);
@@ -545,7 +551,7 @@ const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
                 delete pKEATable;
             }
         }
-        catch(libkea::KEAException &e)
+        catch(kealib::KEAException &e)
         {
             CPLError( CE_Failure, CPLE_AppDefined, "Failed to read attributes: %s", e.what() );
             delete this->m_pAttributeTable;
@@ -563,7 +569,7 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
     try
     {
         // we assume this is never NULL - creates a new one if none exists
-        libkea::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(libkea::kea_att_mem, this->nBand);
+        kealib::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(kealib::kea_att_mem, this->nBand);
 
         // add rows to the table if needed
         if( pKEATable->getSize() < (size_t)poRAT->GetRowCount() )
@@ -571,20 +577,20 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
             pKEATable->addRows( poRAT->GetRowCount() - pKEATable->getSize() );
         }
 
-        // mapping between GDAL column indices and libkea::KEAATTField
-        std::map<int, libkea::KEAATTField> mapGDALtoKEA;
+        // mapping between GDAL column indices and kealib::KEAATTField
+        std::map<int, kealib::KEAATTField> mapGDALtoKEA;
 
         for( int nGDALColumnIndex = 0; nGDALColumnIndex < poRAT->GetColumnCount(); nGDALColumnIndex++ )
         {
             const char *pszColumnName = poRAT->GetNameOfCol(nGDALColumnIndex);
             bool bExists = true;
-            libkea::KEAATTField sKEAField;
+            kealib::KEAATTField sKEAField;
             try
             {
                 sKEAField = pKEATable->getField(pszColumnName);
                 // if this works we assume same usage, type etc
             }
-            catch(libkea::KEAATTException &e)
+            catch(kealib::KEAATTException &e)
             {
                 // doesn't exist on file - create it
                 bExists = false;
@@ -643,27 +649,27 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
         {
             // get the feature - don't need to set this back since it is a pointer to 
             // internal datastruct
-            libkea::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
+            kealib::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
 
             // iterate through the map
-            for( std::map<int, libkea::KEAATTField>::iterator itr = mapGDALtoKEA.begin(); itr != mapGDALtoKEA.end(); itr++ )
+            for( std::map<int, kealib::KEAATTField>::iterator itr = mapGDALtoKEA.begin(); itr != mapGDALtoKEA.end(); itr++ )
             {
                 // get the KEA field from the map
                 int nGDALColIndex = (*itr).first;
-                libkea::KEAATTField sKEAField = (*itr).second;
+                kealib::KEAATTField sKEAField = (*itr).second;
 
-                if( sKEAField.dataType == libkea::kea_att_bool )
+                if( sKEAField.dataType == kealib::kea_att_bool )
                 {
                     // write it as a bool even tho GDAL stores as int
                     bool bVal = poRAT->GetValueAsInt(nRowIndex, nGDALColIndex) != 0;
                     pKEAFeature->boolFields->at(sKEAField.idx) = bVal;
                 }
-                else if( sKEAField.dataType == libkea::kea_att_int )
+                else if( sKEAField.dataType == kealib::kea_att_int )
                 {
                     int nVal = poRAT->GetValueAsInt(nRowIndex, nGDALColIndex);
                     pKEAFeature->intFields->at(sKEAField.idx) = nVal;
                 }
-                else if( sKEAField.dataType == libkea::kea_att_float )
+                else if( sKEAField.dataType == kealib::kea_att_float )
                 {
                     double dVal = poRAT->GetValueAsDouble(nRowIndex, nGDALColIndex);
                     pKEAFeature->floatFields->at(sKEAField.idx) = dVal;
@@ -684,7 +690,7 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
         delete this->m_pAttributeTable;
         this->m_pAttributeTable = NULL;
     }
-    catch(libkea::KEAException &e)
+    catch(kealib::KEAException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined, "Failed to write attributes: %s", e.what() );
         return CE_Failure;
@@ -702,25 +708,25 @@ GDALColorTable *KEARasterBand::GetColorTable()
             if( this->m_pImageIO->attributeTablePresent(this->nBand) )
             {
                 // we assume this is never NULL - creates a new one if none exists
-                libkea::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(libkea::kea_att_mem, this->nBand);
+                kealib::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(kealib::kea_att_mem, this->nBand);
     
                 // create a mapping between color entry number and the field info
-                std::vector<libkea::KEAATTField> vecKEAField(4);
+                std::vector<kealib::KEAATTField> vecKEAField(4);
                 for( size_t nColumnIndex = 0; nColumnIndex < pKEATable->getMaxGlobalColIdx(); nColumnIndex++ )
                 {
-                    libkea::KEAATTField sKEAField;
+                    kealib::KEAATTField sKEAField;
                     try
                     {
                         sKEAField = pKEATable->getField(nColumnIndex);
                     }
-                    catch(libkea::KEAATTException &e)
+                    catch(kealib::KEAATTException &e)
                     {
                         // pKEATable->getField raised exception because we have a missing column
                         continue;
                     }
 
                     // color tables are only int as far as I am aware
-                    if( sKEAField.dataType == libkea::kea_att_int )
+                    if( sKEAField.dataType == kealib::kea_att_int )
                     {
                         // check the 'usage' column
                         // we don't check the name also (maybe we should?)
@@ -740,7 +746,7 @@ GDALColorTable *KEARasterBand::GetColorTable()
                 // check that we did get a valid field for each color
                 // the usage field will still be empty if not set above
                 bool bHaveCT = true;
-                for( std::vector<libkea::KEAATTField>::iterator itr = vecKEAField.begin(); (itr != vecKEAField.end()) && bHaveCT; itr++ )
+                for( std::vector<kealib::KEAATTField>::iterator itr = vecKEAField.begin(); (itr != vecKEAField.end()) && bHaveCT; itr++ )
                 {
                     if( (*itr).usage.empty() )
                         bHaveCT = false;
@@ -755,7 +761,7 @@ GDALColorTable *KEARasterBand::GetColorTable()
                     for( size_t nRowIndex = 0; nRowIndex < pKEATable->getSize(); nRowIndex++ )
                     {
                         // get the feature
-                        libkea::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
+                        kealib::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
 
                         GDALColorEntry colorEntry;
                         colorEntry.c1 = pKEAFeature->intFields->at(vecKEAField[0].idx);
@@ -770,7 +776,7 @@ GDALColorTable *KEARasterBand::GetColorTable()
                 delete pKEATable;
             }
         }
-        catch(libkea::KEAException &e)
+        catch(kealib::KEAException &e)
         {
             CPLError( CE_Failure, CPLE_AppDefined, "Failed to read color table: %s", e.what() );
             delete this->m_pColorTable;
@@ -788,7 +794,7 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
     try
     {
         // we assume this is never NULL - creates a new one if none exists
-        libkea::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(libkea::kea_att_mem, this->nBand);
+        kealib::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(kealib::kea_att_mem, this->nBand);
 
         // add rows to the table if needed
         if( pKEATable->getSize() < (size_t)poCT->GetColorEntryCount() )
@@ -797,22 +803,22 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
         }
 
         // create a mapping between color entry number and the field info
-        std::vector<libkea::KEAATTField> vecKEAField(4);
+        std::vector<kealib::KEAATTField> vecKEAField(4);
         for( size_t nColumnIndex = 0; nColumnIndex < pKEATable->getMaxGlobalColIdx(); nColumnIndex++ )
         {
-            libkea::KEAATTField sKEAField;
+            kealib::KEAATTField sKEAField;
             try
             {
                 sKEAField = pKEATable->getField(nColumnIndex);
             }
-            catch(libkea::KEAATTException &e)
+            catch(kealib::KEAATTException &e)
             {
                 // pKEATable->getField raised exception because we have a missing column
                 continue;
             }
 
             // color tables are only int as far as I am aware
-            if( sKEAField.dataType == libkea::kea_att_int )
+            if( sKEAField.dataType == kealib::kea_att_int )
             {
                 // check the 'usage' column
                 // we don't check the name also (maybe we should?)
@@ -855,7 +861,7 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
         {
             // get the feature - don't need to set this back since it is a pointer to 
             // internal datastruct
-            libkea::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
+            kealib::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
 
             // get the GDAL entry - as RGB to be sure
             GDALColorEntry colorEntry;
@@ -878,7 +884,7 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
         delete this->m_pColorTable;
         this->m_pColorTable = poCT->Clone();
     }
-    catch(libkea::KEAException &e)
+    catch(kealib::KEAException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined, "Failed to write color table: %s", e.what() );
         return CE_Failure;
@@ -888,12 +894,12 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
 
 GDALColorInterp KEARasterBand::GetColorInterpretation()
 {
-    libkea::KEABandClrInterp keainterp;
+    kealib::KEABandClrInterp keainterp;
     try
     {
         keainterp = this->m_pImageIO->getImageBandClrInterp(this->nBand);
     }
-    catch(libkea::KEAException &e)
+    catch(kealib::KEAException &e)
     {
         return GCI_GrayIndex;
     }
@@ -901,53 +907,53 @@ GDALColorInterp KEARasterBand::GetColorInterpretation()
     GDALColorInterp gdalinterp;
     switch(keainterp)
     {
-        case libkea::kea_generic:
-        case libkea::kea_greyindex:
+        case kealib::kea_generic:
+        case kealib::kea_greyindex:
             gdalinterp = GCI_GrayIndex;
             break;
-        case libkea::kea_paletteindex:
+        case kealib::kea_paletteindex:
             gdalinterp = GCI_PaletteIndex;
             break;
-        case libkea::kea_redband:
+        case kealib::kea_redband:
             gdalinterp = GCI_RedBand;
             break;
-        case libkea::kea_greenband:
+        case kealib::kea_greenband:
             gdalinterp = GCI_GreenBand;
             break;
-        case libkea::kea_blueband:
+        case kealib::kea_blueband:
             gdalinterp = GCI_BlueBand;
             break;
-        case libkea::kea_alphaband:
+        case kealib::kea_alphaband:
             gdalinterp = GCI_AlphaBand;
             break;
-        case libkea::kea_hueband:
+        case kealib::kea_hueband:
             gdalinterp = GCI_HueBand;
             break;
-        case libkea::kea_saturationband:
+        case kealib::kea_saturationband:
             gdalinterp = GCI_SaturationBand;
             break;
-        case libkea::kea_lightnessband:
+        case kealib::kea_lightnessband:
             gdalinterp = GCI_LightnessBand;
             break;
-        case libkea::kea_cyanband:
+        case kealib::kea_cyanband:
             gdalinterp = GCI_CyanBand;
             break;
-        case libkea::kea_magentaband:
+        case kealib::kea_magentaband:
             gdalinterp = GCI_MagentaBand;
             break;
-        case libkea::kea_yellowband:
+        case kealib::kea_yellowband:
             gdalinterp = GCI_YellowBand;
             break;
-        case libkea::kea_blackband:
+        case kealib::kea_blackband:
             gdalinterp = GCI_BlackBand;
             break;
-        case libkea::kea_ycbcr_yband:
+        case kealib::kea_ycbcr_yband:
             gdalinterp = GCI_YCbCr_YBand;
             break;
-        case libkea::kea_ycbcr_cbband:
+        case kealib::kea_ycbcr_cbband:
             gdalinterp = GCI_YCbCr_CbBand;
             break;
-        case libkea::kea_ycbcr_crband:
+        case kealib::kea_ycbcr_crband:
             gdalinterp = GCI_YCbCr_CrBand;
             break;
         default:
@@ -960,59 +966,59 @@ GDALColorInterp KEARasterBand::GetColorInterpretation()
 
 CPLErr KEARasterBand::SetColorInterpretation(GDALColorInterp gdalinterp)
 {
-    libkea::KEABandClrInterp keainterp;
+    kealib::KEABandClrInterp keainterp;
     switch(gdalinterp)
     {
         case GCI_GrayIndex:
-            keainterp = libkea::kea_greyindex;
+            keainterp = kealib::kea_greyindex;
             break;
         case GCI_PaletteIndex:
-            keainterp = libkea::kea_paletteindex;
+            keainterp = kealib::kea_paletteindex;
             break;
         case GCI_RedBand:
-            keainterp = libkea::kea_redband;
+            keainterp = kealib::kea_redband;
             break;
         case GCI_GreenBand:
-            keainterp = libkea::kea_greenband;
+            keainterp = kealib::kea_greenband;
             break;
         case GCI_BlueBand:
-            keainterp = libkea::kea_blueband;
+            keainterp = kealib::kea_blueband;
             break;
         case GCI_AlphaBand:
-            keainterp = libkea::kea_alphaband;
+            keainterp = kealib::kea_alphaband;
             break;
         case GCI_HueBand:
-            keainterp = libkea::kea_hueband;
+            keainterp = kealib::kea_hueband;
             break;
         case GCI_SaturationBand:
-            keainterp = libkea::kea_saturationband;
+            keainterp = kealib::kea_saturationband;
             break;
         case GCI_LightnessBand:
-            keainterp = libkea::kea_lightnessband;
+            keainterp = kealib::kea_lightnessband;
             break;
         case GCI_CyanBand:
-            keainterp = libkea::kea_cyanband;
+            keainterp = kealib::kea_cyanband;
             break;
         case GCI_MagentaBand:
-            keainterp = libkea::kea_magentaband;
+            keainterp = kealib::kea_magentaband;
             break;
         case GCI_YellowBand:
-            keainterp = libkea::kea_yellowband;
+            keainterp = kealib::kea_yellowband;
             break;
         case GCI_BlackBand:
-            keainterp = libkea::kea_blackband;
+            keainterp = kealib::kea_blackband;
             break;
         case GCI_YCbCr_YBand:
-            keainterp = libkea::kea_ycbcr_yband;
+            keainterp = kealib::kea_ycbcr_yband;
             break;
         case GCI_YCbCr_CbBand:
-            keainterp = libkea::kea_ycbcr_cbband;
+            keainterp = kealib::kea_ycbcr_cbband;
             break;
         case GCI_YCbCr_CrBand:
-            keainterp = libkea::kea_ycbcr_crband;
+            keainterp = kealib::kea_ycbcr_crband;
             break;
         default:
-            keainterp = libkea::kea_greyindex;
+            keainterp = kealib::kea_greyindex;
             break;
     }
 
@@ -1020,7 +1026,7 @@ CPLErr KEARasterBand::SetColorInterpretation(GDALColorInterp gdalinterp)
     {
         this->m_pImageIO->setImageBandClrInterp(this->nBand, keainterp);
     }
-    catch(libkea::KEAException &e)
+    catch(kealib::KEAException &e)
     {
         // do nothing? The docs say CE_Failure only if unsupporte by format
     }
@@ -1050,7 +1056,7 @@ void KEARasterBand::readExistingOverviews()
     m_nOverviews = this->m_pImageIO->getNumOfOverviews(this->nBand);
     m_panOverviewBands = (KEAOverview**)CPLMalloc(sizeof(KEAOverview*) * m_nOverviews);
 
-    unsigned long nXSize, nYSize;    
+    uint64_t nXSize, nYSize;    
     for( int nCount = 0; nCount < m_nOverviews; nCount++ )
     {
         this->m_pImageIO->getOverviewSize(this->nBand, nCount + 1, &nXSize, &nYSize);
@@ -1083,7 +1089,7 @@ void KEARasterBand::SetHistogramFromMetadata(const char *pszHistogram)
     try
     {
         // we assume this is never NULL - creates a new one if none exists
-        libkea::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(libkea::kea_att_mem, this->nBand);
+        kealib::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(kealib::kea_att_mem, this->nBand);
 
         // how many elements in pszHistogram? '|' seperated
         size_t nItems = 0, nIndex = 0, nStartIndex;
@@ -1106,21 +1112,21 @@ void KEARasterBand::SetHistogramFromMetadata(const char *pszHistogram)
     
         // create a mapping between histogram entry and the field info
         bool bFoundHisto = false;
-        libkea::KEAATTField sKEAField;
+        kealib::KEAATTField sKEAField;
         for( size_t nColumnIndex = 0; (nColumnIndex < pKEATable->getMaxGlobalColIdx()) && !bFoundHisto; nColumnIndex++ )
         {
             try
             {
                 sKEAField = pKEATable->getField(nColumnIndex);
             }
-            catch(libkea::KEAATTException &e)
+            catch(kealib::KEAATTException &e)
             {
                 // pKEATable->getField raised exception because we have a missing column
                 continue;
             }
 
             // does it look like the histogram column?
-            if( ( sKEAField.dataType == libkea::kea_att_int ) && ( sKEAField.usage == "PixelCount" ) 
+            if( ( sKEAField.dataType == kealib::kea_att_int ) && ( sKEAField.usage == "PixelCount" ) 
                 && ( sKEAField.name == "Histogram" ) )
             {
                 bFoundHisto = true;
@@ -1152,7 +1158,7 @@ void KEARasterBand::SetHistogramFromMetadata(const char *pszHistogram)
             if( nStartIndex != nIndex )
             {
                 szBuf[nBufIndex] = '\0';
-                libkea::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
+                kealib::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
                 pKEAFeature->intFields->at(sKEAField.idx) = atol( szBuf );
                 nRowIndex++;
             }
@@ -1162,7 +1168,7 @@ void KEARasterBand::SetHistogramFromMetadata(const char *pszHistogram)
         this->m_pImageIO->setAttributeTable(pKEATable, this->nBand);
         delete pKEATable;
     }
-    catch(libkea::KEAException &e)
+    catch(kealib::KEAException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined, "Failed to write histogram table: %s", e.what() );
     }
@@ -1177,25 +1183,25 @@ std::string KEARasterBand::GetHistogramAsMetadata()
         if( this->m_pImageIO->attributeTablePresent(this->nBand) )
         {
             // we assume this is never NULL - creates a new one if none exists
-            libkea::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(libkea::kea_att_mem, this->nBand);
+            kealib::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(kealib::kea_att_mem, this->nBand);
 
             // create a mapping between histogram entry and the field info
             bool bFoundHisto = false;
-            libkea::KEAATTField sKEAField;
+            kealib::KEAATTField sKEAField;
             for( size_t nColumnIndex = 0; (nColumnIndex < pKEATable->getMaxGlobalColIdx()) && !bFoundHisto; nColumnIndex++ )
             {
                 try
                 {
                     sKEAField = pKEATable->getField(nColumnIndex);
                 }
-                catch(libkea::KEAATTException &e)
+                catch(kealib::KEAATTException &e)
                 {
                     // pKEATable->getField raised exception because we have a missing column
                     continue;
                 }
 
                 // does it look like the histogram column?
-                if( ( sKEAField.dataType == libkea::kea_att_int ) && ( sKEAField.usage == "PixelCount" ) 
+                if( ( sKEAField.dataType == kealib::kea_att_int ) && ( sKEAField.usage == "PixelCount" ) 
                     && ( sKEAField.name == "Histogram" ) )
                 {
                     bFoundHisto = true;
@@ -1209,8 +1215,8 @@ std::string KEARasterBand::GetHistogramAsMetadata()
                 for( size_t nRowIndex = 0; nRowIndex < pKEATable->getSize(); nRowIndex++ )
                 {
                     // get the feature
-                    libkea::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
-                    long nValue = pKEAFeature->intFields->at(sKEAField.idx);
+                    kealib::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
+                    int64_t nValue = pKEAFeature->intFields->at(sKEAField.idx);
                     sprintf( szBuf, "%ld|", nValue );
                     sHistogram.append(szBuf); // dunno how fast this is...
                 }
@@ -1219,7 +1225,7 @@ std::string KEARasterBand::GetHistogramAsMetadata()
             delete pKEATable;
         }
     }
-    catch(libkea::KEAException &e)
+    catch(kealib::KEAException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined, "Failed to read histogram table: %s", e.what() );
         sHistogram = "";
@@ -1235,7 +1241,7 @@ CPLErr KEARasterBand::CreateMaskBand(int nFlags)
     {
         this->m_pImageIO->createMask(this->nBand);
     }
-    catch(libkea::KEAException &e)
+    catch(kealib::KEAException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined, "Failed to create mask band: %s", e.what());
         return CE_Failure;
@@ -1261,7 +1267,7 @@ GDALRasterBand* KEARasterBand::GetMaskBand()
                 m_pMaskBand = GDALPamRasterBand::GetMaskBand();
             }
         }
-        catch(libkea::KEAException &e)
+        catch(kealib::KEAException &e)
         {
             // do nothing?
         }
@@ -1281,7 +1287,7 @@ int KEARasterBand::GetMaskFlags()
             return GDALPamRasterBand::GetMaskFlags();
         }
     }
-    catch(libkea::KEAException &e)
+    catch(kealib::KEAException &e)
     {
         // do nothing?
     }

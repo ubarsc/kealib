@@ -92,7 +92,7 @@ protected:
 
 private:
     // pointer to KEAImageIO class and the refcount for it
-    libkea::KEAImageIO  *m_pImageIO;
+    kealib::KEAImageIO  *m_pImageIO;
     int                 *m_pnRefcount;
     char               **m_papszMetadataList; // CSLStringList for metadata
     GDAL_GCP            *m_pGCPs;
@@ -100,7 +100,7 @@ private:
 };
 
 // conversion functions
-GDALDataType KEA_to_GDAL_Type( libkea::KEADataType keaType );
-libkea::KEADataType GDAL_to_KEA_Type( GDALDataType gdalType );
+GDALDataType KEA_to_GDAL_Type( kealib::KEADataType keaType );
+kealib::KEADataType GDAL_to_KEA_Type( GDALDataType gdalType );
 
 #endif //KEADATASET_H

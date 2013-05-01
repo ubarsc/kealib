@@ -54,7 +54,7 @@ private:
 
 public:
     // constructor/destructor
-    KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAccess, libkea::KEAImageIO *pImageIO, int *pRefCount );
+    KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAccess, kealib::KEAImageIO *pImageIO, int *pRefCount );
     ~KEARasterBand();
 
     // virtual methods for overview support
@@ -111,9 +111,9 @@ protected:
     void SetHistogramFromMetadata(const char *pszHistogram);
     std::string GetHistogramAsMetadata();
 
-    libkea::KEAImageIO  *m_pImageIO; // our image access pointer - refcounted
+    kealib::KEAImageIO  *m_pImageIO; // our image access pointer - refcounted
     char               **m_papszMetadataList; // CPLStringList of metadata
-    libkea::KEADataType  m_eKEADataType; // data type as KEA enum
+    kealib::KEADataType  m_eKEADataType; // data type as KEA enum
 };
 
 
