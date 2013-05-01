@@ -42,7 +42,7 @@
 #include "libkea/KEAAttributeTable.h"
 #include "libkea/KEAAttributeTableInMem.h"
 
-namespace libkea{
+namespace kealib{
         
     class DllExport KEAImageIO
     {

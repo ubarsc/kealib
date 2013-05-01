@@ -46,7 +46,7 @@
     #define DllExport   __declspec( dllexport )
 #endif
 
-namespace libkea{
+namespace kealib{
         
     static const std::string KEA_DATASETNAME_HEADER( "/HEADER" );
     static const std::string KEA_DATASETNAME_HEADER_NUMBANDS( "/HEADER/NUMBANDS" );

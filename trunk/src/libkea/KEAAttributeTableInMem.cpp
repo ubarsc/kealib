@@ -30,7 +30,7 @@
 
 #include "libkea/KEAAttributeTableInMem.h"
 
-namespace libkea{
+namespace kealib{
     
     KEAAttributeTableInMem::KEAAttributeTableInMem() : KEAAttributeTable(kea_att_mem)
     {

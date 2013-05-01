@@ -42,7 +42,7 @@
 #include "libkea/KEACommon.h"
 #include "libkea/KEAException.h"
 
-namespace libkea{
+namespace kealib{
     
     enum KEAATTType
     {

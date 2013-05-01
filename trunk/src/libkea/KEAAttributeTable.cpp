@@ -30,7 +30,7 @@
 
 #include "libkea/KEAAttributeTable.h"
 
-namespace libkea{
+namespace kealib{
     
     KEAAttributeTable::KEAAttributeTable(KEAATTType keaAttType)
     {

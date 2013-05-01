@@ -35,7 +35,7 @@
 #include <iostream>
 #include <string>
 
-namespace libkea
+namespace kealib
 {    
 	class DllExport KEAException : public std::exception
 	{

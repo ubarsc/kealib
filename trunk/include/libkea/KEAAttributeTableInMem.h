@@ -41,7 +41,7 @@
 #include "libkea/KEAException.h"
 #include "libkea/KEAAttributeTable.h"
 
-namespace libkea{
+namespace kealib{
        
     class DllExport KEAAttributeTableInMem : public KEAAttributeTable
     {

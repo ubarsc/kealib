@@ -33,7 +33,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-namespace libkea{
+namespace kealib{
     
     KEAImageIO::KEAImageIO()
     {
@@ -1998,7 +1998,7 @@ namespace libkea{
         {
             throw KEAIOException("Image was not open.");
         }
-        KEADataType imgDataType = libkea::kea_undefined;
+        KEADataType imgDataType = kealib::kea_undefined;
         
         // READ IMAGE DATA TYPE
         try 
@@ -2703,7 +2703,7 @@ namespace libkea{
         {
             if(type == kea_att_mem)
             {
-                att = libkea::KEAAttributeTableInMem::createKeaAtt(this->keaImgFile, band);
+                att = kealib::KEAAttributeTableInMem::createKeaAtt(this->keaImgFile, band);
             }
             else if(type == kea_att_cached)
             {
