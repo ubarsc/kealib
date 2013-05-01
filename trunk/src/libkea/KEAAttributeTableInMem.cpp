@@ -58,9 +58,9 @@ namespace libkea{
         return value;
     }
     
-    long KEAAttributeTableInMem::getIntField(size_t fid, const std::string &name) const throw(KEAATTException)
+    int64_t KEAAttributeTableInMem::getIntField(size_t fid, const std::string &name) const throw(KEAATTException)
     {
-        long value = 0;
+        int64_t value = 0;
         try 
         {
             KEAATTField field = this->getField(name);
@@ -140,7 +140,7 @@ namespace libkea{
         }
     }
     
-    void KEAAttributeTableInMem::setIntField(size_t fid, const std::string &name, long value) throw(KEAATTException)
+    void KEAAttributeTableInMem::setIntField(size_t fid, const std::string &name, int64_t value) throw(KEAATTException)
     {
         try 
         {
@@ -214,7 +214,7 @@ namespace libkea{
         return attRows->at(fid)->boolFields->at(colIdx);
     }
     
-    long KEAAttributeTableInMem::getIntField(size_t fid, size_t colIdx) const throw(KEAATTException)
+    int64_t KEAAttributeTableInMem::getIntField(size_t fid, size_t colIdx) const throw(KEAATTException)
     {
         if(fid >= attRows->size())
         {
@@ -282,7 +282,7 @@ namespace libkea{
         attRows->at(fid)->boolFields->at(colIdx) = value;
     }
     
-    void KEAAttributeTableInMem::setIntField(size_t fid, size_t colIdx, long value) throw(KEAATTException)
+    void KEAAttributeTableInMem::setIntField(size_t fid, size_t colIdx, int64_t value) throw(KEAATTException)
     {
         if(fid >= attRows->size())
         {
@@ -357,7 +357,7 @@ namespace libkea{
         }
     }
     
-    void KEAAttributeTableInMem::addAttIntField(KEAATTField field, int val) throw(KEAATTException)
+    void KEAAttributeTableInMem::addAttIntField(KEAATTField field, int64_t val) throw(KEAATTException)
     {
         for(std::vector<KEAATTFeature*>::iterator iterFeat = attRows->begin(); iterFeat != attRows->end(); ++iterFeat)
         {
@@ -910,12 +910,12 @@ namespace libkea{
                         dimsIntChunk[0] = chunkSize;
                         dimsIntChunk[1] = 1;
                         
-                        long fillValueInt = 0;
+                        int64_t fillValueInt = 0;
                         H5::DSetCreatPropList creationIntDSPList;
                         creationIntDSPList.setChunk(2, dimsIntChunk);
                         creationIntDSPList.setShuffle();
                         creationIntDSPList.setDeflate(deflate);
-                        creationIntDSPList.setFillValue( H5::PredType::NATIVE_LONG, &fillValueInt);
+                        creationIntDSPList.setFillValue( H5::PredType::NATIVE_INT64, &fillValueInt);
                         
                         intDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_INT_DATA), H5::PredType::STD_I64LE, intDataSpace, creationIntDSPList));
                         intDataSpace.close();
@@ -1270,12 +1270,12 @@ namespace libkea{
                     dimsIntChunk[0] = chunkSize;
                     dimsIntChunk[1] = 1;
                     
-                    long fillValueInt = 0;
+                    int64_t fillValueInt = 0;
                     H5::DSetCreatPropList creationIntDSPList;
                     creationIntDSPList.setChunk(2, dimsIntChunk);
                     creationIntDSPList.setShuffle();
                     creationIntDSPList.setDeflate(deflate);
-                    creationIntDSPList.setFillValue( H5::PredType::NATIVE_LONG, &fillValueInt);
+                    creationIntDSPList.setFillValue( H5::PredType::NATIVE_INT64, &fillValueInt);
                     
                     intDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_INT_DATA), H5::PredType::STD_I64LE, intDataSpace, creationIntDSPList));
                     intDataSpace.close();
@@ -1368,10 +1368,10 @@ namespace libkea{
             {
                 boolData = new int[this->numBoolFields*chunkSize];
             }
-            long *intData = NULL;
+            int64_t *intData = NULL;
             if(this->numIntFields > 0)
             {
-                intData = new long[this->numIntFields*chunkSize];
+                intData = new int64_t[this->numIntFields*chunkSize];
             }
             double *floatData = NULL;
             if(this->numFloatFields > 0)
@@ -1483,7 +1483,7 @@ namespace libkea{
                         H5::DataSpace intWriteDataSpace = intDataset->getSpace();
                         intWriteDataSpace.selectHyperslab(H5S_SELECT_SET, intDataDims, intDataOffset);
                         H5::DataSpace newIntDataspace = H5::DataSpace(2, intDataDims);
-                        intDataset->write(intData, H5::PredType::NATIVE_LONG, newIntDataspace, intWriteDataSpace);
+                        intDataset->write(intData, H5::PredType::NATIVE_INT64, newIntDataspace, intWriteDataSpace);
                         intWriteDataSpace.close();
                         newIntDataspace.close();
                     }
@@ -1620,7 +1620,7 @@ namespace libkea{
                     H5::DataSpace intWriteDataSpace = intDataset->getSpace();
                     intWriteDataSpace.selectHyperslab(H5S_SELECT_SET, intDataDims, intDataOffset);
                     H5::DataSpace newIntDataspace = H5::DataSpace(2, intDataDims);
-                    intDataset->write(intData, H5::PredType::NATIVE_LONG, newIntDataspace, intWriteDataSpace);
+                    intDataset->write(intData, H5::PredType::NATIVE_INT64, newIntDataspace, intWriteDataSpace);
                     newIntDataspace.close();
                     intWriteDataSpace.close();
                 }
@@ -2137,7 +2137,7 @@ namespace libkea{
                 H5::DataSet intDataset;
                 H5::DataSpace intDataspace;
                 H5::DataSpace intFieldsMemspace;
-                long *intVals = NULL;
+                int64_t *intVals = NULL;
                 hsize_t intFieldsOffset[2];
                 hsize_t intFieldsCount[2];
                 hsize_t intFieldsDimsRead[2];
@@ -2169,7 +2169,7 @@ namespace libkea{
                     }
                     delete[] intDims;
                     
-                    intVals = new long[chunkSize*att->numIntFields];
+                    intVals = new int64_t[chunkSize*att->numIntFields];
                     
                     intFieldsOffset[0] = 0;
                     intFieldsOffset[1] = 0;
@@ -2367,7 +2367,7 @@ namespace libkea{
                         {
                             intFieldsOffset[0] = rowOff;
                             intDataspace.selectHyperslab( H5S_SELECT_SET, intFieldsCount, intFieldsOffset );
-                            intDataset.read(intVals, H5::PredType::NATIVE_LONG, intFieldsMemspace, intDataspace);
+                            intDataset.read(intVals, H5::PredType::NATIVE_INT64, intFieldsMemspace, intDataspace);
                         }
                         
                         if(att->numFloatFields > 0)
@@ -2492,7 +2492,7 @@ namespace libkea{
                         intFieldsCount_out[1] = att->numIntFields;
                         intFieldsMemspace.selectHyperslab( H5S_SELECT_SET, intFieldsCount_out, intFieldsOffset_out );
 
-                        intDataset.read(intVals, H5::PredType::NATIVE_LONG, intFieldsMemspace, intDataspace);
+                        intDataset.read(intVals, H5::PredType::NATIVE_INT64, intFieldsMemspace, intDataspace);
                     }
                     
                     if(att->numFloatFields > 0)

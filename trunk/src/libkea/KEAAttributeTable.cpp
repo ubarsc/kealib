@@ -68,7 +68,7 @@ namespace libkea{
         }
     }
     
-    void KEAAttributeTable::setIntValue(const std::string &name, long value) throw(KEAATTException)
+    void KEAAttributeTable::setIntValue(const std::string &name, int64_t value) throw(KEAATTException)
     {
         try 
         {
@@ -136,7 +136,7 @@ namespace libkea{
         throw KEAATTException("Setting all has not be implemented yet as needs an iterator...");
     }
     
-    void KEAAttributeTable::setIntValue(size_t colIdx, long value) throw(KEAATTException)
+    void KEAAttributeTable::setIntValue(size_t colIdx, int64_t value) throw(KEAATTException)
     {
         if(colIdx > numIntFields)
         {
@@ -310,7 +310,7 @@ namespace libkea{
         }
     }
     
-    void KEAAttributeTable::addAttIntField(const std::string &name, long val, std::string usage) throw(KEAATTException)
+    void KEAAttributeTable::addAttIntField(const std::string &name, int64_t val, std::string usage) throw(KEAATTException)
     {
         try 
         {
@@ -490,7 +490,7 @@ namespace libkea{
         {
             feat->boolFields->push_back(false);
         }
-        feat->intFields = new std::vector<long>();
+        feat->intFields = new std::vector<int64_t>();
         for(size_t i = 0; i < this->numIntFields; ++i)
         {
             feat->intFields->push_back(0);

@@ -35,6 +35,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <stdint.h>
 
 #include "H5Cpp.h"
 
@@ -190,8 +191,8 @@ namespace libkea{
         double yRes;
         double xRot;
         double yRot;
-        unsigned int xSize;
-        unsigned int ySize;
+        uint64_t xSize;
+        uint64_t ySize;
     };
     
     struct KEAImageGCP
@@ -221,28 +222,28 @@ namespace libkea{
         char *str;
     };
     
-    inline std::string int2Str(int num)
+    inline std::string int2Str(int32_t num)
     {
         std::ostringstream convert;
         convert << num;
         return convert.str();
     }
     
-    inline std::string uint2Str(unsigned int num)
+    inline std::string uint2Str(uint32_t num)
     {
         std::ostringstream convert;
         convert << num;
         return convert.str();
     }
     
-    inline std::string long2Str(long num)
+    inline std::string long2Str(int64_t num)
     {
         std::ostringstream convert;
         convert << num;
         return convert.str();
     }
     
-    inline std::string ulong2Str(unsigned long num)
+    inline std::string ulong2Str(uint64_t num)
     {
         std::ostringstream convert;
         convert << num;

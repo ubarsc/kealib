@@ -49,22 +49,22 @@ namespace libkea{
         KEAAttributeTableInMem();
         
         bool getBoolField(size_t fid, const std::string &name) const throw(KEAATTException);
-        long getIntField(size_t fid, const std::string &name) const throw(KEAATTException);
+        int64_t getIntField(size_t fid, const std::string &name) const throw(KEAATTException);
         double getFloatField(size_t fid, const std::string &name) const throw(KEAATTException);
         std::string getStringField(size_t fid, const std::string &name) const throw(KEAATTException);
         
         void setBoolField(size_t fid, const std::string &name, bool value) throw(KEAATTException);
-        void setIntField(size_t fid, const std::string &name, long value) throw(KEAATTException);
+        void setIntField(size_t fid, const std::string &name, int64_t value) throw(KEAATTException);
         void setFloatField(size_t fid, const std::string &name, double value) throw(KEAATTException);
         void setStringField(size_t fid, const std::string &name, const std::string &value) throw(KEAATTException);
         
         bool getBoolField(size_t fid, size_t colIdx) const throw(KEAATTException);
-        long getIntField(size_t fid, size_t colIdx) const throw(KEAATTException);
+        int64_t getIntField(size_t fid, size_t colIdx) const throw(KEAATTException);
         double getFloatField(size_t fid, size_t colIdx) const throw(KEAATTException);
         std::string getStringField(size_t fid, size_t colIdx) const throw(KEAATTException);
         
         void setBoolField(size_t fid, size_t colIdx, bool value) throw(KEAATTException);
-        void setIntField(size_t fid, size_t colIdx, long value) throw(KEAATTException);
+        void setIntField(size_t fid, size_t colIdx, int64_t value) throw(KEAATTException);
         void setFloatField(size_t fid, size_t colIdx, double value) throw(KEAATTException);
         void setStringField(size_t fid, size_t colIdx, const std::string &value) throw(KEAATTException);
         
@@ -73,7 +73,7 @@ namespace libkea{
         size_t getSize() const;
         
         void addAttBoolField(KEAATTField field, bool val) throw(KEAATTException);
-        void addAttIntField(KEAATTField field, int val) throw(KEAATTException);
+        void addAttIntField(KEAATTField field, int64_t val) throw(KEAATTException);
         void addAttFloatField(KEAATTField field, float val) throw(KEAATTException);
         void addAttStringField(KEAATTField field, const std::string &val) throw(KEAATTException);
         
