@@ -1,5 +1,5 @@
 /*
- *  KEADataset.h
+ *  keadataset.h
  *
  *  Created by Pete Bunting on 01/08/2012.
  *  Copyright 2012 LibKEA. All rights reserved.
@@ -100,7 +100,7 @@ private:
 };
 
 // conversion functions
-GDALDataType KEA_to_GDAL_Type( kealib::KEADataType keaType );
-kealib::KEADataType GDAL_to_KEA_Type( GDALDataType gdalType );
+GDALDataType KEA_to_GDAL_Type( kealib::KEADataType ekeaType );
+kealib::KEADataType GDAL_to_KEA_Type( GDALDataType egdalType );
 
 #endif //KEADATASET_H

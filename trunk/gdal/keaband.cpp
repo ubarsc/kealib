@@ -1,5 +1,5 @@
 /*
- *  KEABand.cpp
+ *  keaband.cpp
  *
  *  Created by Pete Bunting on 01/08/2012.
  *  Copyright 2012 LibKEA. All rights reserved.
@@ -27,9 +27,9 @@
  *
  */
 
-#include "KEABand.h"
-#include "KEAOverview.h"
-#include "KEAMaskBand.h"
+#include "keaband.h"
+#include "keaoverview.h"
+#include "keamaskband.h"
 
 #include "gdal_rat.h"
 #include "libkea/KEAAttributeTable.h"
@@ -179,21 +179,21 @@ CPLErr KEARasterBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage 
     {
         // GDAL deals in blocks - if we are at the end of a row
         // we need to adjust the amount read so we don't go over the edge
-        int xsize = this->nBlockXSize;
-        int xtotalsize = this->nBlockXSize * (nBlockXOff + 1);
-        if( xtotalsize > this->nRasterXSize )
+        int nxsize = this->nBlockXSize;
+        int nxtotalsize = this->nBlockXSize * (nBlockXOff + 1);
+        if( nxtotalsize > this->nRasterXSize )
         {
-            xsize -= (xtotalsize - this->nRasterXSize);
+            nxsize -= (nxtotalsize - this->nRasterXSize);
         }
-        int ysize = this->nBlockYSize;
-        int ytotalsize = this->nBlockYSize * (nBlockYOff + 1);
-        if( ytotalsize > this->nRasterYSize )
+        int nysize = this->nBlockYSize;
+        int nytotalsize = this->nBlockYSize * (nBlockYOff + 1);
+        if( nytotalsize > this->nRasterYSize )
         {
-            ysize -= (ytotalsize - this->nRasterYSize);
+            nysize -= (nytotalsize - this->nRasterYSize);
         }
         this->m_pImageIO->readImageBlock2Band( this->nBand, pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
-                                            xsize, ysize, this->nBlockXSize, this->nBlockYSize, 
+                                            nxsize, nysize, this->nBlockXSize, this->nBlockYSize, 
                                             this->m_eKEADataType );
         return CE_None;
     }
@@ -212,22 +212,22 @@ CPLErr KEARasterBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage
     {
         // GDAL deals in blocks - if we are at the end of a row
         // we need to adjust the amount written so we don't go over the edge
-        int xsize = this->nBlockXSize;
-        int xtotalsize = this->nBlockXSize * (nBlockXOff + 1);
-        if( xtotalsize > this->nRasterXSize )
+        int nxsize = this->nBlockXSize;
+        int nxtotalsize = this->nBlockXSize * (nBlockXOff + 1);
+        if( nxtotalsize > this->nRasterXSize )
         {
-            xsize -= (xtotalsize - this->nRasterXSize);
+            nxsize -= (nxtotalsize - this->nRasterXSize);
         }
-        int ysize = this->nBlockYSize;
-        int ytotalsize = this->nBlockYSize * (nBlockYOff + 1);
-        if( ytotalsize > this->nRasterYSize )
+        int nysize = this->nBlockYSize;
+        int nytotalsize = this->nBlockYSize * (nBlockYOff + 1);
+        if( nytotalsize > this->nRasterYSize )
         {
-            ysize -= (ytotalsize - this->nRasterYSize);
+            nysize -= (nytotalsize - this->nRasterYSize);
         }
 
         this->m_pImageIO->writeImageBlock2Band( this->nBand, pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
-                                            xsize, ysize, this->nBlockXSize, this->nBlockYSize,
+                                            nxsize, nysize, this->nBlockXSize, this->nBlockYSize,
                                             this->m_eKEADataType );
         return CE_None;
     }
@@ -894,137 +894,137 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
 
 GDALColorInterp KEARasterBand::GetColorInterpretation()
 {
-    kealib::KEABandClrInterp keainterp;
+    kealib::KEABandClrInterp ekeainterp;
     try
     {
-        keainterp = this->m_pImageIO->getImageBandClrInterp(this->nBand);
+        ekeainterp = this->m_pImageIO->getImageBandClrInterp(this->nBand);
     }
     catch(kealib::KEAException &e)
     {
         return GCI_GrayIndex;
     }
         
-    GDALColorInterp gdalinterp;
-    switch(keainterp)
+    GDALColorInterp egdalinterp;
+    switch(ekeainterp)
     {
         case kealib::kea_generic:
         case kealib::kea_greyindex:
-            gdalinterp = GCI_GrayIndex;
+            egdalinterp = GCI_GrayIndex;
             break;
         case kealib::kea_paletteindex:
-            gdalinterp = GCI_PaletteIndex;
+            egdalinterp = GCI_PaletteIndex;
             break;
         case kealib::kea_redband:
-            gdalinterp = GCI_RedBand;
+            egdalinterp = GCI_RedBand;
             break;
         case kealib::kea_greenband:
-            gdalinterp = GCI_GreenBand;
+            egdalinterp = GCI_GreenBand;
             break;
         case kealib::kea_blueband:
-            gdalinterp = GCI_BlueBand;
+            egdalinterp = GCI_BlueBand;
             break;
         case kealib::kea_alphaband:
-            gdalinterp = GCI_AlphaBand;
+            egdalinterp = GCI_AlphaBand;
             break;
         case kealib::kea_hueband:
-            gdalinterp = GCI_HueBand;
+            egdalinterp = GCI_HueBand;
             break;
         case kealib::kea_saturationband:
-            gdalinterp = GCI_SaturationBand;
+            egdalinterp = GCI_SaturationBand;
             break;
         case kealib::kea_lightnessband:
-            gdalinterp = GCI_LightnessBand;
+            egdalinterp = GCI_LightnessBand;
             break;
         case kealib::kea_cyanband:
-            gdalinterp = GCI_CyanBand;
+            egdalinterp = GCI_CyanBand;
             break;
         case kealib::kea_magentaband:
-            gdalinterp = GCI_MagentaBand;
+            egdalinterp = GCI_MagentaBand;
             break;
         case kealib::kea_yellowband:
-            gdalinterp = GCI_YellowBand;
+            egdalinterp = GCI_YellowBand;
             break;
         case kealib::kea_blackband:
-            gdalinterp = GCI_BlackBand;
+            egdalinterp = GCI_BlackBand;
             break;
         case kealib::kea_ycbcr_yband:
-            gdalinterp = GCI_YCbCr_YBand;
+            egdalinterp = GCI_YCbCr_YBand;
             break;
         case kealib::kea_ycbcr_cbband:
-            gdalinterp = GCI_YCbCr_CbBand;
+            egdalinterp = GCI_YCbCr_CbBand;
             break;
         case kealib::kea_ycbcr_crband:
-            gdalinterp = GCI_YCbCr_CrBand;
+            egdalinterp = GCI_YCbCr_CrBand;
             break;
         default:
-            gdalinterp = GCI_GrayIndex;
+            egdalinterp = GCI_GrayIndex;
             break;
     }
         
-    return gdalinterp;
+    return egdalinterp;
 }
 
-CPLErr KEARasterBand::SetColorInterpretation(GDALColorInterp gdalinterp)
+CPLErr KEARasterBand::SetColorInterpretation(GDALColorInterp egdalinterp)
 {
-    kealib::KEABandClrInterp keainterp;
-    switch(gdalinterp)
+    kealib::KEABandClrInterp ekeainterp;
+    switch(egdalinterp)
     {
         case GCI_GrayIndex:
-            keainterp = kealib::kea_greyindex;
+            ekeainterp = kealib::kea_greyindex;
             break;
         case GCI_PaletteIndex:
-            keainterp = kealib::kea_paletteindex;
+            ekeainterp = kealib::kea_paletteindex;
             break;
         case GCI_RedBand:
-            keainterp = kealib::kea_redband;
+            ekeainterp = kealib::kea_redband;
             break;
         case GCI_GreenBand:
-            keainterp = kealib::kea_greenband;
+            ekeainterp = kealib::kea_greenband;
             break;
         case GCI_BlueBand:
-            keainterp = kealib::kea_blueband;
+            ekeainterp = kealib::kea_blueband;
             break;
         case GCI_AlphaBand:
-            keainterp = kealib::kea_alphaband;
+            ekeainterp = kealib::kea_alphaband;
             break;
         case GCI_HueBand:
-            keainterp = kealib::kea_hueband;
+            ekeainterp = kealib::kea_hueband;
             break;
         case GCI_SaturationBand:
-            keainterp = kealib::kea_saturationband;
+            ekeainterp = kealib::kea_saturationband;
             break;
         case GCI_LightnessBand:
-            keainterp = kealib::kea_lightnessband;
+            ekeainterp = kealib::kea_lightnessband;
             break;
         case GCI_CyanBand:
-            keainterp = kealib::kea_cyanband;
+            ekeainterp = kealib::kea_cyanband;
             break;
         case GCI_MagentaBand:
-            keainterp = kealib::kea_magentaband;
+            ekeainterp = kealib::kea_magentaband;
             break;
         case GCI_YellowBand:
-            keainterp = kealib::kea_yellowband;
+            ekeainterp = kealib::kea_yellowband;
             break;
         case GCI_BlackBand:
-            keainterp = kealib::kea_blackband;
+            ekeainterp = kealib::kea_blackband;
             break;
         case GCI_YCbCr_YBand:
-            keainterp = kealib::kea_ycbcr_yband;
+            ekeainterp = kealib::kea_ycbcr_yband;
             break;
         case GCI_YCbCr_CbBand:
-            keainterp = kealib::kea_ycbcr_cbband;
+            ekeainterp = kealib::kea_ycbcr_cbband;
             break;
         case GCI_YCbCr_CrBand:
-            keainterp = kealib::kea_ycbcr_crband;
+            ekeainterp = kealib::kea_ycbcr_crband;
             break;
         default:
-            keainterp = kealib::kea_greyindex;
+            ekeainterp = kealib::kea_greyindex;
             break;
     }
 
     try
     {
-        this->m_pImageIO->setImageBandClrInterp(this->nBand, keainterp);
+        this->m_pImageIO->setImageBandClrInterp(this->nBand, ekeainterp);
     }
     catch(kealib::KEAException &e)
     {

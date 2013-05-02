@@ -1,5 +1,5 @@
 /*
- *  KEAOverview.h
+ *  keamaskband.h
  *
  *  Created by Pete Bunting on 01/08/2012.
  *  Copyright 2012 LibKEA. All rights reserved.
@@ -27,33 +27,26 @@
  *
  */
 
-#ifndef KEAOVERVIEW_H
-#define KEAOVERVIEW_H
+#ifndef KEAMASKBAND_H
+#define KEAMASKBAND_H
 
-#include "KEABand.h"
+#include "gdal_priv.h"
+#include "libkea/KEAImageIO.h"
 
-// overview class. Derives from our band class
-// and just overrited and read/write block functions
-class KEAOverview : public KEARasterBand
+class KEAMaskBand : public GDALRasterBand
 {
-    int         m_nOverviewIndex; // the index of this overview
+    int m_nSrcBand;
+    kealib::KEAImageIO  *m_pImageIO; // our image access pointer - refcounted
+    int                 *m_pnRefCount; // reference count of m_pImageIO
 public:
-    KEAOverview(KEADataset *pDataset, int nSrcBand, GDALAccess eAccess, 
-                kealib::KEAImageIO *pImageIO, int *pRefCount,
-                int nOverviewIndex, uint64_t nXSize, uint64_t nYSize );
-    ~KEAOverview();
-
-    // virtual methods for RATs - not implemented for overviews
-    const GDALRasterAttributeTable *GetDefaultRAT();
-    CPLErr SetDefaultRAT(const GDALRasterAttributeTable *poRAT);
-
-    // note that Color Table stuff implemented in base class
-    // so could be some duplication if overview asked for color table
+    KEAMaskBand(GDALRasterBand *pParent, kealib::KEAImageIO *pImageIO, int *pRefCount );
+    ~KEAMaskBand();
 
 protected:
-    // we just override these functions from KEARasterBand
+    // we just override these functions from GDALRasterBand
     virtual CPLErr IReadBlock( int, int, void * );
     virtual CPLErr IWriteBlock( int, int, void * );
+
 };
 
-#endif //KEAOVERVIEW_H
+#endif //KEAMASKBAND_H

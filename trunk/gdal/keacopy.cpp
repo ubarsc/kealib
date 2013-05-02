@@ -1,5 +1,5 @@
 /*
- *  KEACopy.cpp
+ *  keacopy.cpp
  *
  *  Created by Pete Bunting on 01/08/2012.
  *  Copyright 2012 LibKEA. All rights reserved.
@@ -68,29 +68,29 @@ bool CopyRasterData( GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nB
     for( unsigned int nY = 0; nY < nYSize; nY += nBlockSize )
     {
         // adjust for edge blocks
-        unsigned int ysize = nBlockSize;
-        unsigned int ytotalsize = nY + nBlockSize;
-        if( ytotalsize > nYSize )
-            ysize -= (ytotalsize - nYSize);
+        unsigned int nysize = nBlockSize;
+        unsigned int nytotalsize = nY + nBlockSize;
+        if( nytotalsize > nYSize )
+            nysize -= (nytotalsize - nYSize);
         for( unsigned int nX = 0; nX < nXSize; nX += nBlockSize )
         {
             // adjust for edge blocks
-            unsigned int xsize = nBlockSize;
-            unsigned int xtotalsize = nX + nBlockSize;
-            if( xtotalsize > nXSize )
-                xsize -= (xtotalsize - nXSize);
+            unsigned int nxsize = nBlockSize;
+            unsigned int nxtotalsize = nX + nBlockSize;
+            if( nxtotalsize > nXSize )
+                nxsize -= (nxtotalsize - nXSize);
 
             // read in from GDAL
-            if( pBand->RasterIO( GF_Read, nX, nY, xsize, ysize, pData, xsize, ysize, eGDALType, nPixelSize, nPixelSize * nBlockSize) != CE_None )
+            if( pBand->RasterIO( GF_Read, nX, nY, nxsize, nysize, pData, nxsize, nysize, eGDALType, nPixelSize, nPixelSize * nBlockSize) != CE_None )
             {
                 CPLError( CE_Failure, CPLE_AppDefined, "Unable to read blcok at %d %d\n", nX, nY );
                 return false;
             }
             // write out to KEA
             if( nOverview == -1 )
-                pImageIO->writeImageBlock2Band( nBand, pData, nX, nY, xsize, ysize, nBlockSize, nBlockSize, eKeaType);
+                pImageIO->writeImageBlock2Band( nBand, pData, nX, nY, nxsize, nysize, nBlockSize, nBlockSize, eKeaType);
             else
-                pImageIO->writeToOverview( nBand, nOverview, pData,  nX, nY, xsize, ysize, nBlockSize, nBlockSize, eKeaType);
+                pImageIO->writeToOverview( nBand, nOverview, pData,  nX, nY, nxsize, nysize, nBlockSize, nBlockSize, eKeaType);
 
             // progress
             nBlocksComplete++;
@@ -137,13 +137,13 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
         int numCols = gdalAtt->GetColumnCount();
         std::vector<kealib::KEAATTField*> *fields = new std::vector<kealib::KEAATTField*>();
         kealib::KEAATTField *field;
-        for(int i = 0; i < numCols; ++i)
+        for(int ni = 0; ni < numCols; ++ni)
         {
             field = new kealib::KEAATTField();
-            field->name = gdalAtt->GetNameOfCol(i);
+            field->name = gdalAtt->GetNameOfCol(ni);
             
             field->dataType = kealib::kea_att_string;
-            switch(gdalAtt->GetTypeOfCol(i))
+            switch(gdalAtt->GetTypeOfCol(ni))
             {
                 case GFT_Integer:
                     field->dataType = kealib::kea_att_int;
@@ -170,12 +170,12 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
                 field->usage = "Alpha";
                 field->dataType = kealib::kea_att_int;
                 alphaDef = true;
-                alphaIdx = i;
+                alphaIdx = ni;
             }
             else
             {
                 field->usage = "Generic";
-                switch(gdalAtt->GetUsageOfCol(i))
+                switch(gdalAtt->GetUsageOfCol(ni))
                 {
                     case GFU_PixelCount:
                         field->usage = "PixelCount";
@@ -189,7 +189,7 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
                         {
                             field->dataType = kealib::kea_att_int;
                             redDef = true;
-                            redIdx = i;
+                            redIdx = ni;
                         }
                         break;
                     case GFU_Green:
@@ -198,7 +198,7 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
                         {
                             field->dataType = kealib::kea_att_int;
                             greenDef = true;
-                            greenIdx = i;
+                            greenIdx = ni;
                         }
                         break;
                     case GFU_Blue:
@@ -207,7 +207,7 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
                         {
                             field->dataType = kealib::kea_att_int;
                             blueDef = true;
-                            blueIdx = i;
+                            blueIdx = ni;
                         }
                         break;
                     case GFU_Alpha:
@@ -228,41 +228,41 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
         keaAtt->addRows(numRows);
         
         kealib::KEAATTFeature *keaFeat = NULL;
-        for(int i = 0; i < numRows; ++i)
+        for(int ni = 0; ni < numRows; ++ni)
         {
-            keaFeat = keaAtt->getFeature(i);
-            for(int j = 0; j < numCols; ++j)
+            keaFeat = keaAtt->getFeature(ni);
+            for(int nj = 0; nj < numCols; ++nj)
             {
-                field = fields->at(j);
+                field = fields->at(nj);
                 
-                if(redDef && (redIdx == j))
+                if(redDef && (redIdx == nj))
                 {
-                    keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(i, j)*255);
+                    keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(ni, nj)*255);
                 }
-                else if(greenDef && (greenIdx == j))
+                else if(greenDef && (greenIdx == nj))
                 {
-                    keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(i, j)*255);
+                    keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(ni, nj)*255);
                 }
-                else if(blueDef && (blueIdx == j))
+                else if(blueDef && (blueIdx == nj))
                 {
-                    keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(i, j)*255);
+                    keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(ni, nj)*255);
                 }
-                else if(alphaDef && (alphaIdx == j))
+                else if(alphaDef && (alphaIdx == nj))
                 {
-                    keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(i, j)*255);
+                    keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(ni, nj)*255);
                 }
                 else
                 {
                     switch(field->dataType)
                     {
                         case kealib::kea_att_int:
-                            keaFeat->intFields->at(field->idx) = gdalAtt->GetValueAsInt(i, j);
+                            keaFeat->intFields->at(field->idx) = gdalAtt->GetValueAsInt(ni, nj);
                             break;
                         case kealib::kea_att_float:
-                            keaFeat->floatFields->at(field->idx) = gdalAtt->GetValueAsDouble(i, j);
+                            keaFeat->floatFields->at(field->idx) = gdalAtt->GetValueAsDouble(ni, nj);
                             break;
                         case kealib::kea_att_string:
-                            keaFeat->strFields->at(field->idx) = std::string(gdalAtt->GetValueAsString(i, j));
+                            keaFeat->strFields->at(field->idx) = std::string(gdalAtt->GetValueAsString(ni, nj));
                             break;
                         default:
                             // Ignore as data type is not known or available from a HFA/GDAL RAT."

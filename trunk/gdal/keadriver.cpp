@@ -1,5 +1,5 @@
 /*
- *  KEADriver.cpp
+ *  keadriver.cpp
  *
  *  Created by Pete Bunting on 01/08/2012.
  *  Copyright 2012 LibKEA. All rights reserved.
@@ -27,7 +27,7 @@
  *
  */
 
-#include "KEADataset.h"
+#include "keadataset.h"
 
 CPL_C_START
 void CPL_DLL GDALRegister_KEA(void);

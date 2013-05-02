@@ -1,5 +1,5 @@
 /*
- *  KEAMaskBand.cpp
+ *  keamaskband.cpp
  *
  *  Created by Pete Bunting on 01/08/2012.
  *  Copyright 2012 LibKEA. All rights reserved.
@@ -27,7 +27,7 @@
  *
  */
 
-#include "KEAMaskBand.h"
+#include "keamaskband.h"
 
 // constructor
 KEAMaskBand::KEAMaskBand(GDALRasterBand *pParent, 
@@ -79,22 +79,22 @@ CPLErr KEAMaskBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
     {
         // GDAL deals in blocks - if we are at the end of a row
         // we need to adjust the amount read so we don't go over the edge
-        int xsize = this->nBlockXSize;
-        int xtotalsize = this->nBlockXSize * (nBlockXOff + 1);
-        if( xtotalsize > this->nRasterXSize )
+        int nxsize = this->nBlockXSize;
+        int nxtotalsize = this->nBlockXSize * (nBlockXOff + 1);
+        if( nxtotalsize > this->nRasterXSize )
         {
-            xsize -= (xtotalsize - this->nRasterXSize);
+            nxsize -= (nxtotalsize - this->nRasterXSize);
         }
-        int ysize = this->nBlockYSize;
-        int ytotalsize = this->nBlockYSize * (nBlockYOff + 1);
-        if( ytotalsize > this->nRasterYSize )
+        int nysize = this->nBlockYSize;
+        int nytotalsize = this->nBlockYSize * (nBlockYOff + 1);
+        if( nytotalsize > this->nRasterYSize )
         {
-            ysize -= (ytotalsize - this->nRasterYSize);
+            nysize -= (nytotalsize - this->nRasterYSize);
         }
         this->m_pImageIO->readImageBlock2BandMask( this->m_nSrcBand,
                                             pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
-                                            xsize, ysize, this->nBlockXSize, this->nBlockYSize, 
+                                            nxsize, nysize, this->nBlockXSize, this->nBlockYSize, 
                                             kealib::kea_8uint );
     }
     catch (kealib::KEAIOException &e)
@@ -113,23 +113,23 @@ CPLErr KEAMaskBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage )
     {
         // GDAL deals in blocks - if we are at the end of a row
         // we need to adjust the amount written so we don't go over the edge
-        int xsize = this->nBlockXSize;
-        int xtotalsize = this->nBlockXSize * (nBlockXOff + 1);
-        if( xtotalsize > this->nRasterXSize )
+        int nxsize = this->nBlockXSize;
+        int nxtotalsize = this->nBlockXSize * (nBlockXOff + 1);
+        if( nxtotalsize > this->nRasterXSize )
         {
-            xsize -= (xtotalsize - this->nRasterXSize);
+            nxsize -= (nxtotalsize - this->nRasterXSize);
         }
-        int ysize = this->nBlockYSize;
-        int ytotalsize = this->nBlockYSize * (nBlockYOff + 1);
-        if( ytotalsize > this->nRasterYSize )
+        int nysize = this->nBlockYSize;
+        int nytotalsize = this->nBlockYSize * (nBlockYOff + 1);
+        if( nytotalsize > this->nRasterYSize )
         {
-            ysize -= (ytotalsize - this->nRasterYSize);
+            nysize -= (nytotalsize - this->nRasterYSize);
         }
 
         this->m_pImageIO-> writeImageBlock2BandMask( this->m_nSrcBand, 
                                             pImage, this->nBlockXSize * nBlockXOff,
                                             this->nBlockYSize * nBlockYOff,
-                                            xsize, ysize, this->nBlockXSize, this->nBlockYSize,
+                                            nxsize, nysize, this->nBlockXSize, this->nBlockYSize,
                                             kealib::kea_8uint );
     }
     catch (kealib::KEAIOException &e)

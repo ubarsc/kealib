@@ -1,5 +1,5 @@
 /*
- *  KEACopy.h
+ *  keacopy.h
  *
  *  Created by Pete Bunting on 01/08/2012.
  *  Copyright 2012 LibKEA. All rights reserved.

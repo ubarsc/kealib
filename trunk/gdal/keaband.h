@@ -1,5 +1,5 @@
 /*
- *  KEABand.h
+ *  keaband.h
  *
  *  Created by Pete Bunting on 01/08/2012.
  *  Copyright 2012 LibKEA. All rights reserved.
@@ -31,7 +31,7 @@
 #define KEABAND_H
 
 #include "gdal_pam.h"
-#include "KEADataset.h"
+#include "keadataset.h"
 
 class KEAOverview;
 class KEAMaskBand;
