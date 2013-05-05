@@ -166,6 +166,8 @@ namespace kealib{
     
 }
 
+// returns the current KEA version as a double
+extern "C" double get_kealibversion();
 
 #endif
 

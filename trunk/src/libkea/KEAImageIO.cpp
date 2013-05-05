@@ -3593,7 +3593,13 @@ namespace kealib{
 
 } // namespace libkea
 
-
+#include "libkea/kea-config.h"
+// C function for determining library version
+double get_kealibversion()
+{
+    return double(LIBKEA_VERSION_MAJOR) + double(LIBKEA_VERSION_MINOR) / 10.0 + 
+        double(LIBKEA_VERSION_PATCH) / 100.0;
+}
 
 
 
