@@ -48,7 +48,6 @@ else()
 endif()
 
 option (BUILD_SHARED_LIBS "Build with shared library" ON)
-set(LIBKEA_WITH_UTILS TRUE CACHE BOOL "Choose if libkea utilities should be built")
 set(LIBKEA_WITH_GDAL TRUE CACHE BOOL "Choose if .kea GDAL driver should be built")
 
 set(HDF5_INCLUDE_DIR /usr/local/include CACHE PATH "Include PATH for HDF5")
