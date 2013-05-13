@@ -48,13 +48,19 @@ else()
 endif()
 
 option (BUILD_SHARED_LIBS "Build with shared library" ON)
-set(LIBKEA_WITH_GDAL TRUE CACHE BOOL "Choose if .kea GDAL driver should be built")
 
 set(HDF5_INCLUDE_DIR /usr/local/include CACHE PATH "Include PATH for HDF5")
 set(HDF5_LIB_PATH /usr/local/lib CACHE PATH "Library PATH for HDF5")
 
-set(GDAL_INCLUDE_DIR /usr/local/include CACHE PATH "Include PATH for GDAL")
-set(GDAL_LIB_PATH /usr/local/lib CACHE PATH "Library PATH for GDAL")
+set(GDAL_INCLUDE_DIR "NOTFOUND" CACHE PATH "Include PATH for GDAL")
+set(GDAL_LIB_PATH "NOTFOUND" CACHE PATH "Library PATH for GDAL")
+
+IF(GDAL_INCLUDE_DIR AND GDAL_LIB_PATH)
+    # by default, only build if paths are set
+    set(LIBKEA_WITH_GDAL TRUE CACHE BOOL "Choose if .kea GDAL driver should be built")
+ELSE()
+    set(LIBKEA_WITH_GDAL FALSE CACHE BOOL "Choose if .kea GDAL driver should be built")
+ENDIF()
 
 ###############################################################################
 
