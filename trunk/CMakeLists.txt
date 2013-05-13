@@ -55,6 +55,8 @@ set(HDF5_LIB_PATH /usr/local/lib CACHE PATH "Library PATH for HDF5")
 set(GDAL_INCLUDE_DIR "NOTFOUND" CACHE PATH "Include PATH for GDAL")
 set(GDAL_LIB_PATH "NOTFOUND" CACHE PATH "Library PATH for GDAL")
 
+set(HDF5_STATIC_LIBS FALSE CACHE BOOL "On Windows, link against static HDF5 libs")
+
 IF(GDAL_INCLUDE_DIR AND GDAL_LIB_PATH)
     # by default, only build if paths are set
     set(LIBKEA_WITH_GDAL TRUE CACHE BOOL "Choose if .kea GDAL driver should be built")
@@ -154,8 +156,12 @@ endif(APPLE)
 
 include_directories(${HDF5_INCLUDE_DIR})
 if (WIN32)
-  set(HDF5_LIBRARIES -LIBPATH:"${HDF5_LIB_PATH}" hdf5_cppdll.lib hdf5dll.lib)
-  set_property(DIRECTORY PROPERTY COMPILE_DEFINITIONS HDF5CPP_USEDLL)
+  if(HDF5_STATIC_LIBS)
+    set(HDF5_LIBRARIES -LIBPATH:"${HDF5_LIB_PATH}" hdf5_cpp.lib hdf5.lib zlibstatic.lib)
+  else()
+    set(HDF5_LIBRARIES -LIBPATH:"${HDF5_LIB_PATH}" hdf5_cppdll.lib hdf5dll.lib)
+    set_property(DIRECTORY PROPERTY COMPILE_DEFINITIONS HDF5CPP_USEDLL)
+  endif()
 else()
   set(HDF5_LIBRARIES -L${HDF5_LIB_PATH} -lhdf5 -lhdf5_hl -lhdf5_cpp)
 endif(WIN32)
