@@ -12,6 +12,8 @@ Options:
      [--cflags]
      [--ldflags]
      [--includes]
+     [--hdfincludes]
+     [--hdflibs]
 EOF
     exit $1
 }
@@ -44,6 +46,12 @@ case $1 in
       ;;
     --includes)
       echo @CMAKE_INSTALL_PREFIX@/@PROJECT_HEADER_DIR@
+      ;;
+	--hdfincludes)
+      echo @HDF5_INCLUDE_DIR@
+      ;;
+	--hdflibs)
+      echo "@HDF5_LIBRARIES@"
       ;;
   esac
   shift

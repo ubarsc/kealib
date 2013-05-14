@@ -87,18 +87,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ./cmake/modules/)
 ###############################################################################
 
 ###############################################################################
-# Setup configure file
-configure_file ( "${PROJECT_HEADER_DIR}/kea-config.h.in" "${PROJECT_HEADER_DIR}/libkea/kea-config.h" )
-configure_file ( "${PROJECT_TOOLS_DIR}/kea-config.in" "${PROJECT_BINARY_DIR}/kea-config" )
-###############################################################################
-
-###############################################################################
-# Documentation
-file(READ "doc/index.txt" README )
-file(WRITE "README.txt" "${README}")
-###############################################################################
-
-###############################################################################
 # Platform and compiler specific settings
 
 if(WIN32)
@@ -171,6 +159,18 @@ if (WIN32)
 else()
   set(GDAL_LIBRARIES -L${GDAL_LIB_PATH} -lgdal)
 endif(WIN32)
+###############################################################################
+
+###############################################################################
+# Setup configure file
+configure_file ( "${PROJECT_HEADER_DIR}/kea-config.h.in" "${PROJECT_HEADER_DIR}/libkea/kea-config.h" )
+configure_file ( "${PROJECT_TOOLS_DIR}/kea-config.in" "${PROJECT_BINARY_DIR}/kea-config" )
+###############################################################################
+
+###############################################################################
+# Documentation
+file(READ "doc/index.txt" README )
+file(WRITE "README.txt" "${README}")
 ###############################################################################
 
 ###############################################################################
