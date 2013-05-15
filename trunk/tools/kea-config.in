@@ -13,6 +13,7 @@ Options:
      [--ldflags]
      [--includes]
      [--hdfincludes]
+     [--hdfcflags]
      [--hdflibs]
 EOF
     exit $1
@@ -49,6 +50,9 @@ case $1 in
       ;;
 	--hdfincludes)
       echo @HDF5_INCLUDE_DIR@
+      ;;
+	--hdfcflags)
+      echo -I@HDF5_INCLUDE_DIR@
       ;;
 	--hdflibs)
       echo @HDF5_LIBRARIES@
