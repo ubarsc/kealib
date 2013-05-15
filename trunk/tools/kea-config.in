@@ -51,7 +51,7 @@ case $1 in
       echo @HDF5_INCLUDE_DIR@
       ;;
 	--hdflibs)
-      echo "@HDF5_LIBRARIES@"
+      echo @HDF5_LIBRARIES@
       ;;
   esac
   shift

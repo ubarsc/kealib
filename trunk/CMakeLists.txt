@@ -151,7 +151,7 @@ if (WIN32)
     set_property(DIRECTORY PROPERTY COMPILE_DEFINITIONS HDF5CPP_USEDLL)
   endif()
 else()
-  set(HDF5_LIBRARIES -L${HDF5_LIB_PATH} -lhdf5 -lhdf5_hl -lhdf5_cpp)
+  set(HDF5_LIBRARIES "-L${HDF5_LIB_PATH} -lhdf5 -lhdf5_hl -lhdf5_cpp")
 endif(WIN32)
 
 if (WIN32)
