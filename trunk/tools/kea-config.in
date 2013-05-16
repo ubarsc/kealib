@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 usage()
 {
     cat <<EOF
-Usage: spd-config [OPTIONS]
+Usage: kea-config [OPTIONS]
 Options:
      [--prefix]
      [--hgversion]
