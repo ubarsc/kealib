@@ -28,36 +28,36 @@ case "$1" in
 esac
 case $1 in
     --prefix)
-    echo @CMAKE_INSTALL_PREFIX@
+    echo -n "@CMAKE_INSTALL_PREFIX@ "
      ;;
     --hgversion)
-    echo @LIBKEA_HG_VERSION@
+    echo -n "@LIBKEA_HG_VERSION@ "
      ;;
 	--version)
-    echo @LIBKEA_VERSION@
+    echo -n "@LIBKEA_VERSION@ "
      ;;
     --cflags)
-    echo -I@CMAKE_INSTALL_PREFIX@/@PROJECT_HEADER_DIR@ 
+    echo -n "-I@CMAKE_INSTALL_PREFIX@/@PROJECT_HEADER_DIR@ "
       ;;
     --libs)
-      echo -L@CMAKE_INSTALL_PREFIX@/@PROJECT_LIBRARY_DIR@ -l@LIBKEA_LIB_NAME@
+      echo -n "-L@CMAKE_INSTALL_PREFIX@/@PROJECT_LIBRARY_DIR@ -l@LIBKEA_LIB_NAME@ "
       ;;
     --ldflags)
-      echo @CMAKE_INSTALL_PREFIX@/@PROJECT_LIBRARY_DIR@
+      echo -n "@CMAKE_INSTALL_PREFIX@/@PROJECT_LIBRARY_DIR@ "
       ;;
     --includes)
-      echo @CMAKE_INSTALL_PREFIX@/@PROJECT_HEADER_DIR@
+      echo -n "@CMAKE_INSTALL_PREFIX@/@PROJECT_HEADER_DIR@ "
       ;;
 	--hdfincludes)
-      echo @HDF5_INCLUDE_DIR@
+      echo -n "@HDF5_INCLUDE_DIR@ "
       ;;
 	--hdfcflags)
-      echo -I@HDF5_INCLUDE_DIR@
+      echo -n "-I@HDF5_INCLUDE_DIR@ "
       ;;
 	--hdflibs)
-      echo @HDF5_LIBRARIES@
+      echo -n "@HDF5_LIBRARIES@ "
       ;;
   esac
   shift
 done
-
+echo
