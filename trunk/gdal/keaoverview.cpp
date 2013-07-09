@@ -117,7 +117,11 @@ CPLErr KEAOverview::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage )
     }
 }
 
+#ifdef HAVE_RFC40
+GDALRasterAttributeTable *KEAOverview::GetDefaultRAT()
+#else
 const GDALRasterAttributeTable *KEAOverview::GetDefaultRAT()
+#endif
 {
     // KEARasterBand implements this, but we don't want to
     return NULL;

@@ -30,6 +30,7 @@
 #include "keaband.h"
 #include "keaoverview.h"
 #include "keamaskband.h"
+#include "kearat.h"
 
 #include "gdal_rat.h"
 #include "libkea/KEAAttributeTable.h"
@@ -436,6 +437,26 @@ CPLErr KEARasterBand::SetNoDataValue(double dfNoData)
     }
 }
 
+#ifdef HAVE_RFC40
+GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
+{
+    if( this->m_pAttributeTable == NULL )
+    {
+        try
+        {
+            // we assume this is never NULL - creates a new one if none exists
+            kealib::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(kealib::kea_att_mem, this->nBand);
+            this->m_pAttributeTable = new KEARasterAttributeTable(pKEATable);
+        }
+        catch(kealib::KEAException &e)
+        {
+            CPLError( CE_Failure, CPLE_AppDefined, "Failed to read attributes: %s", e.what() );
+        }
+    }
+    return this->m_pAttributeTable;
+}
+
+#else
 // read the attributes into a GDALAttributeTable
 const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
 {
@@ -560,6 +581,7 @@ const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
     }
     return this->m_pAttributeTable;
 }
+#endif // HAVE_RFC40
 
 CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
 {

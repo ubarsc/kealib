@@ -3,9 +3,9 @@
 # set file locations
 set(LIBKEA_HEADERS_DIR ../include/libkea)
 
-set(KEA_GDAL_H keadataset.h keaband.h keaoverview.h keacopy.h keamaskband.h)
+set(KEA_GDAL_H keadataset.h keaband.h keaoverview.h keacopy.h keamaskband.h kearat.h)
 
-set(KEA_GDAL_CPP keadriver.cpp keadataset.cpp keaband.cpp keaoverview.cpp keacopy.cpp keamaskband.cpp)
+set(KEA_GDAL_CPP keadriver.cpp keadataset.cpp keaband.cpp keaoverview.cpp keacopy.cpp keamaskband.cpp kearat.cpp)
 
 ###############################################################################
 set(LIBKEA_GDAL_DRIVER gdal_KEA)

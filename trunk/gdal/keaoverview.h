@@ -44,7 +44,11 @@ public:
     ~KEAOverview();
 
     // virtual methods for RATs - not implemented for overviews
+#ifdef HAVE_RFC40
+    GDALRasterAttributeTable *GetDefaultRAT();
+#else
     const GDALRasterAttributeTable *GetDefaultRAT();
+#endif
     CPLErr SetDefaultRAT(const GDALRasterAttributeTable *poRAT);
 
     // note that Color Table stuff implemented in base class

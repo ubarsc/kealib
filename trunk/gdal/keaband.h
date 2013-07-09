@@ -33,6 +33,13 @@
 #include "gdal_pam.h"
 #include "keadataset.h"
 
+#if (GDAL_VERSION_MAJOR >= 2) || ((GDAL_VERSION_MAJOR == 1) && (GDAL_VERSION_MINOR > 10))
+    #define HAVE_RFC40
+    #pragma message ("defining HAVE_RFC40")
+#else
+    #pragma message ("HAVE_RFC40 not present")
+#endif
+
 class KEAOverview;
 class KEAMaskBand;
 
@@ -76,7 +83,11 @@ public:
     CPLErr SetNoDataValue(double dfNoData);
 
     // virtual methods for RATs
+#ifdef HAVE_RFC40
+    GDALRasterAttributeTable *GetDefaultRAT();
+#else
     const GDALRasterAttributeTable *GetDefaultRAT();
+#endif
     CPLErr SetDefaultRAT(const GDALRasterAttributeTable *poRAT);
 
     // virtual methods for color tables

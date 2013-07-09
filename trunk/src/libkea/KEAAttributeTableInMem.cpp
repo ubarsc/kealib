@@ -269,7 +269,7 @@ namespace kealib{
     // RFC40
     void KEAAttributeTableInMem::getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const throw(KEAATTException)
     {
-        if((startfid+len) >= attRows->size())
+        if((startfid+len) > attRows->size())
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
             throw KEAATTException(message);
@@ -289,7 +289,7 @@ namespace kealib{
 
     void KEAAttributeTableInMem::getIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) const throw(KEAATTException)
     {
-        if((startfid+len) >= attRows->size())
+        if((startfid+len) > attRows->size())
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
             throw KEAATTException(message);
@@ -309,7 +309,7 @@ namespace kealib{
 
     void KEAAttributeTableInMem::getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const throw(KEAATTException)
     {
-        if((startfid+len) >= attRows->size())
+        if((startfid+len) > attRows->size())
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
             throw KEAATTException(message);
@@ -329,7 +329,7 @@ namespace kealib{
 
     void KEAAttributeTableInMem::getStringFields(size_t startfid, size_t len, size_t colIdx, char **papszStrList, char* (*pStrDup)(const char *)) const throw(KEAATTException)
     {
-        if((startfid+len) >= attRows->size())
+        if((startfid+len) > attRows->size())
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
             throw KEAATTException(message);
@@ -421,7 +421,7 @@ namespace kealib{
     // RFC40
     void KEAAttributeTableInMem::setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) throw(KEAATTException)
     {
-        if((startfid+len) >= attRows->size())
+        if((startfid+len) > attRows->size())
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
             throw KEAATTException(message);
@@ -441,7 +441,7 @@ namespace kealib{
 
     void KEAAttributeTableInMem::setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) throw(KEAATTException)
     {
-        if((startfid+len) >= attRows->size())
+        if((startfid+len) > attRows->size())
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
             throw KEAATTException(message);
@@ -461,7 +461,7 @@ namespace kealib{
     
     void KEAAttributeTableInMem::setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) throw(KEAATTException)
     {
-        if((startfid+len) >= attRows->size())
+        if((startfid+len) > attRows->size())
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
             throw KEAATTException(message);
@@ -481,7 +481,7 @@ namespace kealib{
 
     void KEAAttributeTableInMem::setStringFields(size_t startfid, size_t len, size_t colIdx, char **papszStrList) throw(KEAATTException)
     {
-        if((startfid+len) >= attRows->size())
+        if((startfid+len) > attRows->size())
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
             throw KEAATTException(message);
