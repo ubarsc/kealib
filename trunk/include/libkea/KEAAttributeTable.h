@@ -123,11 +123,23 @@ namespace kealib{
         virtual int64_t getIntField(size_t fid, size_t colIdx) const throw(KEAATTException)=0;
         virtual double getFloatField(size_t fid, size_t colIdx) const throw(KEAATTException)=0;
         virtual std::string getStringField(size_t fid, size_t colIdx) const throw(KEAATTException)=0;
+
+        // RFC40 methods
+        virtual void getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const throw(KEAATTException)=0;
+        virtual void getIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) const throw(KEAATTException)=0;
+        virtual void getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const throw(KEAATTException)=0;
+        virtual void getStringFields(size_t startfid, size_t len, size_t colIdx, char **papszStrList, char* (*pStrDup)(const char *)=NULL) const throw(KEAATTException)=0;
         
         virtual void setBoolField(size_t fid, size_t colIdx, bool value) throw(KEAATTException)=0;
         virtual void setIntField(size_t fid, size_t colIdx, int64_t value) throw(KEAATTException)=0;
         virtual void setFloatField(size_t fid, size_t colIdx, double value) throw(KEAATTException)=0;
         virtual void setStringField(size_t fid, size_t colIdx, const std::string &value) throw(KEAATTException)=0;
+
+        // RFC40 methods
+        virtual void setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) throw(KEAATTException)=0;
+        virtual void setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) throw(KEAATTException)=0;
+        virtual void setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) throw(KEAATTException)=0;
+        virtual void setStringFields(size_t startfid, size_t len, size_t colIdx, char **papszStrList) throw(KEAATTException)=0;
         
         virtual void setBoolValue(size_t colIdx, bool value) throw(KEAATTException);
         virtual void setIntValue(size_t colIdx, int64_t value) throw(KEAATTException);

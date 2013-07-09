@@ -52,7 +52,7 @@ namespace kealib{
         int64_t getIntField(size_t fid, const std::string &name) const throw(KEAATTException);
         double getFloatField(size_t fid, const std::string &name) const throw(KEAATTException);
         std::string getStringField(size_t fid, const std::string &name) const throw(KEAATTException);
-        
+
         void setBoolField(size_t fid, const std::string &name, bool value) throw(KEAATTException);
         void setIntField(size_t fid, const std::string &name, int64_t value) throw(KEAATTException);
         void setFloatField(size_t fid, const std::string &name, double value) throw(KEAATTException);
@@ -62,12 +62,22 @@ namespace kealib{
         int64_t getIntField(size_t fid, size_t colIdx) const throw(KEAATTException);
         double getFloatField(size_t fid, size_t colIdx) const throw(KEAATTException);
         std::string getStringField(size_t fid, size_t colIdx) const throw(KEAATTException);
+
+        void getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const throw(KEAATTException);
+        void getIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) const throw(KEAATTException);
+        void getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const throw(KEAATTException);
+        void getStringFields(size_t startfid, size_t len, size_t colIdx, char **papszStrList, char* (*pStrDup)(const char *)=NULL) const throw(KEAATTException);
         
         void setBoolField(size_t fid, size_t colIdx, bool value) throw(KEAATTException);
         void setIntField(size_t fid, size_t colIdx, int64_t value) throw(KEAATTException);
         void setFloatField(size_t fid, size_t colIdx, double value) throw(KEAATTException);
         void setStringField(size_t fid, size_t colIdx, const std::string &value) throw(KEAATTException);
-        
+
+        void setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) throw(KEAATTException);
+        void setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) throw(KEAATTException);
+        void setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) throw(KEAATTException);
+        void setStringFields(size_t startfid, size_t len, size_t colIdx, char **papszStrList) throw(KEAATTException);
+
         KEAATTFeature* getFeature(size_t fid) const throw(KEAATTException);
         
         size_t getSize() const;
