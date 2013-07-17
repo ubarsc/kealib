@@ -40,10 +40,12 @@
 
 // mark all exported classes/functions with DllExport to have
 // them exported by Visual Studio
-#ifdef _WIN32
-    #define DllExport   __declspec( dllexport )
-#else
-    #define DllExport
+#ifndef DllExport
+    #ifdef _WIN32
+        #define DllExport   __declspec( dllexport )
+    #else
+        #define DllExport
+    #endif
 #endif
 
 // MSVC 2008 uses different names....
