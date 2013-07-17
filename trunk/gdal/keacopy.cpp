@@ -401,6 +401,46 @@ void CopySpatialInfo(GDALDataset *pDataset, kealib::KEAImageIO *pImageIO)
     pImageIO->setSpatialInfo( pSpatialInfo );
 }
 
+// copies the GCP's accross
+void CopyGCPs(GDALDataset *pDataset, kealib::KEAImageIO *pImageIO)
+{
+    int nGCPs = pDataset->GetGCPCount();
+
+    if( nGCPs > 0 )
+    {
+        std::vector<kealib::KEAImageGCP*> KEAGCPs;
+        const GDAL_GCP *pGDALGCPs = pDataset->GetGCPs();
+
+        for( int n = 0; n < nGCPs; n++ )
+        {
+            kealib::KEAImageGCP *pGCP = new kealib::KEAImageGCP;
+            pGCP->pszId = pGDALGCPs[n].pszId;
+            pGCP->pszInfo = pGDALGCPs[n].pszInfo;
+            pGCP->dfGCPPixel = pGDALGCPs[n].dfGCPPixel;
+            pGCP->dfGCPLine = pGDALGCPs[n].dfGCPLine;
+            pGCP->dfGCPX = pGDALGCPs[n].dfGCPX;
+            pGCP->dfGCPY = pGDALGCPs[n].dfGCPY;
+            pGCP->dfGCPZ = pGDALGCPs[n].dfGCPZ;
+            KEAGCPs.push_back(pGCP);
+        }
+
+        const char *pszGCPProj = pDataset->GetGCPProjection();
+        try
+        {
+            pImageIO->setGCPs(&KEAGCPs, pszGCPProj);
+        }
+        catch(kealib::KEAException &e)
+        {
+        }
+
+        for( std::vector<kealib::KEAImageGCP*>::iterator itr = KEAGCPs.begin(); itr != KEAGCPs.end(); itr++)
+        {
+            delete (*itr);
+        }
+    }
+}
+
+
 
 bool CopyFile( GDALDataset *pDataset, kealib::KEAImageIO *pImageIO, GDALProgressFunc pfnProgress, void *pProgressData )
 {
@@ -411,6 +451,9 @@ bool CopyFile( GDALDataset *pDataset, kealib::KEAImageIO *pImageIO, GDALProgress
 
     // dataset metadata
     CopyMetadata(pDataset, pImageIO, -1);
+
+    // GCPs
+    CopyGCPs(pDataset, pImageIO);
     
     // now copy all the bands over
     int nBands = pDataset->GetRasterCount();
