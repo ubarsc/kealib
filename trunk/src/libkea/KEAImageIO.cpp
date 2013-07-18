@@ -2705,9 +2705,9 @@ namespace kealib{
             {
                 att = kealib::KEAAttributeTableInMem::createKeaAtt(this->keaImgFile, band);
             }
-            else if(type == kea_att_cached)
+            else if(type == kea_att_file)
             {
-                throw KEAATTException("The cached implementation of the attribute table class has not yet been implemented.");
+                att = kealib::KEAAttributeTableFile::createKeaAtt(this->keaImgFile, band);
             }
             else
             {

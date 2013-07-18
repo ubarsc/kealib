@@ -41,6 +41,7 @@
 #include "libkea/KEAException.h"
 #include "libkea/KEAAttributeTable.h"
 #include "libkea/KEAAttributeTableInMem.h"
+#include "libkea/KEAAttributeTableFile.h"
 
 namespace kealib{
         

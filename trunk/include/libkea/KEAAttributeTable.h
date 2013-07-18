@@ -48,7 +48,7 @@ namespace kealib{
     {
         kea_att_undefined = 0,
         kea_att_mem = 1,
-        kea_att_cached = 2
+        kea_att_file = 2
     };
     
     struct KEAATTFeature
