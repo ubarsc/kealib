@@ -41,7 +41,7 @@
 // mark all exported classes/functions with DllExport to have
 // them exported by Visual Studio
 #ifndef DllExport
-    #ifdef _WIN32
+    #ifdef _MSC_VER
         #define DllExport   __declspec( dllexport )
     #else
         #define DllExport
