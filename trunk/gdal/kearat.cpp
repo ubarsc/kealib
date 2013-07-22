@@ -821,8 +821,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
 
 int KEARasterAttributeTable::ChangesAreWrittenToFile()
 {
-    // TODO: not yet, but soon will be
-    return FALSE;
+    return TRUE;
 }
 
 void KEARasterAttributeTable::SetRowCount( int iCount )
