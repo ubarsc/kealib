@@ -46,7 +46,7 @@ namespace kealib{
     class DllExport KEAAttributeTableFile : public KEAAttributeTable
     {
     public:
-        KEAAttributeTableFile(H5::H5File *keaImgIn, const std::string &bandPathBaseIn, size_t numRowsIn, size_t chunkSizeIn);
+        KEAAttributeTableFile(H5::H5File *keaImgIn, const std::string &bandPathBaseIn, size_t numRowsIn, size_t chunkSizeIn, unsigned int deflateIn);
         
         bool getBoolField(size_t fid, const std::string &name) const throw(KEAATTException);
         int64_t getIntField(size_t fid, const std::string &name) const throw(KEAATTException);
@@ -96,8 +96,11 @@ namespace kealib{
     protected:
         size_t numRows;
         size_t chunkSize;
+        unsigned int deflate;
         H5::H5File *keaImg;
         std::string bandPathBase;
+
+        void updateSizeHeader(hsize_t nbools, hsize_t nints, hsize_t nfloats, hsize_t nstrings) throw(KEAATTException);
 };
     
 }
