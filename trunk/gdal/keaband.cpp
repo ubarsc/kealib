@@ -583,6 +583,109 @@ const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
 }
 #endif // HAVE_RFC40
 
+#ifdef HAVE_RFC4
+CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
+{
+    if( poRAT == NULL )
+        return CE_Failure;
+
+    try
+    {
+        KEARasterAttributeTable *pKEATable = this->GetDefaultRAT();
+
+        int numRows = poRAT->GetRowCount();
+        pKEATable->SetRowCount(numRows);
+
+        for( int nGDALColumnIndex = 0; nGDALColumnIndex < poRAT->GetColumnCount(); nGDALColumnIndex++ )
+        {
+            const char *pszColumnName = poRAT->GetNameOfCol(nGDALColumnIndex);
+            GDALRATFieldType eFieldType = poRAT->GetTypeOfCol(nGDALColumnIndex);
+
+            // do we have it?
+            bool bExists = false;
+            int nKEAColumnIndex;
+            for( nKEAColumnIndex = 0; nKEAColumnIndex < pKEATable->GetColumnCount(); nKEAColumnIndex++ )
+            {
+                if( EQUAL(pszColumnName, pKEATable->GetNameOfCol(nKEAColumnIndex) ))
+                {
+                    bExists = true;
+                    break;
+                }
+            }
+
+            if( !bExists )
+            {
+                if( pKEATable->CreateColumn(pszColumnName, eFieldType,
+                                            poRAT->GetUsageOfCol(nGDALColumnIndex) ) != CE_None )
+                {
+                    CPLError( CE_Failure, CPLE_AppDefined, "Failed to create column");
+                    return CE_Failure;
+                }
+                nKEAColumnIndex = pKEATable->GetColumnCount() - 1;
+            }
+
+            // ok now copy data
+            if( eFieldType == GFT_Integer )
+            {
+                int *panIntData = (int*)VSIMalloc2(numRows, sizeof(int));
+                if( panIntData == NULL )
+                {
+                    CPLError( CE_Failure, CPLE_OutOfMemory,
+                        "Memory Allocation failed in KEARasterAttributeTable::SetDefaultRAT");
+                    return CE_Failure;
+                }
+
+                if( poRAT->ValuesIO(GF_Read, nGDALColumnIndex, 0, numRows, panIntData ) == CE_None )
+                {
+                    pKEATable->ValuesIO(GF_Write, nKEAColumnIndex, 0, numRows, panIntData);
+                }
+                CPLFree(panIntData);
+            }
+            else if( eFieldType == GFT_Real )
+            {
+                double *padfFloatData = (double*)VSIMalloc2(numRows, sizeof(double));
+                if( padfFloatData == NULL )
+                {
+                    CPLError( CE_Failure, CPLE_OutOfMemory,
+                        "Memory Allocation failed in KEARasterAttributeTable::SetDefaultRAT");
+                    return CE_Failure;
+                }
+
+                if( poRAT->ValuesIO(GF_Read, nGDALColumnIndex, 0, numRows, padfFloatData ) == CE_None )
+                {
+                    pKEATable->ValuesIO(GF_Write, nKEAColumnIndex, 0, numRows, padfFloatData);
+                }
+                CPLFree(padfFloatData);
+            }
+            else
+            {
+                char **papszStringData = (char**)VSIMalloc2(numRows, sizeof(char*));
+                if( papszStringData == NULL )
+                {
+                    CPLError( CE_Failure, CPLE_OutOfMemory,
+                        "Memory Allocation failed in KEARasterAttributeTable::SetDefaultRAT");
+                    return CE_Failure;
+                }
+
+                if( poRAT->ValuesIO(GF_Read, nGDALColumnIndex, 0, numRows, papszStringData ) == CE_None )
+                {
+                    pKEATable->ValuesIO(GF_Write, nKEAColumnIndex, 0, numRows, papszStringData);
+                    for( size_t n = 0; n < numRows; n++ )
+                        CPLFree(papszStringData[n]);
+                }
+                CPLFree(papszStringData);
+
+            }
+        }
+    }
+    catch(kealib::KEAException &e)
+    {
+        CPLError( CE_Failure, CPLE_AppDefined, "Failed to write attributes: %s", e.what() );
+        return CE_Failure;
+    }
+    return CE_None;
+}
+#else
 CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
 {
     if( poRAT == NULL )
@@ -707,7 +810,7 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
         this->m_pImageIO->setAttributeTable(pKEATable, this->nBand);
         delete pKEATable;
 
-        // our cached attribute table object is now ouf of date
+        // our cached attribute table object is now out of date
         // delete it and next call to GetDefaultRAT() will re-read it
         delete this->m_pAttributeTable;
         this->m_pAttributeTable = NULL;
@@ -719,6 +822,65 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
     }
     return CE_None;
 }
+#endif // HAVE_RFC40
+
+#ifdef HAVE_RFC40
+GDALColorTable *KEARasterBand::GetColorTable()
+{
+    if( this->m_pColorTable == NULL )
+    {
+        try
+        {
+            GDALRasterAttributeTable *pKEATable = this->GetDefaultRAT();
+            int nRedIdx = -1;
+            int nGreenIdx = -1;
+            int nBlueIdx = -1;
+            int nAlphaIdx = -1;
+
+            for( int nColIdx = 0; nColIdx < pKEATable->GetColumnCount(); nColIdx++ )
+            {
+                if( pKEATable->GetTypeOfCol(nColIdx) == GFT_Integer )
+                {
+                    GDALRATFieldUsage eFieldUsage = pKEATable->GetUsageOfCol(nColIdx);
+                    if( eFieldUsage == GFU_Red )
+                        nRedIdx = nColIdx;
+                    else if( eFieldUsage == GFU_Green )
+                        nGreenIdx = nColIdx;
+                    else if( eFieldUsage == GFU_Blue )
+                        nBlueIdx = nColIdx;
+                    else if( eFieldUsage == GFU_Alpha )
+                        nAlphaIdx = nColIdx;
+                }
+            }
+
+            if( ( nRedIdx != -1 ) && ( nGreenIdx != -1 ) && ( nBlueIdx != -1 ) && ( nAlphaIdx != -1 ) )
+            {
+                // we need to create one - only do RGB palettes
+                this->m_pColorTable = new GDALColorTable(GPI_RGB);
+
+                // OK go through each row and fill in the fields
+                for( int nRowIndex = 0; nRowIndex < pKEATable->GetRowCount(); nRowIndex++ )
+                {
+                    // maybe could be more efficient using ValuesIO
+                    GDALColorEntry colorEntry;
+                    colorEntry.c1 = pKEATable->GetValueAsInt(nRowIndex, nRedIdx);
+                    colorEntry.c2 = pKEATable->GetValueAsInt(nRowIndex, nGreenIdx);
+                    colorEntry.c3 = pKEATable->GetValueAsInt(nRowIndex, nBlueIdx);
+                    colorEntry.c4 = pKEATable->GetValueAsInt(nRowIndex, nAlphaIdx);
+                    this->m_pColorTable->SetColorEntry(nRowIndex, &colorEntry);
+                }
+            }
+        }
+        catch(kealib::KEAException &e)
+        {
+            CPLError( CE_Failure, CPLE_AppDefined, "Failed to read color table: %s", e.what() );
+            delete this->m_pColorTable;
+            this->m_pColorTable = NULL;
+        }
+    }
+    return this->m_pColorTable;
+}
+#else
 
 GDALColorTable *KEARasterBand::GetColorTable()
 {
@@ -807,6 +969,106 @@ GDALColorTable *KEARasterBand::GetColorTable()
     }
     return this->m_pColorTable;
 }
+#endif // HAVE_RFC40
+
+#ifdef HAVE_RFC40
+CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
+{
+    if( poCT == NULL )
+        return CE_Failure;
+
+    try
+    {
+        GDALRasterAttributeTable *pKEATable = this->GetDefaultRAT();
+        int nRedIdx = -1;
+        int nGreenIdx = -1;
+        int nBlueIdx = -1;
+        int nAlphaIdx = -1;
+
+        if( poCT->GetColorEntryCount() > pKEATable->GetRowCount() )
+        {
+            pKEATable->SetRowCount(poCT->GetColorEntryCount());
+        }
+
+        for( int nColIdx = 0; nColIdx < pKEATable->GetColumnCount(); nColIdx++ )
+        {
+            if( pKEATable->GetTypeOfCol(nColIdx) == GFT_Integer )
+            {
+                GDALRATFieldUsage eFieldUsage = pKEATable->GetUsageOfCol(nColIdx);
+                if( eFieldUsage == GFU_Red )
+                    nRedIdx = nColIdx;
+                else if( eFieldUsage == GFU_Green )
+                    nGreenIdx = nColIdx;
+                else if( eFieldUsage == GFU_Blue )
+                    nBlueIdx = nColIdx;
+                else if( eFieldUsage == GFU_Alpha )
+                    nAlphaIdx = nColIdx;
+            }
+        }
+
+        // create if needed
+        if( nRedIdx == -1 )
+        {
+            if( pKEATable->CreateColumn("Red", GFT_Integer, GFU_Red ) != CE_None )
+            {
+                CPLError( CE_Failure, CPLE_AppDefined, "Failed to create column" );
+                return CE_Failure;
+            }
+            nRedIdx = pKEATable->GetColumnCount() - 1;
+        }
+        if( nGreenIdx == -1 )
+        {
+            if( pKEATable->CreateColumn("Green", GFT_Integer, GFU_Green ) != CE_None )
+            {
+                CPLError( CE_Failure, CPLE_AppDefined, "Failed to create column" );
+                return CE_Failure;
+            }
+            nGreenIdx = pKEATable->GetColumnCount() - 1;
+        }
+        if( nBlueIdx == -1 )
+        {
+            if( pKEATable->CreateColumn("Blue", GFT_Integer, GFU_Blue ) != CE_None )
+            {
+                CPLError( CE_Failure, CPLE_AppDefined, "Failed to create column" );
+                return CE_Failure;
+            }
+            nBlueIdx = pKEATable->GetColumnCount() - 1;
+        }
+        if( nAlphaIdx == -1 )
+        {
+            if( pKEATable->CreateColumn("Alpha", GFT_Integer, GFU_Alpha ) != CE_None )
+            {
+                CPLError( CE_Failure, CPLE_AppDefined, "Failed to create column" );
+                return CE_Failure;
+            }
+            nAlphaIdx = pKEATable->GetColumnCount() - 1;
+        }
+
+        // OK go through each row and fill in the fields
+        for( int nRowIndex = 0; nRowIndex < poCT->GetColorEntryCount(); nRowIndex++ )
+        {
+            // maybe could be more efficient using ValuesIO
+            GDALColorEntry colorEntry;
+            poCT->GetColorEntryAsRGB(nRowIndex, &colorEntry);
+            pKEATable->SetValue(nRowIndex, nRedIdx, colorEntry.c1);
+            pKEATable->SetValue(nRowIndex, nGreenIdx, colorEntry.c2);
+            pKEATable->SetValue(nRowIndex, nBlueIdx, colorEntry.c3);
+            pKEATable->SetValue(nRowIndex, nAlphaIdx, colorEntry.c4);
+        }
+
+        // out of date
+        delete this->m_pColorTable;
+        this->m_pColorTable = NULL;
+    }
+    catch(kealib::KEAException &e)
+    {
+        CPLError( CE_Failure, CPLE_AppDefined, "Failed to write color table: %s", e.what() );
+        return CE_Failure;
+    }
+    return CE_None;
+}
+
+#else
 
 CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
 {
@@ -913,6 +1175,7 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
     }
     return CE_None;
 }
+#endif // HAVE_RFC40
 
 GDALColorInterp KEARasterBand::GetColorInterpretation()
 {
@@ -1106,6 +1369,91 @@ GDALRasterBand* KEARasterBand::GetOverview(int nOverview)
     }
 }
 
+#ifdef HAVE_RFC40
+void KEARasterBand::SetHistogramFromMetadata(const char *pszHistogram)
+{
+    try
+    {
+        GDALRasterAttributeTable *pKEATable = this->GetDefaultRAT();
+        int nHistIdx = -1;
+
+        // how many elements in pszHistogram? '|' seperated
+        int nItems = 0, nIndex = 0, nStartIndex;
+        while( pszHistogram[nIndex] != '\0' )
+        {
+            nStartIndex = nIndex;
+            while( ( pszHistogram[nIndex] != '|' ) && ( pszHistogram[nIndex] != '\0' ) )
+                nIndex++;
+            if( nStartIndex != nIndex )
+                nItems++;
+            if( pszHistogram[nIndex] != '\0' )
+                nIndex++;
+        }
+
+        if( nItems > pKEATable->GetRowCount() )
+        {
+            pKEATable->SetRowCount(nItems);
+        }
+
+        for( int nColIdx = 0; nColIdx < pKEATable->GetColumnCount(); nColIdx++ )
+        {
+                if( pKEATable->GetUsageOfCol(nColIdx) == GFU_PixelCount )
+                    nHistIdx = nColIdx;
+        }
+
+        if( nHistIdx == -1 )
+        {
+            if( pKEATable->CreateColumn("Histogram", GFT_Integer, GFU_PixelCount ) != CE_None )
+            {
+                CPLError( CE_Failure, CPLE_AppDefined, "Failed to create column" );
+                return;
+            }
+            nHistIdx = pKEATable->GetColumnCount() - 1;
+        }
+
+        int *panHisto = (int*)VSIMalloc2(nItems, sizeof(int));
+        if( panHisto == NULL )
+        {
+            CPLError( CE_Failure, CPLE_OutOfMemory,
+                    "Memory Allocation failed in KEARasterAttributeTable::SetHistogramFromMetadata");
+            return;
+        }
+
+        // ok go through pszHistogram for real and insert items
+        nIndex = 0;
+        size_t nRowIndex = 0;
+        char szBuf[12];
+        int nBufIndex;
+        while( pszHistogram[nIndex] != '\0' )
+        {
+            nStartIndex = nIndex;
+            nBufIndex = 0;
+            while( ( pszHistogram[nIndex] != '|' ) && ( pszHistogram[nIndex] != '\0' ) )
+            {
+                szBuf[nBufIndex] = pszHistogram[nIndex];
+                nBufIndex++;
+                nIndex++;
+            }
+            if( nStartIndex != nIndex )
+            {
+                szBuf[nBufIndex] = '\0';
+                panHisto[nRowIndex] = atol( szBuf );
+                nRowIndex++;
+            }
+            if( pszHistogram[nIndex] != '\0' )
+                nIndex++;
+        }
+
+        pKEATable->ValuesIO(GF_Write, nHistIdx, 0, nItems, panHisto);
+        CPLFree(panHisto);
+    }
+    catch(kealib::KEAException &e)
+    {
+        CPLError( CE_Failure, CPLE_AppDefined, "Failed to write histogram table: %s", e.what() );
+    }
+}
+
+#else
 void KEARasterBand::SetHistogramFromMetadata(const char *pszHistogram)
 {
     try
@@ -1195,7 +1543,59 @@ void KEARasterBand::SetHistogramFromMetadata(const char *pszHistogram)
         CPLError( CE_Failure, CPLE_AppDefined, "Failed to write histogram table: %s", e.what() );
     }
 }
+#endif // HAVE_RFC40
 
+#ifdef HAVE_RFC40
+std::string KEARasterBand::GetHistogramAsMetadata()
+{
+    std::string sHistogram;
+    try
+    {
+        GDALRasterAttributeTable *pKEATable = this->GetDefaultRAT();
+        int nHistIdx = -1;
+
+        for( int nColIdx = 0; nColIdx < pKEATable->GetColumnCount(); nColIdx++ )
+        {
+                if( pKEATable->GetUsageOfCol(nColIdx) == GFU_PixelCount )
+                    nHistIdx = nColIdx;
+        }
+
+        if( nHistIdx != -1 )
+        {
+            int nItems = pKEATable->GetRowCount();
+            int *panHisto = (int*)VSIMalloc2(nItems, sizeof(int));
+            if( panHisto == NULL )
+            {
+                CPLError( CE_Failure, CPLE_OutOfMemory,
+                    "Memory Allocation failed in KEARasterAttributeTable::SetHistogramFromMetadata");
+                return "";
+            }
+
+            if( pKEATable->ValuesIO(GF_Read, nHistIdx, 0, nItems, panHisto) != CE_None )
+            {
+                return "";
+            }
+
+            char szBuf[24];
+            // OK go through each row and fill in the fields
+            for( int nRowIndex = 0; nRowIndex < nItems; nRowIndex++ )
+            {
+                sprintf( szBuf, "%d|", panHisto[nRowIndex] );
+                sHistogram.append(szBuf); // dunno how fast this is...
+            }
+
+            CPLFree(panHisto);
+        }
+    }
+    catch(kealib::KEAException &e)
+    {
+        CPLError( CE_Failure, CPLE_AppDefined, "Failed to read histogram table: %s", e.what() );
+        sHistogram = "";
+    }
+    return sHistogram;
+}
+
+#else
 std::string KEARasterBand::GetHistogramAsMetadata()
 {
     std::string sHistogram;
@@ -1254,6 +1654,7 @@ std::string KEARasterBand::GetHistogramAsMetadata()
     }
     return sHistogram;
 }
+#endif // HAVE_RFC40
 
 CPLErr KEARasterBand::CreateMaskBand(int nFlags)
 {

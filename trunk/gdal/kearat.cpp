@@ -52,7 +52,7 @@ KEARasterAttributeTable::KEARasterAttributeTable(kealib::KEAAttributeTable *poKE
 
 KEARasterAttributeTable::~KEARasterAttributeTable()
 {
-
+    delete m_poKEATable;
 }
 
 GDALDefaultRasterAttributeTable *KEARasterAttributeTable::Clone() const
