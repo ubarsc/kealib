@@ -115,7 +115,7 @@ GDALDefaultRasterAttributeTable *KEARasterAttributeTable::Clone() const
                 return NULL;
             }
 
-            if( ((KEARasterAttributeTable*)this)->
+            if( (const_cast<KEARasterAttributeTable*>(this))->
                         ValuesIO(GF_Read, iCol, 0, m_poKEATable->getSize(), panColData ) != CE_None )
             {
                 CPLFree(panColData);
@@ -139,7 +139,7 @@ GDALDefaultRasterAttributeTable *KEARasterAttributeTable::Clone() const
                 delete poRAT;
                 return NULL;
             }
-            if( ((KEARasterAttributeTable*)this)->
+            if( (const_cast<KEARasterAttributeTable*>(this))->
                         ValuesIO(GF_Read, iCol, 0, m_poKEATable->getSize(), padfColData ) != CE_None )
             {
                 CPLFree(padfColData);
@@ -164,7 +164,7 @@ GDALDefaultRasterAttributeTable *KEARasterAttributeTable::Clone() const
                 return NULL;
             }
 
-            if( ((KEARasterAttributeTable*)this)->
+            if( (const_cast<KEARasterAttributeTable*>(this))->
                     ValuesIO(GF_Read, iCol, 0, m_poKEATable->getSize(), papszColData ) != CE_None )
             {
                 CPLFree(papszColData);
@@ -300,13 +300,13 @@ const char *KEARasterAttributeTable::GetValueAsString( int iRow, int iField ) co
 {
     // Get ValuesIO do do the work
     char *apszStrList[1];
-    if( ((KEARasterAttributeTable*)this)->
+    if( (const_cast<KEARasterAttributeTable*>(this))->
                 ValuesIO(GF_Read, iField, iRow, 1, apszStrList ) != CPLE_None )
     {
         return "";
     }
 
-    ((KEARasterAttributeTable *) this)->osWorkingResult = apszStrList[0];
+    const_cast<KEARasterAttributeTable*>(this)->osWorkingResult = apszStrList[0];
     CPLFree(apszStrList[0]);
 
     return osWorkingResult;
@@ -316,7 +316,7 @@ int KEARasterAttributeTable::GetValueAsInt( int iRow, int iField ) const
 {
     // Get ValuesIO do do the work
     int nValue;
-    if( ((KEARasterAttributeTable*)this)->
+    if( (const_cast<KEARasterAttributeTable*>(this))->
                 ValuesIO(GF_Read, iField, iRow, 1, &nValue ) != CE_None )
     {
         return 0;
@@ -329,7 +329,7 @@ double KEARasterAttributeTable::GetValueAsDouble( int iRow, int iField ) const
 {
     // Get ValuesIO do do the work
     double dfValue;
-    if( ((KEARasterAttributeTable*)this)->
+    if( (const_cast<KEARasterAttributeTable*>(this))->
                 ValuesIO(GF_Read, iField, iRow, 1, &dfValue ) != CE_None )
     {
         return 0;
@@ -341,7 +341,7 @@ double KEARasterAttributeTable::GetValueAsDouble( int iRow, int iField ) const
 void KEARasterAttributeTable::SetValue( int iRow, int iField, const char *pszValue )
 {
     // Get ValuesIO do do the work
-    ValuesIO(GF_Write, iField, iRow, 1, (char**)&pszValue );
+    ValuesIO(GF_Write, iField, iRow, 1, const_cast<char**>(&pszValue) );
 }
 
 void KEARasterAttributeTable::SetValue( int iRow, int iField, double dfValue)
