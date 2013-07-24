@@ -233,6 +233,11 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
     if( pszValue != NULL )
         ndeflate = atol( pszValue );
 
+    bool bThematic = false;
+    pszValue = CSLFetchNameValue( papszParmList, "THEMATIC" );
+    if( pszValue != NULL )
+        bThematic = EQUAL(pszValue, "YES");
+
     try
     {
         // now create it
@@ -243,10 +248,21 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
                                                     nattblockSize, nmdcElmts, nrdccNElmts,
                                                     nrdccNBytes, nrdccW0, nsieveBuf, 
                                                     nmetaBlockSize, ndeflate );
+
         // create our dataset object                            
         KEADataset *pDataset = new KEADataset( keaImgH5File, GA_Update );
 
         pDataset->SetDescription( pszFilename );
+
+        // set all to thematic if asked
+        if( bThematic )
+        {
+            for( int nCount = 0; nCount < nBands; nCount++ )
+            {
+                GDALRasterBand *pBand = pDataset->GetRasterBand(nCount+1);
+                pBand->SetMetadataItem("LAYER_TYPE", "thematic");
+            }
+        }
 
         return pDataset;
     }
@@ -318,6 +334,11 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
     if( pszValue != NULL )
         ndeflate = atol( pszValue );
 
+    bool bThematic = false;
+    pszValue = CSLFetchNameValue( papszParmList, "THEMATIC" );
+    if( pszValue != NULL )
+        bThematic = EQUAL(pszValue, "YES");
+
     // get the data out of the input dataset
     int nXSize = pSrcDs->GetRasterXSize();
     int nYSize = pSrcDs->GetRasterYSize();
@@ -365,6 +386,16 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
         // and wrap it in a dataset
         KEADataset *pDataset = new KEADataset( keaImgH5File, GA_Update );
         pDataset->SetDescription( pszFilename );
+
+        // set all to thematic if asked - overrides whatever set by CopyFile
+        if( bThematic )
+        {
+            for( int nCount = 0; nCount < nBands; nCount++ )
+            {
+                GDALRasterBand *pBand = pDataset->GetRasterBand(nCount+1);
+                pBand->SetMetadataItem("LAYER_TYPE", "thematic");
+            }
+        }
 
         return pDataset;
     }

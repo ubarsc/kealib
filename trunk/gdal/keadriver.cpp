@@ -62,6 +62,7 @@ void GDALRegister_KEA()
 <Option name='SIEVE_BUF' type='int' description='Sets the maximum size of the data sieve buffer'/> \
 <Option name='META_BLOCKSIZE' type='int' description='Sets the minimum size of metadata block allocations'/> \
 <Option name='DEFLATE' type='int' description='0 (no compression) to 9 (max compression)'/> \
+<Option name='THEMATIC' type='boolean' description='If YES then all bands are set to thematic'/> \
 </CreationOptionList>" );
 
         // pointer to open function
