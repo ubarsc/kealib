@@ -52,7 +52,8 @@ KEARasterAttributeTable::KEARasterAttributeTable(kealib::KEAAttributeTable *poKE
 
 KEARasterAttributeTable::~KEARasterAttributeTable()
 {
-    delete m_poKEATable;
+    // can't just delete thanks to Windows
+    kealib::KEAAttributeTable::destroyAttributeTable(m_poKEATable);
 }
 
 GDALDefaultRasterAttributeTable *KEARasterAttributeTable::Clone() const

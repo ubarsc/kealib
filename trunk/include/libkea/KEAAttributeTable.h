@@ -177,6 +177,9 @@ namespace kealib{
         virtual void printAttributeTableHeaderInfo();
         
         virtual ~KEAAttributeTable();
+
+        // for cross heap use in Windows
+        static void destroyAttributeTable(KEAAttributeTable *pTable);
     protected:
         static H5::CompType* createAttibuteIdxCompTypeDisk() throw(KEAATTException);
         static H5::CompType* createAttibuteIdxCompTypeMem() throw(KEAATTException);
