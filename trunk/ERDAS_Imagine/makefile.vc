@@ -33,7 +33,7 @@
 # Include dir will have to be updated also
 
 IMAGINE_HOME = "C:\Program Files\ERDAS\ERDAS Desktop 2011"
-KEA_HOME = "D:\sam\keastatic\vs2008"
+KEA_HOME = "C:\sam\keastatic\vs2008"
 
 CPPFLAGS = /Ox /MD /DIMAGINE_Toolkit_Packing=8 /DWIN32 /D_WINDOWS /D_X86_ /Dpcnt /D__STDC__ /Di386 /DEMSC_IMAGINE8_COMPATIBILTY /I$(KEA_HOME)\include /I$(IMAGINE_HOME)\usr\include\win32release /DU_HAVE_INT8_T /DEFIO_UNBUFFERED_PROTOTYPES_PASSTHROUGH /DEFIO_STDIO_PROTOTYPES_PASSTHROUGH /DAUTO_EXPORT
 LDFLAGS = /LIBPATH:$(KEA_HOME)\lib libkea.lib hdf5_cpp.lib hdf5.lib zlibstatic.lib /LIBPATH:$(IMAGINE_HOME)\usr\lib\Win32Release elib.lib eraster.lib

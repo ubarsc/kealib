@@ -28,6 +28,7 @@
  *
  */
 
+#include "kea.h"
 #include <stdio.h>
 #ifdef __SUNPRO_CC
     // to get strcasecmp on Solaris
@@ -37,7 +38,6 @@
 #include <vector>
 #include <string>
 #include "keaproj.h"
-#include "kea.h"
 
 // my hack to have enough calls to support the GDAL
 // code in hfadataset.cpp - implements some of OGRSpatialReference
@@ -466,8 +466,8 @@ ProjParser* ProjParser::GetSubValue(const char *pszName)
 /* -------------------------------------------------------------------- */
 #ifndef EQUAL
 #  if defined(WIN32) || defined(WIN32CE)
-#    define STRCASECMP(a,b)         (stricmp(a,b))
-#    define STRNCASECMP(a,b,n)      (strnicmp(a,b,n))
+#    define STRCASECMP(a,b)         (_stricmp(a,b))
+#    define STRNCASECMP(a,b,n)      (_strnicmp(a,b,n))
 #  else
 #    define STRCASECMP(a,b)         (strcasecmp(a,b))
 #    define STRNCASECMP(a,b,n)      (strncasecmp(a,b,n))

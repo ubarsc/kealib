@@ -33,7 +33,7 @@ Prerequisites:
 2. A static build of ZLIB/HDF5/kealib with the same version of VS.
 
 Update paths in makefile.vc and start the Visual Studio Command Prompt and
-navigate to the location of it and type 'nmake'. Copy the resulting kea.dll
+navigate to the location of it and type 'nmake -f makefile.vc'. Copy the resulting kea.dll
 to C:\Program Files\ERDAS\<Imagine Version>\usr\lib\Win32Release\rasterformats
 and run C:\Program Files\ERDAS\<Imagine Version>\bin\Win32Release\configure_rf.exe
 and restart Imagine.
