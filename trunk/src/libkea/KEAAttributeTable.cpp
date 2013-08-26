@@ -694,5 +694,9 @@ namespace kealib{
     {
         delete fields;
     }
-    
+
+    void KEAAttributeTable::destroyAttributeTable(KEAAttributeTable *pTable)
+    {
+        delete pTable;
+    }
 }
