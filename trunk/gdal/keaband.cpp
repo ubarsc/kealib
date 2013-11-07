@@ -583,7 +583,7 @@ const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
 }
 #endif // HAVE_RFC40
 
-#ifdef HAVE_RFC4
+#ifdef HAVE_RFC40
 CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
 {
     if( poRAT == NULL )
@@ -591,7 +591,7 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
 
     try
     {
-        KEARasterAttributeTable *pKEATable = this->GetDefaultRAT();
+        KEARasterAttributeTable *pKEATable = (KEARasterAttributeTable*)this->GetDefaultRAT();
 
         int numRows = poRAT->GetRowCount();
         pKEATable->SetRowCount(numRows);
@@ -635,7 +635,7 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
                     return CE_Failure;
                 }
 
-                if( poRAT->ValuesIO(GF_Read, nGDALColumnIndex, 0, numRows, panIntData ) == CE_None )
+                if( ((GDALRasterAttributeTable*)poRAT)->ValuesIO(GF_Read, nGDALColumnIndex, 0, numRows, panIntData ) == CE_None )
                 {
                     pKEATable->ValuesIO(GF_Write, nKEAColumnIndex, 0, numRows, panIntData);
                 }
@@ -651,7 +651,7 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
                     return CE_Failure;
                 }
 
-                if( poRAT->ValuesIO(GF_Read, nGDALColumnIndex, 0, numRows, padfFloatData ) == CE_None )
+                if( ((GDALRasterAttributeTable*)poRAT)->ValuesIO(GF_Read, nGDALColumnIndex, 0, numRows, padfFloatData ) == CE_None )
                 {
                     pKEATable->ValuesIO(GF_Write, nKEAColumnIndex, 0, numRows, padfFloatData);
                 }
@@ -667,7 +667,7 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
                     return CE_Failure;
                 }
 
-                if( poRAT->ValuesIO(GF_Read, nGDALColumnIndex, 0, numRows, papszStringData ) == CE_None )
+                if( ((GDALRasterAttributeTable*)poRAT)->ValuesIO(GF_Read, nGDALColumnIndex, 0, numRows, papszStringData ) == CE_None )
                 {
                     pKEATable->ValuesIO(GF_Write, nKEAColumnIndex, 0, numRows, papszStringData);
                     for( size_t n = 0; n < numRows; n++ )
