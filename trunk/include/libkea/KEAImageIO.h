@@ -114,6 +114,7 @@ namespace kealib{
         KEAAttributeTable* getAttributeTable(KEAATTType type, uint32_t band) throw(KEAATTException, KEAIOException);
         void setAttributeTable(KEAAttributeTable* att, uint32_t band, uint32_t chunkSize=KEA_ATT_CHUNK_SIZE, uint32_t deflate=KEA_DEFLATE) throw(KEAATTException, KEAIOException);
         bool attributeTablePresent(uint32_t band);
+        uint32_t getAttributeTableChunkSize(uint32_t band) throw(KEAIOException);
         
         void close()throw(KEAIOException);
 

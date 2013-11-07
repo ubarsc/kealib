@@ -53,6 +53,15 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAc
     this->nRasterYSize = this->poDS->GetRasterYSize();
     this->eAccess = eAccess;
 
+    if( pImageIO->attributeTablePresent(nSrcBand) )
+    {
+        this->m_nAttributeChunkSize = pImageIO->getAttributeTableChunkSize(nSrcBand);
+    }
+    else
+    {
+        this->m_nAttributeChunkSize = -1; // don't report
+    }
+
     // grab the imageio class and its refcount
     this->m_pImageIO = pImageIO;
     this->m_pnRefCount = pRefCount;
@@ -142,6 +151,13 @@ void KEARasterBand::UpdateMetadataList()
     if( !sHistogram.empty() )
     {
         m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "STATISTICS_HISTOBINVALUES", sHistogram.c_str() );
+    }
+    // and attribute table chunksize
+    if( this->m_nAttributeChunkSize != -1 )
+    {
+        char szTemp[100];
+        snprintf(szTemp, 100, "%d", this->m_nAttributeChunkSize );
+        m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "ATTRIBUTETABLE_CHUNKSIZE", szTemp );
     }
 }
 

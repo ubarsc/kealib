@@ -1991,6 +1991,72 @@ namespace kealib{
         
         return imgBlockSize;
     }
+
+    uint32_t KEAImageIO::getAttributeTableChunkSize(uint32_t band) throw(KEAIOException)
+    {
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        uint32_t attChunkSize = 0;
+        
+        try 
+        {
+            // CHECK PARAMETERS PROVIDED FIT WITHIN IMAGE
+            if(band == 0)
+            {
+                throw KEAIOException("KEA Image Bands start at 1.");
+            }
+            else if(band > this->numImgBands)
+            {
+                throw KEAIOException("Band is not present within image."); 
+            }
+            
+            // OPEN BAND DATASET
+            try 
+            {
+                hsize_t dimsValue[1];
+                dimsValue[0] = 1;
+                H5::DataSpace valueDataSpace(1, dimsValue);
+                std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band);
+                H5::DataSet datasetAttSize = this->keaImgFile->openDataSet( imageBandPath + KEA_ATT_CHUNKSIZE_HEADER);
+                datasetAttSize.read(&attChunkSize, H5::PredType::NATIVE_UINT32, valueDataSpace);
+                datasetAttSize.close();
+                valueDataSpace.close();
+            } 
+            catch ( H5::Exception &e) 
+            {
+                throw KEAIOException("Could not get image block size.");
+            }            
+        }
+        catch(KEAIOException &e)
+        {
+            throw e;
+        }
+        catch( H5::FileIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+		catch( H5::DataSetIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+		catch( H5::DataSpaceIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+		catch( H5::DataTypeIException &e )
+		{
+			throw KEAIOException(e.getCDetailMsg());
+		}
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
+        
+        return attChunkSize;
+    }
     
     KEADataType KEAImageIO::getImageBandDataType(uint32_t band) throw(KEAIOException)
     {
