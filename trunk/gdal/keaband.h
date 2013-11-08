@@ -59,6 +59,7 @@ private:
     GDALColorTable      *m_pColorTable;     // pointer to the color table
                                             // created on first call to GetColorTable()
 
+    int                  m_nAttributeChunkSize; // for reporting via the metadata
 public:
     // constructor/destructor
     KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAccess, kealib::KEAImageIO *pImageIO, int *pRefCount );
