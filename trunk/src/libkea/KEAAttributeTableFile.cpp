@@ -877,8 +877,15 @@ namespace kealib{
                     else
                     {
                         // copy made and orig deleted
-                        papszStrList[i] = pStrDup(stringVals[i].str);
-                        free(stringVals[i].str);
+                        if( stringVals[i].str != NULL )
+                        {
+                            papszStrList[i] = pStrDup(stringVals[i].str);
+                            free(stringVals[i].str);
+                        }
+                        else
+                        {
+                            papszStrList[i] = pStrDup("");
+                        }
                     }
                 }
             }
@@ -922,8 +929,15 @@ namespace kealib{
                         else
                         {
                             // copy made and orig deleted
-                            papszStrList[i+preRows+(n*chunkSize)] = pStrDup(stringVals[i].str);
-                            free(stringVals[i].str);
+                            if( stringVals[i].str != NULL )
+                            {
+                                papszStrList[i+preRows+(n*chunkSize)] = pStrDup(stringVals[i].str);
+                                free(stringVals[i].str);
+                            }
+                            else
+                            {
+                                papszStrList[i+preRows+(n*chunkSize)] = pStrDup("");
+                            }
                         }
                     }
                 }
@@ -959,13 +973,20 @@ namespace kealib{
                     else
                     {
                         // copy made and orig deleted
-                        papszStrList[i+arrIdx] = pStrDup(stringVals[i].str);
-                        free(stringVals[i].str);
+                        if( stringVals[i].str != NULL )
+                        {
+                            papszStrList[i+arrIdx] = pStrDup(stringVals[i].str);
+                            free(stringVals[i].str);
+                        }
+                        else
+                        {
+                            papszStrList[i+arrIdx] = pStrDup("");
+                        }
                     }
                 }
                 
             }
-            
+
             strDataset.close();
             strDataspace.close();
             strFieldsMemspace.close();
