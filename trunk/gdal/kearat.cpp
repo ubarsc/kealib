@@ -803,7 +803,15 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
             try
             {
                 if( eRWFlag == GF_Read )
-                    m_poKEATable->getStringFields(iStartRow, iLength, m_aoFields[iField].idx, papszStrList, CPLStrdup);
+                {
+                    std::vector<std::string> aStrings;
+                    m_poKEATable->getStringFields(iStartRow, iLength, m_aoFields[iField].idx, &aStrings);
+                    for( std::vector<std::string>::size_type i = 0; i < aStrings.size(); i++ )
+                    {
+                        // Copy using CPLStrdup so user can call CPLFree
+                        papszStrList[i] = CPLStrdup(aStrings[i].c_str());
+                    }
+                }
                 else
                     m_poKEATable->setStringFields(iStartRow, iLength, m_aoFields[iField].idx, papszStrList);
             }
