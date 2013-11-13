@@ -327,7 +327,7 @@ namespace kealib{
         }
     }
 
-    void KEAAttributeTableInMem::getStringFields(size_t startfid, size_t len, size_t colIdx, char **papszStrList, char* (*pStrDup)(const char *)) const throw(KEAATTException)
+    void KEAAttributeTableInMem::getStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *psBuffer) const throw(KEAATTException)
     {
         if((startfid+len) > attRows->size())
         {
@@ -340,13 +340,12 @@ namespace kealib{
             std::string message = std::string("Requested string column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
             throw KEAATTException(message);
         }
-
-        if( pStrDup == NULL )
-            pStrDup = strdup;        
-
+        
+        psBuffer->clear();
+        psBuffer->reserve(len);
         for(size_t n = 0; n < len; n++)
         {
-            papszStrList[n] = pStrDup(attRows->at(n+startfid)->strFields->at(colIdx).c_str());
+            psBuffer->push_back(std::string(attRows->at(n+startfid)->strFields->at(colIdx).c_str()));
         }
     }
 

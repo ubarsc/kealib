@@ -186,6 +186,9 @@ endif(LIBKEA_WITH_GDAL)
 ###############################################################################
 # Build executables
 
+add_executable(keatests ${PROJECT_SOURCE_DIR}/kealibatttests.cpp ${PROJECT_SOURCE_DIR}/kealibatttests.h )
+target_link_libraries (keatests ${HDF5_LIBRARIES} ${LIBKEA_LIB_NAME} )
+
 ###############################################################################
 
 ###############################################################################

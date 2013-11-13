@@ -66,7 +66,7 @@ namespace kealib{
         void getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const throw(KEAATTException);
         void getIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) const throw(KEAATTException);
         void getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const throw(KEAATTException);
-        void getStringFields(size_t startfid, size_t len, size_t colIdx, char **papszStrList, char* (*pStrDup)(const char *)=NULL) const throw(KEAATTException);
+        void getStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *psBuffer) const throw(KEAATTException);
         
         void setBoolField(size_t fid, size_t colIdx, bool value) throw(KEAATTException);
         void setIntField(size_t fid, size_t colIdx, int64_t value) throw(KEAATTException);
