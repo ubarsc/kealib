@@ -400,7 +400,7 @@ namespace kealib{
         attRows->at(fid)->floatFields->at(colIdx) = value;
     }
     
-    void KEAAttributeTableInMem::setStringField(size_t fid, size_t colIdx, const std::string &value) throw(KEAATTException)
+    void KEAAttributeTableInMem::setStringField(size_t fid, size_t colIdx, std::string value) throw(KEAATTException)
     {
         if(fid >= attRows->size())
         {
@@ -478,7 +478,7 @@ namespace kealib{
         }
     }
 
-    void KEAAttributeTableInMem::setStringFields(size_t startfid, size_t len, size_t colIdx, char **papszStrList) throw(KEAATTException)
+    void KEAAttributeTableInMem::setStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *papszStrList) throw(KEAATTException)
     {
         if((startfid+len) > attRows->size())
         {
@@ -492,9 +492,14 @@ namespace kealib{
             throw KEAATTException(message);
         }
         
+        if(papszStrList->size() != len)
+        {
+            throw KEAATTException("The number of items in the vector<std::string> passed was not equal to the length specified.");
+        }
+        
         for( size_t n = 0; n < len; n++)
         {
-            attRows->at(n+startfid)->strFields->at(colIdx) = papszStrList[n];
+            attRows->at(n+startfid)->strFields->at(colIdx) = papszStrList->at(colIdx);
         }
     }
     

@@ -736,7 +736,7 @@ namespace kealib{
         this->setFloatFields(fid, 1, colIdx, &value);
     }
     
-    void KEAAttributeTableFile::setStringField(size_t fid, size_t colIdx, const std::string &value) throw(KEAATTException)
+    void KEAAttributeTableFile::setStringField(size_t fid, size_t colIdx, std::string value) throw(KEAATTException)
     {
         if(fid >= numRows)
         {
@@ -749,8 +749,10 @@ namespace kealib{
             std::string message = std::string("Requested string column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
             throw KEAATTException(message);
         }
-        const char *pszValue = value.c_str();
-        this->setStringFields(fid, 1, colIdx, const_cast<char**>(&pszValue));
+        std::vector<std::string> *data = new std::vector<std::string>();
+        data->push_back(value);
+        this->setStringFields(fid, 1, colIdx, data);
+        delete data;
     }
     
     // RFC40
@@ -770,17 +772,10 @@ namespace kealib{
         
         try
         {
-            size_t numOfBlocksStart = (ceil((double)startfid / chunkSize) * chunkSize);
-            size_t preRows = std::min(numOfBlocksStart - startfid, len);
-            size_t numOfBlocks = floor(((double)(len - preRows)/chunkSize));
-            size_t remainRows = len - preRows - (numOfBlocks * chunkSize);
-            //fprintf( stderr, "colIdx = %ld, start = %ld len = %ld preRows = %ld numOfBlocks = %ld remanRows = %ld\n", colIdx, startfid, len, preRows, numOfBlocks, remainRows);
-            size_t rowOff = 0;
-            
             H5::DataSet boolDataset;
             H5::DataSpace boolDataspace;
             H5::DataSpace boolFieldsMemspace;
-            int *boolVals = new int[chunkSize];
+            int *boolVals = new int[len];
             hsize_t boolFieldsOffset[2];
             hsize_t boolFieldsCount[2];
             hsize_t boolFieldsDimsRead[2];
@@ -810,97 +805,30 @@ namespace kealib{
             }
             delete[] boolDims;
             
-            if(preRows > 0)
+            boolFieldsOffset[0] = startfid;
+            boolFieldsOffset[1] = colIdx;
+            
+            boolFieldsCount[0] = len;
+            boolFieldsCount[1] = 1;
+            
+            boolDataspace.selectHyperslab( H5S_SELECT_SET, boolFieldsCount, boolFieldsOffset );
+            
+            boolFieldsDimsRead[0] = len;
+            boolFieldsDimsRead[1] = 1;
+            boolFieldsMemspace = H5::DataSpace( 2, boolFieldsDimsRead );
+            
+            boolFieldsOffset_out[0] = 0;
+            boolFieldsOffset_out[1] = 0;
+            boolFieldsCount_out[0] = len;
+            boolFieldsCount_out[1] = 1;
+            boolFieldsMemspace.selectHyperslab( H5S_SELECT_SET, boolFieldsCount_out, boolFieldsOffset_out );
+            
+            for( size_t i = 0; i < len; i++ )
             {
-                boolFieldsOffset[0] = startfid;
-                boolFieldsOffset[1] = colIdx;
-                
-                boolFieldsCount[0] = preRows;
-                boolFieldsCount[1] = 1;
-                
-                boolDataspace.selectHyperslab( H5S_SELECT_SET, boolFieldsCount, boolFieldsOffset );
-                
-                boolFieldsDimsRead[0] = preRows;
-                boolFieldsDimsRead[1] = 1;
-                boolFieldsMemspace = H5::DataSpace( 2, boolFieldsDimsRead );
-                
-                boolFieldsOffset_out[0] = 0;
-                boolFieldsOffset_out[1] = 0;
-                boolFieldsCount_out[0] = preRows;
-                boolFieldsCount_out[1] = 1;
-                boolFieldsMemspace.selectHyperslab( H5S_SELECT_SET, boolFieldsCount_out, boolFieldsOffset_out );
-                
-                for( size_t i = 0; i < preRows; i++ )
-                {
-                    boolVals[i] = pbBuffer[i]? 1:0;
-                }
-                
-                boolDataset.write(boolVals, H5::PredType::NATIVE_INT, boolFieldsMemspace, boolDataspace);
+                boolVals[i] = pbBuffer[i]? 1:0;
             }
             
-            
-            if(numOfBlocks > 0)
-            {
-                boolFieldsOffset[0] = 0;
-                boolFieldsOffset[1] = colIdx;
-                
-                boolFieldsCount[0] = chunkSize;
-                boolFieldsCount[1] = 1;
-                
-                boolDataspace.selectHyperslab( H5S_SELECT_SET, boolFieldsCount, boolFieldsOffset );
-                
-                boolFieldsDimsRead[0] = chunkSize;
-                boolFieldsDimsRead[1] = 1;
-                boolFieldsMemspace = H5::DataSpace( 2, boolFieldsDimsRead );
-                
-                boolFieldsOffset_out[0] = 0;
-                boolFieldsOffset_out[1] = 0;
-                
-                boolFieldsCount_out[0] = chunkSize;
-                boolFieldsCount_out[1] = 1;
-                boolFieldsMemspace.selectHyperslab( H5S_SELECT_SET, boolFieldsCount_out, boolFieldsOffset_out );
-                
-                for(size_t n = 0; n < numOfBlocks; ++n)
-                {
-                    rowOff = (n*chunkSize) + numOfBlocksStart;
-                    boolFieldsOffset[0] = rowOff;
-                    boolDataspace.selectHyperslab( H5S_SELECT_SET, boolFieldsCount, boolFieldsOffset );
-                    
-                    for( size_t i = 0; i < preRows; i++ )
-                    {
-                        boolVals[i] = pbBuffer[i+rowOff]? 1:0;
-                    }
-                    
-                    boolDataset.write(boolVals, H5::PredType::NATIVE_INT, boolFieldsMemspace, boolDataspace);
-                }
-            }
-            
-            if(remainRows > 0)
-            {
-                rowOff = (numOfBlocks*chunkSize) + numOfBlocksStart;
-                boolFieldsOffset[0] = rowOff;
-                boolFieldsOffset[1] = colIdx;
-                boolFieldsCount[0] = remainRows;
-                boolFieldsCount[1] = 1;
-                boolDataspace.selectHyperslab( H5S_SELECT_SET, boolFieldsCount, boolFieldsOffset );
-                
-                boolFieldsDimsRead[0] = chunkSize;
-                boolFieldsDimsRead[1] = 1;
-                boolFieldsMemspace = H5::DataSpace( 2, boolFieldsDimsRead );
-                
-                boolFieldsOffset_out[0] = rowOff - startfid;
-                boolFieldsOffset_out[1] = 0;
-                boolFieldsCount_out[0] = remainRows;
-                boolFieldsCount_out[1] = 1;
-                boolFieldsMemspace.selectHyperslab( H5S_SELECT_SET, boolFieldsCount_out, boolFieldsOffset_out );
-                
-                for( size_t i = 0; i < preRows; i++ )
-                {
-                    boolVals[i] = pbBuffer[i+rowOff]? 1:0;
-                }
-                
-                boolDataset.write(boolVals, H5::PredType::NATIVE_INT, boolFieldsMemspace, boolDataspace);
-            }
+            boolDataset.write(boolVals, H5::PredType::NATIVE_INT, boolFieldsMemspace, boolDataspace);
             
             boolDataset.close();
             boolDataspace.close();
@@ -942,13 +870,6 @@ namespace kealib{
         
         try
         {
-            size_t numOfBlocksStart = (ceil((double)startfid / chunkSize) * chunkSize);
-            size_t preRows = std::min(numOfBlocksStart - startfid, len);
-            size_t numOfBlocks = floor(((double)(len - preRows)/chunkSize));
-            size_t remainRows = len - preRows - (numOfBlocks * chunkSize);
-            //fprintf( stderr, "colIdx = %ld, start = %ld len = %ld preRows = %ld numOfBlocks = %ld remanRows = %ld\n", colIdx, startfid, len, preRows, numOfBlocks, remainRows);
-            size_t rowOff = 0;
-            
             H5::DataSet intDataset;
             H5::DataSpace intDataspace;
             H5::DataSpace intFieldsMemspace;
@@ -981,83 +902,25 @@ namespace kealib{
             }
             delete[] intDims;
             
-            if(preRows > 0)
-            {
-                intFieldsOffset[0] = startfid;
-                intFieldsOffset[1] = colIdx;
-                
-                intFieldsCount[0] = preRows;
-                intFieldsCount[1] = 1;
-                
-                intDataspace.selectHyperslab( H5S_SELECT_SET, intFieldsCount, intFieldsOffset );
-                
-                intFieldsDimsRead[0] = preRows;
-                intFieldsDimsRead[1] = 1;
-                intFieldsMemspace = H5::DataSpace( 2, intFieldsDimsRead );
-                
-                intFieldsOffset_out[0] = 0;
-                intFieldsOffset_out[1] = 0;
-                intFieldsCount_out[0] = preRows;
-                intFieldsCount_out[1] = 1;
-                intFieldsMemspace.selectHyperslab( H5S_SELECT_SET, intFieldsCount_out, intFieldsOffset_out );
-                
-                intDataset.write(pnBuffer, H5::PredType::NATIVE_INT64, intFieldsMemspace, intDataspace);
-            }
+            intFieldsOffset[0] = startfid;
+            intFieldsOffset[1] = colIdx;
             
-            if(numOfBlocks > 0)
-            {
-                intFieldsOffset[0] = 0;
-                intFieldsOffset[1] = colIdx;
-                
-                intFieldsCount[0] = chunkSize;
-                intFieldsCount[1] = 1;
-                
-                intDataspace.selectHyperslab( H5S_SELECT_SET, intFieldsCount, intFieldsOffset );
-                
-                intFieldsDimsRead[0] = len;
-                intFieldsDimsRead[1] = 1;
-                intFieldsMemspace = H5::DataSpace( 2, intFieldsDimsRead );
-                
-                intFieldsOffset_out[1] = 0;
-                
-                intFieldsCount_out[0] = chunkSize;
-                intFieldsCount_out[1] = 1;
-                
-                intFieldsMemspace.selectHyperslab( H5S_SELECT_SET, intFieldsCount_out, intFieldsOffset_out );
-                for(size_t n = 0; n < numOfBlocks; ++n)
-                {
-                    rowOff = (n*chunkSize) + numOfBlocksStart;
-                    intFieldsOffset[0] = rowOff;
-                    intDataspace.selectHyperslab( H5S_SELECT_SET, intFieldsCount, intFieldsOffset );
-                    
-                    intFieldsOffset_out[0] = rowOff - startfid;
-                    intFieldsMemspace.selectHyperslab( H5S_SELECT_SET, intFieldsCount_out, intFieldsOffset_out );
-                    
-                    intDataset.write(pnBuffer, H5::PredType::NATIVE_INT64, intFieldsMemspace, intDataspace);
-                }
-            }
+            intFieldsCount[0] = len;
+            intFieldsCount[1] = 1;
             
-            if(remainRows > 0)
-            {
-                rowOff = (numOfBlocks*chunkSize) + numOfBlocksStart;
-                intFieldsOffset[0] = rowOff;
-                intFieldsOffset[1] = colIdx;
-                intFieldsCount[0] = remainRows;
-                intFieldsCount[1] = 1;
-                intDataspace.selectHyperslab( H5S_SELECT_SET, intFieldsCount, intFieldsOffset );
-                
-                intFieldsDimsRead[0] = len;
-                intFieldsDimsRead[1] = 1;
-                intFieldsMemspace = H5::DataSpace( 2, intFieldsDimsRead );
-                
-                intFieldsOffset_out[0] = rowOff - startfid;
-                intFieldsOffset_out[1] = 0;
-                intFieldsCount_out[0] = remainRows;
-                intFieldsCount_out[1] = 1;
-                intFieldsMemspace.selectHyperslab( H5S_SELECT_SET, intFieldsCount_out, intFieldsOffset_out );
-                
-                intDataset.write(pnBuffer, H5::PredType::NATIVE_INT64, intFieldsMemspace, intDataspace);
-            }
+            intDataspace.selectHyperslab( H5S_SELECT_SET, intFieldsCount, intFieldsOffset );
+            
+            intFieldsDimsRead[0] = len;
+            intFieldsDimsRead[1] = 1;
+            intFieldsMemspace = H5::DataSpace( 2, intFieldsDimsRead );
+            
+            intFieldsOffset_out[0] = 0;
+            intFieldsOffset_out[1] = 0;
+            intFieldsCount_out[0] = len;
+            intFieldsCount_out[1] = 1;
+            intFieldsMemspace.selectHyperslab( H5S_SELECT_SET, intFieldsCount_out, intFieldsOffset_out );
+            
+            intDataset.write(pnBuffer, H5::PredType::NATIVE_INT64, intFieldsMemspace, intDataspace);
             
             intDataset.close();
             intDataspace.close();
@@ -1097,13 +960,6 @@ namespace kealib{
         
         try
         {
-            size_t numOfBlocksStart = (ceil((double)startfid / chunkSize) * chunkSize);
-            size_t preRows = std::min(numOfBlocksStart - startfid, len);
-            size_t numOfBlocks = floor(((double)(len - preRows)/chunkSize));
-            size_t remainRows = len - preRows - (numOfBlocks * chunkSize);
-            //fprintf( stderr, "colIdx = %ld, start = %ld len = %ld preRows = %ld numOfBlocks = %ld remanRows = %ld\n", colIdx, startfid, len, preRows, numOfBlocks, remainRows);
-            size_t rowOff = 0;
-            
             H5::DataSet floatDataset;
             H5::DataSpace floatDataspace;
             H5::DataSpace floatFieldsMemspace;
@@ -1136,84 +992,25 @@ namespace kealib{
             }
             delete[] floatDims;
             
-            if(preRows > 0)
-            {
-                floatFieldsOffset[0] = startfid;
-                floatFieldsOffset[1] = colIdx;
-                
-                floatFieldsCount[0] = preRows;
-                floatFieldsCount[1] = 1;
-                
-                floatDataspace.selectHyperslab( H5S_SELECT_SET, floatFieldsCount, floatFieldsOffset );
-                
-                floatFieldsDimsRead[0] = preRows;
-                floatFieldsDimsRead[1] = 1;
-                floatFieldsMemspace = H5::DataSpace( 2, floatFieldsDimsRead );
-                
-                floatFieldsOffset_out[0] = 0;
-                floatFieldsOffset_out[1] = 0;
-                floatFieldsCount_out[0] = preRows;
-                floatFieldsCount_out[1] = 1;
-                floatFieldsMemspace.selectHyperslab( H5S_SELECT_SET, floatFieldsCount_out, floatFieldsOffset_out );
-                
-                floatDataset.write(pfBuffer, H5::PredType::NATIVE_DOUBLE, floatFieldsMemspace, floatDataspace);
-            }
+            floatFieldsOffset[0] = startfid;
+            floatFieldsOffset[1] = colIdx;
             
+            floatFieldsCount[0] = len;
+            floatFieldsCount[1] = 1;
             
-            if(numOfBlocks > 0)
-            {
-                floatFieldsOffset[0] = 0;
-                floatFieldsOffset[1] = colIdx;
-                
-                floatFieldsCount[0] = chunkSize;
-                floatFieldsCount[1] = 1;
-                
-                floatDataspace.selectHyperslab( H5S_SELECT_SET, floatFieldsCount, floatFieldsOffset );
-                
-                floatFieldsDimsRead[0] = len;
-                floatFieldsDimsRead[1] = 1;
-                floatFieldsMemspace = H5::DataSpace( 2, floatFieldsDimsRead );
-                
-                floatFieldsOffset_out[1] = 0;
-                
-                floatFieldsCount_out[0] = chunkSize;
-                floatFieldsCount_out[1] = 1;
-                
-                floatFieldsMemspace.selectHyperslab( H5S_SELECT_SET, floatFieldsCount_out, floatFieldsOffset_out );
-                for(size_t n = 0; n < numOfBlocks; ++n)
-                {
-                    rowOff = (n*chunkSize) + numOfBlocksStart;
-                    floatFieldsOffset[0] = rowOff;
-                    floatDataspace.selectHyperslab( H5S_SELECT_SET, floatFieldsCount, floatFieldsOffset );
-                    
-                    floatFieldsOffset_out[0] = rowOff - startfid;
-                    floatFieldsMemspace.selectHyperslab( H5S_SELECT_SET, floatFieldsCount_out, floatFieldsOffset_out );
-                    
-                    floatDataset.write(pfBuffer, H5::PredType::NATIVE_DOUBLE, floatFieldsMemspace, floatDataspace);
-                }
-            }
+            floatDataspace.selectHyperslab( H5S_SELECT_SET, floatFieldsCount, floatFieldsOffset );
             
-            if(remainRows > 0)
-            {
-                rowOff = (numOfBlocks*chunkSize) + numOfBlocksStart;
-                floatFieldsOffset[0] = rowOff;
-                floatFieldsOffset[1] = colIdx;
-                floatFieldsCount[0] = remainRows;
-                floatFieldsCount[1] = 1;
-                floatDataspace.selectHyperslab( H5S_SELECT_SET, floatFieldsCount, floatFieldsOffset );
-                
-                floatFieldsDimsRead[0] = len;
-                floatFieldsDimsRead[1] = 1;
-                floatFieldsMemspace = H5::DataSpace( 2, floatFieldsDimsRead );
-                
-                floatFieldsOffset_out[0] = rowOff - startfid;
-                floatFieldsOffset_out[1] = 0;
-                floatFieldsCount_out[0] = remainRows;
-                floatFieldsCount_out[1] = 1;
-                floatFieldsMemspace.selectHyperslab( H5S_SELECT_SET, floatFieldsCount_out, floatFieldsOffset_out );
-                
-                floatDataset.write(pfBuffer, H5::PredType::NATIVE_DOUBLE, floatFieldsMemspace, floatDataspace);
-            }
+            floatFieldsDimsRead[0] = len;
+            floatFieldsDimsRead[1] = 1;
+            floatFieldsMemspace = H5::DataSpace( 2, floatFieldsDimsRead );
+            
+            floatFieldsOffset_out[0] = 0;
+            floatFieldsOffset_out[1] = 0;
+            floatFieldsCount_out[0] = len;
+            floatFieldsCount_out[1] = 1;
+            floatFieldsMemspace.selectHyperslab( H5S_SELECT_SET, floatFieldsCount_out, floatFieldsOffset_out );
+            
+            floatDataset.write(pfBuffer, H5::PredType::NATIVE_DOUBLE, floatFieldsMemspace, floatDataspace);
             
             floatDataset.close();
             floatDataspace.close();
@@ -1237,7 +1034,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTableFile::setStringFields(size_t startfid, size_t len, size_t colIdx, char **papszStrList) throw(KEAATTException)
+    void KEAAttributeTableFile::setStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *papszStrList) throw(KEAATTException)
     {
         if((startfid+len) > numRows)
         {
@@ -1253,12 +1050,10 @@ namespace kealib{
         
         try
         {
-            size_t numOfBlocksStart = (ceil((double)startfid / chunkSize) * chunkSize);
-            size_t preRows = std::min(numOfBlocksStart - startfid, len);
-            size_t numOfBlocks = floor(((double)(len - preRows)/chunkSize));
-            size_t remainRows = len - preRows - (numOfBlocks * chunkSize);
-            //fprintf( stderr, "colIdx = %ld, start = %ld len = %ld preRows = %ld numOfBlocks = %ld remanRows = %ld\n", colIdx, startfid, len, preRows, numOfBlocks, remainRows);
-            size_t rowOff = 0;
+            if(papszStrList->size() != len)
+            {
+                throw KEAATTException("The number of items in the vector<std::string> passed was not equal to the length specified.");
+            }
             
             H5::DataSet strDataset;
             H5::DataSpace strDataspace;
@@ -1271,7 +1066,7 @@ namespace kealib{
             hsize_t strFieldsCount_out[2];
             strDataset = keaImg->openDataSet( (bandPathBase + KEA_ATT_STRING_DATA) );
             strDataspace = strDataset.getSpace();
-            KEAString *stringVals = new KEAString[chunkSize];
+            KEAString *stringVals = new KEAString[len];
             
             int strNDims = strDataspace.getSimpleExtentNdims();
             
@@ -1294,100 +1089,31 @@ namespace kealib{
             }
             delete[] strDims;
             
-            if(preRows > 0)
+            strFieldsOffset[0] = startfid;
+            strFieldsOffset[1] = colIdx;
+            
+            strFieldsCount[0] = len;
+            strFieldsCount[1] = 1;
+            
+            strDataspace.selectHyperslab( H5S_SELECT_SET, strFieldsCount, strFieldsOffset );
+            
+            strFieldsDimsRead[0] = len;
+            strFieldsDimsRead[1] = 1;
+            strFieldsMemspace = H5::DataSpace( 2, strFieldsDimsRead );
+            
+            strFieldsOffset_out[0] = 0;
+            strFieldsOffset_out[1] = 0;
+            strFieldsCount_out[0] = len;
+            strFieldsCount_out[1] = 1;
+            strFieldsMemspace.selectHyperslab( H5S_SELECT_SET, strFieldsCount_out, strFieldsOffset_out );
+            
+            for( size_t i = 0; i < len; i++ )
             {
-                strFieldsOffset[0] = startfid;
-                strFieldsOffset[1] = colIdx;
-                
-                strFieldsCount[0] = preRows;
-                strFieldsCount[1] = 1;
-                
-                strDataspace.selectHyperslab( H5S_SELECT_SET, strFieldsCount, strFieldsOffset );
-                
-                strFieldsDimsRead[0] = preRows;
-                strFieldsDimsRead[1] = 1;
-                strFieldsMemspace = H5::DataSpace( 2, strFieldsDimsRead );
-                
-                strFieldsOffset_out[0] = 0;
-                strFieldsOffset_out[1] = 0;
-                strFieldsCount_out[0] = preRows;
-                strFieldsCount_out[1] = 1;
-                strFieldsMemspace.selectHyperslab( H5S_SELECT_SET, strFieldsCount_out, strFieldsOffset_out );
-                
-                for( size_t i = 0; i < preRows; i++ )
-                {
-                    // set up the hdf structures
-                    stringVals[i].str = papszStrList[i];
-                }
-                
-                strDataset.write(stringVals, *strTypeMem, strFieldsMemspace, strDataspace);
+                // set up the hdf structures
+                stringVals[i].str = const_cast<char*>(papszStrList->at(i).c_str());
             }
             
-            
-            if(numOfBlocks > 0)
-            {
-                strFieldsOffset[0] = 0;
-                strFieldsOffset[1] = colIdx;
-                
-                strFieldsCount[0] = chunkSize;
-                strFieldsCount[1] = 1;
-                
-                strDataspace.selectHyperslab( H5S_SELECT_SET, strFieldsCount, strFieldsOffset );
-                
-                strFieldsDimsRead[0] = chunkSize;
-                strFieldsDimsRead[1] = 1;
-                strFieldsMemspace = H5::DataSpace( 2, strFieldsDimsRead );
-                
-                strFieldsOffset_out[0] = 0;
-                strFieldsOffset_out[1] = 0;
-                
-                strFieldsCount_out[0] = chunkSize;
-                strFieldsCount_out[1] = 1;
-                strFieldsMemspace.selectHyperslab( H5S_SELECT_SET, strFieldsCount_out, strFieldsOffset_out );
-                
-                for(size_t n = 0; n < numOfBlocks; ++n)
-                {
-                    rowOff = (n*chunkSize) + numOfBlocksStart;
-                    strFieldsOffset[0] = rowOff;
-                    strDataspace.selectHyperslab( H5S_SELECT_SET, strFieldsCount, strFieldsOffset );
-                    
-                    for( size_t i = 0; i < chunkSize; i++ )
-                    {
-                        // set up the hdf structures
-                        stringVals[i].str = papszStrList[i+rowOff];
-                    }
-                    
-                    strDataset.write(stringVals, *strTypeMem, strFieldsMemspace, strDataspace);
-                }
-            }
-            
-            if(remainRows > 0)
-            {
-                rowOff = (numOfBlocks*chunkSize) + numOfBlocksStart;
-                strFieldsOffset[0] = rowOff;
-                strFieldsOffset[1] = colIdx;
-                strFieldsCount[0] = remainRows;
-                strFieldsCount[1] = 1;
-                strDataspace.selectHyperslab( H5S_SELECT_SET, strFieldsCount, strFieldsOffset );
-                
-                strFieldsDimsRead[0] = chunkSize;
-                strFieldsDimsRead[1] = 1;
-                strFieldsMemspace = H5::DataSpace( 2, strFieldsDimsRead );
-                
-                strFieldsOffset_out[0] = rowOff - startfid;
-                strFieldsOffset_out[1] = 0;
-                strFieldsCount_out[0] = remainRows;
-                strFieldsCount_out[1] = 1;
-                strFieldsMemspace.selectHyperslab( H5S_SELECT_SET, strFieldsCount_out, strFieldsOffset_out );
-                
-                for( size_t i = 0; i < remainRows; i++ )
-                {
-                    // set up the hdf structures
-                    stringVals[i].str = papszStrList[i+rowOff];
-                }
-                
-                strDataset.write(stringVals, *strTypeMem, strFieldsMemspace, strDataspace);
-            }
+            strDataset.write(stringVals, *strTypeMem, strFieldsMemspace, strDataspace);
             
             strDataset.close();
             strDataspace.close();
