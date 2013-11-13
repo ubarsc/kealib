@@ -813,7 +813,15 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
                     }
                 }
                 else
-                    m_poKEATable->setStringFields(iStartRow, iLength, m_aoFields[iField].idx, papszStrList);
+                {
+                    // need to convert to a vector first
+                    std::vector<std::string> aStrings;
+                    for( int i = 0; i < iLength; i++ )
+                    {
+                        aStrings.push_back(papszStrList[i]);
+                    }
+                    m_poKEATable->setStringFields(iStartRow, iLength, m_aoFields[iField].idx, &aStrings);
+                }
             }
             catch(kealib::KEAException &e)
             {
