@@ -271,30 +271,27 @@ keaColumnOpen(void *tableHandle, char *columnName, unsigned long *dataType,
             // need to work out max length - should really do this in 'blocks'
             unsigned long nMaxString = 0;
             size_t numRows = pKEATable->getSize();
-            char **papszList = (char**)malloc(MAXSIZE_BLOCK * sizeof(char*));
+			std::vector<std::string> aStrings;
 
             for( size_t nRowIndex = 0; nRowIndex < numRows; nRowIndex += MAXSIZE_BLOCK)
             {
                 size_t len = MAXSIZE_BLOCK;
                 if( ( nRowIndex + len ) > numRows )
+				{
                     len = numRows - nRowIndex;
+				}
 
-                pKEATable->getStringFields(nRowIndex, len, nColIdx, papszList);
+                pKEATable->getStringFields(nRowIndex, len, nColIdx, &aStrings);
 
                 for( size_t n = 0; n < len; n++ )
                 {
-                    unsigned int nNewLen = strlen(papszList[n]) + 1;
+                    unsigned int nNewLen = aStrings[n].length() + 1;
                     if( nNewLen > nMaxString)
                         nMaxString = nNewLen;
-
-                    // free while we are here - note might be an issue on Windows
-                    // if linked dynamically to libkea
-                    free(papszList[n]);
                 }
             }
             //fprintf(stderr, "Max string size = %ld\n", nMaxString);
             *maxStringLength = nMaxString;
-            free(papszList);
         }
 
         *columnHandle = pKEAColumn;
@@ -328,12 +325,6 @@ keaColumnModTimeGet(void *columnHandle, time_t *modTime)
     // dunno...
     *modTime = 0;
     return 0;
-}
-
-// to keep compiler happy in call to getStringFields
-char *ImagineStrDup(const char *psz)
-{
-    return estr_Duplicate((char*)psz);
 }
 
 long
@@ -400,7 +391,15 @@ keaColumnDataRead(void *columnHandle, unsigned long startRow, unsigned long numR
 
             case kealib::kea_att_string:
                 // alloc strings in Imagine memory via estr_Duplicate
-                pKEATable->getStringFields(startRow, numRows, pKEAColumn->nColIdx, ppszStringData, ImagineStrDup);
+				{
+					std::vector<std::string> aStrings;
+					pKEATable->getStringFields(startRow, numRows, pKEAColumn->nColIdx, &aStrings);
+					// now go through and duplicate strings using the Imagine routine
+					for( unsigned long i = 0; i < numRows; i++ )
+					{
+						ppszStringData[i] = estr_Duplicate((char*)aStrings[i].c_str());
+					}
+				}
                 break;
 
             default:

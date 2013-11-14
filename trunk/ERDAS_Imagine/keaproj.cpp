@@ -37,6 +37,7 @@
 #include <string.h>
 #include <vector>
 #include <string>
+#include <algorithm>
 #include "keaproj.h"
 
 // my hack to have enough calls to support the GDAL
@@ -504,7 +505,11 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, std::string &sProjName, st
     sProjName = "Unknown";
     sUnits = oSRS.GetAttrValue("UNIT");
     if( sUnits == "" )
-        sUnits = "Unknown";
+        sUnits = "meters"; // to avoid annoying error messages
+		
+	// hack for Imagine
+	if( (sUnits == "metre" ) || (sUnits == "Meter" ) )
+		sUnits = "meters";
 
     // need to get this or we can't find spheroids etc
     Eint_InitToolkitData* init = eint_GetInit();
@@ -1104,6 +1109,19 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, std::string &sProjName, st
                 //fprintf( stderr, "spheroid = %s datum = %s\n", spheroid.c_str(), datum.c_str());
                 if( ( spheroid != "" ) && ( datum != "" ) )
                 {
+					if( datum == "New_Zealand_Geodetic_Datum_2000" )
+					{
+						// hack for Imagine which calls it something different
+						datum = "NZGD2000 (NTv2)";
+					}
+					else if(datum == "Geocentric_Datum_of_Australia_1994" )
+					{
+						datum = "GDA94-ICSM";
+					}
+					
+					// sometimes we end up with underscores in the spheroid name
+					std::replace(spheroid.begin(), spheroid.end(), '_', ' ');
+					
                     eprj_SpheroidByName(init, (char*)spheroid.c_str(), projparams->proSpheroid, &err);
                     HANDLE_ERR(err, NULL)
                     eprj_DatumByName(init, (char*)spheroid.c_str(), (char*)datum.c_str(), projparams->proSpheroid->datum, &err);
