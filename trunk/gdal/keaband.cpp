@@ -740,36 +740,43 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
             if( ! bExists )
             {
                 std::string strUsage = "Generic";
+                GDALRATFieldType eType = poRAT->GetTypeOfCol(nGDALColumnIndex); // may need to update
                 switch(poRAT->GetUsageOfCol(nGDALColumnIndex))
                 {
                     case GFU_PixelCount:
                         strUsage = "PixelCount";
+                        eType = GFT_Real;
                         break;
                     case GFU_Name:
                         strUsage = "Name";
+                        eType = GFT_String;
                         break;
                     case GFU_Red:
                         strUsage = "Red";
+                        eType = GFT_Integer;
                         break;
                     case GFU_Green:
                         strUsage = "Green";
+                        eType = GFT_Integer;
                         break;
                     case GFU_Blue:
                         strUsage = "Blue";
+                        eType = GFT_Integer;
                         break;
                     case GFU_Alpha:
                         strUsage = "Alpha";
+                        eType = GFT_Integer;
                         break;
                     default:
                         // leave as "Generic"
                         break;
                 }
 
-                if(poRAT->GetTypeOfCol(nGDALColumnIndex) == GFT_Integer)
+                if(eType == GFT_Integer)
                 {
                     pKEATable->addAttIntField(pszColumnName, 0, strUsage);
                 }
-                else if(poRAT->GetTypeOfCol(nGDALColumnIndex) == GFT_Real)
+                else if(eType == GFT_Real)
                 {
                     pKEATable->addAttFloatField(pszColumnName, 0, strUsage);
                 }

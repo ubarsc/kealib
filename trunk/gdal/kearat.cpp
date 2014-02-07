@@ -873,21 +873,27 @@ CPLErr KEARasterAttributeTable::CreateColumn( const char *pszFieldName,
     {
         case GFU_PixelCount:
             strUsage = "PixelCount";
+            eFieldType = GFT_Real;
             break;
         case GFU_Name:
             strUsage = "Name";
+            eFieldType = GFT_String;
             break;
         case GFU_Red:
             strUsage = "Red";
+            eFieldType = GFT_Integer;
             break;
         case GFU_Green:
             strUsage = "Green";
+            eFieldType = GFT_Integer;
             break;
         case GFU_Blue:
             strUsage = "Blue";
+            eFieldType = GFT_Integer;
             break;
         case GFU_Alpha:
             strUsage = "Alpha";
+            eFieldType = GFT_Integer;
             break;
         default:
             // leave as "Generic"
