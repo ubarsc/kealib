@@ -33,6 +33,7 @@
 #include "libkea/KEAImageIO.h"
 #include "libkea/KEAAttributeTable.h"
 #include "libkea/KEAAttributeTableInMem.h"
+#include "keaband.h" // for HAVE_RFC40
 
 // Support functions for CreateCopy()
 
@@ -237,19 +238,40 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
                 
                 if(redDef && (redIdx == nj))
                 {
+// We assume that if RFC40 present that #5362 (ensures HFA reads colours as 0-255 rather that 0-1 which 
+// was the old behaviour) has been applied which I think is reasonable since it was done between 
+// GDAL 1.10.1 and 1.11.0 (as was RFC40) and it is hard to test for this specifically
+//
+// Note if we don't support GDAL <=1.10.1 in future this function could be simplified
+#ifdef HAVE_RFC40
+                    keaFeat->intFields->at(field->idx) = gdalAtt->GetValueAsInt(ni, nj);
+#else
                     keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(ni, nj)*255);
+#endif
                 }
                 else if(greenDef && (greenIdx == nj))
                 {
+#ifdef HAVE_RFC40
+                    keaFeat->intFields->at(field->idx) = gdalAtt->GetValueAsInt(ni, nj);
+#else
                     keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(ni, nj)*255);
+#endif
                 }
                 else if(blueDef && (blueIdx == nj))
                 {
+#ifdef HAVE_RFC40
+                    keaFeat->intFields->at(field->idx) = gdalAtt->GetValueAsInt(ni, nj);
+#else
                     keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(ni, nj)*255);
+#endif
                 }
                 else if(alphaDef && (alphaIdx == nj))
                 {
+#ifdef HAVE_RFC40
+                    keaFeat->intFields->at(field->idx) = gdalAtt->GetValueAsInt(ni, nj);
+#else
                     keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(ni, nj)*255);
+#endif
                 }
                 else
                 {
