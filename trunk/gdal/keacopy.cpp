@@ -115,6 +115,7 @@ bool CopyRasterData( GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nB
     return true;
 }
 
+const int RAT_CHUNKSIZE = 1000;
 // copies the raster attribute table
 void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
 {
@@ -124,7 +125,11 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
         // some operations depend on whether the input dataset is HFA
         int bInputHFA = EQUAL(pBand->GetDataset()->GetDriver()->GetDescription(), "HFA");
 
+#ifdef HAVE_RFC40
+        kealib::KEAAttributeTable *keaAtt = pImageIO->getAttributeTable(kealib::kea_att_file, nBand);
+#else
         kealib::KEAAttributeTable *keaAtt = new kealib::KEAAttributeTableInMem();
+#endif
         
         bool redDef = false;
         int redIdx = -1;
@@ -228,6 +233,70 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
         int numRows = gdalAtt->GetRowCount();
         keaAtt->addRows(numRows);
         
+
+#ifdef HAVE_RFC40
+// We assume that if RFC40 present that #5362 (ensures HFA reads colours as 0-255 rather that 0-1 which 
+// was the old behaviour) has been applied which I think is reasonable since it was done between 
+// GDAL 1.10.1 and 1.11.0 (as was RFC40) and it is hard to test for this specifically
+//
+// Note if we don't support GDAL <=1.10.1 in future this function could be simplified
+        int *pnIntBuffer = new int[RAT_CHUNKSIZE];
+        int64_t *pnInt64Buffer = new int64_t[RAT_CHUNKSIZE];
+        double *pfDoubleBuffer = new double[RAT_CHUNKSIZE];
+        for(int ni = 0; ni < numRows; ni += RAT_CHUNKSIZE )
+        {
+            int nLength = RAT_CHUNKSIZE;
+            if( ( ni + nLength ) > numRows )
+            {
+                nLength = numRows - ni;
+            }
+            for(int nj = 0; nj < numCols; ++nj)
+            {
+                field = fields->at(nj);
+
+                switch(field->dataType)
+                {
+                    case kealib::kea_att_int:
+                        ((GDALRasterAttributeTable*)gdalAtt)->ValuesIO(GF_Read, nj, ni, nLength, pnIntBuffer);
+                        for( int i = 0; i < nLength; i++ )
+                        {
+                            pnInt64Buffer[i] = pnIntBuffer[i];
+                        }
+                        keaAtt->setIntFields(ni, nLength, field->idx, pnInt64Buffer);
+                        break;
+                    case kealib::kea_att_float:
+                        ((GDALRasterAttributeTable*)gdalAtt)->ValuesIO(GF_Read, nj, ni, nLength, pfDoubleBuffer);
+                        keaAtt->setFloatFields(ni, nLength, field->idx, pfDoubleBuffer);
+                        break;
+                    case kealib::kea_att_string:
+                        {   
+                            char **papszColData = (char**)VSIMalloc2(nLength, sizeof(char*));
+                            ((GDALRasterAttributeTable*)gdalAtt)->ValuesIO(GF_Read, nj, ni, nLength, papszColData);
+                     
+                            std::vector<std::string> aStringBuffer;
+                            for( int i = 0; i < nLength; i++ )
+                            {
+                                aStringBuffer.push_back(papszColData[i]);
+                            }
+
+                            for( int i = 0; i < nLength; i++ )
+                                CPLFree(papszColData[i]);
+                            CPLFree(papszColData);
+
+                            keaAtt->setStringFields(ni, nLength, field->idx, &aStringBuffer);
+                        }
+                        break;
+                    default:
+                        // Ignore as data type is not known or available from a HFA/GDAL RAT."
+                        break;
+                }
+            }
+        }
+
+        delete[] pnIntBuffer;
+        delete[] pnInt64Buffer;
+        delete[] pfDoubleBuffer;
+#else
         kealib::KEAATTFeature *keaFeat = NULL;
         for(int ni = 0; ni < numRows; ++ni)
         {
@@ -238,40 +307,19 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
                 
                 if(redDef && (redIdx == nj))
                 {
-// We assume that if RFC40 present that #5362 (ensures HFA reads colours as 0-255 rather that 0-1 which 
-// was the old behaviour) has been applied which I think is reasonable since it was done between 
-// GDAL 1.10.1 and 1.11.0 (as was RFC40) and it is hard to test for this specifically
-//
-// Note if we don't support GDAL <=1.10.1 in future this function could be simplified
-#ifdef HAVE_RFC40
-                    keaFeat->intFields->at(field->idx) = gdalAtt->GetValueAsInt(ni, nj);
-#else
                     keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(ni, nj)*255);
-#endif
                 }
                 else if(greenDef && (greenIdx == nj))
                 {
-#ifdef HAVE_RFC40
-                    keaFeat->intFields->at(field->idx) = gdalAtt->GetValueAsInt(ni, nj);
-#else
                     keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(ni, nj)*255);
-#endif
                 }
                 else if(blueDef && (blueIdx == nj))
                 {
-#ifdef HAVE_RFC40
-                    keaFeat->intFields->at(field->idx) = gdalAtt->GetValueAsInt(ni, nj);
-#else
                     keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(ni, nj)*255);
-#endif
                 }
                 else if(alphaDef && (alphaIdx == nj))
                 {
-#ifdef HAVE_RFC40
-                    keaFeat->intFields->at(field->idx) = gdalAtt->GetValueAsInt(ni, nj);
-#else
                     keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(ni, nj)*255);
-#endif
                 }
                 else
                 {
@@ -295,7 +343,8 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
         }
         
         pImageIO->setAttributeTable(keaAtt, nBand);
-        
+#endif        
+
         delete keaAtt;
         for(std::vector<kealib::KEAATTField*>::iterator iterField = fields->begin(); iterField != fields->end(); ++iterField)
         {
