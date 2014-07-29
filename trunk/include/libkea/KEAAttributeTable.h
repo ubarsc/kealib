@@ -129,6 +129,7 @@ namespace kealib{
         virtual void getIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) const throw(KEAATTException)=0;
         virtual void getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const throw(KEAATTException)=0;
         virtual void getStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *psBuffer) const throw(KEAATTException)=0;
+        virtual void getNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const throw(KEAATTException)=0;
         
         virtual void setBoolField(size_t fid, size_t colIdx, bool value) throw(KEAATTException)=0;
         virtual void setIntField(size_t fid, size_t colIdx, int64_t value) throw(KEAATTException)=0;
@@ -140,6 +141,7 @@ namespace kealib{
         virtual void setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) throw(KEAATTException)=0;
         virtual void setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) throw(KEAATTException)=0;
         virtual void setStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *papszStrList) throw(KEAATTException)=0;
+        virtual void setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) throw(KEAATTException)=0;
         
         virtual void setBoolValue(size_t colIdx, bool value) throw(KEAATTException);
         virtual void setIntValue(size_t colIdx, int64_t value) throw(KEAATTException);

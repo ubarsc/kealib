@@ -67,6 +67,7 @@ namespace kealib{
         void getIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) const throw(KEAATTException);
         void getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const throw(KEAATTException);
         void getStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *psBuffer) const throw(KEAATTException);
+        void getNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const throw(KEAATTException);
         
         void setBoolField(size_t fid, size_t colIdx, bool value) throw(KEAATTException);
         void setIntField(size_t fid, size_t colIdx, int64_t value) throw(KEAATTException);
@@ -77,6 +78,7 @@ namespace kealib{
         void setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) throw(KEAATTException);
         void setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) throw(KEAATTException);
         void setStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *papszStrList) throw(KEAATTException);
+        void setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) throw(KEAATTException);
 
         KEAATTFeature* getFeature(size_t fid) const throw(KEAATTException);
         

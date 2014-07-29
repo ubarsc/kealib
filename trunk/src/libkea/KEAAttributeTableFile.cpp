@@ -686,6 +686,11 @@ namespace kealib{
         }
     }
     
+    void KEAAttributeTableFile::getNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const throw(KEAATTException)
+    {
+        throw KEAATTException("KEAAttributeTableFile::getNeighbours(size_t startfid, size_t len, std::vector<size_t> neighbours) is not implemented.");
+    }
+    
     void KEAAttributeTableFile::setBoolField(size_t fid, size_t colIdx, bool value) throw(KEAATTException)
     {
         if(fid >= numRows)
@@ -1139,15 +1144,158 @@ namespace kealib{
         }
     }
     
+    void KEAAttributeTableFile::setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) throw(KEAATTException)
+    {
+        //throw KEAATTException("KEAAttributeTableFile::setNeighbours(size_t startfid, size_t len, std::vector<size_t> neighbours) is not implemented.");
+        
+        try
+        {
+            H5::DataSet *neighboursDataset = NULL;
+            try
+            {
+                neighboursDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_NEIGHBOURS_DATA));
+                H5::DataSpace dimsDataSpace = neighboursDataset->getSpace();
+                
+                hsize_t dataDims[1];
+                dimsDataSpace.getSimpleExtentDims(dataDims);
+                hsize_t extendDatasetTo[1];
+                
+                if(this->getSize() > dataDims[0])
+                {
+                    extendDatasetTo[0] = this->getSize();
+                    neighboursDataset->extend(extendDatasetTo);
+                }
+                
+                dimsDataSpace.close();
+            }
+            catch(H5::Exception &e)
+            {
+                // Create Neighbours dataset
+                hsize_t initDimsNeighboursDS[1];
+                initDimsNeighboursDS[0] = this->getSize();
+                hsize_t maxDimsNeighboursDS[1];
+                maxDimsNeighboursDS[0] = H5S_UNLIMITED;
+                H5::DataSpace neighboursDataspace = H5::DataSpace(1, initDimsNeighboursDS, maxDimsNeighboursDS);
+                
+                hsize_t dimsNeighboursChunk[1];
+                dimsNeighboursChunk[0] = chunkSize;
+                
+                H5::DataType intVarLenDiskDT = H5::VarLenType(&H5::PredType::STD_U64LE);
+                H5::DataType intVarLenMemDT = H5::VarLenType(&H5::PredType::NATIVE_HSIZE);
+                VarLenFieldHDF neighboursDataFillVal[1];
+                neighboursDataFillVal[0].p = NULL;
+                neighboursDataFillVal[0].length = 0;
+                H5::DSetCreatPropList creationNeighboursDSPList;
+                creationNeighboursDSPList.setChunk(1, dimsNeighboursChunk);
+                creationNeighboursDSPList.setShuffle();
+                creationNeighboursDSPList.setDeflate(deflate);
+                creationNeighboursDSPList.setFillValue( intVarLenMemDT, &neighboursDataFillVal);
+                
+                neighboursDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_NEIGHBOURS_DATA), intVarLenDiskDT, neighboursDataspace, creationNeighboursDSPList));
+                neighboursDataspace.close();
+            }
+            
+            VarLenFieldHDF *neighbourVals = new VarLenFieldHDF[len];
+            
+            hsize_t neighboursDataOffset[1];
+            neighboursDataOffset[0] = startfid;
+            hsize_t neighboursDataDims[1];
+            neighboursDataDims[0] = len;
+            H5::DataType intVarLenMemDT = H5::VarLenType(&H5::PredType::NATIVE_HSIZE);
+            H5::DataSpace memNeighboursDataspace = H5::DataSpace(1, neighboursDataDims);
+            
+            
+            unsigned int i = 0;
+            for(std::vector<std::vector<size_t>* >::iterator iterClumps = neighbours->begin(); iterClumps != neighbours->end(); ++iterClumps)
+            {
+                neighbourVals[i].length = 0;
+                neighbourVals[i].p = NULL;
+                if((*iterClumps)->size() > 0)
+                {
+                    neighbourVals[i].length = (*iterClumps)->size();
+                    neighbourVals[i].p = new hsize_t[(*iterClumps)->size()];
+                    for(unsigned int k = 0; k < (*iterClumps)->size(); ++k)
+                    {
+                        ((hsize_t*)neighbourVals[i].p)[k] = (*iterClumps)->at(k);
+                    }
+                }
+                
+                ++i;
+            }
+            
+            H5::DataSpace neighboursWriteDataSpace = neighboursDataset->getSpace();
+            neighboursWriteDataSpace.selectHyperslab(H5S_SELECT_SET, neighboursDataDims, neighboursDataOffset);
+            neighboursDataset->write(neighbourVals, intVarLenMemDT, memNeighboursDataspace, neighboursWriteDataSpace);
+            neighboursWriteDataSpace.close();
+            
+            for(size_t i = 0; i < len; ++i)
+            {
+                if(neighbourVals[i].length > 0)
+                {
+                    neighbourVals[i].length = 0;
+                    delete[] ((hsize_t*)neighbourVals[i].p);
+                }
+            }
+            
+            
+        }
+        catch(H5::Exception &e)
+        {
+            throw KEAIOException(e.getDetailMsg());
+        }
+        catch (KEAATTException &e)
+        {
+            throw e;
+        }
+        catch (KEAIOException &e)
+        {
+            throw e;
+        }
+        catch(std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
+        
+        
+    }
+    
     KEAATTFeature* KEAAttributeTableFile::getFeature(size_t fid) const throw(KEAATTException)
     {
-        /*if(fid >= numRows)
-         {
-         std::string message = std::string("Requested feature (") + sizet2Str(fid) + std::string(") is not within the table.");
-         throw KEAATTException(message);
-         }
-         
-         return attRows->at(fid);*/
+        throw KEAATTException("KEAAttributeTableFile::getFeature(size_t fid) has not been implemented.");
+        if(fid >= numRows)
+        {
+            std::string message = std::string("Requested feature (") + sizet2Str(fid) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        /*
+        KEAATTFeature *attFeat = new KEAATTFeature();
+        attFeat->fid = fid;
+        attFeat->boolFields = new std::vector<bool>();
+        attFeat->intFields = new std::vector<int>();
+        attFeat->floatFields = new std::vector<float>();
+        attFeat->strFields = new std::vector<std::string>();
+        attFeat->neighbours = new std::vector<size_t>();
+        
+        
+        if(this->getNumBoolFields() > 0)
+        {
+            attFeat->boolFields->reserve(this->getNumBoolFields())
+        }
+        if(this->getNumIntFields() > 0)
+        {
+            attFeat->intFields->reserve(this->getNumIntFields())
+        }
+        if(this->getNumFloatFields() > 0)
+        {
+            attFeat->floatFields->reserve(this->getNumFloatFields())
+        }
+        if(this->getNumStringFields() > 0)
+        {
+            attFeat->strFields->reserve(this->getNumStringFields())
+        }
+        
+        return attFeat;
+        */
         return NULL;
     }
     

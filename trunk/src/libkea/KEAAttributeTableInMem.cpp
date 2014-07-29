@@ -348,6 +348,11 @@ namespace kealib{
             psBuffer->push_back(std::string(attRows->at(n+startfid)->strFields->at(colIdx).c_str()));
         }
     }
+    
+    void KEAAttributeTableInMem::getNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const throw(KEAATTException)
+    {
+        throw KEAATTException("KEAAttributeTableInMem::getNeighbours(size_t startfid, size_t len, std::vector<size_t> neighbours) is not implemented.");
+    }
 
     void KEAAttributeTableInMem::setBoolField(size_t fid, size_t colIdx, bool value) throw(KEAATTException)
     {
@@ -501,6 +506,11 @@ namespace kealib{
         {
             attRows->at(n+startfid)->strFields->at(colIdx) = papszStrList->at(colIdx);
         }
+    }
+    
+    void KEAAttributeTableInMem::setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) throw(KEAATTException)
+    {
+        throw KEAATTException("KEAAttributeTableInMem::setNeighbours(size_t startfid, size_t len, std::vector<size_t> neighbours) is not implemented.");
     }
     
     KEAATTFeature* KEAAttributeTableInMem::getFeature(size_t fid) const throw(KEAATTException)
