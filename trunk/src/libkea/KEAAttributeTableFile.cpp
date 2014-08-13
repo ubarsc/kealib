@@ -688,7 +688,86 @@ namespace kealib{
     
     void KEAAttributeTableFile::getNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const throw(KEAATTException)
     {
-        throw KEAATTException("KEAAttributeTableFile::getNeighbours(size_t startfid, size_t len, std::vector<size_t> neighbours) is not implemented.");
+        try
+        {
+            if(!neighbours->empty())
+            {
+                for(std::vector<std::vector<size_t>* >::iterator iterNeigh = neighbours->begin(); iterNeigh != neighbours->end(); ++iterNeigh)
+                {
+                    delete *iterNeigh;
+                }
+                neighbours->clear();
+            }
+            neighbours->reserve(len);
+            
+            H5::DataSet neighboursDataset = keaImg->openDataSet( (bandPathBase + KEA_ATT_NEIGHBOURS_DATA) );
+            H5::DataSpace neighboursDataspace = neighboursDataset.getSpace();
+            
+            int neighboursNDims = neighboursDataspace.getSimpleExtentNdims();
+            if(neighboursNDims != 1)
+            {
+                throw KEAIOException("The neighbours datasets needs to have 1 dimension.");
+            }
+            
+            hsize_t *neighboursDims = new hsize_t[neighboursNDims];
+            neighboursDataspace.getSimpleExtentDims(neighboursDims);
+            if(this->getSize() > neighboursDims[0])
+            {
+                throw KEAIOException("The number of features in neighbours dataset smaller than expected.");
+            }
+            delete[] neighboursDims;
+            
+            VarLenFieldHDF *neighbourVals = new VarLenFieldHDF[len];
+            H5::DataType intVarLenMemDT = H5::VarLenType(&H5::PredType::NATIVE_HSIZE);
+            hsize_t neighboursOffset[1];
+            neighboursOffset[0] = 0;
+            hsize_t neighboursCount[1];
+            neighboursCount[0] = len;
+            neighboursDataspace.selectHyperslab( H5S_SELECT_SET, neighboursCount, neighboursOffset );
+            
+            hsize_t neighboursDimsRead[1];
+            neighboursDimsRead[0] = len;
+            H5::DataSpace neighboursMemspace( 1, neighboursDimsRead );
+            
+            hsize_t neighboursOffset_out[1];
+            neighboursOffset_out[0] = 0;
+            hsize_t neighboursCount_out[1];
+            neighboursCount_out[0] = len;
+            neighboursMemspace.selectHyperslab( H5S_SELECT_SET, neighboursCount_out, neighboursOffset_out );
+            
+            neighboursOffset[0] = startfid;
+            neighboursDataspace.selectHyperslab( H5S_SELECT_SET, neighboursCount, neighboursOffset );
+            neighboursDataset.read(neighbourVals, intVarLenMemDT, neighboursMemspace, neighboursDataspace);
+            
+            for(size_t i = 0; i < len; ++i)
+            {
+                neighbours->push_back(new std::vector<size_t>());
+                if(neighbourVals[i].length > 0)
+                {
+                    neighbours->back()->reserve(neighbourVals[i].length);
+                    for(hsize_t n = 0; n < neighbourVals[i].length; ++n)
+                    {
+                        neighbours->back()->push_back(((size_t*)neighbourVals[i].p)[n]);
+                    }
+                }
+            }
+        }
+        catch(H5::Exception &e)
+        {
+            throw KEAATTException(e.getDetailMsg());
+        }
+        catch (KEAATTException &e)
+        {
+            throw e;
+        }
+        catch (KEAIOException &e)
+        {
+            throw KEAATTException(e.what());
+        }
+        catch(std::exception &e)
+        {
+            throw KEAATTException(e.what());
+        }
     }
     
     void KEAAttributeTableFile::setBoolField(size_t fid, size_t colIdx, bool value) throw(KEAATTException)
