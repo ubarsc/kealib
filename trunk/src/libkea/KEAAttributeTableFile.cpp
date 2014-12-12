@@ -34,7 +34,17 @@
 #include <algorithm>
 
 namespace kealib{
-    
+
+    static void* kealibmalloc(size_t nSize, void* ignored)
+    {
+        return malloc(nSize);
+    }
+
+    static void kealibfree(void* ptr, void* ignored)
+    {
+        free(ptr);
+    }
+
     KEAAttributeTableFile::KEAAttributeTableFile(H5::H5File *keaImgIn, const std::string &bandPathBaseIn, size_t numRowsIn, size_t chunkSizeIn, unsigned int deflateIn) : KEAAttributeTable(kea_att_file)
     {
         numRows = numRowsIn;
@@ -1398,7 +1408,7 @@ namespace kealib{
             sizeWriteDataSpace.selectHyperslab(H5S_SELECT_SET, sizeDataDims, sizeDataOffset);
             H5::DataSpace newSizeDataspace = H5::DataSpace(1, sizeDataDims);
             
-            hsize_t *attSize = new hsize_t[5];
+            hsize_t attSize[5];
             attSize[0] = this->numRows;
             attSize[1] = nbools;
             attSize[2] = nints;
@@ -2051,7 +2061,7 @@ namespace kealib{
         try
         {
             // Read header size.
-            hsize_t *attSize = new hsize_t[5];
+            hsize_t attSize[5];
             try
             {
                 hsize_t dimsValue[1];
@@ -2183,16 +2193,21 @@ namespace kealib{
                     
                     KEAAttributeIdx *inFields = new KEAAttributeIdx[att->numIntFields];
                     
-                    intFieldsDataset.read(inFields, *fieldCompTypeMem, intFieldsMemspace, intFieldsDataspace);
+                    H5::DSetMemXferPropList xfer;
+                    /* Ensures that malloc()/free() are from the same C runtime */
+                    xfer.setVlenMemManager(kealibmalloc, NULL, kealibfree, NULL);
+                    intFieldsDataset.read(inFields, *fieldCompTypeMem, intFieldsMemspace, intFieldsDataspace, xfer);
                     
                     KEAATTField field;
                     for(unsigned int i = 0; i < att->numIntFields; ++i)
                     {
                         field = KEAATTField();
                         field.name = std::string(inFields[i].name);
+                        free(inFields[i].name);
                         field.dataType = kea_att_int;
                         field.idx = inFields[i].idx;
                         field.usage = std::string(inFields[i].usage);
+                        free(inFields[i].usage);
                         field.colNum = inFields[i].colNum;
                         
                         if(firstColNum)
@@ -2248,16 +2263,21 @@ namespace kealib{
                     
                     KEAAttributeIdx *inFields = new KEAAttributeIdx[att->numFloatFields];
                     
-                    floatFieldsDataset.read(inFields, *fieldCompTypeMem, floatFieldsMemspace, floatFieldsDataspace);
+                    H5::DSetMemXferPropList xfer;
+                    /* Ensures that malloc()/free() are from the same C runtime */
+                    xfer.setVlenMemManager(kealibmalloc, NULL, kealibfree, NULL);
+                    floatFieldsDataset.read(inFields, *fieldCompTypeMem, floatFieldsMemspace, floatFieldsDataspace, xfer);
                     
                     KEAATTField field;
                     for(unsigned int i = 0; i < att->numFloatFields; ++i)
                     {
                         field = KEAATTField();
                         field.name = std::string(inFields[i].name);
+                        free(inFields[i].name);
                         field.dataType = kea_att_float;
                         field.idx = inFields[i].idx;
                         field.usage = std::string(inFields[i].usage);
+                        free(inFields[i].usage);
                         field.colNum = inFields[i].colNum;
                         
                         if(firstColNum)
@@ -2313,16 +2333,21 @@ namespace kealib{
                     
                     KEAAttributeIdx *inFields = new KEAAttributeIdx[att->numStringFields];
                     
-                    strFieldsDataset.read(inFields, *fieldCompTypeMem, strFieldsMemspace, strFieldsDataspace);
+                    H5::DSetMemXferPropList xfer;
+                    /* Ensures that malloc()/free() are from the same C runtime */
+                    xfer.setVlenMemManager(kealibmalloc, NULL, kealibfree, NULL);
+                    strFieldsDataset.read(inFields, *fieldCompTypeMem, strFieldsMemspace, strFieldsDataspace, xfer);
                     
                     KEAATTField field;
                     for(unsigned int i = 0; i < att->numStringFields; ++i)
                     {
                         field = KEAATTField();
                         field.name = std::string(inFields[i].name);
+                        free(inFields[i].name);
                         field.dataType = kea_att_string;
                         field.idx = inFields[i].idx;
                         field.usage = std::string(inFields[i].usage);
+                        free(inFields[i].usage);
                         field.colNum = inFields[i].colNum;
                         
                         if(firstColNum)
@@ -2358,7 +2383,7 @@ namespace kealib{
                 }
             }
             
-            delete[] attSize;
+            delete fieldCompTypeMem;
         }
         catch(H5::Exception &e)
         {

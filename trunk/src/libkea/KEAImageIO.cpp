@@ -34,10 +34,38 @@
 #include <stdlib.h>
 
 namespace kealib{
-    
+
+    static void* kealibmalloc(size_t nSize, void* ignored)
+    {
+        return malloc(nSize);
+    }
+
+    static void kealibfree(void* ptr, void* ignored)
+    {
+        free(ptr);
+    }
+
     KEAImageIO::KEAImageIO()
     {
         this->fileOpen = false;
+    }
+    
+    std::string KEAImageIO::readString(H5::DataSet& dataset, H5::DataType strDataType) throw(KEAIOException)
+    {
+        hid_t nativeVerStrType;
+        if((nativeVerStrType=H5Tget_native_type(strDataType.getId(), H5T_DIR_DEFAULT))<0)
+        {
+            throw KEAIOException("Could not define a native string type");
+        }
+        H5::DSetMemXferPropList xfer;
+        /* Ensures that malloc()/free() are from the same C runtime */
+        xfer.setVlenMemManager(kealibmalloc, NULL, kealibfree, NULL);
+        char* strData[1];
+        dataset.read((void*)strData, strDataType, H5::DataSpace::ALL, H5::DataSpace::ALL, xfer);
+        std::string ret = strData[0];
+        free(strData[0]);
+        H5Tclose(nativeVerStrType);
+        return ret;
     }
     
     void KEAImageIO::openKEAImageHeader(H5::H5File *keaImgH5File)throw(KEAIOException)
@@ -50,18 +78,9 @@ namespace kealib{
             // READ KEA VERSION NUMBER
             try
             {
-                hid_t nativeVerStrType;
                 H5::DataSet datasetFileVersion = keaImgH5File->openDataSet( KEA_DATASETNAME_HEADER_VERSION );
                 H5::DataType strVerDataType = datasetFileVersion.getDataType();
-                char **strVerData = new char*[1];
-                if((nativeVerStrType=H5Tget_native_type(strVerDataType.getId(), H5T_DIR_DEFAULT))<0)
-                {
-                    throw KEAIOException("Could not define a native string type");
-                }
-                datasetFileVersion.read((void*)strVerData, strVerDataType);
-                keaVersion = std::string(strVerData[0]);
-                free(strVerData[0]);
-                delete[] strVerData;
+                keaVersion = readString(datasetFileVersion, strVerDataType);
                 datasetFileVersion.close();
             }
             catch ( H5::Exception &e)
@@ -94,12 +113,11 @@ namespace kealib{
                 hsize_t dimsValue[1];
                 dimsValue[0] = 2;
                 H5::DataSpace valueDataSpace(1, dimsValue);
-                double *values = new double[2];
+                double values[2];
                 H5::DataSet datasetSpatialTL = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_TL );
                 datasetSpatialTL.read(values, H5::PredType::NATIVE_DOUBLE, valueDataSpace);
                 this->spatialInfoFile->tlX = values[0];
                 this->spatialInfoFile->tlY = values[1];
-                delete[] values;
                 datasetSpatialTL.close();
                 valueDataSpace.close();
             } 
@@ -114,12 +132,11 @@ namespace kealib{
                 hsize_t dimsValue[1];
                 dimsValue[0] = 2;
                 H5::DataSpace valueDataSpace(1, dimsValue);
-                double *values = new double[2];
+                double values[2];
                 H5::DataSet spatialResDataset = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_RES );
                 spatialResDataset.read(values, H5::PredType::NATIVE_DOUBLE, valueDataSpace);
                 this->spatialInfoFile->xRes = values[0];
                 this->spatialInfoFile->yRes = values[1];
-                delete[] values;
                 spatialResDataset.close();
                 valueDataSpace.close();
             } 
@@ -134,12 +151,11 @@ namespace kealib{
                 hsize_t dimsValue[1];
                 dimsValue[0] = 2;
                 H5::DataSpace valueDataSpace(1, dimsValue);
-                double *values = new double[2];
+                double values[2];
                 H5::DataSet spatialRotDataset = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_ROT );
                 spatialRotDataset.read(values, H5::PredType::NATIVE_DOUBLE, valueDataSpace);
                 this->spatialInfoFile->xRot = values[0];
                 this->spatialInfoFile->yRot = values[1];
-                delete[] values;
                 spatialRotDataset.close();
                 valueDataSpace.close();
             } 
@@ -154,12 +170,11 @@ namespace kealib{
                 hsize_t dimsValue[1];
                 dimsValue[0] = 2;
                 H5::DataSpace valueDataSpace(1, dimsValue);
-                uint64_t *values = new uint64_t[2];
+                uint64_t values[2];
                 H5::DataSet spatialSizeDataset = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_SIZE );
                 spatialSizeDataset.read(values, H5::PredType::NATIVE_UINT64, valueDataSpace);
                 this->spatialInfoFile->xSize = values[0];
                 this->spatialInfoFile->ySize = values[1];
-                delete[] values;
                 spatialSizeDataset.close();
                 valueDataSpace.close();
             } 
@@ -171,18 +186,9 @@ namespace kealib{
             // READ WKT STRING
             try 
             {
-                hid_t nativeStrType;
                 H5::DataSet datasetSpatialReference = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_WKT );
                 H5::DataType strDataType = datasetSpatialReference.getDataType();
-                char **strData = new char*[1];
-                if((nativeStrType=H5Tget_native_type(strDataType.getId(), H5T_DIR_DEFAULT))<0)
-                {
-                    throw KEAIOException("Could not define a native string type");
-                }
-                datasetSpatialReference.read((void*)strData, strDataType);
-                this->spatialInfoFile->wktString = std::string(strData[0]);
-                free(strData[0]);
-                delete[] strData;
+                this->spatialInfoFile->wktString = readString(datasetSpatialReference, strDataType);
                 datasetSpatialReference.close();
             } 
             catch ( H5::Exception &e) 
@@ -856,11 +862,10 @@ namespace kealib{
 
             }
             // WRITE DATA INTO THE DATASET
-            const char **wStrdata = new const char*[1];
+            const char *wStrdata[1];
             wStrdata[0] = value.c_str();			
             datasetMetaData.write((void*)wStrdata, strTypeAll);
             datasetMetaData.close();
-            delete[] wStrdata;
             
             this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
@@ -890,18 +895,9 @@ namespace kealib{
         // READ IMAGE META-DATA
         try 
         {
-            hid_t nativeStrType;
             H5::DataSet datasetMetaData = this->keaImgFile->openDataSet( metaDataH5Path );
             H5::DataType strDataType = datasetMetaData.getDataType();
-            char **strData = new char*[1];
-            if((nativeStrType=H5Tget_native_type(strDataType.getId(), H5T_DIR_DEFAULT))<0)
-            {
-                throw KEAIOException("Could not define a native string type");
-            }
-            datasetMetaData.read((void*)strData, strDataType);
-            value = std::string(strData[0]);
-            delete strData[0];
-            delete[] strData;
+            value = readString(datasetMetaData, strDataType);
             datasetMetaData.close();
         } 
         catch ( H5::Exception &e) 
@@ -1055,11 +1051,10 @@ namespace kealib{
                 
             }
             // WRITE DATA INTO THE DATASET
-            const char **wStrdata = new const char*[1];
+            const char *wStrdata[1];
             wStrdata[0] = value.c_str();			
             datasetMetaData.write((void*)wStrdata, strTypeAll);
             datasetMetaData.close();
-            delete[] wStrdata;
             
             this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
@@ -1089,18 +1084,9 @@ namespace kealib{
         // READ IMAGE BAND META-DATA
         try 
         {
-            hid_t nativeStrType;
             H5::DataSet datasetMetaData = this->keaImgFile->openDataSet( metaDataH5Path );
             H5::DataType strDataType = datasetMetaData.getDataType();
-            char **strData = new char*[1];
-            if((nativeStrType=H5Tget_native_type(strDataType.getId(), H5T_DIR_DEFAULT))<0)
-            {
-                throw KEAIOException("Could not define a native string type");
-            }
-            datasetMetaData.read((void*)strData, strDataType);
-            value = std::string(strData[0]);
-            free(strData[0]);
-            delete[] strData;
+            value = readString(datasetMetaData, strDataType);
             datasetMetaData.close();
         } 
         catch ( H5::Exception &e) 
@@ -1241,11 +1227,10 @@ namespace kealib{
         {
             H5::StrType strTypeAll(0, H5T_VARIABLE);
             H5::DataSet datasetBandDescription = this->keaImgFile->openDataSet( bandName+KEA_BANDNAME_DESCRIP );
-            const char **wStrdata = new const char*[1];
+            const char *wStrdata[1];
             wStrdata[0] = description.c_str();			
             datasetBandDescription.write((void*)wStrdata, strTypeAll);
             datasetBandDescription.close();
-            delete[] wStrdata;
             this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
         catch (H5::Exception &e) 
@@ -1274,18 +1259,9 @@ namespace kealib{
         // READ IMAGE BAND DESCRIPTION
         try 
         {
-            hid_t nativeStrType;
             H5::DataSet datasetBandDescription = this->keaImgFile->openDataSet( bandName );
             H5::DataType strDataType = datasetBandDescription.getDataType();
-            char **strData = new char*[1];
-            if((nativeStrType=H5Tget_native_type(strDataType.getId(), H5T_DIR_DEFAULT))<0)
-            {
-                throw KEAIOException("Could not define a native string type");
-            }
-            datasetBandDescription.read((void*)strData, strDataType);
-            description = std::string(strData[0]);
-            free(strData[0]);
-            delete[] strData;
+            description = readString(datasetBandDescription, strDataType);
             datasetBandDescription.close();
         } 
         catch ( H5::Exception &e) 
@@ -1528,11 +1504,16 @@ namespace kealib{
                 H5::DataSpace gcpsMemspace(1, boolFieldsDims);
                 
                 gcpsDataspace.selectHyperslab( H5S_SELECT_SET, boolFieldsDims, boolFieldOff );
-                gcpsDataset.read(gcpsHDF, *fieldDtMem, gcpsMemspace, gcpsDataspace);
+                H5::DSetMemXferPropList xfer;
+                /* Ensures that malloc()/free() are from the same C runtime */
+                xfer.setVlenMemManager(kealibmalloc, NULL, kealibfree, NULL);
+                gcpsDataset.read(gcpsHDF, *fieldDtMem, gcpsMemspace, gcpsDataspace, xfer);
                 
                 gcpsDataset.close();
                 gcpsDataspace.close();
                 gcpsMemspace.close();
+                
+                delete fieldDtMem;
             }
             catch( H5::Exception &e )
             {
@@ -1544,7 +1525,9 @@ namespace kealib{
             {
                 tmpGCP = new KEAImageGCP();
                 tmpGCP->pszId = std::string(gcpsHDF[i].pszId);
+                free(gcpsHDF[i].pszId);
                 tmpGCP->pszInfo = std::string(gcpsHDF[i].pszInfo);
+                free(gcpsHDF[i].pszInfo);
                 tmpGCP->dfGCPLine = gcpsHDF[i].dfGCPLine;
                 tmpGCP->dfGCPPixel = gcpsHDF[i].dfGCPPixel;
                 tmpGCP->dfGCPX = gcpsHDF[i].dfGCPX;
@@ -1640,6 +1623,8 @@ namespace kealib{
                 gcpsWriteDataSpace.close();
                 newGCPsDataspace.close();
                 gcpsDataset.close();
+                
+                delete fieldDtMem;
             }
             catch ( H5::Exception &e)
             {
@@ -1676,6 +1661,9 @@ namespace kealib{
                 gcpsWriteDataSpace.close();
                 newGCPsDataspace.close();
                 gcpsDataset.close();                
+                
+                delete fieldDtDisk;
+                delete fieldDtMem;
             }
             
             
@@ -1723,6 +1711,12 @@ namespace kealib{
         catch ( std::exception &e)
         {
             throw KEAIOException(e.what());
+        }
+        
+        for(uint32_t j = 0; j < i; j++)
+        {
+            delete[] gcpsHDF[j].pszId;
+            delete[] gcpsHDF[j].pszInfo;
         }
         
         delete[] gcpsHDF;
@@ -1784,18 +1778,9 @@ namespace kealib{
         std::string gcpProj = "";
         try
         {
-            hid_t nativeStrType;
             H5::DataSet datasetGCPSpatialReference = this->keaImgFile->openDataSet( KEA_GCPS_PROJ );
             H5::DataType strDataType = datasetGCPSpatialReference.getDataType();
-            char **strData = new char*[1];
-            if((nativeStrType=H5Tget_native_type(strDataType.getId(), H5T_DIR_DEFAULT))<0)
-            {
-                throw KEAIOException("Could not define a native string type");
-            }
-            datasetGCPSpatialReference.read((void*)strData, strDataType);
-            gcpProj = std::string(strData[0]);
-            delete strData[0];
-            delete[] strData;
+            gcpProj = readString(datasetGCPSpatialReference, strDataType);
             datasetGCPSpatialReference.close();
         }
         catch ( H5::Exception &e)
@@ -1816,29 +1801,25 @@ namespace kealib{
         // SET THE WKT STRING SPATAIL REFERENCE IN GLOBAL HEADER
         try
         {
-            const char **wStrdata = NULL;
+            const char *wStrdata[1];
             H5::DataSet datasetSpatialReference = this->keaImgFile->openDataSet(KEA_GCPS_PROJ);
             H5::DataType strDataType = datasetSpatialReference.getDataType();
-            wStrdata = new const char*[1];
             wStrdata[0] = projWKT.c_str();
             datasetSpatialReference.write((void*)wStrdata, strDataType);
             datasetSpatialReference.close();
-            delete[] wStrdata;
             this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
         catch (H5::Exception &e)
         {
-            const char **wStrdata = NULL;
+            const char *wStrdata[1];
 			hsize_t	dimsForStr[1];
 			dimsForStr[0] = 1; // number of lines;
             H5::DataSpace dataspaceStrAll(1, dimsForStr);
             H5::StrType strTypeAll(0, H5T_VARIABLE);
             H5::DataSet datasetSpatialReference = this->keaImgFile->createDataSet(KEA_GCPS_PROJ, strTypeAll, dataspaceStrAll);
-			wStrdata = new const char*[1];
 			wStrdata[0] = projWKT.c_str();
 			datasetSpatialReference.write((void*)wStrdata, strTypeAll);
 			datasetSpatialReference.close();
-			delete[] wStrdata;
         }
         catch ( KEAIOException &e)
         {
@@ -1860,7 +1841,7 @@ namespace kealib{
         try 
         {
             // SET X AND Y TL IN GLOBAL HEADER
-            double *doubleVals = new double[2];
+            double doubleVals[2];
             doubleVals[0] = inSpatialInfo->tlX;
             doubleVals[1] = inSpatialInfo->tlY;
             H5::DataSet spatialTLDataset = this->keaImgFile->openDataSet(KEA_DATASETNAME_HEADER_TL);
@@ -1880,17 +1861,14 @@ namespace kealib{
             H5::DataSet spatialRotDataset = this->keaImgFile->openDataSet(KEA_DATASETNAME_HEADER_ROT);
 			spatialRotDataset.write( doubleVals, H5::PredType::NATIVE_DOUBLE );
             spatialRotDataset.close();
-            delete[] doubleVals;
             
             // SET THE WKT STRING SPATAIL REFERENCE IN GLOBAL HEADER
-			const char **wStrdata = NULL;
+			const char *wStrdata[1];
             H5::DataSet datasetSpatialReference = this->keaImgFile->openDataSet(KEA_DATASETNAME_HEADER_WKT);
             H5::DataType strDataType = datasetSpatialReference.getDataType();
-			wStrdata = new const char*[1];
 			wStrdata[0] = inSpatialInfo->wktString.c_str();			
 			datasetSpatialReference.write((void*)wStrdata, strDataType);
 			datasetSpatialReference.close();
-			delete[] wStrdata;
             
             this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         } 
@@ -2730,13 +2708,12 @@ namespace kealib{
                 {
                     throw KEAIOException("The number of dimensions for the overview must be 2.");
                 }
-                hsize_t *dims = new hsize_t[2];
+                hsize_t dims[2];
                 imgBandDataspace.getSimpleExtentDims(dims);
                 
                 *xSize = dims[1];
                 *ySize = dims[0];
-                
-                delete[] dims;
+
                 imgBandDataset.close();
             } 
             catch(KEAIOException &e)
@@ -2833,7 +2810,7 @@ namespace kealib{
         try 
         {
             std::string bandPathBase = KEA_DATASETNAME_BAND + uint2Str(band);
-            hsize_t *attSize = new hsize_t[5];
+            hsize_t attSize[5];
             try 
             {   
                 hsize_t dimsValue[1];
@@ -2853,8 +2830,6 @@ namespace kealib{
             {
                 attPresent = true;
             }
-            
-            delete[] attSize;
         }
         catch(KEAIOException &e)
         {
@@ -2940,7 +2915,7 @@ namespace kealib{
             KEAImageIO::setNumImgBandsInFileMetadata(keaImgH5File, numImgBands);
                                     
             // SET X AND Y TL IN GLOBAL HEADER
-            double *doubleVals = new double[2];
+            double doubleVals[2];
             doubleVals[0] = spatialInfo->tlX;
             doubleVals[1] = spatialInfo->tlY;
             hsize_t dimsSpatialTL[1];
@@ -2950,10 +2925,9 @@ namespace kealib{
 			spatialTLDataset.write( doubleVals, H5::PredType::NATIVE_DOUBLE );
             spatialTLDataset.close();
             spatialTLDataSpace.close();
-            delete[] doubleVals;
             
             // SET X AND Y RESOLUTION IN GLOBAL HEADER
-            float *floatVals = new float[2];
+            float floatVals[2];
             floatVals[0] = spatialInfo->xRes;
             floatVals[1] = spatialInfo->yRes;
             hsize_t dimsSpatialRes[1];
@@ -2974,10 +2948,9 @@ namespace kealib{
 			spatialRotDataset.write( floatVals, H5::PredType::NATIVE_FLOAT );
             spatialRotDataset.close();
             spatialRotDataSpace.close();
-            delete[] floatVals;
                         
             // SET NUMBER OF X AND Y PIXELS
-            uint64_t *uLongVals = new uint64_t[2];
+            uint64_t uLongVals[2];
             uLongVals[0] = spatialInfo->xSize;
             uLongVals[1] = spatialInfo->ySize;
             hsize_t dimsSpatialSize[1];
@@ -2987,47 +2960,38 @@ namespace kealib{
 			spatialSizeDataset.write( uLongVals, H5::PredType::NATIVE_UINT64 );
             spatialSizeDataset.close();
             spatialSizeDataSpace.close();
-            delete[] uLongVals;
             
             // SET THE WKT STRING SPATAIL REFERENCE IN GLOBAL HEADER
-			const char **wStrdata = NULL;
+			const char *wStrdata[1];
 			hsize_t	dimsForStr[1];
 			dimsForStr[0] = 1; // number of lines;
             H5::DataSpace dataspaceStrAll(1, dimsForStr);
             H5::StrType strTypeAll(0, H5T_VARIABLE);
             H5::DataSet datasetSpatialReference = keaImgH5File->createDataSet(KEA_DATASETNAME_HEADER_WKT, strTypeAll, dataspaceStrAll);
-			wStrdata = new const char*[1];
 			wStrdata[0] = spatialInfo->wktString.c_str();			
 			datasetSpatialReference.write((void*)wStrdata, strTypeAll);
 			datasetSpatialReference.close();
-			delete[] wStrdata;
             
             // SET THE FILE TYPE IN GLOBAL HEADER
             H5::DataSet datasetFileType = keaImgH5File->createDataSet(KEA_DATASETNAME_HEADER_FILETYPE, strTypeAll, dataspaceStrAll);
-			wStrdata = new const char*[1];
             std::string strVal = "KEA";
 			wStrdata[0] = strVal.c_str();			
 			datasetFileType.write((void*)wStrdata, strTypeAll);
 			datasetFileType.close();
-			delete[] wStrdata;
             
             // SET THE FILE GENARATOR IN GLOBAL HEADER
             H5::DataSet datasetGenarator = keaImgH5File->createDataSet(KEA_DATASETNAME_HEADER_GENERATOR, strTypeAll, dataspaceStrAll);
-			wStrdata = new const char*[1];
             strVal = "LibKEA";
 			wStrdata[0] = strVal.c_str();			
 			datasetGenarator.write((void*)wStrdata, strTypeAll);
 			datasetGenarator.close();
-			delete[] wStrdata;
             
             // SET THE FILE VERSION IN GLOBAL HEADER
             H5::DataSet datasetVersion = keaImgH5File->createDataSet(KEA_DATASETNAME_HEADER_VERSION, strTypeAll, dataspaceStrAll);
-			wStrdata = new const char*[1];
             strVal = "1.1";
 			wStrdata[0] = strVal.c_str();			
 			datasetVersion.write((void*)wStrdata, strTypeAll);
 			datasetVersion.close();
-			delete[] wStrdata;
             
             if(deleteSpatialInfo)
             {
@@ -3188,36 +3152,18 @@ namespace kealib{
             
             try 
             {
-                hid_t nativeFTStrType;
                 H5::DataSet datasetFileType = keaImgH5File->openDataSet( KEA_DATASETNAME_HEADER_FILETYPE );
                 H5::DataType strFTDataType = datasetFileType.getDataType();
-                char **strFTData = new char*[1];
-                if((nativeFTStrType=H5Tget_native_type(strFTDataType.getId(), H5T_DIR_DEFAULT))<0)
-                {
-                    throw KEAIOException("Could not define a native string type");
-                }
-                datasetFileType.read((void*)strFTData, strFTDataType);
-                std::string fileType = std::string(strFTData[0]);
-                free(strFTData[0]);
-                delete[] strFTData;
+                std::string fileType = readString(datasetFileType, strFTDataType);
                 datasetFileType.close();
                                 
                 try 
                 {
                     if(fileType == "KEA")
                     {
-                        hid_t nativeVerStrType;
                         H5::DataSet datasetFileVersion = keaImgH5File->openDataSet( KEA_DATASETNAME_HEADER_VERSION );
                         H5::DataType strVerDataType = datasetFileVersion.getDataType();
-                        char **strVerData = new char*[1];
-                        if((nativeVerStrType=H5Tget_native_type(strVerDataType.getId(), H5T_DIR_DEFAULT))<0)
-                        {
-                            throw KEAIOException("Could not define a native string type");
-                        }
-                        datasetFileVersion.read((void*)strVerData, strVerDataType);
-                        std::string fileVersion = std::string(strVerData[0]);
-                        free(strVerData[0]);
-                        delete[] strVerData;
+                        std::string fileVersion = readString(datasetFileVersion, strVerDataType);
                         datasetFileVersion.close();
                         
                         if((fileVersion == "1.0") || (fileVersion == "1.1"))
@@ -3410,12 +3356,11 @@ namespace kealib{
             H5::DataSpace dataspaceStrAll(1, dimsForStr);
             H5::StrType strTypeAll(0, H5T_VARIABLE);
             H5::DataSet datasetBandDescription = keaImgH5File->createDataSet((bandName+KEA_BANDNAME_DESCRIP), strTypeAll, dataspaceStrAll);
-            const char **wStrdata = new const char*[1];
+            const char *wStrdata[1];
             wStrdata[0] = bandDescrip.c_str();			
             datasetBandDescription.write((void*)wStrdata, strTypeAll);
             datasetBandDescription.close();
             dataspaceStrAll.close();
-            delete[] wStrdata;
 
             // SET IMAGE BAND DATA TYPE IN IMAGE BAND
             hsize_t dimsDT[] = { 1 };

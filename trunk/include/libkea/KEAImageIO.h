@@ -158,6 +158,8 @@ namespace kealib{
         static H5::CompType* createGCPCompTypeDisk() throw(KEAIOException);
         static H5::CompType* createGCPCompTypeMem() throw(KEAIOException);
         
+        static std::string readString(H5::DataSet& dataset, H5::DataType strDataType) throw(KEAIOException);
+        
         /********** PROTECTED MEMBERS **********/
         bool fileOpen;
         H5::H5File *keaImgFile;
