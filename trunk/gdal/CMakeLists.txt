@@ -45,5 +45,5 @@ include_directories(${GDAL_INCLUDE_DIR})
 
 ###############################################################################
 # Installation 
-install (TARGETS ${LIBKEA_GDAL_DRIVER} DESTINATION gdalplugins)
+install (TARGETS ${LIBKEA_GDAL_DRIVER} DESTINATION lib/gdalplugins)
 ###############################################################################
