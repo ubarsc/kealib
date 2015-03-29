@@ -1,0 +1,53 @@
+#/*
+# *  makefile2015.vc
+# *  LibKEA
+# *
+# *  Created by Sam Gillingham on 26/07/2013.
+# *  Copyright 2013 LibKEA. All rights reserved.
+# *
+# *  This file is part of LibKEA.
+# *
+# *  Permission is hereby granted, free of charge, to any person 
+# *  obtaining a copy of this software and associated documentation 
+# *  files (the "Software"), to deal in the Software without restriction, 
+# *  including without limitation the rights to use, copy, modify, 
+# *  merge, publish, distribute, sublicense, and/or sell copies of the 
+# *  Software, and to permit persons to whom the Software is furnished 
+# *  to do so, subject to the following conditions:
+# *
+# *  The above copyright notice and this permission notice shall be 
+# *  included in all copies or substantial portions of the Software.
+# *
+# *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+# *  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+# *  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+# *  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
+# *  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+# *  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+# *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# *
+# */
+
+IMAGINE_HOME = "C:\Program Files\Hexagon\ERDAS IMAGINE 2015"
+KEA_HOME = "C:\Users\sam\staticKea_VS2013\x64"
+
+# Note x64 includes seem broken so use the win32 ones like the examples. Sigh.
+CPPFLAGS = /Ox /MD /I$(KEA_HOME)\include /I$(IMAGINE_HOME)\usr\include\win32release /fp:precise /D "WIN64" /D "_WINDOWS" /D "pcnt" /D "__STDC__" /D "i386" /errorReport:prompt /WX- /Gd /EHsc /DEFIO_UNBUFFERED_PROTOTYPES_PASSTHROUGH /DEFIO_STDIO_PROTOTYPES_PASSTHROUGH
+LDFLAGS = /LIBPATH:$(KEA_HOME)\lib libkea.lib libhdf5_cpp.lib libhdf5.lib zlibstatic.lib /LIBPATH:$(IMAGINE_HOME)\usr\lib\x64URelease ecommon.lib elib.lib eraster.lib eprj.lib
+
+OBJS = keainstance.obj keafile.obj kealayer.obj keatable.obj keaproj.obj
+
+kea.dll: $(OBJS)
+	cl $(OBJS) /link $(LDFLAGS) /DLL /OUT:kea.dll
+	
+clean:
+	del kea.dll kea.lib kea.exp *.obj
+
+install:
+	copy kea.dll $(IMAGINE_HOME)\usr\lib\x64URelease\rasterformats
+	
+configure:
+	$(IMAGINE_HOME)\bin\x64URelease\configure_rf.exe
+	
+imagine:
+	$(IMAGINE_HOME)\bin\win32Release\ewkspace.exe
