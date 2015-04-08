@@ -1,5 +1,5 @@
 #/*
-# *  makefile2015_x64.vc
+# *  makefile2015_x86.vc
 # *  LibKEA
 # *
 # *  Created by Sam Gillingham on 26/07/2013.
@@ -29,11 +29,10 @@
 # */
 
 IMAGINE_HOME = "C:\Program Files\Hexagon\ERDAS IMAGINE 2015"
-KEA_HOME = "C:\Users\sam\staticKea_VS2013\x64"
+KEA_HOME = "C:\Users\sam\staticKea_VS2013\x86"
 
-# Note x64 includes seem broken so use the win32 ones like the examples. Sigh.
-CPPFLAGS = /DAUTO_EXPORT /Ox /MD /I$(KEA_HOME)\include /I$(IMAGINE_HOME)\usr\include\win32release /fp:precise /D "WIN64" /D "_WINDOWS" /D "pcnt" /D "__STDC__" /D "i386" /errorReport:prompt /WX- /Gd /EHsc /DEFIO_UNBUFFERED_PROTOTYPES_PASSTHROUGH /DEFIO_STDIO_PROTOTYPES_PASSTHROUGH
-LDFLAGS = /LIBPATH:$(KEA_HOME)\lib libkea.lib libhdf5_cpp.lib libhdf5.lib zlibstatic.lib /LIBPATH:$(IMAGINE_HOME)\usr\lib\x64URelease ecommon.lib elib.lib eraster.lib eprj.lib
+CPPFLAGS = /DAUTO_EXPORT /Ox /MD /I$(KEA_HOME)\include /I$(IMAGINE_HOME)\usr\include\win32release /fp:precise /D "WIN32" /D "_WINDOWS" /D "_X86_" /D "pcnt" /D "__STDC__" /D "i386" /errorReport:prompt /WX- /Gd /EHsc /DEFIO_UNBUFFERED_PROTOTYPES_PASSTHROUGH /DEFIO_STDIO_PROTOTYPES_PASSTHROUGH
+LDFLAGS = /LIBPATH:$(KEA_HOME)\lib libkea.lib libhdf5_cpp.lib libhdf5.lib zlibstatic.lib /LIBPATH:$(IMAGINE_HOME)\usr\lib\win32Release ecommon.lib elib.lib eraster.lib eprj.lib
 
 OBJS = keainstance.obj keafile.obj kealayer.obj keatable.obj keaproj.obj
 
@@ -44,10 +43,10 @@ clean:
 	del kea.dll kea.lib kea.exp *.obj
 
 install:
-	copy kea.dll $(IMAGINE_HOME)\usr\lib\x64URelease\rasterformats
+	copy kea.dll $(IMAGINE_HOME)\usr\lib\win32Release\rasterformats
 	
 configure:
-	$(IMAGINE_HOME)\bin\x64URelease\configure_rf.exe
+	$(IMAGINE_HOME)\bin\win32Release\configure_rf.exe
 	
 imagine:
 	$(IMAGINE_HOME)\bin\win32Release\ewkspace.exe
