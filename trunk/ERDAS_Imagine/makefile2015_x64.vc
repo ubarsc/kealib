@@ -33,15 +33,15 @@ KEA_HOME = "C:\Users\sam\staticKea_VS2013\x64"
 
 # Note x64 includes seem broken so use the win32 ones like the examples. Sigh.
 CPPFLAGS = /DAUTO_EXPORT /Ox /MD /I$(KEA_HOME)\include /I$(IMAGINE_HOME)\usr\include\win32release /fp:precise /D "WIN64" /D "_WINDOWS" /D "pcnt" /D "__STDC__" /D "i386" /errorReport:prompt /WX- /Gd /EHsc /DEFIO_UNBUFFERED_PROTOTYPES_PASSTHROUGH /DEFIO_STDIO_PROTOTYPES_PASSTHROUGH
-LDFLAGS = /LIBPATH:$(KEA_HOME)\lib libkea.lib libhdf5_cpp.lib libhdf5.lib zlibstatic.lib /LIBPATH:$(IMAGINE_HOME)\usr\lib\x64URelease ecommon.lib elib.lib eraster.lib eprj.lib
+LDFLAGS = /LIBPATH:$(KEA_HOME)\lib libkea.lib libhdf5_cpp.lib libhdf5.lib zlibstatic.lib /LIBPATH:$(IMAGINE_HOME)\usr\lib\x64URelease ecommon.lib elib.lib eraster.lib eprj.lib /MANIFEST:EMBED
 
-OBJS = keainstance.obj keafile.obj kealayer.obj keatable.obj keaproj.obj
+OBJS = keainstance.obj keafile.obj kealayer.obj keatable.obj keaproj.obj version.res
 
 kea.dll: $(OBJS)
 	cl $(OBJS) /link $(LDFLAGS) /DLL /OUT:kea.dll
 	
 clean:
-	del kea.dll kea.lib kea.exp *.obj
+	del kea.dll kea.lib kea.exp *.obj *.res
 
 install:
 	copy kea.dll $(IMAGINE_HOME)\usr\lib\x64URelease\rasterformats

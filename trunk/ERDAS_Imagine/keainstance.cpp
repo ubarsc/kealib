@@ -34,6 +34,7 @@ Support for KEA file format within Imagine
 */
 
 #include "kea.h"
+#include "../include/libkea/kea-config.h"
 
 long
 keaInstanceTitleListGet(unsigned long *count, char ***titleList )
@@ -188,3 +189,49 @@ keaInstanceColumnTypesGet(unsigned long *count, char ***columnTypes)
     return 0;
 }
 
+long
+keaInstanceRasterDataOrderTypesGet(unsigned long  *count, char  ***rdoTypes, unsigned char  **rdoWriteFlags)
+{     
+#ifdef DEBUG
+    fprintf(stderr, "%s\n", __FUNCTION__ );
+#endif
+    /* If this isn't implemented we end up with BIK (??) in the file info */
+    *count = 1;
+    *rdoTypes = emsc_New(1, char *);
+    (*rdoTypes)[0] = estr_Duplicate((char*)"BSQ");
+    *rdoWriteFlags = NULL;
+    
+    return 0;
+}
+
+long
+keaInstanceDescriptionGet(char **description)
+{
+#ifdef DEBUG
+    fprintf(stderr, "%s\n", __FUNCTION__ );
+#endif
+    Eerr_ErrorReport* err = NULL;
+    *description = estr_Sprintf(NULL, (char*)"KEA Raster Support Library Version %s", &err,
+            LIBKEA_VERSION, NULL);
+    HANDLE_ERR(err, NULL);
+    return 0;
+}
+
+// This is a weird one - the doco says this isn't required, yet with 
+// Imagine 2015 is still asks for the :Mask of each band and gives
+// and error when it fails.
+// So we just say it isn't supported for now.
+// The reality is a little more complicated - a KEA file has an optional
+// mask for each band, ideally we would say 'yes' and then return all zeros
+// or something for a band if it didn't have one....
+long 
+keaInstanceSupportsMasks(unsigned char **flags)
+{
+#ifdef DEBUG
+    fprintf(stderr, "%s\n", __FUNCTION__ );
+#endif
+    *flags = emsc_New(1, unsigned char);
+    (*flags)[0] = 0;
+    return 0; /* success in Imagine land usually */
+                /* The doco says this is a void function which doesn't match the header */
+}

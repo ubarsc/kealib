@@ -23,18 +23,25 @@ with the Imagine file open dialog.
 Windows
 =======
 
-Only tested with Imagine 2011.
+Only tested with Imagine 2011 and 2015.
 
 Prerequisites:
 --------------
 
 1. Visual Studio C++ of the same version that Imagine itself was build with.
    For Imagine 2011 this was Visual Studio C++ 2008.
-2. A static build of ZLIB/HDF5/kealib with the same version of VS.
+   For Imagine 2015 this was Visual Studio C++ Desktop 2013.
+2. A static build of ZLIB/HDF5/kealib with the same version of Visual Studio.
 
-Update paths in makefile.vc and start the Visual Studio Command Prompt and
-navigate to the location of it and type 'nmake -f makefile.vc'. Copy the resulting kea.dll
-to C:\Program Files\ERDAS\<Imagine Version>\usr\lib\Win32Release\rasterformats
-and run C:\Program Files\ERDAS\<Imagine Version>\bin\Win32Release\configure_rf.exe
-and restart Imagine.
+Use makefile2011.vc for Imagine 2011, makefile2015_x86.vc for 32bit Imagine 2015
+and makefile2015_x64.vc for 64 bit Imagine 2015 ('<makefile name>').
+
+It is advisable to compile and install both 32bit and 64bit KEA when running 64bit
+Imagine 2015 since some Imagine tools may still be 32bit.
+
+Update paths in the <makefile name> you are to use and start the Visual Studio Command Prompt and
+navigate to the location of it and type 'nmake -f <makefile name>'. 
+
+The run 'nmake -f <makefile name> install' and 'nmake -f <makefile name> configure' and 
+restart Imagine.
 
