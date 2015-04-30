@@ -83,6 +83,8 @@ public:
     Eprj_MapProjection* pProj;
     std::string sUnits;
     std::string sProjName;
+    time_t  modTime;    // maybe should have whole _stat struct here, not sure.
+                        // Put it here for keaDataModTimeGet
     // all the layers and overviews mixed together
     KEA_Layer **ppLayers;
 };

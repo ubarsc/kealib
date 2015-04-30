@@ -31,6 +31,9 @@
 #include "kea.h"
 #include "keaproj.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 bool IsSupportedDataType(kealib::KEAImageIO *pImageIO, uint32_t nBand)
 {
     // Imagine does not support the 64 bit int type
@@ -40,6 +43,27 @@ bool IsSupportedDataType(kealib::KEAImageIO *pImageIO, uint32_t nBand)
         return false;
     }
     return true;
+}
+
+time_t getModifiedTime(char *fileName)
+{
+    time_t modTime = 0;
+    // Uses stat call but syntax is slightly different 
+    // Unix vs Windows
+#ifdef WIN32
+    struct _stat buf;
+    if( _stat(fileName, &buf) == 0)
+    {
+        modTime = buf.st_mtime;
+    }
+#else
+    struct stat buf;
+    if( stat(filename, &buf) == 0 )
+    {
+        modTime = buf.st_mtime;
+    }
+#endif    
+    return modTime;
 }
 
 void *
@@ -97,6 +121,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                 kealib::KEAImageSpatialInfo *pSpatialInfo = pImageIO->getSpatialInfo();
                 // turn from WKT into someting Imagie understands
                 pKEAFile->pProj = WKTToMapProj(pSpatialInfo->wktString.c_str(), pKEAFile->sProjName, pKEAFile->sUnits);
+                pKEAFile->modTime = getModifiedTime(fileName); // for keaFileDataModTimeGet
                 pKEAFile->nLayers = 0;
                 // count how many layers in total
                 uint32_t nBands = pImageIO->getNumOfImageBands();
@@ -373,14 +398,30 @@ keaFileDataModTimeGet(void *fileHandle, char *dataName, time_t *lastModTime)
 #ifdef DEBUG
     fprintf(stderr, "%s %s\n", __FUNCTION__, dataName );
 #endif
-    *lastModTime = (time_t)0;
+    /* In theory we could extract the mod time of each HDF5 object */
+    /* But for now we just return the modified time of the file */
+    KEA_File *pKEAFile = (KEA_File*)fileHandle;
+    *lastModTime = pKEAFile->modTime;
 
+    return 0;
+}
+
+long 
+keaFileRasterDataOrderGet(void  *fileHandle, unsigned long  *order)
+{
+#ifdef DEBUG
+    fprintf(stderr, "%s %s\n", __FUNCTION__, dataName );
+#endif
+    // always BSQ - see keaInstanceRasterDataOrderTypesGet
+    *order = 0;
     return 0;
 }
 
 // Don't need to implement the following. Yes I know keaFileModeGet
 // might be a way to get around the file size limit in the open dialog
 // in early versions of Imagine - but it was only added to Imagine later
+
+// Imagine uses System calls if these don't exist
 /*
 extern "C" long keaFileModeGet(char  *fileName, mode_t  *mode);
 
