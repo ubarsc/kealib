@@ -17,7 +17,7 @@ Binaries for Windows, Linux and Mac are available through Conda on the "osgeo" c
 ```
 #!bash
 
-export GDAL_DRIVER_PATH=~/miniconda3/gdalplugins
+export GDAL_DRIVER_PATH=~/miniconda3/lib/gdalplugins
 ```
 
 
