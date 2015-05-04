@@ -213,7 +213,7 @@ keaInstanceDescriptionGet(char **description)
     Eerr_ErrorReport* err = NULL;
     *description = estr_Sprintf(NULL, (char*)"KEA Raster Support Library Version %s", &err,
             LIBKEA_VERSION, NULL);
-    HANDLE_ERR(err, NULL);
+    HANDLE_ERR(err, -1);
     return 0;
 }
 
@@ -224,6 +224,8 @@ keaInstanceDescriptionGet(char **description)
 // The reality is a little more complicated - a KEA file has an optional
 // mask for each band, ideally we would say 'yes' and then return all zeros
 // or something for a band if it didn't have one....
+/*
+Camo says this stops Imagine from loading KEA at all.
 long 
 keaInstanceSupportsMasks(unsigned char **flags)
 {
@@ -232,6 +234,17 @@ keaInstanceSupportsMasks(unsigned char **flags)
 #endif
     *flags = emsc_New(1, unsigned char);
     (*flags)[0] = 0;
-    return 0; /* success in Imagine land usually */
-                /* The doco says this is a void function which doesn't match the header */
+    return 0; /* success in Imagine land usually *
+                /* The doco says this is a void function which doesn't match the header *
 }
+*/
+
+long 
+keaInstanceSupportsUnicode(void)
+{
+#ifdef DEBUG
+    fprintf(stderr, "%s\n", __FUNCTION__ );
+#endif
+    return 0;
+}
+

@@ -99,6 +99,7 @@ public:
 	unsigned int		nBand;
 
     bool                bIsOverview;
+    bool                bIsMask;
     unsigned int        nOverview; // if bIsOverview == true
 
     unsigned int        nXSize;

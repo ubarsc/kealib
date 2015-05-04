@@ -130,6 +130,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                     if( IsSupportedDataType( pImageIO, n+1 ) )
                     {
                         pKEAFile->nLayers++;
+                        pKEAFile->nLayers++; // mask
                         pKEAFile->nLayers += pImageIO->getNumOfOverviews(n+1);
                     }
                     else
@@ -154,6 +155,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                         pLayer->sFilePath = pKEAFile->sFilePath;
                         pLayer->nBand = nBand;
                         pLayer->bIsOverview = false;
+                        pLayer->bIsMask = false;
                         pLayer->nOverview = 99999;
                         pLayer->eKEAType = pImageIO->getImageBandDataType(nBand);
                         pLayer->nXSize = pSpatialInfo->xSize;
@@ -161,6 +163,26 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                         pLayer->nBlockSize = pImageIO->getImageBlockSize(nBand);
                         //fprintf( stderr, "Adding Band %s blocksize %d\n", pLayer->sName.c_str(), pLayer->nBlockSize);
                         pKEAFile->ppLayers[nIndex] = pLayer;
+                        nIndex++;
+                        
+                        // mask
+                        KEA_Layer *pMask = new KEA_Layer();
+                        pMask->pImageIO = pImageIO;
+                        pMask->pKEAFile = pKEAFile;
+                        char *name = estr_Sprintf( NULL, (char*)"%s:Mask", &err, 
+                                    pLayer->sName.c_str(), NULL );
+                        pMask->sName = name;
+                        pMask->sFilePath = pKEAFile->sFilePath;
+                        pMask->nBand = nBand;
+                        pMask->bIsOverview = false;
+                        pMask->bIsMask = true;
+                        pMask->nOverview = 99999;
+                        pMask->eKEAType = kealib::kea_8int;
+                        pMask->nXSize = pSpatialInfo->xSize;
+                        pMask->nYSize = pSpatialInfo->ySize;
+                        pMask->nBlockSize = pImageIO->getImageBlockSize(nBand);
+                        //fprintf( stderr, "Adding Band %s blocksize %d\n", pLayer->sName.c_str(), pLayer->nBlockSize);
+                        pKEAFile->ppLayers[nIndex] = pMask;
                         nIndex++;
 
                         // do the overviews
@@ -179,6 +201,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                             pOverview->sFilePath = pKEAFile->sFilePath;
                             pOverview->nBand = nBand;
                             pOverview->bIsOverview = true;
+                            pOverview->bIsMask = false;
                             pOverview->nOverview = nOverview;
                             pOverview->eKEAType = pLayer->eKEAType;
                             uint64_t xsize, ysize;

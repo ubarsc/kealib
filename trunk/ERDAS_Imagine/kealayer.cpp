@@ -118,6 +118,11 @@ keaLayerRasterRead(void	*lHandle, unsigned long	bRow, unsigned long bCol, unsign
             //fprintf( stderr, "finished readFromOverview\n" );
             //memset(*pixels, 1, pLayer->nBlockSize * pLayer->nBlockSize * 2);
         }
+        else if( pLayer->bIsMask )
+        {
+            // is int8 - set to zero
+            memset(*pixels, pLayer->nBlockSize * pLayer->nBlockSize, 0);
+        }
         else
         {
             //fprintf(stderr, "non overview %d %s\n", (int)pLayer->eKEAType, pLayer->sName.c_str() );
@@ -370,15 +375,22 @@ keaLayerRasterNullValueRead(void  *lHandle, unsigned char  **pixel)
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
 
-    try
+    if( pLayer->bIsMask )
     {
-        // I *think* this will work - just treat it as the right type...
-        pLayer->pImageIO->getNoDataValue(pLayer->nBand, (void*)(*pixel), pLayer->eKEAType);
+        **pixel = 1;
     }
-    catch (kealib::KEAIOException &e)
+    else
     {
-        // throws exception when a no data has not been set so can't tell if an error
-        *pixel = NULL;
+        try
+        {
+            // I *think* this will work - just treat it as the right type...
+            pLayer->pImageIO->getNoDataValue(pLayer->nBand, (void*)(*pixel), pLayer->eKEAType);
+        }
+        catch (kealib::KEAIOException &e)
+        {
+            // throws exception when a no data has not been set so can't tell if an error
+            *pixel = NULL;
+        }
     }
     return 0;
     
