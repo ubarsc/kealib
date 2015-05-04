@@ -120,8 +120,32 @@ keaLayerRasterRead(void	*lHandle, unsigned long	bRow, unsigned long bCol, unsign
         }
         else if( pLayer->bIsMask )
         {
-            // is int8 - set to zero
-            memset(*pixels, pLayer->nBlockSize * pLayer->nBlockSize, 0);
+            // is int8 - set to 1
+            // According to Haiyan Qu: "IMAGINE mask layer is a binary layer, 1 is data, 0 is nodata"
+            if( pLayer->bMaskIsReal )
+            {
+                // read the mask out of the KEA file
+                pLayer->pImageIO->readImageBlock2BandMask(pLayer->nBand, (*pixels), 
+                                                pLayer->nBlockSize * bCol,
+                                                pLayer->nBlockSize * bRow,
+                                                xsize, ysize, pLayer->nBlockSize, pLayer->nBlockSize,
+                                                pLayer->eKEAType ); // is uint8
+                                                
+                // KEA/GDAL mask layers are generally 255 where valid data
+                // recode the mask we have just read
+                for( uint64_t i = 0; i < (pLayer->nBlockSize*pLayer->nBlockSize); i++ )
+                {
+                    if( (*pixels)[i] > 0 )
+                    {
+                        (*pixels)[i] = 1;
+                    }
+                }
+            }
+            else
+            {
+                // fake it by saying all valid
+                memset(*pixels, 1, pLayer->nBlockSize * pLayer->nBlockSize);
+            }
         }
         else
         {
@@ -377,7 +401,7 @@ keaLayerRasterNullValueRead(void  *lHandle, unsigned char  **pixel)
 
     if( pLayer->bIsMask )
     {
-        **pixel = 1;
+        **pixel = 0; // according to Haiyan Qu: "IMAGINE mask layer is a binary layer, 1 is data, 0 is nodata"
     }
     else
     {

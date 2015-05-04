@@ -129,8 +129,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                 {
                     if( IsSupportedDataType( pImageIO, n+1 ) )
                     {
-                        pKEAFile->nLayers++;
-                        pKEAFile->nLayers++; // mask
+                        pKEAFile->nLayers += 2;  // one for layer, one for mask
                         pKEAFile->nLayers += pImageIO->getNumOfOverviews(n+1);
                     }
                     else
@@ -156,6 +155,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                         pLayer->nBand = nBand;
                         pLayer->bIsOverview = false;
                         pLayer->bIsMask = false;
+                        pLayer->bMaskIsReal = false;
                         pLayer->nOverview = 99999;
                         pLayer->eKEAType = pImageIO->getImageBandDataType(nBand);
                         pLayer->nXSize = pSpatialInfo->xSize;
@@ -176,8 +176,9 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                         pMask->nBand = nBand;
                         pMask->bIsOverview = false;
                         pMask->bIsMask = true;
+                        pMask->bMaskIsReal = pImageIO->maskCreated(nBand);
                         pMask->nOverview = 99999;
-                        pMask->eKEAType = kealib::kea_8int;
+                        pMask->eKEAType = kealib::kea_8uint;
                         pMask->nXSize = pSpatialInfo->xSize;
                         pMask->nYSize = pSpatialInfo->ySize;
                         pMask->nBlockSize = pImageIO->getImageBlockSize(nBand);
@@ -202,6 +203,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                             pOverview->nBand = nBand;
                             pOverview->bIsOverview = true;
                             pOverview->bIsMask = false;
+                            pOverview->bMaskIsReal = false;
                             pOverview->nOverview = nOverview;
                             pOverview->eKEAType = pLayer->eKEAType;
                             uint64_t xsize, ysize;

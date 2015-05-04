@@ -100,6 +100,8 @@ public:
 
     bool                bIsOverview;
     bool                bIsMask;
+    bool                bMaskIsReal; // if bIsMask == true
+                                    // is true if KEA file has a mask in it or we fake an 'all valid' mask if it is false
     unsigned int        nOverview; // if bIsOverview == true
 
     unsigned int        nXSize;
