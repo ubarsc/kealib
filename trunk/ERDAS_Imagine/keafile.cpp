@@ -419,7 +419,7 @@ long
 keaFileDataModTimeGet(void *fileHandle, char *dataName, time_t *lastModTime)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %s\n", __FUNCTION__, dataName );
+    fprintf(stderr, "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
 #endif
     /* In theory we could extract the mod time of each HDF5 object */
     /* But for now we just return the modified time of the file */
@@ -433,7 +433,7 @@ long
 keaFileRasterDataOrderGet(void  *fileHandle, unsigned long  *order)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %s\n", __FUNCTION__, dataName );
+    fprintf(stderr, "%s %p\n", __FUNCTION__, fileHandle );
 #endif
     // always BSQ - see keaInstanceRasterDataOrderTypesGet
     *order = 0;
