@@ -39,7 +39,7 @@ Support for KEA file format within Imagine
 long
 keaInstanceTitleListGet(unsigned long *count, char ***titleList )
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf( stderr, "%s\n", __FUNCTION__ );
 #endif
     *titleList = emsc_New(1, char * );
@@ -52,7 +52,7 @@ keaInstanceTitleListGet(unsigned long *count, char ***titleList )
 long
 keaInstanceTemplateListGet(char ***templateList, char **templateListPseudoFlags)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf( stderr, "%s\n", __FUNCTION__ );
 #endif
     *templateList = emsc_New(1, char * );
@@ -70,7 +70,7 @@ keaInstanceTemplateListGet(char ***templateList, char **templateListPseudoFlags)
 long
 keaInstanceExtListGet(char ***extList)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf( stderr, "%s\n", __FUNCTION__ );
 #endif
     *extList = emsc_New(1, char * );
@@ -82,7 +82,7 @@ keaInstanceExtListGet(char ***extList)
 long
 keaInstanceShortNameListGet(char ***shortNameList)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf( stderr, "%s\n", __FUNCTION__ );
 #endif
     *shortNameList = emsc_New(1, char * );
@@ -94,7 +94,7 @@ keaInstanceShortNameListGet(char ***shortNameList)
 long
 keaInstanceFilterFlagsGet( char **flags )
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf( stderr, "%s\n", __FUNCTION__ );
 #endif
     *flags = emsc_New(1, char);
@@ -105,7 +105,7 @@ keaInstanceFilterFlagsGet( char **flags )
 long
 keaInstanceIsDirFlagsGet( char **flags )
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf( stderr, "%s\n", __FUNCTION__ );
 #endif
     *flags = emsc_New(1, char);
@@ -116,7 +116,7 @@ keaInstanceIsDirFlagsGet( char **flags )
 long
 keaInstancePixelTypesGet(unsigned long *count, char  ***pixelTypes)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s\n", __FUNCTION__ );
 #endif
 
@@ -144,7 +144,7 @@ keaInstancePixelTypesGet(unsigned long *count, char  ***pixelTypes)
 long
 keaInstanceCompressionTypesGet(unsigned long *count, char  ***compressionTypes)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s\n", __FUNCTION__ );
 #endif
     // we just support one type - zlib. Note that this is just for display
@@ -159,7 +159,7 @@ keaInstanceCompressionTypesGet(unsigned long *count, char  ***compressionTypes)
 long
 keaInstanceLayerTypesGet( unsigned long  *count,  char  ***layerTypes)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s\n", __FUNCTION__ );
 #endif
     // make it match the KEALayerType enum
@@ -174,7 +174,7 @@ keaInstanceLayerTypesGet( unsigned long  *count,  char  ***layerTypes)
 long
 keaInstanceColumnTypesGet(unsigned long *count, char ***columnTypes)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s\n", __FUNCTION__ );
 #endif
     // make it match KEAFieldDataType enum
@@ -192,7 +192,7 @@ keaInstanceColumnTypesGet(unsigned long *count, char ***columnTypes)
 long
 keaInstanceRasterDataOrderTypesGet(unsigned long  *count, char  ***rdoTypes, unsigned char  **rdoWriteFlags)
 {     
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s\n", __FUNCTION__ );
 #endif
     /* If this isn't implemented we end up with BIK (??) in the file info */
@@ -207,7 +207,7 @@ keaInstanceRasterDataOrderTypesGet(unsigned long  *count, char  ***rdoTypes, uns
 long
 keaInstanceDescriptionGet(char **description)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s\n", __FUNCTION__ );
 #endif
     Eerr_ErrorReport* err = NULL;
@@ -229,7 +229,7 @@ Camo says this stops Imagine from loading KEA at all.
 long 
 keaInstanceSupportsMasks(unsigned char **flags)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s\n", __FUNCTION__ );
 #endif
     *flags = emsc_New(1, unsigned char);
@@ -242,7 +242,7 @@ keaInstanceSupportsMasks(unsigned char **flags)
 long 
 keaInstanceSupportsUnicode(void)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s\n", __FUNCTION__ );
 #endif
     return 0;

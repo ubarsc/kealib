@@ -69,7 +69,7 @@ time_t getModifiedTime(char *fileName)
 void *
 keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     if( inFileMode == NULL )
     {
         fprintf(stderr, "%s %s %ld NULL\n", __FUNCTION__, fileName, *fileType, inFileMode);
@@ -222,7 +222,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
             }
             catch (kealib::KEAIOException &e)
             {
-#ifdef DEBUG
+#ifdef KEADEBUG
                 fprintf( stderr, "Error during opening %s: %s\n", fileName, e.what());
 #endif
                 // was a problem - can't be a valid file
@@ -233,7 +233,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
             }
         }
     }
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf( stderr, "open returning %p\n", pKEAFile);
 #endif
 
@@ -244,7 +244,7 @@ long
 keaFileClose(void *fileHandle)
 {
     KEA_File *pKEAFile = (KEA_File*)fileHandle;
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %s %p\n", __FUNCTION__, pKEAFile->sFilePath.c_str(), pKEAFile );
 #endif
 
@@ -279,7 +279,7 @@ keaFileClose(void *fileHandle)
 long
 keaFileLayerNamesGet(void *fileHandle, unsigned long *count, char ***layerNames)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p\n", __FUNCTION__, fileHandle );
 #endif
     KEA_File *pKEAFile = (KEA_File*)fileHandle;
@@ -327,7 +327,7 @@ long
 keaFileDataRead(void *fileHandle, char *dataName, unsigned char **MIFDataObject,
         unsigned long *MIFDataSize, char **MIFDataDictionary, char **MIFDataType)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %s\n", __FUNCTION__, dataName );
 #endif
     Eerr_ErrorReport *err = NULL;
@@ -418,7 +418,7 @@ keaFileDataRead(void *fileHandle, char *dataName, unsigned char **MIFDataObject,
 long
 keaFileDataModTimeGet(void *fileHandle, char *dataName, time_t *lastModTime)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %s\n", __FUNCTION__, dataName );
 #endif
     /* In theory we could extract the mod time of each HDF5 object */
@@ -432,7 +432,7 @@ keaFileDataModTimeGet(void *fileHandle, char *dataName, time_t *lastModTime)
 long 
 keaFileRasterDataOrderGet(void  *fileHandle, unsigned long  *order)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %s\n", __FUNCTION__, dataName );
 #endif
     // always BSQ - see keaInstanceRasterDataOrderTypesGet
@@ -451,7 +451,7 @@ extern "C" long keaFileModeGet(char  *fileName, mode_t  *mode);
 long
 keaFileModeGet(char  *fileName, mode_t  *mode)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %s\n", __FUNCTION__, fileName );
 #endif
 
@@ -461,7 +461,7 @@ keaFileModeGet(char  *fileName, mode_t  *mode)
 long
 keaFileModTimeGet(char *fileName, time_t *modTime)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %s\n", __FUNCTION__, fileName );
 #endif
 

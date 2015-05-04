@@ -30,13 +30,13 @@
 
 #include "kea.h"
 
-//#define DEBUG 1
+//#define KEADEBUG 1
 
 long
 keaLayerOpen(void *fHandle, char *lName, unsigned long *pType, unsigned long *width, unsigned long *height, unsigned long *compression,
 		unsigned long *bWidth, unsigned long *bHeight, void **lHandle)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %s %p\n", __FUNCTION__, lName, fHandle );
 #endif
     KEA_File *pKEAFile = (KEA_File*)fHandle;
@@ -63,7 +63,7 @@ keaLayerOpen(void *fHandle, char *lName, unsigned long *pType, unsigned long *wi
     {
         fprintf( stderr, "Can't find layer %s\n", lName );
     }
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf( stderr, "open layer returning %p\n", pLayer );
 #endif
 	return rCode;
@@ -73,7 +73,7 @@ long
 keaLayerClose(void *lHandle)
 {
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %s %p\n", __FUNCTION__, pLayer->sName.c_str(), pLayer );
 #endif
     // do nothing since the layers are owned by the dataset
@@ -83,12 +83,12 @@ keaLayerClose(void *lHandle)
 long
 keaLayerRasterRead(void	*lHandle, unsigned long	bRow, unsigned long bCol, unsigned char	**pixels)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %ld %ld %p %p\n", __FUNCTION__, bRow, bCol, *pixels, lHandle);
 #endif
     long rCode = -1;
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
-#ifdef DEBUG
+#ifdef KEADEBUG
 //    fprintf( stderr, "Reading %s\n", pLayer->sName.c_str());
 #endif
 
@@ -148,7 +148,7 @@ keaLayerRasterRead(void	*lHandle, unsigned long	bRow, unsigned long bCol, unsign
 long
 keaLayerRasterWrite(void *lHandle, unsigned long bRow, unsigned long bCol, unsigned char *pixels)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %ld %ld %p %p\n", __FUNCTION__, bRow, bCol, *pixels, lHandle);
 #endif
     return -1;
@@ -157,7 +157,7 @@ keaLayerRasterWrite(void *lHandle, unsigned long bRow, unsigned long bCol, unsig
 long
 keaLayerLayerTypeRead(void  *lHandle, unsigned long  *lType)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
 #endif
     long rCode = -1;
@@ -181,7 +181,7 @@ keaLayerLayerTypeRead(void  *lHandle, unsigned long  *lType)
 long 
 keaLayerRRDLayerNamesGet(void *lHandle, unsigned long  *count, char  ***layerNames, char  **algorithm)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
 #endif
     Eerr_ErrorReport* err = NULL;
@@ -259,7 +259,7 @@ keaLayerRRDLayerNamesGet(void *lHandle, unsigned long  *count, char  ***layerNam
 long
 keaLayerScalarStatisticsRead(void *lHandle, double *minimum,  double *maximum, double *mean, double *median, double *mode, double *stddev)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
@@ -314,7 +314,7 @@ keaLayerScalarStatisticsRead(void *lHandle, double *minimum,  double *maximum, d
 long
 keaLayerMapInfoRead(void *lHandle, char **projection, double *xULC, double *yULC, double *xPixelSize, double *yPixelSize, char **units)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
 #endif
     long rCode = -1;
@@ -349,7 +349,7 @@ keaLayerMapProjectionRead(void *lHandle, char **projTitle, unsigned char **MIFpr
         unsigned char  **MIFearthModel, unsigned long  *MIFearthModelSize,
         char  **MIFearthModelDictionary, char  **MIFearthModelName)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
@@ -370,7 +370,7 @@ keaLayerMapProjectionRead(void *lHandle, char **projTitle, unsigned char **MIFpr
 long
 keaLayerRasterNullValueRead(void  *lHandle, unsigned char  **pixel)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
@@ -463,7 +463,7 @@ keaLayerGetHistoBinFunction(KEA_Layer *pLayer)
 long
 keaLayerHistogramModTimeGet(void  *lHandle, time_t *modTime)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
 #endif
     return -1;
@@ -472,17 +472,17 @@ keaLayerHistogramModTimeGet(void  *lHandle, time_t *modTime)
 long
 keaLayerHistogramRead(void  *lHandle, long startRow, long numRows, long *histogram)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p %ld %ld\n", __FUNCTION__, lHandle, startRow, numRows );
 #endif
     return -1;
 }
 
-#define DEBUG 1
+#define KEADEBUG 1
 long 
 keaLayerColorRead(void *lHandle, char *colorName, long startRow, long numRows, double *colorTable)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p %s %ld %ld\n", __FUNCTION__, lHandle, colorName, startRow, numRows );
 #endif
     return -1;
@@ -491,7 +491,7 @@ keaLayerColorRead(void *lHandle, char *colorName, long startRow, long numRows, d
 long
 keaLayerColorModTimeGet(void *lHandle, char *colorName, time_t *modTime)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p %s\n", __FUNCTION__, lHandle, colorName);
 #endif
     return -1;
@@ -500,7 +500,7 @@ keaLayerColorModTimeGet(void *lHandle, char *colorName, time_t *modTime)
 long 
 keaLayerOpacityRead(void *lHandle, long startRow, long numRows, double *opacity)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p %ld %ld\n", __FUNCTION__, lHandle, startRow, numRows);
 #endif
     return -1;
@@ -509,7 +509,7 @@ keaLayerOpacityRead(void *lHandle, long startRow, long numRows, double *opacity)
 long
 keaLayerOpacityModTimeGet(void *lHandle, time_t *modTime)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle);
 #endif
     return -1;

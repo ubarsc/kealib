@@ -30,7 +30,7 @@
 
 #include "kea.h"
 
-//#define DEBUG 1
+//#define KEADEBUG 1
 
 // these are the special column names that Imagine uses
 #define COLUMN_RED "Red"
@@ -46,7 +46,7 @@
 long
 keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **tableHandle)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p %s\n", __FUNCTION__, fileHandle, tableName );
 #endif
     // tableName will be in the form:
@@ -104,7 +104,7 @@ keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **t
             free(pszLayerName);
         }
     }
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf( stderr, "%s returning %p\n", __FUNCTION__, pKEATable);
 #endif
     *tableHandle = pKEATable;
@@ -114,7 +114,7 @@ keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **t
 long
 keaTableClose(void *tableHandle)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p\n", __FUNCTION__, tableHandle );
 #endif
     kealib::KEAAttributeTable *pKEATable = (kealib::KEAAttributeTable*)tableHandle;
@@ -126,7 +126,7 @@ keaTableClose(void *tableHandle)
 long
 keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNames)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p\n", __FUNCTION__, tableHandle );
 #endif
     kealib::KEAAttributeTable *pKEATable = (kealib::KEAAttributeTable*)tableHandle;
@@ -145,7 +145,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
         (*columnNames)[nIdx] = estr_Duplicate((char*)COLUMN_HISTOGRAM);
         colNames.erase(itr);
         nIdx++;
-#ifdef DEBUG
+#ifdef KEADEBUG
         fprintf( stderr, "Returning column (%s)\n", COLUMN_HISTOGRAM);
 #endif
     }
@@ -155,7 +155,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
         (*columnNames)[nIdx] = estr_Duplicate((char*)COLUMN_RED);
         colNames.erase(itr);
         nIdx++;
-#ifdef DEBUG
+#ifdef KEADEBUG
         fprintf( stderr, "Returning column (%s)\n", COLUMN_RED);
 #endif
     }
@@ -165,7 +165,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
         (*columnNames)[nIdx] = estr_Duplicate((char*)COLUMN_GREEN);
         colNames.erase(itr);
         nIdx++;
-#ifdef DEBUG
+#ifdef KEADEBUG
         fprintf( stderr, "Returning column (%s)\n", COLUMN_GREEN);
 #endif
     }
@@ -175,7 +175,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
         (*columnNames)[nIdx] = estr_Duplicate((char*)COLUMN_BLUE);
         colNames.erase(itr);
         nIdx++;
-#ifdef DEBUG
+#ifdef KEADEBUG
         fprintf( stderr, "Returning column (%s)\n", COLUMN_BLUE);
 #endif
     }
@@ -186,7 +186,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
         (*columnNames)[nIdx] = estr_Duplicate((char*)COLUMN_OPACITY);
         colNames.erase(itr);
         nIdx++;
-#ifdef DEBUG
+#ifdef KEADEBUG
         fprintf( stderr, "Returning column (%s)\n", COLUMN_OPACITY);
 #endif
     }
@@ -196,7 +196,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
         (*columnNames)[nIdx] = estr_Duplicate((char*)COLUMN_CLASSNAMES);
         colNames.erase(itr);
         nIdx++;
-#ifdef DEBUG
+#ifdef KEADEBUG
         fprintf( stderr, "Returning column (%s)\n", COLUMN_CLASSNAMES);
 #endif
     }
@@ -206,7 +206,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
     {
         std::string sVal = (*itr);
         (*columnNames)[nIdx] = estr_Duplicate((char*)sVal.c_str());
-#ifdef DEBUG
+#ifdef KEADEBUG
         fprintf( stderr, "Returning column (%s)\n", sVal.c_str());
 #endif
         nIdx++;
@@ -218,7 +218,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
 long 
 keaTableRowCountGet(void *tableHandle, unsigned long *rowCount)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p\n", __FUNCTION__, tableHandle);
 #endif
     kealib::KEAAttributeTable *pKEATable = (kealib::KEAAttributeTable*)tableHandle;
@@ -231,7 +231,7 @@ long
 keaColumnOpen(void *tableHandle, char *columnName, unsigned long *dataType, 
                         unsigned long *maxStringLength, void **columnHandle)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p %s\n", __FUNCTION__, tableHandle, columnName );
 #endif
     kealib::KEAAttributeTable *pKEATable = (kealib::KEAAttributeTable*)tableHandle;
@@ -308,7 +308,7 @@ keaColumnOpen(void *tableHandle, char *columnName, unsigned long *dataType,
 long 
 keaColumnClose(void *columnHandle)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p\n", __FUNCTION__, columnHandle);
 #endif
     KEA_Column *pKEAColumn = (KEA_Column*)columnHandle;
@@ -319,7 +319,7 @@ keaColumnClose(void *columnHandle)
 long
 keaColumnModTimeGet(void *columnHandle, time_t *modTime)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p\n", __FUNCTION__, columnHandle);
 #endif
     // dunno...
@@ -331,7 +331,7 @@ long
 keaColumnDataRead(void *columnHandle, unsigned long startRow, unsigned long numRows, 
                     unsigned char *data)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p %ld %ld\n", __FUNCTION__, columnHandle, startRow, numRows);
 #endif
     KEA_Column *pKEAColumn = (KEA_Column*)columnHandle;
@@ -420,7 +420,7 @@ keaColumnDataRead(void *columnHandle, unsigned long startRow, unsigned long numR
 long
 keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long numRows, unsigned char *data)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p %ld %ld\n", __FUNCTION__, columnHandle, startRow, numRows);
 #endif
     return -1;
@@ -429,7 +429,7 @@ keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long num
 long
 keaColumnDestroy(void *tableHandle, char *columnName)
 {
-#ifdef DEBUG
+#ifdef KEADEBUG
     fprintf(stderr, "%s %p %s\n", __FUNCTION__, tableHandle, columnName);
 #endif
     return -1;
