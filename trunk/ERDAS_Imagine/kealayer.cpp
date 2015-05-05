@@ -502,7 +502,6 @@ keaLayerHistogramRead(void  *lHandle, long startRow, long numRows, long *histogr
     return -1;
 }
 
-#define KEADEBUG 1
 long 
 keaLayerColorRead(void *lHandle, char *colorName, long startRow, long numRows, double *colorTable)
 {

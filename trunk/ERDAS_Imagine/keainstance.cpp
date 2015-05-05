@@ -220,12 +220,12 @@ keaInstanceDescriptionGet(char **description)
 // This is a weird one - the doco says this isn't required, yet with 
 // Imagine 2015 is still asks for the :Mask of each band and gives
 // and error when it fails.
-// So we just say it isn't supported for now.
-// The reality is a little more complicated - a KEA file has an optional
-// mask for each band, ideally we would say 'yes' and then return all zeros
-// or something for a band if it didn't have one....
+
+// We have tried implementing this as below to attempt to stop it 
+// asking for the Mask band but this results in the DLL not being loaded.
+
+// Only alternative was to implement the Mask band as we have done.
 /*
-Camo says this stops Imagine from loading KEA at all.
 long 
 keaInstanceSupportsMasks(unsigned char **flags)
 {
@@ -239,6 +239,8 @@ keaInstanceSupportsMasks(unsigned char **flags)
 }
 */
 
+// not strictly necessary I guess but the Imagine format DLL's export this
+// At some stage we are going to have to update this code to support Unicode...
 long 
 keaInstanceSupportsUnicode(void)
 {
