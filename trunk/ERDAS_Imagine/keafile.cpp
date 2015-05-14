@@ -119,7 +119,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                 pKEAFile->pImageIO = pImageIO;
                 pKEAFile->sFilePath = fileName;
                 kealib::KEAImageSpatialInfo *pSpatialInfo = pImageIO->getSpatialInfo();
-                // turn from WKT into someting Imagie understands
+                // turn from WKT into something Imagine understands
                 pKEAFile->pProj = WKTToMapProj(pSpatialInfo->wktString.c_str(), pKEAFile->sProjName, pKEAFile->sUnits);
                 pKEAFile->modTime = getModifiedTime(fileName); // for keaFileDataModTimeGet
                 pKEAFile->nLayers = 0;
@@ -150,7 +150,10 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                         KEA_Layer *pLayer = new KEA_Layer();
                         pLayer->pImageIO = pImageIO;
                         pLayer->pKEAFile = pKEAFile;
-                        pLayer->sName = pImageIO->getImageBandDescription(nBand);
+						std::string sName = pImageIO->getImageBandDescription(nBand);
+						// Imagine doesn't like spaces
+						std::replace(sName.begin(), sName.end(), ' ', '_');
+                        pLayer->sName = sName;
                         pLayer->sFilePath = pKEAFile->sFilePath;
                         pLayer->nBand = nBand;
                         pLayer->bIsOverview = false;
