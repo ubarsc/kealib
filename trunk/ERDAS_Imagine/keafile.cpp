@@ -80,11 +80,17 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
     }
 #endif
     Eerr_ErrorReport* err = NULL;
-    // don't support writing yet
+    // check if writing
     if( ( inFileMode != NULL ) && ( EFIO_MODE_CREATE( inFileMode ) == EMSC_TRUE ) )
     {
-        fprintf( stderr, "attempted to open in write mode\n" );
-        return NULL;
+        KEA_File *pKEAFile = new KEA_File();
+        pKEAFile->pH5File = NULL;
+        pKEAFile->pImageIO = NULL; // will set this on LayerCreate
+        pKEAFile->sFilePath = fileName;
+        pKEAFile->pProj = NULL;
+        pKEAFile->modTime = 0;
+        pKEAFile->bUpdate = true;
+        return pKEAFile;
     }
 
     KEA_File  *pKEAFile = NULL;
@@ -110,119 +116,118 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
             kealib::KEAImageIO *pImageIO = NULL;
             try
             {
-                pH5File = kealib::KEAImageIO::openKeaH5RDOnly( fileName );
-
+                if( ( inFileMode == NULL ) || EFIO_MODE_READONLY(inFileMode) )
+                {
+                    pH5File = kealib::KEAImageIO::openKeaH5RDOnly( fileName );
+                }
+                else
+                {
+                    pH5File = kealib::KEAImageIO::openKeaH5RW( fileName );
+                }
                 pImageIO = new kealib::KEAImageIO();
                 pImageIO->openKEAImageHeader( pH5File );
 
                 pKEAFile = new KEA_File();
+                pKEAFile->pH5File = pH5File;
                 pKEAFile->pImageIO = pImageIO;
                 pKEAFile->sFilePath = fileName;
                 kealib::KEAImageSpatialInfo *pSpatialInfo = pImageIO->getSpatialInfo();
                 // turn from WKT into something Imagine understands
                 pKEAFile->pProj = WKTToMapProj(pSpatialInfo->wktString.c_str(), pKEAFile->sProjName, pKEAFile->sUnits);
                 pKEAFile->modTime = getModifiedTime(fileName); // for keaFileDataModTimeGet
-                pKEAFile->nLayers = 0;
-                // count how many layers in total
                 uint32_t nBands = pImageIO->getNumOfImageBands();
                 for( uint32_t n = 0; n < nBands; n++ )
                 {
-                    if( IsSupportedDataType( pImageIO, n+1 ) )
-                    {
-                        pKEAFile->nLayers += 2;  // one for layer, one for mask
-                        pKEAFile->nLayers += pImageIO->getNumOfOverviews(n+1);
-                    }
-                    else
+                    uint32_t nBand = n + 1;
+                    if( !IsSupportedDataType( pImageIO, nBand ) )
                     {
                         fprintf( stderr, "Band %d has type unsupported by Imagine\n", n );
+                        continue;
                     }
-                }
-                if( pKEAFile->nLayers > 0 )
-                {
-                    // allocate the space
-                    pKEAFile->ppLayers = (KEA_Layer**)calloc(pKEAFile->nLayers, sizeof(KEA_Layer*));
-                    uint32_t nIndex = 0;
-                    for( uint32_t n = 0; n < nBands; n++ )
+                    
+                    // the 'real' layer
+                    KEA_Layer *pLayer = new KEA_Layer();
+                    pLayer->pKEAFile = pKEAFile;
+                    std::string sName = pImageIO->getImageBandDescription(nBand);
+                    // Imagine doesn't like spaces
+                    std::replace(sName.begin(), sName.end(), ' ', '_');
+                    fprintf(stderr, "added layer '%s'\n", sName.c_str());
+                    pLayer->sName = sName;
+                    pLayer->nBand = nBand;
+                    pLayer->bIsOverview = false;
+                    pLayer->bIsMask = false;
+                    pLayer->bMaskIsReal = false;
+                    pLayer->nOverview = 99999;
+                    pLayer->eKEAType = pImageIO->getImageBandDataType(nBand);
+                    pLayer->nXSize = pSpatialInfo->xSize;
+                    pLayer->nYSize = pSpatialInfo->ySize;
+                    pLayer->nBlockSize = pImageIO->getImageBlockSize(nBand);
+                    pKEAFile->aLayers.push_back(pLayer);
+                    
+                    // mask - Imagine 2015 requires us to have one for each band
+                    KEA_Layer *pMask = new KEA_Layer();
+                    pMask->pKEAFile = pKEAFile;
+                    char *name = estr_Sprintf( NULL, (char*)"%s:Mask", &err, 
+                                sName.c_str(), NULL );
+                    HANDLE_ERR(err, NULL);
+                    pMask->sName = name;
+                    emsc_Free(name);
+                    pMask->nBand = nBand;
+                    pMask->bIsOverview = false;
+                    pMask->bIsMask = true;
+                    pMask->bMaskIsReal = pImageIO->maskCreated(nBand);
+                    pMask->nOverview = 99999;
+                    pMask->eKEAType = kealib::kea_8uint;
+                    pMask->nXSize = pSpatialInfo->xSize;
+                    pMask->nYSize = pSpatialInfo->ySize;
+                    pMask->nBlockSize = pImageIO->getImageBlockSize(nBand);
+                    pKEAFile->aLayers.push_back(pMask);
+                    
+                    // do the overviews
+                    unsigned int nOverViews = pImageIO->getNumOfOverviews(nBand);
+                    for(unsigned int o = 0; o < nOverViews; o++ )
                     {
-                        uint32_t nBand = n + 1;
-                        if( !IsSupportedDataType( pImageIO, nBand ) )
-                            continue;
-                        KEA_Layer *pLayer = new KEA_Layer();
-                        pLayer->pImageIO = pImageIO;
-                        pLayer->pKEAFile = pKEAFile;
-						std::string sName = pImageIO->getImageBandDescription(nBand);
-						// Imagine doesn't like spaces
-						std::replace(sName.begin(), sName.end(), ' ', '_');
-                        pLayer->sName = sName;
-                        pLayer->sFilePath = pKEAFile->sFilePath;
-                        pLayer->nBand = nBand;
-                        pLayer->bIsOverview = false;
-                        pLayer->bIsMask = false;
-                        pLayer->bMaskIsReal = false;
-                        pLayer->nOverview = 99999;
-                        pLayer->eKEAType = pImageIO->getImageBandDataType(nBand);
-                        pLayer->nXSize = pSpatialInfo->xSize;
-                        pLayer->nYSize = pSpatialInfo->ySize;
-                        pLayer->nBlockSize = pImageIO->getImageBlockSize(nBand);
-                        //fprintf( stderr, "Adding Band %s blocksize %d\n", pLayer->sName.c_str(), pLayer->nBlockSize);
-                        pKEAFile->ppLayers[nIndex] = pLayer;
-                        nIndex++;
+                        unsigned int nOverview = o + 1;
+                        KEA_Layer *pOverview = new KEA_Layer();
+                        pOverview->pKEAFile = pKEAFile;
+                        char *name = estr_Sprintf( NULL, (char*)"%s:Overview_%d", &err, 
+                                sName.c_str(), nOverview, NULL );
+                        HANDLE_ERR(err, NULL);
+                        pOverview->sName = name;
+                        emsc_Free(name);
+                        pOverview->nBand = nBand;
+                        pOverview->bIsOverview = true;
+                        pOverview->bIsMask = false;
+                        pOverview->bMaskIsReal = false;
+                        pOverview->nOverview = nOverview;
+                        pOverview->eKEAType = pLayer->eKEAType;
+                        uint64_t xsize, ysize;
+                        pImageIO->getOverviewSize(nBand, nOverview, &xsize, &ysize);
+                        pOverview->nXSize = xsize;
+                        pOverview->nYSize = ysize;
+                        pOverview->nBlockSize = pImageIO->getOverviewBlockSize(nBand, nOverview);
+                        pKEAFile->aLayers.push_back(pOverview);
                         
-                        // mask
-                        KEA_Layer *pMask = new KEA_Layer();
-                        pMask->pImageIO = pImageIO;
-                        pMask->pKEAFile = pKEAFile;
-                        char *name = estr_Sprintf( NULL, (char*)"%s:Mask", &err, 
-                                    pLayer->sName.c_str(), NULL );
-                        pMask->sName = name;
-                        pMask->sFilePath = pKEAFile->sFilePath;
-                        pMask->nBand = nBand;
-                        pMask->bIsOverview = false;
-                        pMask->bIsMask = true;
-                        pMask->bMaskIsReal = pImageIO->maskCreated(nBand);
-                        pMask->nOverview = 99999;
-                        pMask->eKEAType = kealib::kea_8uint;
-                        pMask->nXSize = pSpatialInfo->xSize;
-                        pMask->nYSize = pSpatialInfo->ySize;
-                        pMask->nBlockSize = pImageIO->getImageBlockSize(nBand);
-                        //fprintf( stderr, "Adding Band %s blocksize %d\n", pLayer->sName.c_str(), pLayer->nBlockSize);
-                        pKEAFile->ppLayers[nIndex] = pMask;
-                        nIndex++;
-
-                        // do the overviews
-                        unsigned int nOverViews = pImageIO->getNumOfOverviews(nBand);
-                        for(unsigned int o = 0; o < nOverViews; o++ )
-                        {
-                            unsigned int nOverview = o + 1;
-                            KEA_Layer *pOverview = new KEA_Layer();
-                            pOverview->pImageIO = pImageIO;
-                            pOverview->pKEAFile = pKEAFile;
-                            char *name = estr_Sprintf( NULL, (char*)"%s:Overview_%d", &err, 
-                                    pLayer->sName.c_str(), nOverview, NULL );
-                            HANDLE_ERR(err, NULL);
-                            pOverview->sName = name;
-                            emsc_Free(name);
-                            pOverview->sFilePath = pKEAFile->sFilePath;
-                            pOverview->nBand = nBand;
-                            pOverview->bIsOverview = true;
-                            pOverview->bIsMask = false;
-                            pOverview->bMaskIsReal = false;
-                            pOverview->nOverview = nOverview;
-                            pOverview->eKEAType = pLayer->eKEAType;
-                            uint64_t xsize, ysize;
-                            pImageIO->getOverviewSize(nBand, nOverview, &xsize, &ysize);
-                            pOverview->nXSize = xsize;
-                            pOverview->nYSize = ysize;
-                            pOverview->nBlockSize = pImageIO->getOverviewBlockSize(nBand, nOverview);
-                            //fprintf( stderr, "Adding overview %s %d\n", pOverview->sName.c_str(), pOverview->nBlockSize );
-                            pKEAFile->ppLayers[nIndex] = pOverview;
-                            nIndex++;
-                        }
+                        // mask for the overview
+                        KEA_Layer *pOverviewMask = new KEA_Layer();
+                        pOverviewMask->pKEAFile = pKEAFile;
+                        name = estr_Sprintf( NULL, (char*)"%s:Overview_%d:Mask", &err, 
+                                sName.c_str(), nOverview, NULL );
+                        HANDLE_ERR(err, NULL);
+                        pOverviewMask->sName = name;
+                        emsc_Free(name);
+                        pOverviewMask->nBand = nBand;
+                        pOverviewMask->bIsOverview = true;
+                        pOverviewMask->bIsMask = true;
+                        pOverviewMask->bMaskIsReal = false;
+                        pOverviewMask->nOverview = nOverview;
+                        pOverviewMask->eKEAType = kealib::kea_8uint;
+                        pImageIO->getOverviewSize(nBand, nOverview, &xsize, &ysize);
+                        pOverviewMask->nXSize = xsize;
+                        pOverviewMask->nYSize = ysize;
+                        pOverviewMask->nBlockSize = pImageIO->getOverviewBlockSize(nBand, nOverview);
+                        pKEAFile->aLayers.push_back(pOverviewMask);
                     }
-                }
-                else
-                {
-                    pKEAFile->ppLayers = NULL;
                 }
             }
             catch (kealib::KEAIOException &e)
@@ -255,7 +260,12 @@ keaFileClose(void *fileHandle)
 
     try
     {
-        pKEAFile->pImageIO->close();
+        if( pKEAFile->pImageIO != NULL )
+        {
+            // closes the pKEAFile->pH5File also
+            pKEAFile->pImageIO->close();
+            pKEAFile->pH5File = NULL;
+        }
     }
     catch (kealib::KEAIOException &e)
     {
@@ -263,14 +273,12 @@ keaFileClose(void *fileHandle)
     }
     delete pKEAFile->pImageIO;
     pKEAFile->pImageIO = NULL;
-    for( unsigned int n = 0; n < pKEAFile->nLayers; n++ )
+    for( std::vector<KEA_Layer*>::iterator itr = pKEAFile->aLayers.begin();
+            itr != pKEAFile->aLayers.end(); itr++ )
     {
-        pKEAFile->ppLayers[n]->pKEAFile = NULL;
-        delete pKEAFile->ppLayers[n];
-        pKEAFile->ppLayers[n] = NULL;
+        KEA_Layer *pLayer = (*itr);
+        delete pLayer;
     }
-    free(pKEAFile->ppLayers);
-    pKEAFile->ppLayers = NULL;
 
     if( pKEAFile->pProj != NULL )
     {
@@ -293,10 +301,11 @@ keaFileLayerNamesGet(void *fileHandle, unsigned long *count, char ***layerNames)
     unsigned long layerCount = 0;
 
     // work out how many we have
-    for( unsigned int n = 0; n < pKEAFile->nLayers; n++ )
+    for( std::vector<KEA_Layer*>::iterator itr = pKEAFile->aLayers.begin();
+            itr != pKEAFile->aLayers.end(); itr++ )
     {
-        KEA_Layer *pCandidate = pKEAFile->ppLayers[n];
-        if( !pCandidate->bIsOverview )
+        KEA_Layer *pCandidate = (*itr);
+        if( !pCandidate->bIsOverview && !pCandidate->bIsMask )
         {
             layerCount++;
         }
@@ -308,10 +317,11 @@ keaFileLayerNamesGet(void *fileHandle, unsigned long *count, char ***layerNames)
         *layerNames = emsc_New(layerCount, char *);
         layerCount = 0;
 
-        for( unsigned int n = 0; n < pKEAFile->nLayers; n++ )
+        for( std::vector<KEA_Layer*>::iterator itr = pKEAFile->aLayers.begin();
+            itr != pKEAFile->aLayers.end(); itr++ )
         {
-            KEA_Layer *pCandidate = pKEAFile->ppLayers[n];
-            if( !pCandidate->bIsOverview )
+            KEA_Layer *pCandidate = (*itr);
+            if( !pCandidate->bIsOverview && !pCandidate->bIsMask )
             {
                 (*layerNames)[layerCount] = estr_Duplicate((char*)pCandidate->sName.c_str());
                 layerCount++;
@@ -350,7 +360,9 @@ keaFileDataRead(void *fileHandle, char *dataName, unsigned char **MIFDataObject,
     // is it looking for the bin function?
     if( ( pszLastColon != NULL ) &&  ( strcmp(pszLastColon+1, "#Bin_Function#") == 0 ) )
     {
-        //fprintf( stderr, "Found #Bin_Function# %s\n", pszNameCopy );
+#ifdef KEADEBUG        
+        fprintf( stderr, "Found #Bin_Function# %s\n", pszNameCopy );
+#endif        
         *pszLastColon = '\0'; // put a null there and look at the next one back
         pszLastColon = strrchr(pszNameCopy, ':');
         if( ( pszLastColon != NULL ) && (strcmp(pszLastColon+1, "Descriptor_Table" ) == 0 ) )
@@ -362,8 +374,9 @@ keaFileDataRead(void *fileHandle, char *dataName, unsigned char **MIFDataObject,
             {
                 *pszSecondColon = '\0';
                 char *pszLayerName = &pszNameCopy[1];
-                //fprintf( stderr, "looking for layer %s\n", pszLayerName );
-
+#ifdef KEADEBUG                
+                fprintf( stderr, "looking for layer %s\n", pszLayerName );
+#endif
                 unsigned long dtype, width, height, bWidth, bHeight, compression;
                 KEA_Layer *pKEALayer;
                 if( keaLayerOpen(fileHandle, pszLayerName, &dtype, &width, &height, 
@@ -373,7 +386,9 @@ keaFileDataRead(void *fileHandle, char *dataName, unsigned char **MIFDataObject,
                     Edsc_BinFunction *pBinFn = keaLayerGetHistoBinFunction(pKEALayer);
                     if( pBinFn != NULL )
                     {
-                        //fprintf( stderr, "Found bin function\n" );
+#ifdef KEADEBUG
+                        fprintf( stderr, "Found bin function\n" );
+#endif                        
                         // make 'MIFable'
                         EMIF_CADDR *pMIFableObject;
                         Emif_Design *pDesign;
@@ -416,10 +431,51 @@ keaFileDataRead(void *fileHandle, char *dataName, unsigned char **MIFDataObject,
         }
     }
     emsc_Free(pszNameCopy);
-
+#ifdef KEADEBUG
+    if( *MIFDataSize == 0 )
+    {
+        fprintf(stderr, "bin function NOT found\n");
+    }
+#endif
     return 0;
 }
 
+long
+keaFileDataWrite( void  *fileHandle, char  *dataName,  unsigned char  *MIFDataObject, 
+    unsigned long  MIFDataSize, char  *MIFDataDictionary, char  *MIFDataType )
+{
+#ifdef KEADEBUG
+    fprintf(stderr, "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
+#endif
+        
+    return 0;
+}
+
+long
+keaFileDataDestroy(void *fileHandle, char *dataName )
+{
+#ifdef KEADEBUG
+    fprintf(stderr, "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
+#endif
+    
+    return 0;
+}
+
+long
+keaFileFlush( void *fileHandle )    
+{
+#ifdef KEADEBUG
+    fprintf(stderr, "%s\n", __FUNCTION__ );
+#endif
+    KEA_File *pKEAFile = (KEA_File*)fileHandle;
+    if( pKEAFile->pH5File != NULL )
+    {
+        pKEAFile->pH5File->flush(H5F_SCOPE_LOCAL);
+    }
+    
+    return 0;
+}
+    
 long
 keaFileDataModTimeGet(void *fileHandle, char *dataName, time_t *lastModTime)
 {
@@ -434,6 +490,44 @@ keaFileDataModTimeGet(void *fileHandle, char *dataName, time_t *lastModTime)
     return 0;
 }
 
+long
+keaFileLayerNamesSet( void  *fileHandle,  unsigned long  count, 
+ char  **oldLayerNames, char  **newLayerNames )
+{
+#ifdef KEADEBUG
+    fprintf(stderr, "%s %p %ld\n", __FUNCTION__, fileHandle, count );
+#endif
+    KEA_File *pKEAFile = (KEA_File*)fileHandle;
+    
+    for( unsigned long oldN = 0; oldN < count; oldN++ )
+    {
+        char *pszOldName = oldLayerNames[oldN];
+        for( std::vector<KEA_Layer*>::iterator itr = pKEAFile->aLayers.begin();
+            itr != pKEAFile->aLayers.end(); itr++ )
+        {
+            KEA_Layer *pLayer = (*itr);
+            if( pLayer->sName == pszOldName )
+            {
+                unsigned int nBand = pLayer->nBand;
+                char *pszNewName = newLayerNames[oldN];
+                try
+                {
+                    pKEAFile->pImageIO->setImageBandDescription(nBand, pszNewName);
+                    pLayer->sName = pszNewName;
+                }
+                catch (kealib::KEAIOException &e)
+                {
+#ifdef KEADEBUG
+                    fprintf( stderr, "Error during renaming: %s\n", e.what());
+#endif           
+                }   
+            }
+        }
+    }
+    return 0;
+}
+
+
 long 
 keaFileRasterDataOrderGet(void  *fileHandle, unsigned long  *order)
 {
@@ -445,6 +539,17 @@ keaFileRasterDataOrderGet(void  *fileHandle, unsigned long  *order)
     return 0;
 }
 
+long
+keaFileRasterDataOrderSet( void  *fileHandle,  unsigned long  order, 
+ unsigned long  count)
+{
+#ifdef KEADEBUG
+    fprintf(stderr, "%s %p\n", __FUNCTION__, fileHandle );
+#endif
+    // we don't support changing this so just pretend we succeeded
+    return 0;
+}
+ 
 // Don't need to implement the following. Yes I know keaFileModeGet
 // might be a way to get around the file size limit in the open dialog
 // in early versions of Imagine - but it was only added to Imagine later

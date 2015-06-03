@@ -49,6 +49,7 @@ keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **t
 #ifdef KEADEBUG
     fprintf(stderr, "%s %p %s\n", __FUNCTION__, fileHandle, tableName );
 #endif
+    long rCode = -1;
     // tableName will be in the form:
     // :LayerName:Descriptor_Table
     // or:
@@ -74,12 +75,14 @@ keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **t
             if( keaLayerOpen(fileHandle, pszLayerName, &dtype, &width, &height, 
                                 &compression, &bWidth, &bHeight, (void**)&pKEALayer) == 0 )
             {
-                if( pKEALayer->pImageIO->attributeTablePresent(pKEALayer->nBand) )
+                kealib::KEAImageIO *pImageIO = pKEALayer->getImageIO();
+                if( pImageIO->attributeTablePresent(pKEALayer->nBand) )
                 {
                     try
                     {
-                        pKEATable = pKEALayer->pImageIO->getAttributeTable(kealib::kea_att_file, pKEALayer->nBand);
+                        pKEATable = pImageIO->getAttributeTable(kealib::kea_att_file, pKEALayer->nBand);
                         *numRows = pKEATable->getSize();
+                        rCode = 0;
                         //fprintf( stderr, "numrows = %ld\n", *numRows);
                     }
                     catch(kealib::KEAException &e)
@@ -87,11 +90,13 @@ keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **t
                         fprintf(stderr, "Error in %s: %s\n", __FUNCTION__, e.what());
                         delete pKEATable;
                         pKEATable = NULL;
+                        rCode = -1;
                     }
                 }
                 else
                 {
                     //fprintf( stderr, "No RAT present\n" );
+                    rCode = 0; // no an error according to docs
                 }
                 // does nothing, but for completeness
                 // Note we keep the RAT around so not sure this is right anyway
@@ -100,6 +105,7 @@ keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **t
             else
             {
                 fprintf( stderr, "Unable to find layer %s when looking for table\b", pszLayerName);
+                rCode = -1;
             }
             free(pszLayerName);
         }
@@ -108,7 +114,7 @@ keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **t
     fprintf( stderr, "%s returning %p\n", __FUNCTION__, pKEATable);
 #endif
     *tableHandle = pKEATable;
-    return 0;
+    return rCode;
 }
 
 long
@@ -118,11 +124,80 @@ keaTableClose(void *tableHandle)
     fprintf(stderr, "%s %p\n", __FUNCTION__, tableHandle );
 #endif
     kealib::KEAAttributeTable *pKEATable = (kealib::KEAAttributeTable*)tableHandle;
-    delete pKEATable;
+    kealib::KEAAttributeTable::destroyAttributeTable(pKEATable);
 
     return 0;
 }
 
+long
+keaTableCreate(void  *dataSource, char  *tableName, unsigned long  numRows, 
+ void  **tableHandle)
+{
+#ifdef KEADEBUG
+    fprintf(stderr, "%s %p %s\n", __FUNCTION__, dataSource, tableName );
+#endif
+    long rCode = -1;
+    // tableName will be in the form:
+    // :LayerName:Descriptor_Table
+    // or:
+    // :LayerName:OverviewName:Descriptor_Table
+
+    // we will assume dataSource is always a KEA_File - seems to be the case
+    KEA_File *pKEAFile = (KEA_File*)dataSource;
+    kealib::KEAAttributeTable *pKEATable = NULL;
+    char *pszLastColon = strrchr(tableName, ':');
+    if( pszLastColon != NULL )
+    {
+        //fprintf( stderr, "Table name: %s\n", pszLastColon+1);
+        // Imagine always asks for this one, so perhaps don't need to check
+        if( strcmp(pszLastColon+1, "Descriptor_Table") == 0 )
+        {
+            int nNameLen = pszLastColon - tableName;
+            char *pszLayerName = (char*)malloc((nNameLen + 1) * sizeof(char));
+            strncpy(pszLayerName, &tableName[1], nNameLen - 1);
+            pszLayerName[nNameLen - 1] = '\0';
+
+            unsigned long dtype, width, height, bWidth, bHeight, compression;
+            KEA_Layer *pKEALayer;
+            if( keaLayerOpen(dataSource, pszLayerName, &dtype, &width, &height, 
+                                &compression, &bWidth, &bHeight, (void**)&pKEALayer) == 0 )
+            {
+                kealib::KEAImageIO *pImageIO = pKEALayer->getImageIO();
+                if( !pImageIO->attributeTablePresent(pKEALayer->nBand) )
+                {
+                    try
+                    {
+                        pKEATable = pImageIO->getAttributeTable(kealib::kea_att_file, pKEALayer->nBand);
+                        pKEATable->addRows(numRows);
+                    }
+                    catch(kealib::KEAException &e)
+                    {
+                        fprintf(stderr, "Error in %s: %s\n", __FUNCTION__, e.what());
+                        rCode = -1;
+                    }
+                }
+                else
+                {
+                    // already exists
+                    rCode = -1;
+                }
+            }
+            else
+            {
+                fprintf( stderr, "Unable to find layer %s when looking for table\b", pszLayerName);
+                rCode = -1;
+            }
+            free(pszLayerName);
+        }
+    }
+#ifdef KEADEBUG
+    fprintf( stderr, "%s returning %p\n", __FUNCTION__, pKEATable);
+#endif
+    *tableHandle = pKEATable;
+    return rCode;
+}
+ 
+ 
 long
 keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNames)
 {
@@ -215,6 +290,16 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
     return 0;
 }
 
+/*
+KEA doesn't currently have the ability to rename layers so don't implement this one
+long
+keaTableColumnNamesSet(void  *tableHandle,  unsigned long  count, 
+char  **oldColumnNames, char  **newColumnNames)
+{
+    
+}
+*/
+
 long 
 keaTableRowCountGet(void *tableHandle, unsigned long *rowCount)
 {
@@ -226,6 +311,30 @@ keaTableRowCountGet(void *tableHandle, unsigned long *rowCount)
 
     return 0;
 }
+
+long
+keaTableRowCountSet(void  *tableHandle, unsigned long  rowCount)
+{
+#ifdef KEADEBUG
+    fprintf(stderr, "%s %p\n", __FUNCTION__, tableHandle);
+#endif    
+    kealib::KEAAttributeTable *pKEATable = (kealib::KEAAttributeTable*)tableHandle;
+    // can only grow a table with KEA
+    size_t nCurrSize = pKEATable->getSize();
+    if( rowCount > nCurrSize )
+    {
+        pKEATable->addRows(rowCount - nCurrSize);
+    }
+    return 0;
+}
+
+/*
+KEA doesn't support this...
+long
+keaTableDestroy(void  *dataSource,  char  *tableName)
+{
+}
+*/
 
 long 
 keaColumnOpen(void *tableHandle, char *columnName, unsigned long *dataType, 
@@ -316,6 +425,109 @@ keaColumnClose(void *columnHandle)
     return 0;
 }
 
+long
+keaColumnCreate(void  *tableHandle, char  *columnName, 
+ unsigned long  dataType, unsigned long  maxStringLength, 
+ void  **columnHandle)
+{
+#ifdef KEADEBUG
+    fprintf(stderr, "%s %p %s\n", __FUNCTION__, tableHandle, columnName );
+#endif
+    kealib::KEAAttributeTable *pKEATable = (kealib::KEAAttributeTable*)tableHandle;
+    long rCode = -1;
+    size_t nColIdx = 0;
+    bool bTreatIntAsFloat = false;
+    kealib::KEAFieldDataType ktype = (kealib::KEAFieldDataType)dataType;
+
+    std::string sColumnName = columnName;
+    if( sColumnName == COLUMN_OPACITY )
+        sColumnName = COLUMN_ALPHA; // KEA uses Alpha
+        
+    if( (dataType == kealib::kea_att_na) || (dataType == kealib::kea_att_bool) ||
+        (dataType == kealib::kea_att_int) )
+    {
+        // match keaInstanceColumnTypesGet - all these types are reported as integer
+        try
+        {
+            pKEATable->addAttIntField(sColumnName, 0, "Generic");
+            nColIdx = pKEATable->getFieldIndex(sColumnName);
+            rCode = 0;
+            ktype = kealib::kea_att_int;
+        }
+        catch(kealib::KEAException &e)
+        {
+            fprintf(stderr, "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+        }            
+    }
+    else if( dataType == kealib::kea_att_float )
+    {
+        std::string sUsage = "Generic";
+        if( sColumnName == COLUMN_HISTOGRAM )
+        {
+            sUsage = "PixelCount";
+        }
+        else if( ( sColumnName == COLUMN_RED ) || ( sColumnName == COLUMN_GREEN ) || 
+            ( sColumnName == COLUMN_BLUE ) || ( sColumnName == COLUMN_ALPHA ) )
+        {
+            // KEA saves this as int
+            bTreatIntAsFloat = true;
+            try
+            {
+                // column name happens to match KEA usage
+                pKEATable->addAttIntField(sColumnName, 0, sColumnName);
+                nColIdx = pKEATable->getFieldIndex(sColumnName);
+                rCode = 0;  
+            }
+            catch(kealib::KEAException &e)
+            {
+                fprintf(stderr, "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+            }      
+        }
+        
+        try
+        {
+            pKEATable->addAttFloatField(sColumnName, 0.0, sUsage);
+            nColIdx = pKEATable->getFieldIndex(sColumnName);
+            rCode = 0; 
+        }
+        catch(kealib::KEAException &e)
+        {
+            fprintf(stderr, "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+        }  
+    }
+    else
+    {
+        // string
+        std::string sUsage = "Generic";
+        if( sColumnName == COLUMN_CLASSNAMES )
+        {
+            sUsage = "Name";
+        }
+        try
+        {
+            pKEATable->addAttStringField(sColumnName, "", sUsage);
+            nColIdx = pKEATable->getFieldIndex(sColumnName);
+            rCode = 0; 
+        }
+        catch(kealib::KEAException &e)
+        {
+            fprintf(stderr, "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+        }
+    }
+
+    if( rCode == 0 )
+    {
+        KEA_Column *pKEAColumn = new KEA_Column();
+        pKEAColumn->pKEATable = pKEATable;
+        pKEAColumn->nColIdx = nColIdx;
+        pKEAColumn->eType = ktype;
+        pKEAColumn->bTreatIntAsFloat = bTreatIntAsFloat;
+        
+        *columnHandle = pKEAColumn;
+    }
+    return rCode;
+}
+ 
 long
 keaColumnModTimeGet(void *columnHandle, time_t *modTime)
 {
@@ -416,14 +628,95 @@ keaColumnDataRead(void *columnHandle, unsigned long startRow, unsigned long numR
     return rCode;
 }
 
-// the following just need to exist before it will look at the RAT for some reason...
 long
 keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long numRows, unsigned char *data)
 {
 #ifdef KEADEBUG
     fprintf(stderr, "%s %p %ld %ld\n", __FUNCTION__, columnHandle, startRow, numRows);
 #endif
-    return -1;
+    KEA_Column *pKEAColumn = (KEA_Column*)columnHandle;
+    kealib::KEAAttributeTable *pKEATable = pKEAColumn->pKEATable;
+    //fprintf( stderr, "Column name = %s\n", pKEAColumn->sName.c_str());
+    long rCode = -1;
+
+    int32_t *pIntData = (int32_t*)data;
+    double *pDoubleData = (double*)data;
+    char **ppszStringData = (char**)data;
+
+    try
+    {
+        switch(pKEAColumn->eType)
+        {
+            case kealib::kea_att_bool:
+            {
+                // need to write as bools - alloc mem
+                bool *pBoolData = (bool*)malloc(numRows * sizeof(bool));
+                if( pBoolData == NULL )
+                    return -1;
+
+                for( unsigned long n = 0; n < numRows; n++ )
+                    pBoolData[n] = pIntData[n] > 0;
+                
+                pKEATable->setBoolFields(startRow, numRows, pKEAColumn->nColIdx, pBoolData);
+
+                free(pBoolData);
+            }
+            break;
+            case kealib::kea_att_int:
+            {
+                // write as int64_t so we need buffer
+                int64_t *pInt64Data = (int64_t*)malloc(numRows * sizeof(int64_t));
+                if( pInt64Data == NULL )
+                    return -1;
+
+                for( unsigned long n = 0; n < numRows; n++ )
+                    pInt64Data[n] = pIntData[n];
+ 
+                pKEATable->setIntFields(startRow, numRows, pKEAColumn->nColIdx, pInt64Data);
+                free(pInt64Data);
+            }
+            break;
+            case kealib::kea_att_float:
+            {
+                if( pKEAColumn->bTreatIntAsFloat )
+                {
+                    // write as int64_t so we need buffer
+                    int64_t *pInt64Data = (int64_t*)malloc(numRows * sizeof(int64_t));
+                    if( pInt64Data == NULL )
+                        return -1;
+
+                    for( unsigned long n = 0; n < numRows; n++ )
+                        pInt64Data[n] = pDoubleData[n] * 255;
+                    
+                    pKEATable->setIntFields(startRow, numRows, pKEAColumn->nColIdx, pInt64Data);
+                    free(pInt64Data);
+                }
+                pKEATable->setFloatFields(startRow, numRows, pKEAColumn->nColIdx, pDoubleData);
+            }
+            break;
+
+            case kealib::kea_att_string:
+                {
+					std::vector<std::string> aStrings;
+                    for( unsigned long i = 0; i < numRows; i++ )
+                        aStrings.push_back(ppszStringData[i]);
+                    
+					pKEATable->setStringFields(startRow, numRows, pKEAColumn->nColIdx, &aStrings);
+				}
+                break;
+
+            default:
+                fprintf( stderr, "Unknown column type: %d\n", pKEAColumn->eType);
+                break;
+        }
+
+        rCode = 0;
+    }
+    catch(kealib::KEAException &e)
+    {
+        fprintf(stderr, "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+    }
+    return rCode;
 }
 
 long

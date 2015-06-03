@@ -77,26 +77,43 @@ class KEA_Layer;
 class KEA_File
 {
 public:
-    kealib::KEAImageIO *pImageIO;
+    H5::H5File *pH5File;  // NULL if not created yet
+    kealib::KEAImageIO *pImageIO; // NULL if not created yet
     std::string       sFilePath;
-    unsigned int     nLayers;
     Eprj_MapProjection* pProj;
     std::string sUnits;
     std::string sProjName;
+    bool        bUpdate;
     time_t  modTime;    // maybe should have whole _stat struct here, not sure.
                         // Put it here for keaDataModTimeGet
     // all the layers and overviews mixed together
-    KEA_Layer **ppLayers;
+    std::vector<KEA_Layer*> aLayers;
 };
 
 class KEA_Layer
 {
 public:
-    kealib::KEAImageIO *pImageIO;
+    kealib::KEAImageIO *getImageIO()
+    {
+        kealib::KEAImageIO *pIO = NULL;
+        if( pKEAFile != NULL )
+        {
+            pIO = pKEAFile->pImageIO;
+        }
+        return pIO;
+    }
+    std::string getFilePath()
+    {
+        std::string filePath;
+        if( pKEAFile != NULL )
+        {
+            filePath = pKEAFile->sFilePath;
+        }
+        return filePath;
+    }
     KEA_File           *pKEAFile; 
-    std::string         sName;
-    std::string         sFilePath;
-	unsigned int		nBand;
+    std::string         sName;   // as presented to Imagine
+	unsigned int		nBand;  // in ImageIO land
 
     bool                bIsOverview;
     bool                bIsMask;

@@ -221,11 +221,8 @@ keaInstanceDescriptionGet(char **description)
 // Imagine 2015 is still asks for the :Mask of each band and gives
 // and error when it fails.
 
-// We have tried implementing this as below to attempt to stop it 
-// asking for the Mask band but this results in the DLL not being loaded.
-
 // Only alternative was to implement the Mask band as we have done.
-/*
+
 long 
 keaInstanceSupportsMasks(unsigned char **flags)
 {
@@ -233,11 +230,11 @@ keaInstanceSupportsMasks(unsigned char **flags)
     fprintf(stderr, "%s\n", __FUNCTION__ );
 #endif
     *flags = emsc_New(1, unsigned char);
-    (*flags)[0] = 0;
+    (*flags)[0] = 1;
     return 0; /* success in Imagine land usually *
-                /* The doco says this is a void function which doesn't match the header *
+                /* The doco says this is a void function which doesn't match the header */
 }
-*/
+
 
 // not strictly necessary I guess but the Imagine format DLL's export this
 // At some stage we are going to have to update this code to support Unicode...
