@@ -37,7 +37,7 @@ keaLayerOpen(void *fHandle, char *lName, unsigned long *pType, unsigned long *wi
 		unsigned long *bWidth, unsigned long *bHeight, void **lHandle)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %s %p\n", __FUNCTION__, lName, fHandle );
+    keaDebugOut( "%s %s %p\n", __FUNCTION__, lName, fHandle );
 #endif
     KEA_File *pKEAFile = (KEA_File*)fHandle;
     long rCode = -1;
@@ -51,7 +51,7 @@ keaLayerOpen(void *fHandle, char *lName, unsigned long *pType, unsigned long *wi
         // Imagine does some very weird things - this is a workaround.
         sName.replace(pos, sSearch.length(), ":Mask");
 #ifdef KEADEBUG
-        fprintf(stderr, "Converted %s -> %s in layer name\n", lName, sName.c_str());
+        keaDebugOut( "Converted %s -> %s in layer name\n", lName, sName.c_str());
 #endif        
     }
     
@@ -70,6 +70,9 @@ keaLayerOpen(void *fHandle, char *lName, unsigned long *pType, unsigned long *wi
             *bHeight = pLayer->nBlockSize;
             *lHandle = pLayer;
             rCode = 0;
+#ifdef KEADEBUG
+            keaDebugOut( "%s returning %p\n", __FUNCTION__, pLayer );
+#endif
         }
     }
     if( pLayer == NULL )
@@ -87,7 +90,7 @@ keaLayerClose(void *lHandle)
 {
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %s %p\n", __FUNCTION__, pLayer->sName.c_str(), pLayer );
+    keaDebugOut( "%s %s %p\n", __FUNCTION__, pLayer->sName.c_str(), pLayer );
 #endif
     // do nothing since the layers are owned by the dataset
 	return 0;
@@ -105,7 +108,7 @@ keaLayerCreate(void  *fileHandle,  /* Input */
  void  **layerHandle  /* Output */)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p %ld %ld\n", __FUNCTION__, fileHandle, width, height);
+    keaDebugOut( "%s %p %ld %ld\n", __FUNCTION__, fileHandle, width, height);
 #endif
     long rCode = -1;    
     KEA_File *pKEAFile = (KEA_File*)fileHandle;
@@ -149,7 +152,7 @@ keaLayerCreate(void  *fileHandle,  /* Input */
         } 
         catch (kealib::KEAIOException &e) 
         {
-            fprintf(stderr, "layer creation failed: %s\n", e.what());
+            keaDebugOut( "layer creation failed: %s\n", e.what());
             return -1;
         }
     }
@@ -170,7 +173,7 @@ keaLayerCreate(void  *fileHandle,  /* Input */
         std::string sName = pImageIO->getImageBandDescription(nBand);
         // Imagine doesn't like spaces
         std::replace(sName.begin(), sName.end(), ' ', '_');
-        fprintf(stderr, "added layer '%s'\n", sName.c_str());
+        keaDebugOut( "added layer '%s'\n", sName.c_str());
         pLayer->sName = sName;
         pLayer->nBand = nBand;
         pLayer->bIsOverview = bIsOverview;
@@ -181,6 +184,7 @@ keaLayerCreate(void  *fileHandle,  /* Input */
         pLayer->nXSize = width;
         pLayer->nYSize = height;
         pLayer->nBlockSize = pImageIO->getImageBlockSize(nBand);
+        pLayer->pKEAFile = pKEAFile;
         pKEAFile->aLayers.push_back(pLayer);
         
         // mask - Imagine 2015 requires us to have one for each band
@@ -200,6 +204,7 @@ keaLayerCreate(void  *fileHandle,  /* Input */
         pMask->nXSize = width;
         pMask->nYSize = height;
         pMask->nBlockSize = pImageIO->getImageBlockSize(nBand);
+        pMask->pKEAFile = pKEAFile;
         pKEAFile->aLayers.push_back(pMask);
         
         *bWidth = pLayer->nBlockSize;
@@ -211,11 +216,23 @@ keaLayerCreate(void  *fileHandle,  /* Input */
     return rCode;
 }
 
+// This function needs to exist before Imagine will 
+// write to KEA. But KEA doesn't support layer deletion
+// so we return an error.
+long
+keaLayerDestroy(void *fHandle, char *layerName)
+{
+#ifdef KEADEBUG
+    keaDebugOut( "%s %p\n", __FUNCTION__, fHandle);
+#endif
+    return -1;
+}
+
 long
 keaLayerRasterRead(void	*lHandle, unsigned long	bRow, unsigned long bCol, unsigned char	**pixels)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %ld %ld %p %p\n", __FUNCTION__, bRow, bCol, *pixels, lHandle);
+    keaDebugOut( "%s %ld %ld %p %p\n", __FUNCTION__, bRow, bCol, *pixels, lHandle);
 #endif
     long rCode = -1;
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
@@ -290,7 +307,7 @@ keaLayerRasterRead(void	*lHandle, unsigned long	bRow, unsigned long bCol, unsign
     }
     catch (kealib::KEAIOException &e)
     {
-        fprintf(stderr, "Exception in %s: %s\n", __FUNCTION__, e.what());
+        keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
         rCode = -1;
     }
 	return rCode;
@@ -300,7 +317,7 @@ long
 keaLayerRasterWrite(void *lHandle, unsigned long bRow, unsigned long bCol, unsigned char *pixels)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %ld %ld %p %p\n", __FUNCTION__, bRow, bCol, *pixels, lHandle);
+    keaDebugOut( "%s %ld %ld %p %p\n", __FUNCTION__, bRow, bCol, *pixels, lHandle);
 #endif
     long rCode = -1;
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
@@ -386,7 +403,7 @@ keaLayerRasterWrite(void *lHandle, unsigned long bRow, unsigned long bCol, unsig
     }
     catch (kealib::KEAIOException &e)
     {
-        fprintf(stderr, "Exception in %s: %s\n", __FUNCTION__, e.what());
+        keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
         rCode = -1;
     }
 	return rCode;
@@ -396,7 +413,7 @@ long
 keaLayerLayerTypeRead(void  *lHandle, unsigned long  *lType)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     long rCode = -1;
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
@@ -409,7 +426,7 @@ keaLayerLayerTypeRead(void  *lHandle, unsigned long  *lType)
     }
     catch (kealib::KEAIOException &e)
     {
-        fprintf(stderr, "Exception in %s: %s\n", __FUNCTION__, e.what());
+        keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
         rCode = -1;
     }
     return rCode;
@@ -426,7 +443,7 @@ long
 keaLayerRRDLayerNamesGet(void *lHandle, unsigned long  *count, char  ***layerNames, char  **algorithm)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     Eerr_ErrorReport* err = NULL;
     long rCode = -1;
@@ -492,7 +509,7 @@ keaLayerRRDLayerNamesGet(void *lHandle, unsigned long  *count, char  ***layerNam
     }
     catch (kealib::KEAIOException &e)
     {
-        fprintf(stderr, "Exception in %s: %s\n", __FUNCTION__, e.what());
+        keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
         rCode = -1;
     }
     return rCode;
@@ -503,13 +520,13 @@ keaLayerRRDLayerNamesSet(void  *lHandle, unsigned long  count, char  **layerName
  char  *algorithm)
  {
  #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
 
     for(unsigned long n = 0; n < count; n++ )
     {
-        fprintf(stderr, "request to RRD %s\n", layerNames[n]);
+        keaDebugOut( "request to RRD %s\n", layerNames[n]);
     }
     return -1;
  }
@@ -526,7 +543,7 @@ long
 keaLayerScalarStatisticsRead(void *lHandle, double *minimum,  double *maximum, double *mean, double *median, double *mode, double *stddev)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
     long rCode = 0; // we are doing a count
@@ -572,7 +589,7 @@ keaLayerScalarStatisticsRead(void *lHandle, double *minimum,  double *maximum, d
     }
     catch (kealib::KEAIOException &e)
     {
-        fprintf(stderr, "Exception in %s: %s\n", __FUNCTION__, e.what());
+        keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
         rCode = -1;
     }
     return rCode;
@@ -584,7 +601,7 @@ keaLayerScalarStatisticsWrite(void *lHandle, double *minimum,
  double *stddev)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     long rCode = -1;
     Eerr_ErrorReport* err = NULL;
@@ -638,7 +655,7 @@ keaLayerScalarStatisticsWrite(void *lHandle, double *minimum,
     }
     catch (kealib::KEAIOException &e)
     {
-        fprintf(stderr, "Exception in %s: %s\n", __FUNCTION__, e.what());
+        keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
         rCode = -1;
     }
     return rCode;
@@ -648,7 +665,7 @@ long
 keaLayerMapInfoRead(void *lHandle, char **projection, double *xULC, double *yULC, double *xPixelSize, double *yPixelSize, char **units)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     long rCode = -1;
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
@@ -670,7 +687,7 @@ keaLayerMapInfoRead(void *lHandle, char **projection, double *xULC, double *yULC
     }
     catch (kealib::KEAIOException &e)
     {
-        fprintf(stderr, "Exception in %s: %s\n", __FUNCTION__, e.what());
+        keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
         rCode = -1;
     }
     return rCode;
@@ -681,7 +698,7 @@ keaLayerMapInfoWrite(void *lHandle, char *projection, double xULC,
  double yULC, double xPixelSize, double yPixelSize, char *units)
  {
  #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     long rCode = -1;
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
@@ -697,13 +714,19 @@ keaLayerMapInfoWrite(void *lHandle, char *projection, double xULC,
         pImageIO->setSpatialInfo(pSpatialInfo);
         
         // TODO: save this properly into the file
-        pLayer->pKEAFile->sProjName = projection;
-        pLayer->pKEAFile->sUnits = units;
+        if( projection != NULL )
+        {
+            pLayer->pKEAFile->sProjName = projection;
+        }
+        if( units != NULL )
+        {
+            pLayer->pKEAFile->sUnits = units;
+        }
         rCode = 0;
     }        
     catch (kealib::KEAIOException &e)
     {
-        fprintf(stderr, "Exception in %s: %s\n", __FUNCTION__, e.what());
+        keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
         rCode = -1;
     }
     return rCode;
@@ -716,7 +739,7 @@ keaLayerMapProjectionRead(void *lHandle, char **projTitle, unsigned char **MIFpr
         char  **MIFearthModelDictionary, char  **MIFearthModelName)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
     Eerr_ErrorReport* err = NULL;
@@ -741,7 +764,7 @@ keaLayerMapProjectionWrite(void  *lHandle, char  *projTitle,
  char  *MIFearthModelDictionary, char  *MIFearthModelName)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
     // TODO:
@@ -752,7 +775,7 @@ long
 keaLayerRasterNullValueRead(void  *lHandle, unsigned char  **pixel)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
     kealib::KEAImageIO *pImageIO = pLayer->getImageIO();
@@ -783,7 +806,7 @@ keaLayerRasterNullValueWrite( void  *lHandle,
  unsigned char  *pixel )
  {
  #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
     kealib::KEAImageIO *pImageIO = pLayer->getImageIO();
@@ -870,7 +893,7 @@ long
 keaLayerHistogramModTimeGet(void  *lHandle, time_t *modTime)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     return -1;
 }
@@ -879,7 +902,7 @@ long
 keaLayerHistogramRead(void  *lHandle, long startRow, long numRows, long *histogram)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p %ld %ld\n", __FUNCTION__, lHandle, startRow, numRows );
+    keaDebugOut( "%s %p %ld %ld\n", __FUNCTION__, lHandle, startRow, numRows );
 #endif
     return -1;
 }
@@ -888,7 +911,7 @@ long
 keaLayerColorRead(void *lHandle, char *colorName, long startRow, long numRows, double *colorTable)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p %s %ld %ld\n", __FUNCTION__, lHandle, colorName, startRow, numRows );
+    keaDebugOut( "%s %p %s %ld %ld\n", __FUNCTION__, lHandle, colorName, startRow, numRows );
 #endif
     return -1;
 }
@@ -897,7 +920,7 @@ long
 keaLayerColorModTimeGet(void *lHandle, char *colorName, time_t *modTime)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p %s\n", __FUNCTION__, lHandle, colorName);
+    keaDebugOut( "%s %p %s\n", __FUNCTION__, lHandle, colorName);
 #endif
     return -1;
 }
@@ -906,7 +929,7 @@ long
 keaLayerOpacityRead(void *lHandle, long startRow, long numRows, double *opacity)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p %ld %ld\n", __FUNCTION__, lHandle, startRow, numRows);
+    keaDebugOut( "%s %p %ld %ld\n", __FUNCTION__, lHandle, startRow, numRows);
 #endif
     return -1;
 }
@@ -915,7 +938,7 @@ long
 keaLayerOpacityModTimeGet(void *lHandle, time_t *modTime)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle);
+    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle);
 #endif
     return -1;
 }
@@ -923,7 +946,7 @@ keaLayerOpacityModTimeGet(void *lHandle, time_t *modTime)
 long 
 keaLayerClassNamesRead(void *lHandle, long startRow, long numRows, char **classNames)
 {
-    fprintf(stderr, "%s %p\n", __FUNCTION__, lHandle);
+    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle);
     return -1;
 }
 */

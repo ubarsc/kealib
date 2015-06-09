@@ -72,11 +72,11 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
 #ifdef KEADEBUG
     if( inFileMode == NULL )
     {
-        fprintf(stderr, "%s %s %ld NULL\n", __FUNCTION__, fileName, *fileType, inFileMode);
+        keaDebugOut( "%s %s %ld NULL\n", __FUNCTION__, fileName, *fileType, inFileMode);
     }
     else
     {
-        fprintf(stderr, "%s %s %ld %s\n", __FUNCTION__, fileName, *fileType, inFileMode);
+        keaDebugOut( "%s %s %ld %s\n", __FUNCTION__, fileName, *fileType, inFileMode);
     }
 #endif
     Eerr_ErrorReport* err = NULL;
@@ -102,7 +102,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
     }
     catch (kealib::KEAIOException &e)
     {
-        fprintf(stderr, "Exception in %s: %s\n", __FUNCTION__, e.what());
+        keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
         isKEA = false;
     }
 
@@ -151,7 +151,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                     std::string sName = pImageIO->getImageBandDescription(nBand);
                     // Imagine doesn't like spaces
                     std::replace(sName.begin(), sName.end(), ' ', '_');
-                    fprintf(stderr, "added layer '%s'\n", sName.c_str());
+                    keaDebugOut( "added layer '%s'\n", sName.c_str());
                     pLayer->sName = sName;
                     pLayer->nBand = nBand;
                     pLayer->bIsOverview = false;
@@ -255,7 +255,7 @@ keaFileClose(void *fileHandle)
 {
     KEA_File *pKEAFile = (KEA_File*)fileHandle;
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %s %p\n", __FUNCTION__, pKEAFile->sFilePath.c_str(), pKEAFile );
+    keaDebugOut( "%s %s %p\n", __FUNCTION__, pKEAFile->sFilePath.c_str(), pKEAFile );
 #endif
 
     try
@@ -269,7 +269,7 @@ keaFileClose(void *fileHandle)
     }
     catch (kealib::KEAIOException &e)
     {
-        fprintf(stderr, "Exception in %s: %s\n", __FUNCTION__, e.what());
+        keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
     }
     delete pKEAFile->pImageIO;
     pKEAFile->pImageIO = NULL;
@@ -293,7 +293,7 @@ long
 keaFileLayerNamesGet(void *fileHandle, unsigned long *count, char ***layerNames)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, fileHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, fileHandle );
 #endif
     KEA_File *pKEAFile = (KEA_File*)fileHandle;
 
@@ -343,7 +343,7 @@ keaFileDataRead(void *fileHandle, char *dataName, unsigned char **MIFDataObject,
         unsigned long *MIFDataSize, char **MIFDataDictionary, char **MIFDataType)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %s\n", __FUNCTION__, dataName );
+    keaDebugOut( "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
 #endif
     Eerr_ErrorReport *err = NULL;
 
@@ -434,7 +434,7 @@ keaFileDataRead(void *fileHandle, char *dataName, unsigned char **MIFDataObject,
 #ifdef KEADEBUG
     if( *MIFDataSize == 0 )
     {
-        fprintf(stderr, "bin function NOT found\n");
+        keaDebugOut( "bin function NOT found\n");
     }
 #endif
     return 0;
@@ -445,7 +445,7 @@ keaFileDataWrite( void  *fileHandle, char  *dataName,  unsigned char  *MIFDataOb
     unsigned long  MIFDataSize, char  *MIFDataDictionary, char  *MIFDataType )
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
+    keaDebugOut( "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
 #endif
         
     return 0;
@@ -455,7 +455,7 @@ long
 keaFileDataDestroy(void *fileHandle, char *dataName )
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
+    keaDebugOut( "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
 #endif
     
     return 0;
@@ -465,7 +465,7 @@ long
 keaFileFlush( void *fileHandle )    
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s\n", __FUNCTION__ );
+    keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     KEA_File *pKEAFile = (KEA_File*)fileHandle;
     if( pKEAFile->pH5File != NULL )
@@ -480,7 +480,7 @@ long
 keaFileDataModTimeGet(void *fileHandle, char *dataName, time_t *lastModTime)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
+    keaDebugOut( "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
 #endif
     /* In theory we could extract the mod time of each HDF5 object */
     /* But for now we just return the modified time of the file */
@@ -495,7 +495,7 @@ keaFileLayerNamesSet( void  *fileHandle,  unsigned long  count,
  char  **oldLayerNames, char  **newLayerNames )
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p %ld\n", __FUNCTION__, fileHandle, count );
+    keaDebugOut( "%s %p %ld\n", __FUNCTION__, fileHandle, count );
 #endif
     KEA_File *pKEAFile = (KEA_File*)fileHandle;
     
@@ -532,7 +532,7 @@ long
 keaFileRasterDataOrderGet(void  *fileHandle, unsigned long  *order)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, fileHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, fileHandle );
 #endif
     // always BSQ - see keaInstanceRasterDataOrderTypesGet
     *order = 0;
@@ -544,7 +544,7 @@ keaFileRasterDataOrderSet( void  *fileHandle,  unsigned long  order,
  unsigned long  count)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, fileHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, fileHandle );
 #endif
     // we don't support changing this so just pretend we succeeded
     return 0;
@@ -562,7 +562,7 @@ long
 keaFileModeGet(char  *fileName, mode_t  *mode)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %s\n", __FUNCTION__, fileName );
+    keaDebugOut( "%s %s\n", __FUNCTION__, fileName );
 #endif
 
     return -1;
@@ -572,7 +572,7 @@ long
 keaFileModTimeGet(char *fileName, time_t *modTime)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %s\n", __FUNCTION__, fileName );
+    keaDebugOut( "%s %s\n", __FUNCTION__, fileName );
 #endif
 
     return -1;

@@ -103,6 +103,17 @@ keaInstanceFilterFlagsGet( char **flags )
 }
 
 long
+keaInstanceIsCreatableFlagsGet(char **flagsList)
+{
+#ifdef KEADEBUG
+    fprintf( stderr, "%s\n", __FUNCTION__ );
+#endif
+    *flagsList = emsc_New(1, char);
+    (*flagsList)[0] = 1;
+    return 0;
+}
+
+long
 keaInstanceIsDirFlagsGet( char **flags )
 {
 #ifdef KEADEBUG
@@ -117,7 +128,7 @@ long
 keaInstancePixelTypesGet(unsigned long *count, char  ***pixelTypes)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s\n", __FUNCTION__ );
+    keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
 
     // just make a list where the indices match the KEADataType enum
@@ -145,7 +156,7 @@ long
 keaInstanceCompressionTypesGet(unsigned long *count, char  ***compressionTypes)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s\n", __FUNCTION__ );
+    keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     // we just support one type - zlib. Note that this is just for display
     // data is expected to be uncompressed by the time Imagine sees it
@@ -160,7 +171,7 @@ long
 keaInstanceLayerTypesGet( unsigned long  *count,  char  ***layerTypes)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s\n", __FUNCTION__ );
+    keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     // make it match the KEALayerType enum
     *count = 2;
@@ -175,7 +186,7 @@ long
 keaInstanceColumnTypesGet(unsigned long *count, char ***columnTypes)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s\n", __FUNCTION__ );
+    keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     // make it match KEAFieldDataType enum
     *count = kealib::kea_att_string + 1;
@@ -193,7 +204,7 @@ long
 keaInstanceRasterDataOrderTypesGet(unsigned long  *count, char  ***rdoTypes, unsigned char  **rdoWriteFlags)
 {     
 #ifdef KEADEBUG
-    fprintf(stderr, "%s\n", __FUNCTION__ );
+    keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     /* If this isn't implemented we end up with BIK (??) in the file info */
     *count = 1;
@@ -208,7 +219,7 @@ long
 keaInstanceDescriptionGet(char **description)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s\n", __FUNCTION__ );
+    keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     Eerr_ErrorReport* err = NULL;
     *description = estr_Sprintf(NULL, (char*)"KEA Raster Support Library Version %s", &err,
@@ -227,7 +238,7 @@ long
 keaInstanceSupportsMasks(unsigned char **flags)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s\n", __FUNCTION__ );
+    keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     *flags = emsc_New(1, unsigned char);
     (*flags)[0] = 1;
@@ -235,6 +246,14 @@ keaInstanceSupportsMasks(unsigned char **flags)
                 /* The doco says this is a void function which doesn't match the header */
 }
 
+long
+keaInstanceCreatesInternalPyramids()
+{
+#ifdef KEADEBUG
+    keaDebugOut( "%s\n", __FUNCTION__ );
+#endif
+    return 1;
+}
 
 // not strictly necessary I guess but the Imagine format DLL's export this
 // At some stage we are going to have to update this code to support Unicode...
@@ -242,8 +261,53 @@ long
 keaInstanceSupportsUnicode(void)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s\n", __FUNCTION__ );
+    keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     return 0;
 }
 
+#ifdef WIN32
+    #define snprintf _snprintf
+#endif
+
+void keaDebugOut(char *fmt, ...)
+{
+  va_list args;
+    FILE *fh;
+    char *tmpDir, *fName;
+    int nSize, nPid;
+    
+    tmpDir = getenv("TMP");
+    if( tmpDir == NULL )
+    {
+#ifdef WIN32
+        tmpDir = "C:";
+#else
+        tmpDir = "/tmp";
+#endif    
+    }
+
+#ifdef WIN32
+    nPid = GetCurrentProcessId();
+#else
+    nPid = getpid();
+#endif    
+    
+    nSize = snprintf(NULL, 0, "%s/kea_%d.log", tmpDir, nPid);
+    fName = (char*)malloc(nSize+1);
+    snprintf(fName, nSize+1, "%s/kea_%d.log", tmpDir, nPid);
+    fh = fopen(fName, "a");
+    if( fh == NULL )
+    {
+        fprintf(stderr, "Failed to open %s for writing\n", fName);
+    }
+    else
+    {
+        va_start(args, fmt);
+        vfprintf(fh, fmt, args);
+        va_end(args);
+    }
+    fflush(fh);
+    fclose(fh);
+    free(fName);
+}

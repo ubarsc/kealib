@@ -150,5 +150,8 @@ inline void keaPrintErrorReport(Eerr_ErrorReport *err, const char *fnname)
 Edsc_BinFunction*
 keaLayerGetHistoBinFunction(KEA_Layer *pLayer);
 
+// our error routine to write to file
+void keaDebugOut(char *fmt, ...);
+
 #endif //_KEA_H_
 

@@ -47,7 +47,7 @@ long
 keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **tableHandle)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p %s\n", __FUNCTION__, fileHandle, tableName );
+    keaDebugOut( "%s %p %s\n", __FUNCTION__, fileHandle, tableName );
 #endif
     long rCode = -1;
     // tableName will be in the form:
@@ -87,7 +87,7 @@ keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **t
                     }
                     catch(kealib::KEAException &e)
                     {
-                        fprintf(stderr, "Error in %s: %s\n", __FUNCTION__, e.what());
+                        keaDebugOut( "Error in %s: %s\n", __FUNCTION__, e.what());
                         delete pKEATable;
                         pKEATable = NULL;
                         rCode = -1;
@@ -121,7 +121,7 @@ long
 keaTableClose(void *tableHandle)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, tableHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, tableHandle );
 #endif
     kealib::KEAAttributeTable *pKEATable = (kealib::KEAAttributeTable*)tableHandle;
     kealib::KEAAttributeTable::destroyAttributeTable(pKEATable);
@@ -134,7 +134,7 @@ keaTableCreate(void  *dataSource, char  *tableName, unsigned long  numRows,
  void  **tableHandle)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p %s\n", __FUNCTION__, dataSource, tableName );
+    keaDebugOut( "%s %p %s\n", __FUNCTION__, dataSource, tableName );
 #endif
     long rCode = -1;
     // tableName will be in the form:
@@ -172,7 +172,7 @@ keaTableCreate(void  *dataSource, char  *tableName, unsigned long  numRows,
                     }
                     catch(kealib::KEAException &e)
                     {
-                        fprintf(stderr, "Error in %s: %s\n", __FUNCTION__, e.what());
+                        keaDebugOut( "Error in %s: %s\n", __FUNCTION__, e.what());
                         rCode = -1;
                     }
                 }
@@ -202,7 +202,7 @@ long
 keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNames)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, tableHandle );
+    keaDebugOut( "%s %p\n", __FUNCTION__, tableHandle );
 #endif
     kealib::KEAAttributeTable *pKEATable = (kealib::KEAAttributeTable*)tableHandle;
 
@@ -304,7 +304,7 @@ long
 keaTableRowCountGet(void *tableHandle, unsigned long *rowCount)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, tableHandle);
+    keaDebugOut( "%s %p\n", __FUNCTION__, tableHandle);
 #endif
     kealib::KEAAttributeTable *pKEATable = (kealib::KEAAttributeTable*)tableHandle;
     *rowCount = pKEATable->getSize();
@@ -316,7 +316,7 @@ long
 keaTableRowCountSet(void  *tableHandle, unsigned long  rowCount)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, tableHandle);
+    keaDebugOut( "%s %p\n", __FUNCTION__, tableHandle);
 #endif    
     kealib::KEAAttributeTable *pKEATable = (kealib::KEAAttributeTable*)tableHandle;
     // can only grow a table with KEA
@@ -341,7 +341,7 @@ keaColumnOpen(void *tableHandle, char *columnName, unsigned long *dataType,
                         unsigned long *maxStringLength, void **columnHandle)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p %s\n", __FUNCTION__, tableHandle, columnName );
+    keaDebugOut( "%s %p %s\n", __FUNCTION__, tableHandle, columnName );
 #endif
     kealib::KEAAttributeTable *pKEATable = (kealib::KEAAttributeTable*)tableHandle;
     long rCode = -1;
@@ -399,7 +399,7 @@ keaColumnOpen(void *tableHandle, char *columnName, unsigned long *dataType,
                         nMaxString = nNewLen;
                 }
             }
-            //fprintf(stderr, "Max string size = %ld\n", nMaxString);
+            //keaDebugOut( "Max string size = %ld\n", nMaxString);
             *maxStringLength = nMaxString;
         }
 
@@ -408,7 +408,7 @@ keaColumnOpen(void *tableHandle, char *columnName, unsigned long *dataType,
     }
     catch(kealib::KEAException &e)
     {
-        fprintf(stderr, "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+        keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
     }
 
     return rCode;
@@ -418,7 +418,7 @@ long
 keaColumnClose(void *columnHandle)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, columnHandle);
+    keaDebugOut( "%s %p\n", __FUNCTION__, columnHandle);
 #endif
     KEA_Column *pKEAColumn = (KEA_Column*)columnHandle;
     delete pKEAColumn;
@@ -431,7 +431,7 @@ keaColumnCreate(void  *tableHandle, char  *columnName,
  void  **columnHandle)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p %s\n", __FUNCTION__, tableHandle, columnName );
+    keaDebugOut( "%s %p %s\n", __FUNCTION__, tableHandle, columnName );
 #endif
     kealib::KEAAttributeTable *pKEATable = (kealib::KEAAttributeTable*)tableHandle;
     long rCode = -1;
@@ -456,7 +456,7 @@ keaColumnCreate(void  *tableHandle, char  *columnName,
         }
         catch(kealib::KEAException &e)
         {
-            fprintf(stderr, "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+            keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
         }            
     }
     else if( dataType == kealib::kea_att_float )
@@ -480,7 +480,7 @@ keaColumnCreate(void  *tableHandle, char  *columnName,
             }
             catch(kealib::KEAException &e)
             {
-                fprintf(stderr, "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+                keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
             }      
         }
         
@@ -492,7 +492,7 @@ keaColumnCreate(void  *tableHandle, char  *columnName,
         }
         catch(kealib::KEAException &e)
         {
-            fprintf(stderr, "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+            keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
         }  
     }
     else
@@ -511,7 +511,7 @@ keaColumnCreate(void  *tableHandle, char  *columnName,
         }
         catch(kealib::KEAException &e)
         {
-            fprintf(stderr, "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+            keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
         }
     }
 
@@ -532,7 +532,7 @@ long
 keaColumnModTimeGet(void *columnHandle, time_t *modTime)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p\n", __FUNCTION__, columnHandle);
+    keaDebugOut( "%s %p\n", __FUNCTION__, columnHandle);
 #endif
     // dunno...
     *modTime = 0;
@@ -544,7 +544,7 @@ keaColumnDataRead(void *columnHandle, unsigned long startRow, unsigned long numR
                     unsigned char *data)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p %ld %ld\n", __FUNCTION__, columnHandle, startRow, numRows);
+    keaDebugOut( "%s %p %ld %ld\n", __FUNCTION__, columnHandle, startRow, numRows);
 #endif
     KEA_Column *pKEAColumn = (KEA_Column*)columnHandle;
     kealib::KEAAttributeTable *pKEATable = pKEAColumn->pKEATable;
@@ -623,7 +623,7 @@ keaColumnDataRead(void *columnHandle, unsigned long startRow, unsigned long numR
     }
     catch(kealib::KEAException &e)
     {
-        fprintf(stderr, "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+        keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
     }
     return rCode;
 }
@@ -632,7 +632,7 @@ long
 keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long numRows, unsigned char *data)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p %ld %ld\n", __FUNCTION__, columnHandle, startRow, numRows);
+    keaDebugOut( "%s %p %ld %ld\n", __FUNCTION__, columnHandle, startRow, numRows);
 #endif
     KEA_Column *pKEAColumn = (KEA_Column*)columnHandle;
     kealib::KEAAttributeTable *pKEATable = pKEAColumn->pKEATable;
@@ -714,7 +714,7 @@ keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long num
     }
     catch(kealib::KEAException &e)
     {
-        fprintf(stderr, "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+        keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
     }
     return rCode;
 }
@@ -723,7 +723,7 @@ long
 keaColumnDestroy(void *tableHandle, char *columnName)
 {
 #ifdef KEADEBUG
-    fprintf(stderr, "%s %p %s\n", __FUNCTION__, tableHandle, columnName);
+    keaDebugOut( "%s %p %s\n", __FUNCTION__, tableHandle, columnName);
 #endif
     return -1;
 }
