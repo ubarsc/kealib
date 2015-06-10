@@ -141,7 +141,9 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                     uint32_t nBand = n + 1;
                     if( !IsSupportedDataType( pImageIO, nBand ) )
                     {
-                        fprintf( stderr, "Band %d has type unsupported by Imagine\n", n );
+#ifdef KEADEBUG                        
+                        keaDebugOut( "Band %d has type unsupported by Imagine\n", n );
+#endif                        
                         continue;
                     }
                     
@@ -233,7 +235,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
             catch (kealib::KEAIOException &e)
             {
 #ifdef KEADEBUG
-                fprintf( stderr, "Error during opening %s: %s\n", fileName, e.what());
+                keaDebugOut( "Error during opening %s: %s\n", fileName, e.what());
 #endif
                 // was a problem - can't be a valid file
                 delete pImageIO;
@@ -244,7 +246,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
         }
     }
 #ifdef KEADEBUG
-    fprintf( stderr, "open returning %p\n", pKEAFile);
+    keaDebugOut( "open returning %p\n", pKEAFile);
 #endif
 
 	return pKEAFile;
@@ -346,12 +348,95 @@ keaFileDataRead(void *fileHandle, char *dataName, unsigned char **MIFDataObject,
     keaDebugOut( "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
 #endif
     Eerr_ErrorReport *err = NULL;
-
+    long rCode = 0; // always need to succeed or Imagine will not display
     *MIFDataObject = NULL;
     *MIFDataDictionary = NULL;
     *MIFDataType = NULL;
     *MIFDataSize = 0;
 
+    // currently we only support getting the histogram bin function in this manner
+    // will be in the form:
+    // :LayerName:OverviewName:Descriptor_Table:#Bin_Function#
+    char *pszNameCopy = estr_Duplicate(dataName);
+    char *pszLastColon = strrchr(pszNameCopy, ':');
+    // is it looking for the bin function?
+    if( ( pszLastColon != NULL ) &&  ( strcmp(pszLastColon+1, "#Bin_Function#") == 0 ) )
+    {
+#ifdef KEADEBUG        
+        keaDebugOut( "Found #Bin_Function# %s\n", pszNameCopy );
+#endif        
+        *pszLastColon = '\0'; // put a null there and look at the next one back
+        pszLastColon = strrchr(pszNameCopy, ':');
+        if( ( pszLastColon != NULL ) && (strcmp(pszLastColon+1, "Descriptor_Table" ) == 0 ) )
+        {
+            //fprintf( stderr, "Found Descriptor_Table\n" );
+            // now find the second colon
+            char *pszSecondColon = strchr(&pszNameCopy[1], ':');
+            if( pszSecondColon != NULL )
+            {
+                *pszSecondColon = '\0';
+                char *pszLayerName = &pszNameCopy[1];
+#ifdef KEADEBUG                
+                keaDebugOut( "looking for layer %s\n", pszLayerName );
+#endif
+                unsigned long dtype, width, height, bWidth, bHeight, compression;
+                KEA_Layer *pKEALayer;
+                if( keaLayerOpen(fileHandle, pszLayerName, &dtype, &width, &height, 
+                            &compression, &bWidth, &bHeight, (void**)&pKEALayer) == 0 )
+                {
+                    //fprintf( stderr, "Found layer\n" );
+                    Edsc_BinFunction *pBinFn = keaLayerGetHistoBinFunction(pKEALayer);
+                    if( pBinFn != NULL )
+                    {
+#ifdef KEADEBUG
+                        keaDebugOut( "Found bin function\n" );
+#endif                        
+                        // make 'MIFable'
+                        EMIF_CADDR *pMIFableObject;
+                        Emif_Design *pDesign;
+                        edsc_BinFunctionConvertToMIFable(pBinFn, (void**)&pMIFableObject, &pDesign, &err);
+                        HANDLE_ERR(err, -1)
+    
+                        // this code doesn't work post 8.4. I had an alternative (see "Geometric Models Example" on developer.lggi.com)
+                        // but this is much tidier
+                        *MIFDataSize = emif_MIFableObjectConvertToMIF(pMIFableObject, pDesign, MIFDataObject,
+                            MIFDataDictionary, MIFDataType, &err);
+                        HANDLE_ERR(err, -1)
+
+                        emif_ObjectFree(&pMIFableObject, pDesign, &err);
+                        HANDLE_ERR(err, -1)
+                        emif_DesignDestroy(pDesign);
+                        emsc_Free(pBinFn);
+                        rCode = 0;
+#ifdef KEADEBUG
+                        keaDebugOut( "bin function success\n" );
+#endif                        
+                    }
+                    // does nothing, but for completeness
+                    keaLayerClose(pKEALayer);
+                }
+            }
+        }
+    }
+    emsc_Free(pszNameCopy);
+#ifdef KEADEBUG
+    if( *MIFDataSize == 0 )
+    {
+        keaDebugOut( "bin function NOT found\n");
+    }
+#endif
+    return rCode;
+}
+
+long
+keaFileDataWrite( void  *fileHandle, char  *dataName,  unsigned char  *MIFDataObject, 
+    unsigned long  MIFDataSize, char  *MIFDataDictionary, char  *MIFDataType )
+{
+#ifdef KEADEBUG
+    keaDebugOut( "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
+#endif
+    Eerr_ErrorReport *err = NULL;
+    long rCode = -1;
     // currently we only support getting the histogram bin function in this manner
     // will be in the form:
     // :LayerName:OverviewName:Descriptor_Table:#Bin_Function#
@@ -383,72 +468,37 @@ keaFileDataRead(void *fileHandle, char *dataName, unsigned char **MIFDataObject,
                             &compression, &bWidth, &bHeight, (void**)&pKEALayer) == 0 )
                 {
                     //fprintf( stderr, "Found layer\n" );
-                    Edsc_BinFunction *pBinFn = keaLayerGetHistoBinFunction(pKEALayer);
-                    if( pBinFn != NULL )
-                    {
-#ifdef KEADEBUG
-                        fprintf( stderr, "Found bin function\n" );
-#endif                        
-                        // make 'MIFable'
-                        EMIF_CADDR *pMIFableObject;
-                        Emif_Design *pDesign;
-                        edsc_BinFunctionConvertToMIFable(pBinFn, (void**)&pMIFableObject, &pDesign, &err);
-                        HANDLE_ERR(err, -1)
-    
-                        // was planning to use emif_MIFableObjectConvertToMIF, but
-                        // only available post 8.4. Found "Gemetric Models Example" on developer.lggi.com
-                        // which helped work out how to use the older stuff
-                        //*MIFDataSize = emif_MIFableObjectConvertToMIF(pMIFableObject, pDesign, MIFDataObject,
-                        //        MIFDataDictionary, MIFDataType, &err);
-                        //HANDLE_ERR(err)
-                        Emif_Dictionary *dictionary = emif_DictionaryCreate(&err);
-                        HANDLE_ERR(err, -1)
+                    // convert from MIF to bin function structure
+                    EMIF_CADDR *pBinObject;
+                    Emif_Design *pDesign;
+                    emif_MIFableObjectConvertFromMIF((void**)&pBinObject, &pDesign, MIFDataObject,
+                            MIFDataDictionary, MIFDataType, &err);
+                    HANDLE_ERR(err, -1)
+                    
+                    Edsc_BinFunction *pBinFn;
+                    edsc_BinFunctionConvertFromMIFable(&pBinFn, pBinObject, pDesign, &err);
+                    HANDLE_ERR(err, -1)
+                    
+                    // set the data
+                    keaLayerSetHistoBinFunction(pKEALayer, pBinFn);
 
-                        emif_DictionaryAddDesign(dictionary, pDesign, &err);
-                        HANDLE_ERR(err, -1)
-
-                        *MIFDataType = estr_Duplicate(pDesign->name);
-                        *MIFDataDictionary = emif_DictionaryEncodeToString(dictionary, &err);
-                        HANDLE_ERR(err, -1)
-
-                        *MIFDataSize = emif_ObjectSize(pMIFableObject, pDesign, &err);
-                        HANDLE_ERR(err, -1)
-
-                        *MIFDataObject = emsc_New(sizeof(unsigned char) * (*MIFDataSize), unsigned char);
-                        emif_ConvertToMIF(NULL, pMIFableObject, pDesign, *MIFDataObject, &err);
-                        HANDLE_ERR(err, -1)
-
-                        emif_ObjectFree(&pMIFableObject, pDesign, &err);
-                        HANDLE_ERR(err, -1)
-                        emif_DictionaryDestroy(dictionary);
-                        emif_DesignDestroy(pDesign);
-                        emsc_Free(pBinFn);
-                    }
+                    emif_ObjectFree(&pBinObject, pDesign, &err);
+                    HANDLE_ERR(err, -1)
+                    emif_DesignDestroy(pDesign);
+                    emsc_Free(pBinFn);
+                    
                     // does nothing, but for completeness
                     keaLayerClose(pKEALayer);
+                    rCode = 0;
+#ifdef KEADEBUG
+                    keaDebugOut( "bin function set success\n" );
+#endif                        
                 }
             }
         }
     }
-    emsc_Free(pszNameCopy);
-#ifdef KEADEBUG
-    if( *MIFDataSize == 0 )
-    {
-        keaDebugOut( "bin function NOT found\n");
-    }
-#endif
-    return 0;
-}
-
-long
-keaFileDataWrite( void  *fileHandle, char  *dataName,  unsigned char  *MIFDataObject, 
-    unsigned long  MIFDataSize, char  *MIFDataDictionary, char  *MIFDataType )
-{
-#ifdef KEADEBUG
-    keaDebugOut( "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
-#endif
-        
-    return 0;
+    emsc_Free(pszNameCopy);        
+    return rCode;
 }
 
 long
@@ -501,26 +551,44 @@ keaFileLayerNamesSet( void  *fileHandle,  unsigned long  count,
     
     for( unsigned long oldN = 0; oldN < count; oldN++ )
     {
-        char *pszOldName = oldLayerNames[oldN];
+        std::string sOldName = oldLayerNames[oldN];
+        // need to do overviews, masks etc with same base name
+        std::string sOldNameBase = sOldName + ':';
         for( std::vector<KEA_Layer*>::iterator itr = pKEAFile->aLayers.begin();
             itr != pKEAFile->aLayers.end(); itr++ )
         {
             KEA_Layer *pLayer = (*itr);
-            if( pLayer->sName == pszOldName )
+            std::string sNewName = newLayerNames[oldN];
+            if( !pLayer->bIsOverview && !pLayer->bIsMask && (pLayer->sName == sOldName ))
             {
                 unsigned int nBand = pLayer->nBand;
-                char *pszNewName = newLayerNames[oldN];
+#ifdef KEADEBUG
+                keaDebugOut( "renaming %s -> %s\n", sOldName.c_str(), sNewName.c_str() );
+#endif
                 try
                 {
-                    pKEAFile->pImageIO->setImageBandDescription(nBand, pszNewName);
-                    pLayer->sName = pszNewName;
+                    pKEAFile->pImageIO->setImageBandDescription(nBand, sNewName);
+                    pLayer->sName = sNewName;
                 }
                 catch (kealib::KEAIOException &e)
                 {
 #ifdef KEADEBUG
-                    fprintf( stderr, "Error during renaming: %s\n", e.what());
+                    keaDebugOut( "Error during renaming: %s\n", e.what());
 #endif           
                 }   
+            }
+            else if( (pLayer->bIsOverview || pLayer->bIsMask) && 
+                (pLayer->sName.compare(0, sOldNameBase.size(), sOldNameBase) == 0 ))
+            {
+                // is an overview or mask attached to the layer to be renamed
+                std::string sNewNameBase = sNewName + ':';
+#ifdef KEADEBUG
+                std::string sDebugOldName = pLayer->sName;
+#endif
+                pLayer->sName.replace(0, sOldNameBase.size(), sNewNameBase);
+#ifdef KEADEBUG
+                keaDebugOut( "renaming mask/overview %s -> %s\n", sDebugOldName.c_str(), pLayer->sName.c_str() );
+#endif
             }
         }
     }

@@ -149,6 +149,7 @@ inline void keaPrintErrorReport(Eerr_ErrorReport *err, const char *fnname)
 // so it can be accessed from keafile.cpp
 Edsc_BinFunction*
 keaLayerGetHistoBinFunction(KEA_Layer *pLayer);
+void keaLayerSetHistoBinFunction(KEA_Layer *pLayer, Edsc_BinFunction *pBinFn);
 
 // our error routine to write to file
 void keaDebugOut(char *fmt, ...);

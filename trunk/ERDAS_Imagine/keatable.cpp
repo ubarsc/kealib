@@ -61,7 +61,9 @@ keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **t
     char *pszLastColon = strrchr(tableName, ':');
     if( pszLastColon != NULL )
     {
-        //fprintf( stderr, "Table name: %s\n", pszLastColon+1);
+#ifdef KEADEBUG
+        keaDebugOut( "Table name: %s\n", pszLastColon+1);
+#endif        
         // Imagine always asks for this one, so perhaps don't need to check
         if( strcmp(pszLastColon+1, "Descriptor_Table") == 0 )
         {
@@ -87,7 +89,9 @@ keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **t
                     }
                     catch(kealib::KEAException &e)
                     {
+#ifdef KEADEBUG                        
                         keaDebugOut( "Error in %s: %s\n", __FUNCTION__, e.what());
+#endif                        
                         delete pKEATable;
                         pKEATable = NULL;
                         rCode = -1;
@@ -95,7 +99,9 @@ keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **t
                 }
                 else
                 {
-                    //fprintf( stderr, "No RAT present\n" );
+#ifdef KEADEBUG                        
+                    keaDebugOut(  "No RAT present\n" );
+#endif
                     rCode = 0; // no an error according to docs
                 }
                 // does nothing, but for completeness
@@ -104,14 +110,16 @@ keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **t
             }
             else
             {
-                fprintf( stderr, "Unable to find layer %s when looking for table\b", pszLayerName);
+#ifdef KEADEBUG                
+                keaDebugOut( "Unable to find layer %s when looking for table\b", pszLayerName);
+#endif                
                 rCode = -1;
             }
             free(pszLayerName);
         }
     }
 #ifdef KEADEBUG
-    fprintf( stderr, "%s returning %p\n", __FUNCTION__, pKEATable);
+    keaDebugOut( "%s returning %p\n", __FUNCTION__, pKEATable);
 #endif
     *tableHandle = pKEATable;
     return rCode;
@@ -169,29 +177,37 @@ keaTableCreate(void  *dataSource, char  *tableName, unsigned long  numRows,
                     {
                         pKEATable = pImageIO->getAttributeTable(kealib::kea_att_file, pKEALayer->nBand);
                         pKEATable->addRows(numRows);
+                        rCode = 0;
                     }
                     catch(kealib::KEAException &e)
                     {
+#ifdef KEADEBUG                        
                         keaDebugOut( "Error in %s: %s\n", __FUNCTION__, e.what());
+#endif                        
                         rCode = -1;
                     }
                 }
                 else
                 {
                     // already exists
+#ifdef KEADEBUG
+                    keaDebugOut( "table already exists\n");
+#endif
                     rCode = -1;
                 }
             }
             else
             {
-                fprintf( stderr, "Unable to find layer %s when looking for table\b", pszLayerName);
+#ifdef KEADEBUG
+                keaDebugOut( "Unable to find layer %s when looking for table\n", pszLayerName);
+#endif                
                 rCode = -1;
             }
             free(pszLayerName);
         }
     }
 #ifdef KEADEBUG
-    fprintf( stderr, "%s returning %p\n", __FUNCTION__, pKEATable);
+    keaDebugOut( "%s returning %p\n", __FUNCTION__, pKEATable);
 #endif
     *tableHandle = pKEATable;
     return rCode;
@@ -221,7 +237,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
         colNames.erase(itr);
         nIdx++;
 #ifdef KEADEBUG
-        fprintf( stderr, "Returning column (%s)\n", COLUMN_HISTOGRAM);
+        keaDebugOut("Returning column (%s)\n", COLUMN_HISTOGRAM);
 #endif
     }
     itr = std::find(colNames.begin(), colNames.end(), COLUMN_RED);
@@ -231,7 +247,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
         colNames.erase(itr);
         nIdx++;
 #ifdef KEADEBUG
-        fprintf( stderr, "Returning column (%s)\n", COLUMN_RED);
+        keaDebugOut( "Returning column (%s)\n", COLUMN_RED);
 #endif
     }
     itr = std::find(colNames.begin(), colNames.end(), COLUMN_GREEN);
@@ -241,7 +257,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
         colNames.erase(itr);
         nIdx++;
 #ifdef KEADEBUG
-        fprintf( stderr, "Returning column (%s)\n", COLUMN_GREEN);
+        keaDebugOut( "Returning column (%s)\n", COLUMN_GREEN);
 #endif
     }
     itr = std::find(colNames.begin(), colNames.end(), COLUMN_BLUE);
@@ -251,7 +267,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
         colNames.erase(itr);
         nIdx++;
 #ifdef KEADEBUG
-        fprintf( stderr, "Returning column (%s)\n", COLUMN_BLUE);
+        keaDebugOut( "Returning column (%s)\n", COLUMN_BLUE);
 #endif
     }
     itr = std::find(colNames.begin(), colNames.end(), COLUMN_ALPHA);
@@ -262,7 +278,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
         colNames.erase(itr);
         nIdx++;
 #ifdef KEADEBUG
-        fprintf( stderr, "Returning column (%s)\n", COLUMN_OPACITY);
+        keaDebugOut( "Returning column (%s)\n", COLUMN_OPACITY);
 #endif
     }
     itr = std::find(colNames.begin(), colNames.end(), COLUMN_CLASSNAMES);
@@ -272,7 +288,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
         colNames.erase(itr);
         nIdx++;
 #ifdef KEADEBUG
-        fprintf( stderr, "Returning column (%s)\n", COLUMN_CLASSNAMES);
+        keaDebugOut( "Returning column (%s)\n", COLUMN_CLASSNAMES);
 #endif
     }
 
@@ -282,7 +298,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
         std::string sVal = (*itr);
         (*columnNames)[nIdx] = estr_Duplicate((char*)sVal.c_str());
 #ifdef KEADEBUG
-        fprintf( stderr, "Returning column (%s)\n", sVal.c_str());
+        keaDebugOut( "Returning column (%s)\n", sVal.c_str());
 #endif
         nIdx++;
     }
@@ -291,14 +307,17 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
 }
 
 /*
-KEA doesn't currently have the ability to rename layers so don't implement this one
+KEA doesn't currently have the ability to rename layers but imagine requires it. */
 long
 keaTableColumnNamesSet(void  *tableHandle,  unsigned long  count, 
 char  **oldColumnNames, char  **newColumnNames)
 {
-    
+#ifdef KEADEBUG
+    keaDebugOut( "%s %p\n", __FUNCTION__, tableHandle);
+#endif
+    return 0;
 }
-*/
+
 
 long 
 keaTableRowCountGet(void *tableHandle, unsigned long *rowCount)
@@ -328,13 +347,16 @@ keaTableRowCountSet(void  *tableHandle, unsigned long  rowCount)
     return 0;
 }
 
-/*
-KEA doesn't support this...
+
+// KEA doesn't support thi, but Imagine needs the function before it will create tables
 long
 keaTableDestroy(void  *dataSource,  char  *tableName)
 {
+#ifdef KEADEBUG
+    keaDebugOut( "%s %p %s\n", __FUNCTION__, dataSource, tableName );
+#endif
+    return 0;
 }
-*/
 
 long 
 keaColumnOpen(void *tableHandle, char *columnName, unsigned long *dataType, 
@@ -408,7 +430,9 @@ keaColumnOpen(void *tableHandle, char *columnName, unsigned long *dataType,
     }
     catch(kealib::KEAException &e)
     {
+#ifdef KEADEBUG        
         keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+#endif        
     }
 
     return rCode;
@@ -456,7 +480,9 @@ keaColumnCreate(void  *tableHandle, char  *columnName,
         }
         catch(kealib::KEAException &e)
         {
+#ifdef KEADEBUG            
             keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+#endif            
         }            
     }
     else if( dataType == kealib::kea_att_float )
@@ -480,7 +506,9 @@ keaColumnCreate(void  *tableHandle, char  *columnName,
             }
             catch(kealib::KEAException &e)
             {
+#ifdef KEADEBUG                
                 keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+#endif                
             }      
         }
         
@@ -492,7 +520,9 @@ keaColumnCreate(void  *tableHandle, char  *columnName,
         }
         catch(kealib::KEAException &e)
         {
+#ifdef KEADEBUG            
             keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+#endif            
         }  
     }
     else
@@ -511,7 +541,9 @@ keaColumnCreate(void  *tableHandle, char  *columnName,
         }
         catch(kealib::KEAException &e)
         {
+#ifdef KEADEBUG            
             keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+#endif            
         }
     }
 
@@ -615,7 +647,9 @@ keaColumnDataRead(void *columnHandle, unsigned long startRow, unsigned long numR
                 break;
 
             default:
-                fprintf( stderr, "Unknown column type: %d\n", pKEAColumn->eType);
+#ifdef KEADEBUG            
+                keaDebugOut( "Unknown column type: %d\n", pKEAColumn->eType);
+#endif                
                 break;
         }
 
@@ -623,7 +657,9 @@ keaColumnDataRead(void *columnHandle, unsigned long startRow, unsigned long numR
     }
     catch(kealib::KEAException &e)
     {
+#ifdef KEADEBUG        
         keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+#endif        
     }
     return rCode;
 }
@@ -706,7 +742,9 @@ keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long num
                 break;
 
             default:
-                fprintf( stderr, "Unknown column type: %d\n", pKEAColumn->eType);
+#ifdef KEADEBUG            
+                keaDebugOut( "Unknown column type: %d\n", pKEAColumn->eType);
+#endif                
                 break;
         }
 
@@ -714,7 +752,9 @@ keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long num
     }
     catch(kealib::KEAException &e)
     {
+#ifdef KEADEBUG        
         keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+#endif        
     }
     return rCode;
 }

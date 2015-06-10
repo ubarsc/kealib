@@ -77,10 +77,12 @@ keaLayerOpen(void *fHandle, char *lName, unsigned long *pType, unsigned long *wi
     }
     if( pLayer == NULL )
     {
-        fprintf( stderr, "Can't find layer %s\n", sName.c_str() );
-    }
 #ifdef KEADEBUG
-    fprintf( stderr, "open layer returning %p\n", pLayer );
+        keaDebugOut( "Can't find layer %s\n", sName.c_str() );
+#endif
+        }
+#ifdef KEADEBUG
+    keaDebugOut( "open layer returning %p\n", pLayer );
 #endif
 	return rCode;
 }
@@ -212,6 +214,9 @@ keaLayerCreate(void  *fileHandle,  /* Input */
         *layerName = estr_Duplicate(sName.c_str());
         *layerHandle = pLayer;
         rCode = 0;
+#ifdef KEADEBUG
+        keaDebugOut( "%s returning %p\n", __FUNCTION__, pLayer);
+#endif
     }
     return rCode;
 }
@@ -223,7 +228,7 @@ long
 keaLayerDestroy(void *fHandle, char *layerName)
 {
 #ifdef KEADEBUG
-    keaDebugOut( "%s %p\n", __FUNCTION__, fHandle);
+    keaDebugOut( "%s %p %s\n", __FUNCTION__, fHandle, layerName);
 #endif
     return -1;
 }
@@ -322,7 +327,7 @@ keaLayerRasterWrite(void *lHandle, unsigned long bRow, unsigned long bCol, unsig
     long rCode = -1;
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
 #ifdef KEADEBUG
-    fprintf( stderr, "writing %s\n", pLayer->sName.c_str());
+    keaDebugOut( "writing %s\n", pLayer->sName.c_str());
 #endif
 
     uint64_t xsize = pLayer->nBlockSize;
@@ -483,7 +488,6 @@ keaLayerRRDLayerNamesGet(void *lHandle, unsigned long  *count, char  ***layerNam
                     size_t nColonLoc = pCandidate->sName.find(':');
                     if( ( nColonLoc != std::string::npos ) && ( pCandidate->sName.compare(0, nColonLoc, pLayer->sName) == 0 ) )
                     {
-                        //fprintf( stderr, "found matching RRD layer: %s\n", pCandidate->sName.c_str() );
                         // couldn't work out efnp_FileNodeCreate...
                         std::string sFilePath = pLayer->getFilePath();
                         char *name = estr_Sprintf( NULL, (char*)"%s(:%s)", &err, 
@@ -491,7 +495,7 @@ keaLayerRRDLayerNamesGet(void *lHandle, unsigned long  *count, char  ***layerNam
                         HANDLE_ERR(err, -1);
                         (*layerNames)[layerCount] = name;
 #ifdef KEADEBUG                        
-                        fprintf( stderr, "RRD: %s\n", name);
+                        keaDebugOut( "RRD: %s\n", name);
 #endif                        
                         layerCount++;
                     }
@@ -768,7 +772,7 @@ keaLayerMapProjectionWrite(void  *lHandle, char  *projTitle,
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
     // TODO:
-    return -1;
+    return 0;
 }
  
 long
@@ -805,7 +809,7 @@ long
 keaLayerRasterNullValueWrite( void  *lHandle, 
  unsigned char  *pixel )
  {
- #ifdef KEADEBUG
+#ifdef KEADEBUG
     keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
@@ -851,7 +855,14 @@ keaLayerGetHistoBinFunction(KEA_Layer *pLayer)
 
     // now read through the metadata to get this info if present
     std::vector< std::pair<std::string, std::string> > data;
-    data = pImageIO->getImageBandMetaData(pLayer->nBand);
+    try
+    {
+        data = pImageIO->getImageBandMetaData(pLayer->nBand);
+    }
+    catch (kealib::KEAIOException &e)
+    {
+        return NULL;
+    }
     for(std::vector< std::pair<std::string, std::string> >::iterator iterMetaData = data.begin(); iterMetaData != data.end(); ++iterMetaData)
     {
         if( iterMetaData->first == METADATA_HISTOMIN )
@@ -885,6 +896,48 @@ keaLayerGetHistoBinFunction(KEA_Layer *pLayer)
     }
 
     return pBinFn;
+}
+
+#ifdef WIN32
+    #define snprintf _snprintf
+#endif
+
+// opposite of above
+void keaLayerSetHistoBinFunction(KEA_Layer *pLayer, Edsc_BinFunction *pBinFn)
+{
+    char szTemp[256];
+    kealib::KEAImageIO *pImageIO = pLayer->getImageIO();
+    
+    try
+    {
+        snprintf(szTemp, 256, "%f", pBinFn->minLimit);
+        pImageIO->setImageBandMetaData(pLayer->nBand, METADATA_HISTOMIN, szTemp);
+
+        snprintf(szTemp, 256, "%f", pBinFn->maxLimit);
+        pImageIO->setImageBandMetaData(pLayer->nBand, METADATA_HISTOMAX, szTemp);
+
+        snprintf(szTemp, 256, "%ld", pBinFn->numBins);
+        pImageIO->setImageBandMetaData(pLayer->nBand, METADATA_HISTONBINS, szTemp);
+        
+        if( pBinFn->binFunctionType == EDSC_DIRECT_BINS )
+        {
+            pImageIO->setImageBandMetaData(pLayer->nBand, METADATA_HISTOBINFN, "direct");
+        }
+        else if( pBinFn->binFunctionType == EDSC_LINEAR_BINS )
+        {
+            pImageIO->setImageBandMetaData(pLayer->nBand, METADATA_HISTOBINFN, "linear");
+        }
+        else if( pBinFn->binFunctionType == EDSC_LOGARITHMIC_BINS )
+        {
+            pImageIO->setImageBandMetaData(pLayer->nBand, METADATA_HISTOBINFN, "exponential");
+        }
+    }
+    catch (kealib::KEAIOException &e)
+    {
+#ifdef KEADEBUG
+        keaDebugOut( "%s setting metadata failed\n", __FUNCTION__ );
+#endif
+    }
 }
 
 // the following don't seem to get called - RAT used instead

@@ -40,7 +40,7 @@ long
 keaInstanceTitleListGet(unsigned long *count, char ***titleList )
 {
 #ifdef KEADEBUG
-    fprintf( stderr, "%s\n", __FUNCTION__ );
+   keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     *titleList = emsc_New(1, char * );
     (*titleList)[0] = estr_Duplicate((char*)"KEA File Format");
@@ -53,7 +53,7 @@ long
 keaInstanceTemplateListGet(char ***templateList, char **templateListPseudoFlags)
 {
 #ifdef KEADEBUG
-    fprintf( stderr, "%s\n", __FUNCTION__ );
+    keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     *templateList = emsc_New(1, char * );
     (*templateList)[0] = estr_Duplicate((char*)"*.kea");
@@ -71,7 +71,7 @@ long
 keaInstanceExtListGet(char ***extList)
 {
 #ifdef KEADEBUG
-    fprintf( stderr, "%s\n", __FUNCTION__ );
+    keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     *extList = emsc_New(1, char * );
     (*extList)[0] = estr_Duplicate((char*)".kea");
@@ -83,7 +83,7 @@ long
 keaInstanceShortNameListGet(char ***shortNameList)
 {
 #ifdef KEADEBUG
-    fprintf( stderr, "%s\n", __FUNCTION__ );
+    keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     *shortNameList = emsc_New(1, char * );
     (*shortNameList)[0] = estr_Duplicate((char*)"kea");
@@ -95,7 +95,7 @@ long
 keaInstanceFilterFlagsGet( char **flags )
 {
 #ifdef KEADEBUG
-    fprintf( stderr, "%s\n", __FUNCTION__ );
+    keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     *flags = emsc_New(1, char);
     (*flags)[0] = 1;
@@ -106,7 +106,7 @@ long
 keaInstanceIsCreatableFlagsGet(char **flagsList)
 {
 #ifdef KEADEBUG
-    fprintf( stderr, "%s\n", __FUNCTION__ );
+    keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     *flagsList = emsc_New(1, char);
     (*flagsList)[0] = 1;
@@ -117,7 +117,7 @@ long
 keaInstanceIsDirFlagsGet( char **flags )
 {
 #ifdef KEADEBUG
-    fprintf( stderr, "%s\n", __FUNCTION__ );
+    keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     *flags = emsc_New(1, char);
     (*flags)[0] = 0;
@@ -244,15 +244,6 @@ keaInstanceSupportsMasks(unsigned char **flags)
     (*flags)[0] = 1;
     return 0; /* success in Imagine land usually *
                 /* The doco says this is a void function which doesn't match the header */
-}
-
-long
-keaInstanceCreatesInternalPyramids()
-{
-#ifdef KEADEBUG
-    keaDebugOut( "%s\n", __FUNCTION__ );
-#endif
-    return 1;
 }
 
 // not strictly necessary I guess but the Imagine format DLL's export this
