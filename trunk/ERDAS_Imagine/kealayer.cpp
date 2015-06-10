@@ -431,19 +431,38 @@ keaLayerLayerTypeRead(void  *lHandle, unsigned long  *lType)
     }
     catch (kealib::KEAIOException &e)
     {
+#ifdef KEADEBUG
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
+#endif
         rCode = -1;
     }
     return rCode;
 }
-/*
-Leaving unimplemented since kea doesn't support changing type
+
 long
-keaLayerLayerTypeWrite(void  *layerHandle, unsigned long  lType)
+keaLayerLayerTypeWrite(void  *lHandle, unsigned long  lType)
 {
-    return -1;
+#ifdef KEADEBUG
+    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
+#endif
+    long rCode = -1;
+    KEA_Layer *pLayer = (KEA_Layer*)lHandle;
+    kealib::KEAImageIO *pImageIO = pLayer->getImageIO();
+    try
+    {
+        pImageIO->setImageBandLayerType(pLayer->nBand, (kealib::KEALayerType)lType); // see keaInstanceLayerTypesGet
+        rCode = 0;
+    }
+    catch (kealib::KEAIOException &e)
+    {
+#ifdef KEADEBUG
+        keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
+#endif
+        rCode = -1;
+    }
+    return rCode;
 }
-*/
+
 long 
 keaLayerRRDLayerNamesGet(void *lHandle, unsigned long  *count, char  ***layerNames, char  **algorithm)
 {
@@ -702,7 +721,7 @@ keaLayerMapInfoWrite(void *lHandle, char *projection, double xULC,
  double yULC, double xPixelSize, double yPixelSize, char *units)
  {
  #ifdef KEADEBUG
-    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
+    keaDebugOut( "%s %p %s %s\n", __FUNCTION__, lHandle, projection, units );
 #endif
     long rCode = -1;
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
@@ -768,11 +787,53 @@ keaLayerMapProjectionWrite(void  *lHandle, char  *projTitle,
  char  *MIFearthModelDictionary, char  *MIFearthModelName)
 {
 #ifdef KEADEBUG
-    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
+    keaDebugOut( "%s %p %s\n", __FUNCTION__, lHandle, projTitle );
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
-    // TODO:
-    return 0;
+    Eerr_ErrorReport* err = NULL;
+    long rCode = -1;
+    if(projTitle == NULL)
+    {
+        // clobber existing data
+        kealib::KEAImageIO *pImageIO = pLayer->getImageIO();
+        try
+        {
+            kealib::KEAImageSpatialInfo *pSpatialInfo = pImageIO->getSpatialInfo();
+            pSpatialInfo->wktString = "";
+            pImageIO->setSpatialInfo(pSpatialInfo);
+        }
+        catch (kealib::KEAIOException &e)
+        {
+            keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
+            rCode = -1;
+        }
+    }
+    else
+    {
+        Eprj_MapProjection* pProj;
+
+        pProj = eprj_ProjectionConvertFromMIF(projTitle, MIFproj, MIFprojSize,
+                    MIFprojDictionary, MIFprojName, MIFearthModel, MIFearthModelSize,
+                    MIFearthModelDictionary, MIFearthModelName, &err);
+        HANDLE_ERR(err, -1)
+
+        // if we have one, free it
+        if( pLayer->pKEAFile->pProj != NULL )
+        {
+            eprj_ProjectionFree(&pLayer->pKEAFile->pProj);
+        }
+        
+        // save it in case we are asked again
+        pLayer->pKEAFile->pProj = pProj;
+
+#ifdef KEADEBUG
+        char *pszName = eprj_MapProjectionName(pProj);
+        keaDebugOut( "projname = %s\n", pszName );
+#endif
+        
+        rCode = 0;
+    }
+    return rCode;
 }
  
 long

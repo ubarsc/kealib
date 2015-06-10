@@ -178,6 +178,14 @@ keaTableCreate(void  *dataSource, char  *tableName, unsigned long  numRows,
                         pKEATable = pImageIO->getAttributeTable(kealib::kea_att_file, pKEALayer->nBand);
                         pKEATable->addRows(numRows);
                         rCode = 0;
+                        
+                        // Imagine seems to assume if the file is thematic there will
+                        // be a Class_Names column - won't create it like it does for the
+                        // other columns
+                        if( pImageIO->getImageBandLayerType(pKEALayer->nBand) == kealib::kea_thematic )
+                        {
+                            pKEATable->addAttStringField(COLUMN_CLASSNAMES, "", "Name");
+                        }
                     }
                     catch(kealib::KEAException &e)
                     {
@@ -348,7 +356,7 @@ keaTableRowCountSet(void  *tableHandle, unsigned long  rowCount)
 }
 
 
-// KEA doesn't support thi, but Imagine needs the function before it will create tables
+// KEA doesn't support this, but Imagine needs the function before it will create tables
 long
 keaTableDestroy(void  *dataSource,  char  *tableName)
 {
@@ -427,6 +435,9 @@ keaColumnOpen(void *tableHandle, char *columnName, unsigned long *dataType,
 
         *columnHandle = pKEAColumn;
         rCode = 0;
+#ifdef KEADEBUG            
+        keaDebugOut( "%s returning %p\n", __FUNCTION__, pKEAColumn);
+#endif            
     }
     catch(kealib::KEAException &e)
     {
@@ -492,7 +503,8 @@ keaColumnCreate(void  *tableHandle, char  *columnName,
         {
             sUsage = "PixelCount";
         }
-        else if( ( sColumnName == COLUMN_RED ) || ( sColumnName == COLUMN_GREEN ) || 
+        
+        if( ( sColumnName == COLUMN_RED ) || ( sColumnName == COLUMN_GREEN ) || 
             ( sColumnName == COLUMN_BLUE ) || ( sColumnName == COLUMN_ALPHA ) )
         {
             // KEA saves this as int
@@ -511,19 +523,21 @@ keaColumnCreate(void  *tableHandle, char  *columnName,
 #endif                
             }      
         }
-        
-        try
+        else
         {
-            pKEATable->addAttFloatField(sColumnName, 0.0, sUsage);
-            nColIdx = pKEATable->getFieldIndex(sColumnName);
-            rCode = 0; 
+            try
+            {
+                pKEATable->addAttFloatField(sColumnName, 0.0, sUsage);
+                nColIdx = pKEATable->getFieldIndex(sColumnName);
+                rCode = 0; 
+            }
+            catch(kealib::KEAException &e)
+            {
+    #ifdef KEADEBUG            
+                keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
+    #endif            
+            }  
         }
-        catch(kealib::KEAException &e)
-        {
-#ifdef KEADEBUG            
-            keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
-#endif            
-        }  
     }
     else
     {
@@ -556,6 +570,9 @@ keaColumnCreate(void  *tableHandle, char  *columnName,
         pKEAColumn->bTreatIntAsFloat = bTreatIntAsFloat;
         
         *columnHandle = pKEAColumn;
+#ifdef KEADEBUG            
+        keaDebugOut( "%s returning %p\n", __FUNCTION__, pKEAColumn);
+#endif            
     }
     return rCode;
 }
@@ -727,7 +744,10 @@ keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long num
                     pKEATable->setIntFields(startRow, numRows, pKEAColumn->nColIdx, pInt64Data);
                     free(pInt64Data);
                 }
-                pKEATable->setFloatFields(startRow, numRows, pKEAColumn->nColIdx, pDoubleData);
+                else
+                {
+                    pKEATable->setFloatFields(startRow, numRows, pKEAColumn->nColIdx, pDoubleData);
+                }
             }
             break;
 
