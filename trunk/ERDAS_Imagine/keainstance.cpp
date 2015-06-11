@@ -257,6 +257,17 @@ keaInstanceSupportsUnicode(void)
     return 0;
 }
 
+long
+keaInstanceMapProjectionIsSupported(long  rfTitle, char  *projTitle, unsigned char  *MIFproj,
+unsigned long  MIFprojSize, char  *MIFprojDictionary, char  *MIFprojName, unsigned char  *MIFearthModel, 
+unsigned long  MIFearthModelSize, char  *MIFearthModelDictionary, char  *MIFearthModelName )
+{
+#ifdef KEADEBUG
+    keaDebugOut( "%s %s\n", __FUNCTION__, projTitle );
+#endif
+    return 1;
+}
+
 #ifdef WIN32
     #define snprintf _snprintf
 #endif

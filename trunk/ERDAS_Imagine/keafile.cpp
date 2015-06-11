@@ -153,7 +153,9 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                     std::string sName = pImageIO->getImageBandDescription(nBand);
                     // Imagine doesn't like spaces
                     std::replace(sName.begin(), sName.end(), ' ', '_');
+#ifdef KEADEBUG                        
                     keaDebugOut( "added layer '%s'\n", sName.c_str());
+#endif                        
                     pLayer->sName = sName;
                     pLayer->nBand = nBand;
                     pLayer->bIsOverview = false;
