@@ -28,7 +28,7 @@ set (PROJECT_TOOLS_DIR tools)
 set (PROJECT_GDAL_DIR gdal)
 
 # The version number.
-set (LIBKEA_HG_VERSION 250)
+set (LIBKEA_HG_VERSION 265)
 set (LIBKEA_VERSION_MAJOR 1)
 set (LIBKEA_VERSION_MINOR 4)
 set (LIBKEA_VERSION_PATCH 5)
@@ -68,7 +68,7 @@ ENDIF()
 
 ###############################################################################
 # CMake settings
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 2.8.10)
 
 IF(NOT CMAKE_BUILD_TYPE)
   #SET(CMAKE_BUILD_TYPE "DEBUG")
