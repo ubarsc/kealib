@@ -23,6 +23,7 @@ endif()
 set (PROJECT_BINARY_DIR bin)
 set (PROJECT_LIBRARY_DIR lib)
 set (PROJECT_SOURCE_DIR src)
+set (PROJECT_TEST_DIR tests)
 set (PROJECT_HEADER_DIR include)
 set (PROJECT_TOOLS_DIR tools)
 set (PROJECT_GDAL_DIR gdal)
@@ -186,8 +187,11 @@ endif(LIBKEA_WITH_GDAL)
 ###############################################################################
 
 ###############################################################################
-# Build executables
-
+# Tests
+enable_testing()
+# add_test doesn't seem to be necessary since 
+# cmake already picks up anything with 'test' in the name
+#add_test(NAME test1 COMMAND src/test1)
 
 ###############################################################################
 
