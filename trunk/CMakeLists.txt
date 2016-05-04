@@ -184,9 +184,7 @@ endif(LIBKEA_WITH_GDAL)
 ###############################################################################
 # Tests
 enable_testing()
-# add_test doesn't seem to be necessary since 
-# cmake already picks up anything with 'test' in the name
-#add_test(NAME test1 COMMAND src/test1)
+add_test(NAME test1 COMMAND src/test1)
 
 ###############################################################################
 
