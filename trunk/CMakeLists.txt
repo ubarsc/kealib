@@ -40,7 +40,7 @@ set (LIBKEA_PACKAGE_BUGREPORT "petebunting@mac.com")
 set (LIBKEA_PACKAGE "LibKEA")
 set (LIBKEA_COPYRIGHT_YEAR 2013)
 
-if(WIN32)
+if(MSVC)
     # Name of C++ library
     set(LIBKEA_LIB_NAME libkea)
 else()
@@ -92,14 +92,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ./cmake/modules/)
 ###############################################################################
 # Platform and compiler specific settings
 
-if(WIN32)
-    if (MSVC)
-        if (MSVC80 OR MSVC90 OR MSVC10)
-            add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
-            add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-            add_definitions(-D_CRT_NONSTDC_NO_WARNING)
-            add_definitions(-D_SCL_SECURE_NO_WARNINGS)
-        endif()
+if(MSVC)
+        add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+        add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+        add_definitions(-D_CRT_NONSTDC_NO_WARNING)
+        add_definitions(-D_SCL_SECURE_NO_WARNINGS)
         
         # by default the compiler produces gratuitous warnings. Disable some of them
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4290 /wd4005 /wd4101 /wd4244 /wd4800 /wd4251 /wd4996")
@@ -110,8 +107,6 @@ if(WIN32)
         mark_as_advanced(MSVC_ENVIRONMENT_PATH)
         set(VCPROJ_USER_ENVIRONMENT_PATH_DEBUG "${ENVIRONMENT_PATH}")
         mark_as_advanced(VCPROJ_USER_ENVIRONMENT_PATH_DEBUG)
-
-    endif()
 
 else()
   # Recommended C++ compilation flags
@@ -130,7 +125,7 @@ else()
   elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER}" MATCHES "clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LIBKEA_COMMON_CXX_FLAGS}")
   endif()
-endif(WIN32)
+endif(MSVC)
 
 if (APPLE)
   set(SO_EXT dylib)
@@ -146,7 +141,7 @@ endif(APPLE)
 # Check the required libraries are present
 
 include_directories(${HDF5_INCLUDE_DIR})
-if (WIN32)
+if (MSVC)
   if(HDF5_STATIC_LIBS)
     set(HDF5_LIBRARIES -LIBPATH:"${HDF5_LIB_PATH}" hdf5_cpp.lib hdf5.lib zlibstatic.lib)
   else()
@@ -155,13 +150,13 @@ if (WIN32)
   endif()
 else()
   set(HDF5_LIBRARIES "-L${HDF5_LIB_PATH} -lhdf5 -lhdf5_hl -lhdf5_cpp")
-endif(WIN32)
+endif(MSVC)
 
-if (WIN32)
+if (MSVC)
   set(GDAL_LIBRARIES -LIBPATH:"${GDAL_LIB_PATH}" gdal_i.lib)
 else()
   set(GDAL_LIBRARIES -L${GDAL_LIB_PATH} -lgdal)
-endif(WIN32)
+endif(MSVC)
 ###############################################################################
 
 ###############################################################################
