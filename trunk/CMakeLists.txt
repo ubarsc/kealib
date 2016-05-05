@@ -140,7 +140,6 @@ endif(APPLE)
 ###############################################################################
 # Check the required libraries are present
 
-include_directories(${HDF5_INCLUDE_DIR})
 if (MSVC)
   if(HDF5_STATIC_LIBS)
     set(HDF5_LIBRARIES -LIBPATH:"${HDF5_LIB_PATH}" hdf5_cpp.lib hdf5.lib zlibstatic.lib)
@@ -175,6 +174,7 @@ file(WRITE "README.txt" "${README}")
 # Build library
 
 include_directories ("${PROJECT_HEADER_DIR}")
+include_directories(${HDF5_INCLUDE_DIR})
 add_subdirectory ("${PROJECT_SOURCE_DIR}")
 if (LIBKEA_WITH_GDAL)
 	add_subdirectory ("${PROJECT_GDAL_DIR}")
