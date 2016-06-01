@@ -20,13 +20,16 @@
 
 import os
 import sys
-from distutils.core import setup, Extension
+from numpy.distutils.core import setup, Extension
 
 def getGDALFlags():
     """
     Return the flags needed to link in GDAL as a dictionary
     """
     extraargs = {}
+    # don't use the deprecated numpy api
+    extraargs['define_macros'] = [('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')]
+
     if sys.platform == 'win32':
         # Windows - rely on %GDAL_HOME% being set and set 
         # paths appropriately

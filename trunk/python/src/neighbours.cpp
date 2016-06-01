@@ -30,6 +30,7 @@
 
 #include <vector>
 #include <Python.h>
+#include "numpy/arrayobject.h"
 #include "gdal_priv.h"
 #include "libkea/KEAImageIO.h"
 
@@ -99,6 +100,9 @@ struct NeighboursState
 static struct NeighboursState _state;
 #endif
 
+#define NEIGHBOURS_LIST 0
+#define NEIGHBOURS_ARRAY 1
+
 void freeNeighbourLists(std::vector<std::vector<size_t>* > *pNeighbours)
 {
     /* frees all the sub vectors of pNeighbours */
@@ -120,16 +124,11 @@ static PyObject *neighbours_setNeighbours(PyObject *self, PyObject *args)
     if( !PyArg_ParseTuple(args, "OinO:setNeighbours", &pPythonDataset, &nBand, &startfid, &pSequence))
         return NULL;
 
-    if( !PySequence_Check(pSequence))
-    {
-        PyErr_SetString(GETSTATE(self)->error, "4th argument must be a sequence");
-        return NULL;
-    }
-
     void *pPtr = getUnderlyingPtrFromSWIGPyObject(pPythonDataset, GETSTATE(self)->error);
     if( pPtr == NULL )
         return NULL;
 
+    /* Dunno what to do if not a GDALDataset - not easy to check */
     GDALDataset *pDataset = (GDALDataset*)pPtr;
 
     GDALDriver *pDriver = pDataset->GetDriver();
@@ -147,53 +146,148 @@ static PyObject *neighbours_setNeighbours(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    try
+    if( PyArray_Check(pSequence) )
     {
-        kealib::KEAAttributeTable *pRAT = pImageIO->getAttributeTable(kealib::kea_att_file, nBand);
-        if( pRAT == NULL )
+        /* Numpy array - check it is masked */
+        if( !PyObject_HasAttrString(pSequence, "data") || !PyObject_HasAttrString(pSequence, "mask"))
         {
-            PyErr_SetString(GETSTATE(self)->error, "No Attribute table in this file");
+            PyErr_SetString(GETSTATE(self)->error, "numpy array much be a masked array");
             return NULL;
         }
 
-        Py_ssize_t nSeqLength = PySequence_Length(pSequence);
-        std::vector<std::vector<size_t>* > neighbours(nSeqLength);
-        for( Py_ssize_t n = 0; n < nSeqLength; n++)
+        PyObject *pDataObj = PyObject_GetAttrString(pSequence, "data");
+        PyObject *pMaskObj = PyObject_GetAttrString(pSequence, "mask");
+        if( !PyArray_Check(pDataObj) || !PyArray_Check(pMaskObj) )
         {
-            PyObject *pSubSeq = PySequence_GetItem(pSequence, n);
-            if( ( pSubSeq == NULL ) || (!PySequence_Check(pSubSeq)) )
+            Py_DECREF(pDataObj);
+            Py_DECREF(pMaskObj);
+            PyErr_SetString(GETSTATE(self)->error, "mask and data much be numpy arrays");
+            return NULL;
+        }
+
+        PyArrayObject *pDataArr = (PyArrayObject*)pDataObj;
+        PyArrayObject *pMaskArr = (PyArrayObject*)pMaskObj;
+
+        if( (PyArray_NDIM(pDataArr) != 2) || (PyArray_NDIM(pMaskArr) != 2) || 
+                (PyArray_DIM(pDataArr, 0) != PyArray_DIM(pMaskArr, 0) ) || 
+                (PyArray_DIM(pDataArr, 1) != PyArray_DIM(pMaskArr, 1) ) )
+        {
+            Py_DECREF(pDataObj);
+            Py_DECREF(pMaskObj);
+            PyErr_SetString(GETSTATE(self)->error, "numpy array must be 2d and mask and data must be same shape");
+            return NULL;
+        }
+
+        try
+        {
+            kealib::KEAAttributeTable *pRAT = pImageIO->getAttributeTable(kealib::kea_att_file, nBand);
+            if( pRAT == NULL )
             {
-                PyErr_SetString(GETSTATE(self)->error, "All elements in sequence must also be a sequence");
-                Py_XDECREF(pSubSeq);
-                freeNeighbourLists(&neighbours);
+                Py_DECREF(pDataObj);
+                Py_DECREF(pMaskObj);
+                PyErr_SetString(GETSTATE(self)->error, "No Attribute table in this file");
                 return NULL;
             }
 
-            Py_ssize_t nSubSeqLength = PySequence_Length(pSubSeq);
-            std::vector<size_t> *pVec = new std::vector<size_t>(nSubSeqLength);
-            for( Py_ssize_t i = 0; i < nSubSeqLength; i++ )
+            int nDataType = PyArray_TYPE(pDataArr);
+            npy_intp nSeqLength = PyArray_DIM(pDataArr, 0);
+            npy_intp nMaxSubSeqLength = PyArray_DIM(pDataArr, 1);
+            std::vector<std::vector<size_t>* > neighbours(nSeqLength);
+            for( npy_intp n = 0; n < nSeqLength; n++)
             {
-                PyObject *pElement = PySequence_GetItem(pSubSeq, i);
-                if( (pElement == NULL) || (!PyLong_Check(pElement)) )
+                std::vector<size_t> *pVec = new std::vector<size_t>;
+                for( npy_intp i = 0; i < nMaxSubSeqLength; i++ )
                 {
-                    PyErr_SetString(GETSTATE(self)->error, "All elements in the subsequence must be ints");
-                    Py_XDECREF(pElement);
-                    return NULL;
+                    npy_bool masked = *(npy_bool*)PyArray_GETPTR2(pMaskArr, n, i);
+                    if( !masked )
+                    {
+                        npy_int64 arrVal = 0;
+                        switch(nDataType)
+                        {
+                        case NPY_INT8: arrVal = (npy_uint64) *((npy_int8*)PyArray_GETPTR2(pDataArr, n, i)); break;
+                        case NPY_UINT8: arrVal = (npy_uint64) *((npy_uint8*)PyArray_GETPTR2(pDataArr, n, i)); break;
+                        case NPY_INT16: arrVal = (npy_uint64) *((npy_int16*)PyArray_GETPTR2(pDataArr, n, i)); break;
+                        case NPY_UINT16: arrVal = (npy_uint64) *((npy_uint16*)PyArray_GETPTR2(pDataArr, n, i)); break;
+                        case NPY_INT32: arrVal = (npy_uint64) *((npy_int32*)PyArray_GETPTR2(pDataArr, n, i)); break;
+                        case NPY_UINT32: arrVal = (npy_uint64) *((npy_uint32*)PyArray_GETPTR2(pDataArr, n, i)); break;
+                        case NPY_INT64: arrVal = (npy_uint64) *((npy_int64*)PyArray_GETPTR2(pDataArr, n, i)); break;
+                        case NPY_UINT64: arrVal = (npy_uint64) *((npy_uint64*)PyArray_GETPTR2(pDataArr, n, i)); break;
+                        }
+                        pVec->push_back(arrVal);
+                    }
                 }
-                pVec->at(i) = PyLong_AsLong(pElement);
-                Py_DECREF(pElement);
+                neighbours.at(n) = pVec;
             }
-            neighbours.at(n) = pVec;
-
-            Py_DECREF(pSubSeq);
+            pRAT->setNeighbours(startfid, neighbours.size(), &neighbours);
+            freeNeighbourLists(&neighbours);
+        }
+        catch(kealib::KEAException &e)
+        {
+            Py_DECREF(pDataObj);
+            Py_DECREF(pMaskObj);
+            PyErr_Format(GETSTATE(self)->error, "Error from libkea: %s", e.what());
+            return NULL;
         }
 
-        pRAT->setNeighbours(startfid, neighbours.size(), &neighbours);
-        freeNeighbourLists(&neighbours);
+        Py_DECREF(pDataObj);
+        Py_DECREF(pMaskObj);
     }
-    catch(kealib::KEAException &e)
+    else if( PySequence_Check(pSequence) )
     {
-        PyErr_Format(GETSTATE(self)->error, "Error from libkea: %s", e.what());
+        /* a sequence of sequences */
+        try
+        {
+            kealib::KEAAttributeTable *pRAT = pImageIO->getAttributeTable(kealib::kea_att_file, nBand);
+            if( pRAT == NULL )
+            {
+                PyErr_SetString(GETSTATE(self)->error, "No Attribute table in this file");
+                return NULL;
+            }
+
+            Py_ssize_t nSeqLength = PySequence_Length(pSequence);
+            std::vector<std::vector<size_t>* > neighbours(nSeqLength);
+            for( Py_ssize_t n = 0; n < nSeqLength; n++)
+            {
+                PyObject *pSubSeq = PySequence_GetItem(pSequence, n);
+                if( ( pSubSeq == NULL ) || (!PySequence_Check(pSubSeq)) )
+                {
+                    PyErr_SetString(GETSTATE(self)->error, "All elements in sequence must also be a sequence");
+                    Py_XDECREF(pSubSeq);
+                    freeNeighbourLists(&neighbours);
+                    return NULL;
+                }
+
+                Py_ssize_t nSubSeqLength = PySequence_Length(pSubSeq);
+                std::vector<size_t> *pVec = new std::vector<size_t>(nSubSeqLength);
+                for( Py_ssize_t i = 0; i < nSubSeqLength; i++ )
+                {
+                    PyObject *pElement = PySequence_GetItem(pSubSeq, i);
+                    if( (pElement == NULL) || (!PyLong_Check(pElement)) )
+                    {
+                        PyErr_SetString(GETSTATE(self)->error, "All elements in the subsequence must be ints");
+                        Py_XDECREF(pElement);
+                        return NULL;
+                    }
+                    pVec->at(i) = PyLong_AsLong(pElement);
+                    Py_DECREF(pElement);
+                }
+                neighbours.at(n) = pVec;
+
+                Py_DECREF(pSubSeq);
+            }
+
+            pRAT->setNeighbours(startfid, neighbours.size(), &neighbours);
+            freeNeighbourLists(&neighbours);
+        }
+        catch(kealib::KEAException &e)
+        {
+            PyErr_Format(GETSTATE(self)->error, "Error from libkea: %s", e.what());
+            return NULL;
+        }
+    }
+    else
+    {
+        PyErr_SetString(GETSTATE(self)->error, "4th argument must be a sequence or numpy masked array");
         return NULL;
     }
 
@@ -205,8 +299,9 @@ static PyObject *neighbours_getNeighbours(PyObject *self, PyObject *args)
     PyObject *pPythonDataset; /* gdal.Dataset */
     int nBand;
     Py_ssize_t startfid, length;
+    int nRetType = NEIGHBOURS_LIST;
 
-    if( !PyArg_ParseTuple(args, "Oinn:getNeighbours", &pPythonDataset, &nBand, &startfid, &length))
+    if( !PyArg_ParseTuple(args, "Oinn|i:getNeighbours", &pPythonDataset, &nBand, &startfid, &length, &nRetType))
         return NULL;
 
     void *pPtr = getUnderlyingPtrFromSWIGPyObject(pPythonDataset, GETSTATE(self)->error);
@@ -230,7 +325,7 @@ static PyObject *neighbours_getNeighbours(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    PyObject *pList = NULL;
+    PyObject *pRetVal = NULL;
     try
     {
         kealib::KEAAttributeTable *pRAT = pImageIO->getAttributeTable(kealib::kea_att_file, nBand);
@@ -244,17 +339,64 @@ static PyObject *neighbours_getNeighbours(PyObject *self, PyObject *args)
         std::vector<std::vector<size_t>* > neighbours;
         pRAT->getNeighbours(startfid, length, &neighbours);
 
-        pList = PyList_New(neighbours.size());
-        for( size_t n = 0; n < neighbours.size(); n++ )
+        if( nRetType == NEIGHBOURS_LIST )
         {
-            std::vector<size_t>* pSubVect = neighbours.at(n);
-            PyObject *pSubList = PyList_New(pSubVect->size());
-            for( size_t i = 0; i < pSubVect->size(); i++ )
+            pRetVal = PyList_New(neighbours.size());
+            for( size_t n = 0; n < neighbours.size(); n++ )
             {
-                PyObject *pVal = PyLong_FromLong(pSubVect->at(i));
-                PyList_SetItem(pSubList, i, pVal);
+                std::vector<size_t>* pSubVect = neighbours.at(n);
+                PyObject *pSubList = PyList_New(pSubVect->size());
+                for( size_t i = 0; i < pSubVect->size(); i++ )
+                {
+                    PyObject *pVal = PyLong_FromLong(pSubVect->at(i));
+                    PyList_SetItem(pSubList, i, pVal);
+                }
+                PyList_SetItem(pRetVal, n, pSubList);
             }
-            PyList_SetItem(pList, n, pSubList);
+        }
+        else if( nRetType == NEIGHBOURS_ARRAY )
+        {
+            /* Can't create a masked array in C, so need to return a tuple */
+            pRetVal = PyTuple_New(2);
+
+            /* Find max number of neighbours */
+            npy_intp dims[] = {(npy_intp)neighbours.size(), 0};
+            for( size_t n = 0; n < neighbours.size(); n++ )
+            {
+                std::vector<size_t>* pSubVect = neighbours.at(n);
+                if( (npy_intp)pSubVect->size() > dims[1] )
+                {
+                    dims[1] = pSubVect->size();
+                }
+            }
+
+            PyArrayObject *pDataArray = (PyArrayObject*)PyArray_EMPTY(2, dims, NPY_UINT64, 0);
+            PyArrayObject *pMaskArray = (PyArrayObject*)PyArray_EMPTY(2, dims, NPY_BOOL, 0);
+            for( size_t n = 0; n < neighbours.size(); n++ )
+            {
+                std::vector<size_t>* pSubVect = neighbours.at(n);
+                for( npy_intp i = 0; i < dims[1]; i++ )
+                {
+                    if( i < (npy_intp)pSubVect->size() )
+                    {
+                        *(npy_uint64*)PyArray_GETPTR2(pDataArray, n, i) = pSubVect->at(i);
+                        *(npy_bool*)PyArray_GETPTR2(pMaskArray, n, i) = NPY_FALSE;
+                    }
+                    else
+                    {
+                        *(npy_uint64*)PyArray_GETPTR2(pDataArray, n, i) = 0;
+                        *(npy_bool*)PyArray_GETPTR2(pMaskArray, n, i) = NPY_TRUE; /* masked out */
+                    }
+                }
+            }
+
+            PyTuple_SET_ITEM(pRetVal, 0, (PyObject*)pDataArray);
+            PyTuple_SET_ITEM(pRetVal, 1, (PyObject*)pMaskArray);
+        }
+        else
+        {
+            PyErr_SetString(GETSTATE(self)->error, "Unknown value for last parameter");
+            return NULL;
         }
 
         freeNeighbourLists(&neighbours);
@@ -265,7 +407,7 @@ static PyObject *neighbours_getNeighbours(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    return pList;
+    return pRetVal;
 }
 
 /* Our list of functions in this module*/
@@ -278,16 +420,17 @@ static PyMethodDef NeighboursMethods[] = {
 "  band is the band number (1-based)\n"
 "  startfid is the feature to start with\n"
 "  seq is a sequence with an element for each feature to be set.\n"
-"    each element must be a sequence.\n"},
+"    each element must be a sequence. Can also be a 2d masked numpy array.\n"},
     {"getNeighbours", neighbours_getNeighbours, METH_VARARGS,
 "get the neighbours for given feature id(s).\n"
-"call signature: getNeighbours(ds, band, startfid, len)\n"
+"call signature: getNeighbours(ds, band, startfid, len, type=NEIGHBOURS_LIST)\n"
 "where:\n"
 "  ds is an instance of gdal.Dataset\n"
 "  band is the band number (1-based)\n"
 "  startfid is the feature to start with\n"
 "  len is the number of features to read\n"
-"A list of lists is returned.\n"},
+"  type is an optional parameter. If NEIGHBOURS_LIST, a list of lists is returned.\n"
+"    If NEIGHBOURS_ARRAY a tuple with a 2d numpy array of values and 2d boolean numpy array specifying where these are valid\n"},
     {NULL}        /* Sentinel */
 };
 
@@ -332,6 +475,8 @@ initneighbours(void)
     PyObject *pModule;
     struct NeighboursState *state;
 
+    import_array();
+
 #if PY_MAJOR_VERSION >= 3
     pModule = PyModule_Create(&moduledef);
 #else
@@ -350,6 +495,8 @@ initneighbours(void)
         INITERROR;
     }
     PyModule_AddObject(pModule, "error", state->error);
+    PyModule_AddIntMacro(pModule, NEIGHBOURS_LIST);
+    PyModule_AddIntMacro(pModule, NEIGHBOURS_ARRAY);
 
 #if PY_MAJOR_VERSION >= 3
     return pModule;
