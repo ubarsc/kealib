@@ -82,6 +82,7 @@ public:
     // virtual methods for the no data value
     double GetNoDataValue(int *pbSuccess=NULL);
     CPLErr SetNoDataValue(double dfNoData);
+    virtual CPLErr DeleteNoDataValue();
 
     // virtual methods for RATs
 #ifdef HAVE_RFC40
