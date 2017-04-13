@@ -201,7 +201,7 @@ CPLErr KEARasterBand::SetHistogramFromString(const char *pszString)
             nRows++;
         i++;
     }
-    
+    pTable->SetRowCount(nRows);
 #endif
 
     char * pszWork = pszBinValues;
