@@ -939,8 +939,11 @@ CPLErr KEARasterAttributeTable::SetLinearBinning( double dfRow0Min,
     m_poBand->SetMetadataItem("STATISTICS_HISTOMIN", osWorkingResult);
     osWorkingResult.Printf( "%.16g", (nRows - 1) * dfBinSize + dfRow0Min);
     m_poBand->SetMetadataItem("STATISTICS_HISTOMAX", osWorkingResult);
-    osWorkingResult.Printf( "%lu", (unsigned long)nRows);
-    m_poBand->SetMetadataItem("STATISTICS_HISTONUMBINS", osWorkingResult);
+
+    // Below no longer necessary as there is a STATISTICS_HISTONUMBINS
+    // metadata item that is set from the size of the RAT
+    //osWorkingResult.Printf( "%lu", (unsigned long)nRows);
+    //m_poBand->SetMetadataItem("STATISTICS_HISTONUMBINS", osWorkingResult);
 
     return CE_None;
 }
@@ -950,14 +953,12 @@ int KEARasterAttributeTable::GetLinearBinning( double *pdfRow0Min,
 {
     const char *pszMin = m_poBand->GetMetadataItem("STATISTICS_HISTOMIN");
     const char *pszMax = m_poBand->GetMetadataItem("STATISTICS_HISTOMAX");
-    const char *pszNumBins = m_poBand->GetMetadataItem("STATISTICS_HISTONUMBINS");
-    if( ( pszMin == NULL ) || ( pszMax == NULL ) || ( pszNumBins == NULL ) )
+    if( ( pszMin == NULL ) || ( pszMax == NULL ) )
     {
         return FALSE;
     } 
     *pdfRow0Min = atof(pszMin);
-    long nRows = atol(pszNumBins);
-    *pdfBinSize = (atof(pszMax) - *pdfRow0Min) / (nRows - 1);
+    *pdfBinSize = (atof(pszMax) - *pdfRow0Min) / (m_poKEATable->getSize() - 1);
 
     return TRUE;
 }
