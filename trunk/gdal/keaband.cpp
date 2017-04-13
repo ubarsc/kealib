@@ -85,9 +85,7 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAc
     // initialise the metadata as a CPLStringList
     m_papszMetadataList = NULL;
     this->UpdateMetadataList();
-#ifdef HAVE_RFC40
     m_pszHistoBinValues = NULL;
-#endif
 }
 
 // destructor
@@ -99,10 +97,11 @@ KEARasterBand::~KEARasterBand()
     delete this->m_pColorTable;
     // destroy the metadata
     CSLDestroy(this->m_papszMetadataList);
-#ifdef HAVE_RFC40
-    // histgram bin values as a string
-    delete this->m_pszHistoBinValues;
-#endif
+    if( this->m_pszHistoBinValues != NULL )
+    {
+        // histgram bin values as a string
+        CPLFree(this->m_pszHistoBinValues);
+    }
     // delete any overview bands
     this->deleteOverviewObjects();
 
@@ -153,6 +152,13 @@ void KEARasterBand::UpdateMetadataList()
     {
         m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "LAYER_TYPE", "thematic" );
     }
+
+    // STATISTICS_HISTONUMBINS
+    const GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
+    CPLString osWorkingResult;
+    osWorkingResult.Printf( "%lu", (unsigned long)pTable->GetRowCount());
+    m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "STATISTICS_HISTONUMBINS", osWorkingResult);
+
     // attribute table chunksize
     if( this->m_nAttributeChunkSize != -1 )
     {
@@ -162,7 +168,6 @@ void KEARasterBand::UpdateMetadataList()
     }
 }
 
-#ifdef HAVE_RFC40
 // internal method to set the histogram column from a string (for metadata)
 CPLErr KEARasterBand::SetHistogramFromString(const char *pszString)
 {
@@ -171,6 +176,7 @@ CPLErr KEARasterBand::SetHistogramFromString(const char *pszString)
     if( pszBinValues == NULL )
         return CE_Failure;
 
+#ifdef HAVE_RFC40
     GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
     int nRows = pTable->GetRowCount();
     // find histogram column if it exists
@@ -181,6 +187,22 @@ CPLErr KEARasterBand::SetHistogramFromString(const char *pszString)
             return CE_Failure;
         nCol = pTable->GetColumnCount() - 1;
     }
+#else
+    // just create a blank rat then populate it
+    GDALRasterAttributeTable *pTable = new GDALRasterAttributeTable();
+    if( pTable->CreateColumn("Histogram", GFT_Real, GFU_PixelCount) != CE_None )
+        return CE_Failure;
+    int nCol = 0;
+    // as a hack just make nRows equal to the number of | chars
+    int nRows = 0, i = 0;
+    while( pszBinValues[i] != '\0' )
+    {
+        if( pszBinValues[i] == '|' )
+            nRows++;
+        i++;
+    }
+    
+#endif
 
     char * pszWork = pszBinValues;
     for( int nBin = 0; nBin < nRows; ++nBin )
@@ -196,13 +218,19 @@ CPLErr KEARasterBand::SetHistogramFromString(const char *pszString)
     }
     CPLFree(pszBinValues);
 
+    // note: #ifndef
+#ifndef HAVE_RFC40
+    // need to set it back if we don't have RFC40
+    this->SetDefaultRAT(pTable);
+#endif
+
     return CE_None;
 }
 
 // get histogram as string with values separated by '|'
 char *KEARasterBand::GetHistogramAsString()
 {
-    GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
+    const GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
     int nRows = pTable->GetRowCount();
     // find histogram column if it exists
     int nCol = pTable->GetColOfUsage(GFU_PixelCount);
@@ -222,7 +250,7 @@ char *KEARasterBand::GetHistogramAsString()
         if ( ( nBinValuesLen + strlen( szBuf ) + 2 ) > nBufSize )
         {
             nBufSize *= 2;
-            char* pszNewBinValues = (char *)VSI_REALLOC_VERBOSE( pszBinValues, nBufSize );
+            char* pszNewBinValues = (char *)VSIRealloc( pszBinValues, nBufSize );
             if (pszNewBinValues == NULL)
             {
                 break;
@@ -236,7 +264,6 @@ char *KEARasterBand::GetHistogramAsString()
 
     return pszBinValues;
 }
-#endif
 
 // internal method to create the overviews
 void KEARasterBand::CreateOverviews(int nOverviews, int *panOverviewList)
@@ -372,13 +399,23 @@ CPLErr KEARasterBand::SetMetadataItem(const char *pszName, const char *pszValue,
                 this->m_pImageIO->setImageBandLayerType(this->nBand, kealib::kea_thematic );
             }
         }
-#ifdef HAVE_RFC40
         else if( EQUAL( pszName, "STATISTICS_HISTOBINVALUES" ) )
         {
             if( this->SetHistogramFromString(pszValue) != CE_None )
                 return CE_Failure;
+            else
+                return CE_None;
         }
+        else if( EQUAL( pszName, "STATISTICS_HISTONUMBINS" ) )
+        {
+#ifdef HAVE_RFC40
+            GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
+            pTable->SetRowCount(atol(pszValue));
+#else
+            // this is quite hard so I'm leaving it
 #endif
+            // leave to update m_papszMetadataList below
+        }
         else
         {
             // otherwise set it as normal
@@ -401,14 +438,14 @@ const char *KEARasterBand::GetMetadataItem (const char *pszName, const char *psz
     if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
         return NULL;
 
-#ifdef HAVE_RFC40
+    fprintf(stderr, "KEARasterBand::GetMetadataItem\n");
     if(EQUAL( pszName, "STATISTICS_HISTOBINVALUES" ) )
     {
-        delete m_pszHistoBinValues; // could have changed
+        if( m_pszHistoBinValues != NULL )
+            CPLFree(m_pszHistoBinValues); // could have changed
         m_pszHistoBinValues = this->GetHistogramAsString();
         return m_pszHistoBinValues;
     }
-#endif
     // get it out of the CSLStringList so we can be sure it is persistant
     return CSLFetchNameValue(m_papszMetadataList, pszName);
 }
@@ -419,6 +456,9 @@ char **KEARasterBand::GetMetadata(const char *pszDomain)
     // only deal with 'default' domain - no geolocation etc
     if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
         return NULL;
+    // Note: ignoring STATISTICS_HISTOBINVALUES as these are likely to be very long
+    // not sure user should get those unless they really ask...
+
     // conveniently we already have it in this format
     return m_papszMetadataList; 
 }
@@ -451,13 +491,11 @@ CPLErr KEARasterBand::SetMetadata(char **papszMetadata, const char *pszDomain)
                     this->m_pImageIO->setImageBandLayerType(this->nBand, kealib::kea_thematic );
                 }
             }
-#ifdef HAVE_RFC40
             else if( EQUAL( pszName, "STATISTICS_HISTOBINVALUES" ) )
             {
                 if( this->SetHistogramFromString(pszValue) != CE_None )
                     return CE_Failure;
             }
-#endif
             else
             {
                 // write it into the image

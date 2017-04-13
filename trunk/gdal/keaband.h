@@ -119,13 +119,12 @@ protected:
     // updates m_papszMetadataList
     void UpdateMetadataList();
 
-#ifdef HAVE_RFC40
     // sets the histogram column from a string (for metadata)
     CPLErr SetHistogramFromString(const char *pszString);
     char *GetHistogramAsString();
     // So we can return the histogram as a string from GetMetadataItem
     char *m_pszHistoBinValues;
-#endif
+
     kealib::KEAImageIO  *m_pImageIO; // our image access pointer - refcounted
     char               **m_papszMetadataList; // CPLStringList of metadata
     kealib::KEADataType  m_eKEADataType; // data type as KEA enum
