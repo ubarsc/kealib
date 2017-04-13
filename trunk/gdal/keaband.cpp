@@ -438,7 +438,6 @@ const char *KEARasterBand::GetMetadataItem (const char *pszName, const char *psz
     if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
         return NULL;
 
-    fprintf(stderr, "KEARasterBand::GetMetadataItem\n");
     if(EQUAL( pszName, "STATISTICS_HISTOBINVALUES" ) )
     {
         if( m_pszHistoBinValues != NULL )
