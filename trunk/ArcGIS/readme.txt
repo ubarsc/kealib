@@ -32,7 +32,7 @@ The gdal_KEA.dll should now be in c:\kea\arc100\gdalplugins and libkea.dll shoul
 For Arc 10.1-10.3 the procedure is only slightly different (note different version of gdal):
 
 nmake clean
-del CMakeCashe.txt
+del CMakeCache.txt
 cmake -D HDF5_STATIC_LIBS=TRUE -D CMAKE_INSTALL_PREFIX="c:\kea\arc101" ^
 -D GDAL_INCLUDE_DIR="c:\arcgdal\gdal18\include" -D GDAL_LIB_PATH="c:\arcgdal\gdal18\lib" ^
 -D HDF5_INCLUDE_DIR="C:\keastatic\vs2008\include" -D HDF5_LIB_PATH="c:\keastatic\vs2008\lib" ^

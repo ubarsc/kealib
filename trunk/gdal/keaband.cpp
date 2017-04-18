@@ -593,6 +593,83 @@ CPLErr KEARasterBand::DeleteNoDataValue()
     }
 }
 
+CPLErr KEARasterBand::GetStatistics(int bApproxOK, int bForce, double *pdfMin,
+        double *pdfMax, double *pdfMean, double *pdfStdDev)
+{
+    if( !bForce )
+    {
+        // If FALSE statistics will only be returned if it can be done without rescanning the image.
+        // We will get it from the metadata
+        const char *pszMin = GetMetadataItem("STATISTICS_MINIMUM");
+        const char *pszMax = GetMetadataItem("STATISTICS_MAXIMUM");
+        const char *pszMean = GetMetadataItem("STATISTICS_MEAN");
+        const char *pszStddev = GetMetadataItem("STATISTICS_STDDEV");
+        if( (pszMin == NULL ) || (pszMax == NULL) || (pszMean == NULL) || (pszStddev == NULL) )
+            return CE_Warning; // no values returned
+        else
+        {
+            *pdfMin = atof(pszMin);
+            *pdfMax = atof(pszMax);
+            *pdfMean = atof(pszMean);
+            *pdfStdDev = atof(pszStddev);
+            return CE_None;
+        }
+    }
+    else
+        return GDALPamRasterBand::GetStatistics(bApproxOK, bForce, pdfMin, pdfMax,
+                        pdfMean, pdfStdDev);
+}
+
+CPLErr KEARasterBand::SetStatistics(double dfMin, double dfMax,
+        double dfMean, double dfStdDev)
+{
+    CPLString osWorkingResult;
+
+    osWorkingResult.Printf( "%.16g", dfMin);
+    this->SetMetadataItem("STATISTICS_MINIMUM", osWorkingResult);
+
+    osWorkingResult.Printf( "%.16g", dfMax);
+    this->SetMetadataItem("STATISTICS_MAXIMUM", osWorkingResult);
+
+    osWorkingResult.Printf( "%.16g", dfMean);
+    this->SetMetadataItem("STATISTICS_MEAN", osWorkingResult);
+
+    osWorkingResult.Printf( "%.16g", dfStdDev);
+    this->SetMetadataItem("STATISTICS_STDDEV", osWorkingResult);
+
+    return CE_None;
+}
+
+double KEARasterBand::GetMinimum(int *pbSuccess = NULL)
+{
+    const char *pszMin = GetMetadataItem("STATISTICS_MINIMUM");
+    if( pszMin != NULL )
+    {
+        if( pbSuccess != NULL )
+            *pbSuccess = TRUE;
+        return atof(pszMin);
+    }
+    else
+    {
+        return GDALPamRasterBand::GetMinimum(pbSuccess);
+    }
+}
+
+double KEARasterBand::GetMaximum(int *pbSuccess = NULL)
+{
+    const char *pszMax = GetMetadataItem("STATISTICS_MAXIMUM");
+    if( pszMax != NULL )
+    {
+        if( pbSuccess != NULL )
+            *pbSuccess = TRUE;
+        return atof(pszMax);
+    }
+    else
+    {
+        return GDALPamRasterBand::GetMaximum(pbSuccess);
+    }
+}
+
 #ifdef HAVE_RFC40
 GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
 {
