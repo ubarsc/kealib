@@ -84,14 +84,6 @@ public:
     CPLErr SetNoDataValue(double dfNoData);
     virtual CPLErr DeleteNoDataValue();
 
-    // stats
-    CPLErr GetStatistics(int bApproxOK, int bForce, double *pdfMin,
-        double *pdfMax, double *pdfMean, double *pdfStdDev);
-    CPLErr SetStatistics( double dfMin, double dfMax,
-        double dfMean, double dfStdDev );
-    double GetMinimum(int *pbSuccess);
-    double GetMaximum(int *pbSuccess);
-
     // virtual methods for RATs
 #ifdef HAVE_RFC40
     GDALRasterAttributeTable *GetDefaultRAT();
