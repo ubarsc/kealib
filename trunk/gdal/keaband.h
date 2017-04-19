@@ -84,6 +84,15 @@ public:
     CPLErr SetNoDataValue(double dfNoData);
     virtual CPLErr DeleteNoDataValue();
 
+    // histogram methods
+    CPLErr GetDefaultHistogram( double *pdfMin, double *pdfMax,
+                                        int *pnBuckets, GUIntBig ** ppanHistogram,
+                                        int bForce,
+                                        GDALProgressFunc, void *pProgressData);
+    CPLErr SetDefaultHistogram( double dfMin, double dfMax,
+                                        int nBuckets, GUIntBig *panHistogram );
+
+
     // virtual methods for RATs
 #ifdef HAVE_RFC40
     GDALRasterAttributeTable *GetDefaultRAT();

@@ -176,9 +176,17 @@ CPLErr KEARasterBand::SetHistogramFromString(const char *pszString)
     if( pszBinValues == NULL )
         return CE_Failure;
 
+    // find the number of | chars
+    int nRows = 0, i = 0;
+    while( pszBinValues[i] != '\0' )
+    {
+        if( pszBinValues[i] == '|' )
+            nRows++;
+        i++;
+    }
+
 #ifdef HAVE_RFC40
     GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
-    int nRows = pTable->GetRowCount();
     // find histogram column if it exists
     int nCol = pTable->GetColOfUsage(GFU_PixelCount);
     if( nCol == -1 )
@@ -187,20 +195,14 @@ CPLErr KEARasterBand::SetHistogramFromString(const char *pszString)
             return CE_Failure;
         nCol = pTable->GetColumnCount() - 1;
     }
+    if( nRows > pTable->GetRowCount() )
+        pTable->SetRowCount(nRows);
 #else
     // just create a blank rat then populate it
     GDALRasterAttributeTable *pTable = new GDALRasterAttributeTable();
     if( pTable->CreateColumn("Histogram", GFT_Real, GFU_PixelCount) != CE_None )
         return CE_Failure;
     int nCol = 0;
-    // as a hack just make nRows equal to the number of | chars
-    int nRows = 0, i = 0;
-    while( pszBinValues[i] != '\0' )
-    {
-        if( pszBinValues[i] == '|' )
-            nRows++;
-        i++;
-    }
     pTable->SetRowCount(nRows);
 #endif
 
@@ -222,6 +224,7 @@ CPLErr KEARasterBand::SetHistogramFromString(const char *pszString)
 #ifndef HAVE_RFC40
     // need to set it back if we don't have RFC40
     this->SetDefaultRAT(pTable);
+    delete pTable;
 #endif
 
     return CE_None;
@@ -591,6 +594,134 @@ CPLErr KEARasterBand::DeleteNoDataValue()
     {
         return CE_Failure;
     }
+}
+
+CPLErr KEARasterBand::GetDefaultHistogram( double *pdfMin, double *pdfMax,
+                                        int *pnBuckets, GUIntBig ** ppanHistogram,
+                                        int bForce,
+                                        GDALProgressFunc fn, void *pProgressData)
+{
+    if( bForce )
+    {
+#ifdef HAVE_RFC40
+        return GDALPamRasterBand::GetDefaultHistogram(pdfMin, pdfMax, pnBuckets, 
+                        ppanHistogram, bForce, fn, pProgressData);
+#else
+        // GetDefaultHistogram actually only introduced in more recent GDAL so shouldn't 
+        // be being used. Just fail.
+        return CE_Failure;
+#endif
+    }
+    else
+    {
+        // returned cached if avail
+        // I've used the RAT interface here as it deals with data type
+        // conversions. Would be nice to have GUIntBig support in RAT though...
+#ifdef HAVE_RFC40
+        GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
+#else
+        const GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
+#endif
+        int nRows = pTable->GetRowCount();
+        // find histogram column if it exists
+        int nCol = pTable->GetColOfUsage(GFU_PixelCount);
+        if( nCol == -1 )
+            return CE_Warning;
+
+        double dfRow0Min, dfBinSize;
+        if( !pTable->GetLinearBinning(&dfRow0Min, &dfBinSize) )
+            return CE_Warning;
+
+#ifdef HAVE_RFC40
+        *ppanHistogram = (GUIntBig*)VSIMalloc2(nRows, sizeof(GUIntBig));
+        if( *ppanHistogram == NULL )
+        {
+            CPLError( CE_Failure, CPLE_OutOfMemory,
+                    "Memory Allocation failed in KEARasterBand::GetDefaultHistogram");
+            return CE_Failure;
+        }
+        double *pDoubleHisto = (double*)VSIMalloc2(nRows, sizeof(double));
+        if( pDoubleHisto == NULL )
+        {
+            CPLFree(*ppanHistogram);
+            CPLError( CE_Failure, CPLE_OutOfMemory,
+                    "Memory Allocation failed in KEARasterBand::GetDefaultHistogram");
+            return CE_Failure;
+        }
+
+        if( pTable->ValuesIO(GF_Read, nCol, 0, nRows, pDoubleHisto) != CE_None )
+            return CE_Failure;
+
+        // convert to GUIntBig
+        for( int n = 0; n < nRows; n++ )
+            (*ppanHistogram)[n] = pDoubleHisto[n];
+
+        CPLFree(pDoubleHisto);
+#else
+        for( int n = 0; n < nRows; n++ )
+            (*ppanHistogram)[n] = (GUIntBig)pTable->GetValueAsDouble(n, nCol);
+#endif
+        *pnBuckets = nRows;
+        *pdfMin = dfRow0Min;
+        *pdfMax = dfRow0Min + ((nRows + 1) * dfBinSize);
+        return CE_None;
+    }
+}
+
+CPLErr KEARasterBand::SetDefaultHistogram( double dfMin, double dfMax,
+                                        int nBuckets, GUIntBig *panHistogram )
+{
+#ifdef HAVE_RFC40
+    GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
+    int nRows = pTable->GetRowCount();
+    // find histogram column if it exists
+    int nCol = pTable->GetColOfUsage(GFU_PixelCount);
+    if( nCol == -1 )
+    {
+        if( pTable->CreateColumn("Histogram", GFT_Real, GFU_PixelCount) != CE_None )
+            return CE_Failure;
+        nCol = pTable->GetColumnCount() - 1;
+    }
+    if( nBuckets > pTable->GetRowCount() )
+        pTable->SetRowCount(nBuckets);
+
+    // convert to double (RATs don't take GUIntBig yet)
+    double *pDoubleHist = (double*)VSIMalloc2(nBuckets, sizeof(double));
+    if( pDoubleHist == NULL )
+    {
+        CPLError( CE_Failure, CPLE_OutOfMemory,
+                "Memory Allocation failed in KEARasterBand::SetDefaultHistogram");
+        return CE_Failure;
+    }
+
+    for( int n = 0; n < nBuckets; n++ )
+        pDoubleHist[n] = panHistogram[n];
+
+    if( pTable->ValuesIO(GF_Write, nCol, 0, nBuckets, pDoubleHist) != CE_None )
+    {
+        CPLFree(pDoubleHist);
+        return CE_Failure;
+    }
+
+    CPLFree(pDoubleHist);
+
+#else
+    // just create a blank rat then populate it
+    GDALRasterAttributeTable *pTable = new GDALRasterAttributeTable();
+    if( pTable->CreateColumn("Histogram", GFT_Real, GFU_PixelCount) != CE_None )
+        return CE_Failure;
+    int nCol = 0;
+    pTable->SetRowCount(nBuckets);
+
+    for( int n = 0; n < nBuckets; n++ )
+        pTable->SetValue(n, nCol, (double)panHistogram[n]);
+
+    // need to set it back if we don't have RFC40
+    this->SetDefaultRAT(pTable);
+    delete pTable;
+#endif
+
+    return CE_None;
 }
 
 #ifdef HAVE_RFC40
