@@ -142,7 +142,7 @@ endif(APPLE)
 
 if (MSVC)
   if(HDF5_STATIC_LIBS)
-    set(HDF5_LIBRARIES -LIBPATH:"${HDF5_LIB_PATH}" hdf5_cpp.lib hdf5.lib zlibstatic.lib)
+    set(HDF5_LIBRARIES -LIBPATH:"${HDF5_LIB_PATH}" libhdf5_cpp.lib libhdf5.lib zlibstatic.lib)
   else()
     set(HDF5_LIBRARIES -LIBPATH:"${HDF5_LIB_PATH}" hdf5_cpp.lib hdf5.lib)
     set_property(DIRECTORY PROPERTY COMPILE_DEFINITIONS H5_BUILT_AS_DYNAMIC_LIB)

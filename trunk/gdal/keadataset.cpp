@@ -172,6 +172,11 @@ int KEADataset::Identify( GDALOpenInfo * poOpenInfo )
         return 0;
 }
 
+#ifndef HAVE_RFC40
+    // added about the same time
+    #define GDALValidateCreationOptions(a, b) TRUE
+#endif
+
 // static function- pointer set in driver
 GDALDataset *KEADataset::Create( const char * pszFilename,
                                   int nXSize, int nYSize, int nBands,
@@ -601,8 +606,13 @@ CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, in
 
         // get GDAL to do the hard work. It will calculate the overviews and write them
         // back into the objects
+#if (GDAL_VERSION_MAJOR == 1) && (GDAL_VERSION_MINOR < 6)
+        if( GDALRegenerateOverviews( pBand, nOverviews, (GDALRasterBand**)pBand->GetOverviewList(),
+                                    pszResampling, pfnProgress, pProgressData ) != CE_None )
+#else         
         if( GDALRegenerateOverviews( (GDALRasterBandH)pBand, nOverviews, (GDALRasterBandH*)pBand->GetOverviewList(),
                                     pszResampling, pfnProgress, pProgressData ) != CE_None )
+#endif
         {
             nOK = 0;
         }

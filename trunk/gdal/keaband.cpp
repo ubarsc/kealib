@@ -249,7 +249,11 @@ char *KEARasterBand::GetHistogramAsString()
     {
         char szBuf[32];
         // RAT's don't handle GUIntBig - use double instead. Cast back
+#ifndef CPL_FRMT_GUIB
+        snprintf( szBuf, 31, "%ull", (GUIntBig)pTable->GetValueAsDouble(nBin, nCol) );
+#else        
         snprintf( szBuf, 31, CPL_FRMT_GUIB, (GUIntBig)pTable->GetValueAsDouble(nBin, nCol) );
+#endif
         if ( ( nBinValuesLen + strlen( szBuf ) + 2 ) > nBufSize )
         {
             nBufSize *= 2;
@@ -1694,7 +1698,11 @@ GDALRasterBand* KEARasterBand::GetMaskBand()
             {
                 // use the base class implementation - GDAL will delete
                 //fprintf( stderr, "returning base GetMaskBand()\n" );
+#ifdef HAVE_RFC40                
                 m_pMaskBand = GDALPamRasterBand::GetMaskBand();
+#else
+                m_pMaskBand = NULL;
+#endif
             }
         }
         catch(kealib::KEAException &e)
@@ -1714,7 +1722,11 @@ int KEARasterBand::GetMaskFlags()
             // need to return the base class one since we are using
             // the base class implementation of GetMaskBand()
             //fprintf( stderr, "returning base GetMaskFlags()\n" );
+#ifdef HAVE_RFC40            
             return GDALPamRasterBand::GetMaskFlags();
+#else
+            return 0;
+#endif
         }
     }
     catch(kealib::KEAException &e)

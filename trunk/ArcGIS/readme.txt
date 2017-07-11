@@ -1,57 +1,47 @@
 
-Building the KEA ArcGIS Plugin for Arc 10 and 10.1
-==================================================
+Building the KEA ArcGIS Plugin for Arc 9.3 - 10.5.1
+===================================================
 
 Prerequisites
 -------------
 
-1. Visual Studio 2008 Express. 
-2. CMake
-3. Static libraries of HDF5 and zlib built with VS2008.
+1. Visual Studio 2008 Express Or Visual C++ for Python 2.7.
+2. Visual Studio 2013 Community Edition.
+3. CMake
 4. GDAL headers and libraries for the versions of GDAL Arc uses. These are available
-     from the kealib downloads as 'arcgdal_for_compilation.zip'
+     from the kealib downloads as 'arcgdal_for_compilationX.zip' where X is the highest number available.
 
 We prefer to build KEA against static builds of HDF5 since this saves having to match whatever
 version Arc itself was built against. If we where to compile against HDF5 dlls we would have to
 match the exact version in Arc to avoid a crash.
 
-It is assumed that the static HDF5 and zlib libraries are under c:\keastatic\vs2008 and arcgdal_for_compilation.zip
-is extracted under c:\arcgdal.
+Refer to the file "buildzlibhdf5.bat" in this directory. You should be able to build static
+zlib and hdf5 libraries with this file. Note that you will probably have to set the first
+three variables to more sensible locations.
 
-For Arc 10, the following commands should be executed in the folder with the KEA source:
+After you have run this, refer to the file "buildkeaforarc.bat". You will need to edit the 
+first three variables again. Running this should output the KEA plugin for the various
+Arc versions to the directory specified. 
 
-cmake -D HDF5_STATIC_LIBS=TRUE -D CMAKE_INSTALL_PREFIX="c:\kea\arc100" ^
--D GDAL_INCLUDE_DIR="c:\arcgdal\gdal16\include" -D GDAL_LIB_PATH="c:\arcgdal\gdal16\lib" ^
--D HDF5_INCLUDE_DIR="C:\keastatic\vs2008\include" -D HDF5_LIB_PATH="c:\keastatic\vs2008\lib" ^
--D CMAKE_BUILD_TYPE=Release -G "NMake Makefiles" .
-nmake
-nmake install
+Installing KEA driver for ArcMap Arc 9.3 - 10.5.1
+-------------------------------------------------
 
-The gdal_KEA.dll should now be in c:\kea\arc100\gdalplugins and libkea.dll should be in c:\kea\arc100\lib.
+1. Create a 'gdalplugins' directory under the 'bin' directory of your Arc install if it does not already exist.
 
-For Arc 10.1-10.3 the procedure is only slightly different (note different version of gdal):
+2. Select the appropriate subfolder for your version of Arc. 
 
-nmake clean
-del CMakeCache.txt
-cmake -D HDF5_STATIC_LIBS=TRUE -D CMAKE_INSTALL_PREFIX="c:\kea\arc101" ^
--D GDAL_INCLUDE_DIR="c:\arcgdal\gdal18\include" -D GDAL_LIB_PATH="c:\arcgdal\gdal18\lib" ^
--D HDF5_INCLUDE_DIR="C:\keastatic\vs2008\include" -D HDF5_LIB_PATH="c:\keastatic\vs2008\lib" ^
--D CMAKE_BUILD_TYPE=Release -G "NMake Makefiles" .
-nmake
-nmake install
+Arc 9.3 = arc93
+Arc 10.0 = arc100
+Arc 10.1-10.3 = arc101
+Arc 10.4 = arc104
+Arc 10.5 = arc105
+Arc 10.5.1 = arc1051
 
-The gdal_KEA.dll should now be in c:\kea\arc101\gdalplugins and libkea.dll should be in c:\kea\arc101\lib.
-
-
-
-Installing KEA driver for ArcMap 10.0 and 10.1-10.3
----------------------------------------------------
-
-1. Create a 'gdalplugins' directory under the 'bin' directory if it does not already exist.
-
-2. For Arc 10.0 copy Arc100\libkea.dll into the bin directory of your Arc install and copy the contents of the 'Arc100\gdalplugins' subdirectory of this zip file into the newly created gdalplugins directory.
-
-3. For Arc 10.1-10.3 copy Arc101\libkea.dll into the bin directory of your Arc install and copy the contents of the 'Arc101\gdalplugins' subdirectory of this zip file into the newly created gdalplugins directory.
+2. Once you have found the appropriate subdirectory for your version of Arc, copy libkea.dll from the 'lib' subdirectory
+  into the 'bin' directory of your Arc Install.
+  
+3. Copy gdal_KEA.dll from the 'lib\gdalplugins' subdirectory into the newly created 'gdalplugins' directory of your
+  Arc install (see step 1 above).
 
 4. Edit bin/RasterFormats.dat and add the line:
 

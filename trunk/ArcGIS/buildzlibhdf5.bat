@@ -28,7 +28,8 @@ call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %VCM
 call :build
 
 set VCMACH=x64
-call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %VCMACH%
+:: Note VS2013 doesn't understand 'x64'...
+call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64
 @echo on
 call :build
 
