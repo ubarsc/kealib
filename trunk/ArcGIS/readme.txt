@@ -36,6 +36,10 @@ Arc 10.1-10.3 = arc101
 Arc 10.4 = arc104
 Arc 10.5 = arc105
 Arc 10.5.1 = arc1051
+ArcPro 1.4 = arcpro14
+ArcPro 2.0 = arcpro20
+
+Note you may have to select the x86 subfolder for 32bit Arc, or x64 for 64bit Arc.
 
 2. Once you have found the appropriate subdirectory for your version of Arc, copy libkea.dll from the 'lib' subdirectory
   into the 'bin' directory of your Arc Install.

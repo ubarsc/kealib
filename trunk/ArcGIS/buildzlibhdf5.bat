@@ -6,7 +6,7 @@ setlocal
 :: vars (below) to the locations. Also set INSTALLDIR to where you want the files to 
 :: be installed to. 
 
-:: You will also need Visual Studio 2008 and 2013. For 2008 I used MS C++ for Python 
+:: You will also need Visual Studio 2008 and 2013. For 2008 I used MS C++ for Python 2.7
 :: (https://www.microsoft.com/en-au/download/details.aspx?id=44266) which is the same thing.
 :: VS 2013 Community Edition is available here (https://www.visualstudio.com/en-us/news/releasenotes/vs2013-community-vs).
 :: I have assumed these are installed in the standard locations. If not you might need to tweak the code below.
@@ -15,12 +15,14 @@ set ZLIBDIR=C:\dev\arc\zlib-1.2.11
 set HDF5DIR=C:\dev\arc\hdf5-1.8.19
 set INSTALLDIR=c:\dev\arckea
 
+:: Visual Studio 2008 x86
 set VCYEAR=VC2008
 set VCMACH=x86
 call "C:\Users\sam\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" %VCMACH%
 @echo on
 call :build
 
+:: Visual Studio 2013 x86 and x64
 set VCYEAR=VC2013
 set VCMACH=x86
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %VCMACH%
@@ -30,6 +32,13 @@ call :build
 set VCMACH=x64
 :: Note VS2013 doesn't understand 'x64'...
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64
+@echo on
+call :build
+
+:: Visual Studio 2015 for ArcPro
+set VCYEAR=VC2015
+set VCMACH=x64
+call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH%
 @echo on
 call :build
 
