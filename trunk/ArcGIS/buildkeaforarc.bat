@@ -10,34 +10,34 @@ SET GDALDIR=C:\dev\arcgdalforcompilation
 SET HDF5DIR=c:\dev\arckea
 
 set VCMACH=x86
-::call "C:\Users\sam\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" %VCMACH%
+call "C:\Users\sam\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" %VCMACH%
 @echo on
-::call :build_arc93
+call :build_arc93
 if errorlevel 1 exit /B 1
-::call :build_arc100
+call :build_arc100
 if errorlevel 1 exit /B 1
-::call :build_arc101
+call :build_arc101
 if errorlevel 1 exit /B 1
 
 :: Now the vs2013 builds x86
-::call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %VCMACH%
+call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %VCMACH%
 @echo on
-::call :build_arc104
+call :build_arc104
 if errorlevel 1 exit /B 1
-::call :build_arc105
+call :build_arc105
 if errorlevel 1 exit /B 1
-::call :build_arc1051
+call :build_arc1051
 
 :: Now x64
 set VCMACH=x64
 :: Note VS2013 doesn't understand 'x64'...
-::call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64
+call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64
 @echo on
-::call :build_arc104
+call :build_arc104
 if errorlevel 1 exit /B 1
-::call :build_arc105
+call :build_arc105
 if errorlevel 1 exit /B 1
-::call :build_arc1051
+call :build_arc1051
 if errorlevel 1 exit /B 1
 
 :: Visual Studio 2015 x64 builds
