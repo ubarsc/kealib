@@ -1,14 +1,15 @@
 
-Building the KEA ArcGIS Plugin for Arc 9.3 - 10.5.1
-===================================================
+Building the KEA ArcGIS Plugin for Arc 9.3 - 10.5.1 and ArcPro 1.4 - 2.0
+========================================================================
 
 Prerequisites
 -------------
 
 1. Visual Studio 2008 Express Or Visual C++ for Python 2.7.
 2. Visual Studio 2013 Community Edition.
-3. CMake
-4. GDAL headers and libraries for the versions of GDAL Arc uses. These are available
+3. Visual Studio 2015 Community Edition.
+4. CMake
+5. GDAL headers and libraries for the versions of GDAL Arc uses. These are available
      from the kealib downloads as 'arcgdal_for_compilationX.zip' where X is the highest number available.
 
 We prefer to build KEA against static builds of HDF5 since this saves having to match whatever
@@ -19,12 +20,16 @@ Refer to the file "buildzlibhdf5.bat" in this directory. You should be able to b
 zlib and hdf5 libraries with this file. Note that you will probably have to set the first
 three variables to more sensible locations.
 
+After you have run this, run the file "buildkeastatic.bat". Ensure the INSTALLDIR variable
+is set to the same location as it was in "buildzlibhdf5.bat". This creates a static build of 
+kealib.
+
 After you have run this, refer to the file "buildkeaforarc.bat". You will need to edit the 
 first three variables again. Running this should output the KEA plugin for the various
 Arc versions to the directory specified. 
 
-Installing KEA driver for ArcMap Arc 9.3 - 10.5.1
--------------------------------------------------
+Installing KEA driver for ArcMap Arc 9.3 - 10.5.1 and ArcPro 1.4 - 2.0
+----------------------------------------------------------------------
 
 1. Create a 'gdalplugins' directory under the 'bin' directory of your Arc install if it does not already exist.
 
@@ -41,17 +46,14 @@ ArcPro 2.0 = arcpro20
 
 Note you may have to select the x86 subfolder for 32bit Arc, or x64 for 64bit Arc.
 
-2. Once you have found the appropriate subdirectory for your version of Arc, copy libkea.dll from the 'lib' subdirectory
-  into the 'bin' directory of your Arc Install.
-  
-3. Copy gdal_KEA.dll from the 'lib\gdalplugins' subdirectory into the newly created 'gdalplugins' directory of your
+2. Copy gdal_KEA.dll from the 'lib\gdalplugins' subdirectory into the newly created 'gdalplugins' directory of your
   Arc install (see step 1 above).
 
-4. Edit bin/RasterFormats.dat and add the line:
+3. Edit bin/RasterFormats.dat and add the line:
 
         <e on="y" nm="KEA" ex="*.kea" et="KEA" at="0x27" />
     
     at the bottom of the section that has a number of lines looking similar
     
-5. Restart Arc and you should be all go
+4. Restart Arc and you should be all go
 
