@@ -180,11 +180,15 @@ keaTableCreate(void  *dataSource, char  *tableName, unsigned long  numRows,
                         rCode = 0;
                         
                         // Imagine seems to assume if the file is thematic there will
-                        // be a Class_Names column - won't create it like it does for the
+                        // be a Class_Names and colour columns - won't create it like it does for the
                         // other columns
                         if( pImageIO->getImageBandLayerType(pKEALayer->nBand) == kealib::kea_thematic )
                         {
                             pKEATable->addAttStringField(COLUMN_CLASSNAMES, "", "Name");
+							pKEATable->addAttIntField(COLUMN_RED, 0, COLUMN_RED);
+							pKEATable->addAttIntField(COLUMN_GREEN, 0, COLUMN_GREEN);
+							pKEATable->addAttIntField(COLUMN_BLUE, 0, COLUMN_BLUE);
+							pKEATable->addAttIntField(COLUMN_ALPHA, 0, COLUMN_ALPHA);
                         }
                     }
                     catch(kealib::KEAException &e)
@@ -236,11 +240,15 @@ keaTableCreate(void  *dataSource, char  *tableName, unsigned long  numRows,
 								pKEATable->addRows(numRows);
                         
 								// Imagine seems to assume if the file is thematic there will
-								// be a Class_Names column - won't create it like it does for the
+								// be a Class_Names and colour columns - won't create it like it does for the
 								// other columns
 								if( pImageIO->getImageBandLayerType(pCandidate->nBand) == kealib::kea_thematic )
 								{
 									pKEATable->addAttStringField(COLUMN_CLASSNAMES, "", "Name");
+									pKEATable->addAttIntField(COLUMN_RED, 0, COLUMN_RED);
+									pKEATable->addAttIntField(COLUMN_GREEN, 0, COLUMN_GREEN);
+									pKEATable->addAttIntField(COLUMN_BLUE, 0, COLUMN_BLUE);
+									pKEATable->addAttIntField(COLUMN_ALPHA, 0, COLUMN_ALPHA);
 								}
 							}
 							catch(kealib::KEAException &e)

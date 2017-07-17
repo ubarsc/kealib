@@ -154,7 +154,9 @@ keaLayerCreate(void  *fileHandle,  /* Input */
         } 
         catch (kealib::KEAIOException &e) 
         {
+#ifdef KEADEBUG
             keaDebugOut( "layer creation failed: %s\n", e.what());
+#endif
             return -1;
         }
     }
@@ -175,7 +177,9 @@ keaLayerCreate(void  *fileHandle,  /* Input */
         std::string sName = pImageIO->getImageBandDescription(nBand);
         // Imagine doesn't like spaces
         std::replace(sName.begin(), sName.end(), ' ', '_');
+#ifdef KEADEBUG
         keaDebugOut( "added layer '%s'\n", sName.c_str());
+#endif
         pLayer->sName = sName;
         pLayer->nBand = nBand;
         pLayer->bIsOverview = bIsOverview;
@@ -312,7 +316,9 @@ keaLayerRasterRead(void	*lHandle, unsigned long	bRow, unsigned long bCol, unsign
     }
     catch (kealib::KEAIOException &e)
     {
+#ifdef KEADEBUG
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
+#endif
         rCode = -1;
     }
 	return rCode;
@@ -408,7 +414,9 @@ keaLayerRasterWrite(void *lHandle, unsigned long bRow, unsigned long bCol, unsig
     }
     catch (kealib::KEAIOException &e)
     {
+#ifdef KEADEBUG
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
+#endif
         rCode = -1;
     }
 	return rCode;
@@ -612,7 +620,9 @@ keaLayerScalarStatisticsRead(void *lHandle, double *minimum,  double *maximum, d
     }
     catch (kealib::KEAIOException &e)
     {
+#ifdef KEADEBUG
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
+#endif
         rCode = -1;
     }
     return rCode;
@@ -678,7 +688,9 @@ keaLayerScalarStatisticsWrite(void *lHandle, double *minimum,
     }
     catch (kealib::KEAIOException &e)
     {
+#ifdef KEADEBUG
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
+#endif
         rCode = -1;
     }
     return rCode;
@@ -710,7 +722,9 @@ keaLayerMapInfoRead(void *lHandle, char **projection, double *xULC, double *yULC
     }
     catch (kealib::KEAIOException &e)
     {
+#ifdef KEADEBUG
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
+#endif
         rCode = -1;
     }
     return rCode;
@@ -749,7 +763,9 @@ keaLayerMapInfoWrite(void *lHandle, char *projection, double xULC,
     }        
     catch (kealib::KEAIOException &e)
     {
+#ifdef KEADEBUG
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
+#endif
         rCode = -1;
     }
     return rCode;
@@ -804,7 +820,9 @@ keaLayerMapProjectionWrite(void  *lHandle, char  *projTitle,
         }
         catch (kealib::KEAIOException &e)
         {
+#ifdef KEADEBUG
             keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
+#endif
             rCode = -1;
         }
     }
