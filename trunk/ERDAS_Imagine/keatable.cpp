@@ -30,7 +30,7 @@
 
 #include "kea.h"
 
-//#define KEADEBUG 1
+#define KEADEBUG 1
 
 // these are the special column names that Imagine uses
 #define COLUMN_RED "Red"
@@ -178,18 +178,6 @@ keaTableCreate(void  *dataSource, char  *tableName, unsigned long  numRows,
                         pKEATable = pImageIO->getAttributeTable(kealib::kea_att_file, pKEALayer->nBand);
                         pKEATable->addRows(numRows);
                         rCode = 0;
-                        
-                        // Imagine seems to assume if the file is thematic there will
-                        // be a Class_Names and colour columns - won't create it like it does for the
-                        // other columns
-                        if( pImageIO->getImageBandLayerType(pKEALayer->nBand) == kealib::kea_thematic )
-                        {
-                            pKEATable->addAttStringField(COLUMN_CLASSNAMES, "", "Name");
-							pKEATable->addAttIntField(COLUMN_RED, 0, COLUMN_RED);
-							pKEATable->addAttIntField(COLUMN_GREEN, 0, COLUMN_GREEN);
-							pKEATable->addAttIntField(COLUMN_BLUE, 0, COLUMN_BLUE);
-							pKEATable->addAttIntField(COLUMN_ALPHA, 0, COLUMN_ALPHA);
-                        }
                     }
                     catch(kealib::KEAException &e)
                     {
@@ -238,18 +226,6 @@ keaTableCreate(void  *dataSource, char  *tableName, unsigned long  numRows,
 							{
 								pKEATable = pImageIO->getAttributeTable(kealib::kea_att_file, pCandidate->nBand);
 								pKEATable->addRows(numRows);
-                        
-								// Imagine seems to assume if the file is thematic there will
-								// be a Class_Names and colour columns - won't create it like it does for the
-								// other columns
-								if( pImageIO->getImageBandLayerType(pCandidate->nBand) == kealib::kea_thematic )
-								{
-									pKEATable->addAttStringField(COLUMN_CLASSNAMES, "", "Name");
-									pKEATable->addAttIntField(COLUMN_RED, 0, COLUMN_RED);
-									pKEATable->addAttIntField(COLUMN_GREEN, 0, COLUMN_GREEN);
-									pKEATable->addAttIntField(COLUMN_BLUE, 0, COLUMN_BLUE);
-									pKEATable->addAttIntField(COLUMN_ALPHA, 0, COLUMN_ALPHA);
-								}
 							}
 							catch(kealib::KEAException &e)
 							{
@@ -494,7 +470,11 @@ keaColumnOpen(void *tableHandle, char *columnName, unsigned long *dataType,
     {
 #ifdef KEADEBUG        
         keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
-#endif        
+#endif       
+		// despite what the documentation says we need to return success but
+		// set the columnHandle to NULL when column doesn't exist
+		*columnHandle = NULL;
+        rCode = 0;
     }
 
     return rCode;
@@ -806,7 +786,12 @@ keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long num
                 {
 					std::vector<std::string> aStrings;
                     for( unsigned long i = 0; i < numRows; i++ )
-                        aStrings.push_back(ppszStringData[i]);
+					{
+						if( ppszStringData[i] != NULL )
+							aStrings.push_back(ppszStringData[i]);
+						else
+							aStrings.push_back("");
+					}
                     
 					pKEATable->setStringFields(startRow, numRows, pKEAColumn->nColIdx, &aStrings);
 				}

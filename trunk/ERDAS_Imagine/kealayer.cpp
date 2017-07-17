@@ -80,7 +80,7 @@ keaLayerOpen(void *fHandle, char *lName, unsigned long *pType, unsigned long *wi
 #ifdef KEADEBUG
         keaDebugOut( "Can't find layer %s\n", sName.c_str() );
 #endif
-        }
+    }
 #ifdef KEADEBUG
     keaDebugOut( "open layer returning %p\n", pLayer );
 #endif
