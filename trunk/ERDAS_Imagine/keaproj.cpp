@@ -446,6 +446,8 @@ ProjParser* ProjParser::GetSubValue(const char *pszName)
 #define EPRJ_LAMBERT_CONFORMAL_CONIC_1SP        67
 #define EPRJ_PSEUDO_MERCATOR                    68
 #define EPRJ_MERCATOR_VARIANT_A                 69
+#define EPRJ_HOTINE_OBLIQUE_MERCATOR_VARIANT_A                70
+#define EPRJ_TRANSVERSE_MERCATOR_SOUTH_ORIENTATED             71
 
 #define EPRJ_EXTERNAL_RSO           "eprj_rso"
 #define EPRJ_EXTERNAL_NZMG                      "nzmg"
@@ -1015,6 +1017,17 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, std::string &sProjName, st
         sPro.proParams[5] = 0;
         sPro.proParams[6] = 0;
         sPro.proParams[7] = 0;
+    }
+	else if( EQUAL(pszProjName, SRS_PT_TRANSVERSE_MERCATOR_SOUTH_ORIENTED) )
+    {
+        sPro.proNumber = EPRJ_TRANSVERSE_MERCATOR_SOUTH_ORIENTATED;
+        sPro.proName =
+	            const_cast<char *>("Transverse Mercator (South Orientated)");
+        sPro.proParams[4] = oSRS.GetProjParm(SRS_PP_CENTRAL_MERIDIAN) * D2R;
+        sPro.proParams[5] = oSRS.GetProjParm(SRS_PP_LATITUDE_OF_ORIGIN) * D2R;
+        sPro.proParams[2] = oSRS.GetProjParm(SRS_PP_SCALE_FACTOR, 1.0);
+        sPro.proParams[6] = oSRS.GetProjParm(SRS_PP_FALSE_EASTING);
+        sPro.proParams[7] = oSRS.GetProjParm(SRS_PP_FALSE_NORTHING);
     }
     // previous copied from GDAL's hfadataset.cpp WriteProjection()
     

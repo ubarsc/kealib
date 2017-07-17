@@ -30,7 +30,7 @@
 
 #include "kea.h"
 
-#define KEADEBUG 1
+//#define KEADEBUG 1
 
 // these are the special column names that Imagine uses
 #define COLUMN_RED "Red"

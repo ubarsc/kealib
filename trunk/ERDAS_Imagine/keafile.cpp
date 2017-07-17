@@ -399,7 +399,7 @@ keaFileDataRead(void *fileHandle, char *dataName, unsigned char **MIFDataObject,
                         edsc_BinFunctionConvertToMIFable(pBinFn, (void**)&pMIFableObject, &pDesign, &err);
                         HANDLE_ERR(err, -1)
     
-                        // this code doesn't work post 8.4. I had an alternative (see "Geometric Models Example" on developer.lggi.com)
+                        // this code doesn't work for 8.4. I had an alternative (see "Geometric Models Example" on developer.lggi.com)
                         // but this is much tidier
                         *MIFDataSize = emif_MIFableObjectConvertToMIF(pMIFableObject, pDesign, MIFDataObject,
                             MIFDataDictionary, MIFDataType, &err);
