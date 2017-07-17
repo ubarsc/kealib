@@ -31,7 +31,8 @@ Prerequisites:
 1. Visual Studio C++ of the same version that Imagine itself was build with.
    For Imagine 2011 this was Visual Studio C++ 2008.
    For Imagine 2015 this was Visual Studio C++ Desktop 2013.
-2. A static build of ZLIB/HDF5/kealib with the same version of Visual Studio.
+2. A static build of ZLIB/HDF5/kealib (See the .bat files in the ..\ArcGIS directory) 
+   with the same version of Visual Studio.
 
 Use makefile2011.vc for Imagine 2011, makefile2015_x86.vc for 32bit Imagine 2015
 and makefile2015_x64.vc for 64 bit Imagine 2015 ('<makefile name>').

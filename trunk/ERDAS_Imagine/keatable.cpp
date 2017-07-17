@@ -211,6 +211,49 @@ keaTableCreate(void  *dataSource, char  *tableName, unsigned long  numRows,
 #endif                
                 rCode = -1;
             }
+
+			// bizarrely, when Imagine asks for creation of Descriptor_Table for one
+			// band, it also expects it to be created for all the others as well...
+			for( std::vector<KEA_Layer*>::iterator itr = pKEAFile->aLayers.begin(); itr != pKEAFile->aLayers.end(); itr++)
+			{
+				KEA_Layer *pCandidate = (*itr);
+				if( !pCandidate->bIsOverview && !pCandidate->bIsMask )
+				{
+					// we've just done the current band above
+					if( pCandidate->sName != pszLayerName )
+					{
+#ifdef KEADEBUG
+						keaDebugOut( "keaTableCreate: Creating sibling RAT for layer %s\n", pCandidate->sName.c_str());
+#endif                
+						// don't call keaTableCreate recursively as we end up in an endless
+						// loop as that call adds siblings etc
+						kealib::KEAImageIO *pImageIO = pCandidate->getImageIO();
+						if( !pImageIO->attributeTablePresent(pCandidate->nBand) )
+						{
+							try
+							{
+								pKEATable = pImageIO->getAttributeTable(kealib::kea_att_file, pCandidate->nBand);
+								pKEATable->addRows(numRows);
+                        
+								// Imagine seems to assume if the file is thematic there will
+								// be a Class_Names column - won't create it like it does for the
+								// other columns
+								if( pImageIO->getImageBandLayerType(pCandidate->nBand) == kealib::kea_thematic )
+								{
+									pKEATable->addAttStringField(COLUMN_CLASSNAMES, "", "Name");
+								}
+							}
+							catch(kealib::KEAException &e)
+							{
+#ifdef KEADEBUG                        
+								keaDebugOut( "Error in %s: %s\n", __FUNCTION__, e.what());
+#endif                        
+							}
+						}
+					}
+				}
+			}
+			
             free(pszLayerName);
         }
     }
