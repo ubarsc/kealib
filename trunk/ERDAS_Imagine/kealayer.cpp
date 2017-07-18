@@ -29,8 +29,9 @@
  */
 
 #include "kea.h"
+#include "keaproj.h"
 
-// #define KEADEBUG 1
+//#define KEADEBUG 1
 
 long
 keaLayerOpen(void *fHandle, char *lName, unsigned long *pType, unsigned long *width, unsigned long *height, unsigned long *compression,
@@ -808,48 +809,63 @@ keaLayerMapProjectionWrite(void  *lHandle, char  *projTitle,
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
     Eerr_ErrorReport* err = NULL;
     long rCode = -1;
-    if(projTitle == NULL)
+
+    keaDebugOut( "%s %p %s\n", __FUNCTION__, lHandle, projTitle );
+    keaDebugOut( "%s %s %s\n", __FUNCTION__, pLayer->pKEAFile->sUnits.c_str(), pLayer->pKEAFile->sProjName.c_str());
+	
+	// these are set in keaLayerMapInfoWrite above (which is called first)
+    if( ( pLayer->pKEAFile->sUnits != "") && (pLayer->pKEAFile->sProjName != "") )
     {
-        // clobber existing data
-        kealib::KEAImageIO *pImageIO = pLayer->getImageIO();
-        try
-        {
-            kealib::KEAImageSpatialInfo *pSpatialInfo = pImageIO->getSpatialInfo();
-            pSpatialInfo->wktString = "";
-            pImageIO->setSpatialInfo(pSpatialInfo);
-        }
-        catch (kealib::KEAIOException &e)
-        {
-#ifdef KEADEBUG
-            keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
-#endif
-            rCode = -1;
-        }
-    }
-    else
-    {
+			keaDebugOut("keaLayerMapProjectionWrite 1\n");
         Eprj_MapProjection* pProj;
 
         pProj = eprj_ProjectionConvertFromMIF(projTitle, MIFproj, MIFprojSize,
                     MIFprojDictionary, MIFprojName, MIFearthModel, MIFearthModelSize,
                     MIFearthModelDictionary, MIFearthModelName, &err);
         HANDLE_ERR(err, -1)
+			keaDebugOut("keaLayerMapProjectionWrite 2\n");
+		
+		if( pProj != NULL )
+		{
 
-        // if we have one, free it
-        if( pLayer->pKEAFile->pProj != NULL )
-        {
-            eprj_ProjectionFree(&pLayer->pKEAFile->pProj);
-        }
+			// if we have one, free it
+			if( pLayer->pKEAFile->pProj != NULL )
+			{
+				eprj_ProjectionFree(&pLayer->pKEAFile->pProj);
+			}
         
-        // save it in case we are asked again
-        pLayer->pKEAFile->pProj = pProj;
-
+			// save it in case we are asked again
+			pLayer->pKEAFile->pProj = pProj;
+		
+			// save the WKT version back to the KEA file
+			kealib::KEAImageIO *pImageIO = pLayer->getImageIO();
+			keaDebugOut("keaLayerMapProjectionWrite 3\n");
+			try
+			{
+				kealib::KEAImageSpatialInfo *pSpatialInfo = pImageIO->getSpatialInfo();
+				pSpatialInfo->wktString = MapProjToWKT(pProj, pLayer->pKEAFile->sUnits,
+							pLayer->pKEAFile->sProjName);
+				keaDebugOut("Setting wkt as: %s\n", pSpatialInfo->wktString.c_str());
+				pImageIO->setSpatialInfo(pSpatialInfo);
+				rCode = 0;
+			}
+			catch (kealib::KEAIOException &e)
+			{
+#ifdef KEADEBUG
+				keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
+#endif
+				rCode = -1;
+			}
+		}
+		else
+		{
+			keaDebugOut("NULL pProj");
+		}
 #ifdef KEADEBUG
         char *pszName = eprj_MapProjectionName(pProj);
         keaDebugOut( "projname = %s\n", pszName );
 #endif
         
-        rCode = 0;
     }
     return rCode;
 }

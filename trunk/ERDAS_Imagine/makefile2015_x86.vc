@@ -30,9 +30,10 @@
 
 IMAGINE_HOME = "C:\Program Files\Hexagon\ERDAS IMAGINE 2015"
 KEA_HOME = "C:\dev\keastatic\VC2013_x86"
+GDAL_HOME = "C:\dev\gdalstatic_2013_x86"
 
-CPPFLAGS = /DAUTO_EXPORT /Ox /MD /I$(KEA_HOME)\include /I$(IMAGINE_HOME)\usr\include\win32release /fp:precise /D "WIN32" /D "_WINDOWS" /D "_X86_" /D "pcnt" /D "__STDC__" /D "i386" /errorReport:prompt /WX- /Gd /EHsc /DEFIO_UNBUFFERED_PROTOTYPES_PASSTHROUGH /DEFIO_STDIO_PROTOTYPES_PASSTHROUGH
-LDFLAGS = /LIBPATH:$(KEA_HOME)\lib libkea.lib libhdf5_cpp.lib libhdf5.lib zlibstatic.lib /LIBPATH:$(IMAGINE_HOME)\usr\lib\win32Release ecommon.lib elib.lib eraster.lib eprj.lib /MANIFEST:EMBED
+CPPFLAGS = /DAUTO_EXPORT /Ox /MD /I$(KEA_HOME)\include /I$(IMAGINE_HOME)\usr\include\win32release /I$(GDAL_HOME)\include /fp:precise /D "WIN32" /D "_WINDOWS" /D "_X86_" /D "pcnt" /D "__STDC__" /D "i386" /errorReport:prompt /WX- /Gd /EHsc /DEFIO_UNBUFFERED_PROTOTYPES_PASSTHROUGH /DEFIO_STDIO_PROTOTYPES_PASSTHROUGH
+LDFLAGS = /LIBPATH:$(KEA_HOME)\lib libkea.lib libhdf5_cpp.lib libhdf5.lib zlibstatic.lib /LIBPATH:$(IMAGINE_HOME)\usr\lib\win32Release ecommon.lib elib.lib eraster.lib eprj.lib /LIBPATH:$(GDAL_HOME)\lib gdal.lib ws2_32.lib /MANIFEST:EMBED
 
 OBJS = keainstance.obj keafile.obj kealayer.obj keatable.obj keaproj.obj version.res
 
