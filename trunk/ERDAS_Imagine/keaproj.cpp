@@ -62,6 +62,50 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, 
 	sUnits = unitName;
 	sProjName = eprj_MapProjectionName(proj);
 	
+	if( sProjName == ETXT_LTEXT("New_Zealand_Map_Grid") )
+	{
+		// Imagine doesn't seem to have this right...
+		eprj_ProjectionFree(&proj);
+		Eprj_ProParameters *proParams = eprj_ProParametersCreate(&err);
+		HANDLE_ERR(err, NULL)
+		
+		// below taken from GDAL's hfadataset.cpp
+		proParams->proType = EPRJ_EXTERNAL;
+		proParams->proNumber = 0;
+        eprj_CharStrCreate(ETXT_LTEXT("nzmg"), &proParams->proExeName, &err);
+        HANDLE_ERR(err, NULL)
+        eprj_CharStrCreate(ETXT_LTEXT("New Zealand Map Grid"), &proParams->proName, &err);
+        HANDLE_ERR(err, NULL)
+        proParams->proZone = 0;
+		eprj_DblArrayCreate(8, &proParams->proParams, &err);
+		HANDLE_ERR(err, NULL)
+        proParams->proParams.data[0] = 0;  // False easting etc not stored in ->img it seems
+        proParams->proParams.data[1] = 0;  // always fixed by definition->
+        proParams->proParams.data[2] = 0;
+        proParams->proParams.data[3] = 0;
+        proParams->proParams.data[4] = 0;
+        proParams->proParams.data[5] = 0;
+        proParams->proParams.data[6] = 0;
+        proParams->proParams.data[7] = 0;
+		
+		// need to get this or we can't find spheroids etc
+		Eint_InitToolkitData* init = eint_GetInit();
+		
+		eprj_SpheroidByName(init, ETXT_LTEXT("International 1909"), proParams->proSpheroid, &err);
+        HANDLE_ERR(err, NULL)
+
+		eprj_DatumByName(init, ETXT_LTEXT("International 1909"), ETXT_LTEXT("Geodetic Datum 1949"), proParams->proSpheroid->datum, &err);
+        HANDLE_ERR(err, NULL)
+					
+        proj = eprj_ProjectionInit(init, proParams, &err);
+        HANDLE_ERR(err, NULL)
+		
+		// seems eprj_ProjectionInit takes a copy
+        eprj_ProParametersFree(&proParams);
+		
+		sProjName = eprj_MapProjectionName(proj);
+	}
+	
     return proj;
 }
 
