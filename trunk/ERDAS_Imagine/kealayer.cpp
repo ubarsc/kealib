@@ -792,7 +792,7 @@ keaLayerMapProjectionRead(void *lHandle, char **projTitle, unsigned char **MIFpr
         MIFearthModel, MIFearthModelSize,
         MIFearthModelDictionary, MIFearthModelName, &err);
     HANDLE_ERR(err, -1)
-
+	
     return 0;
 }
 
@@ -807,23 +807,44 @@ keaLayerMapProjectionWrite(void  *lHandle, char  *projTitle,
     keaDebugOut( "%s %p %s\n", __FUNCTION__, lHandle, projTitle );
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
+	kealib::KEAImageIO *pImageIO = pLayer->getImageIO();
     Eerr_ErrorReport* err = NULL;
     long rCode = -1;
 
-    keaDebugOut( "%s %p %s\n", __FUNCTION__, lHandle, projTitle );
-    keaDebugOut( "%s %s %s\n", __FUNCTION__, pLayer->pKEAFile->sUnits.c_str(), pLayer->pKEAFile->sProjName.c_str());
+	if( projTitle == NULL )
+	{
+		// docs say to destory geocoding info
+		try
+		{
+	        kealib::KEAImageSpatialInfo *pSpatialInfo = pImageIO->getSpatialInfo();
+			pSpatialInfo->wktString = "";
+			pImageIO->setSpatialInfo(pSpatialInfo);
+			// if we have one, free it
+			if( pLayer->pKEAFile->pProj != NULL )
+			{
+				eprj_ProjectionFree(&pLayer->pKEAFile->pProj);
+				pLayer->pKEAFile->pProj = NULL;
+			}
+
+			rCode = 0;
+		}
+		catch (kealib::KEAIOException &e)
+		{
+#ifdef KEADEBUG
+			keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
+#endif
+		}
+	}
 	
 	// these are set in keaLayerMapInfoWrite above (which is called first)
-    if( ( pLayer->pKEAFile->sUnits != "") && (pLayer->pKEAFile->sProjName != "") )
+    else if( ( pLayer->pKEAFile->sUnits != "") && (pLayer->pKEAFile->sProjName != "") )
     {
-			keaDebugOut("keaLayerMapProjectionWrite 1\n");
         Eprj_MapProjection* pProj;
 
         pProj = eprj_ProjectionConvertFromMIF(projTitle, MIFproj, MIFprojSize,
                     MIFprojDictionary, MIFprojName, MIFearthModel, MIFearthModelSize,
                     MIFearthModelDictionary, MIFearthModelName, &err);
         HANDLE_ERR(err, -1)
-			keaDebugOut("keaLayerMapProjectionWrite 2\n");
 		
 		if( pProj != NULL )
 		{
@@ -838,14 +859,11 @@ keaLayerMapProjectionWrite(void  *lHandle, char  *projTitle,
 			pLayer->pKEAFile->pProj = pProj;
 		
 			// save the WKT version back to the KEA file
-			kealib::KEAImageIO *pImageIO = pLayer->getImageIO();
-			keaDebugOut("keaLayerMapProjectionWrite 3\n");
 			try
 			{
 				kealib::KEAImageSpatialInfo *pSpatialInfo = pImageIO->getSpatialInfo();
 				pSpatialInfo->wktString = MapProjToWKT(pProj, pLayer->pKEAFile->sUnits,
 							pLayer->pKEAFile->sProjName);
-				keaDebugOut("Setting wkt as: %s\n", pSpatialInfo->wktString.c_str());
 				pImageIO->setSpatialInfo(pSpatialInfo);
 				rCode = 0;
 			}
@@ -857,15 +875,6 @@ keaLayerMapProjectionWrite(void  *lHandle, char  *projTitle,
 				rCode = -1;
 			}
 		}
-		else
-		{
-			keaDebugOut("NULL pProj");
-		}
-#ifdef KEADEBUG
-        char *pszName = eprj_MapProjectionName(pProj);
-        keaDebugOut( "projname = %s\n", pszName );
-#endif
-        
     }
     return rCode;
 }
