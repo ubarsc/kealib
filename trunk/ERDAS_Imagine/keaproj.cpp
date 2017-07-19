@@ -30,7 +30,6 @@
 
 #include "kea.h"
 #include <stdio.h>
-#include <string>
 #include <algorithm>
 #include "keaproj.h"
 
@@ -40,10 +39,10 @@
 #include "ogr_spatialref.h"
 #include "ogr_srs_api.h"
 
-Eprj_MapProjection* WKTToMapProj(const char *pszProj, std::string &sProjName, std::string &sUnits)
+Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, etxt::tstring &sUnits)
 {
     Eerr_ErrorReport* err = NULL;
-
+	ETXT_CONVERSION;
 	
 	OGRSpatialReference sr;
 	char *pszP = const_cast<char*>(pszProj);
@@ -55,7 +54,7 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, std::string &sProjName, st
 
 	Eprj_MapProjection *proj = NULL;
 	Etxt_Text unitName;
-	eprj_MapProjectionFromPEString(pszPEString, &proj, &unitName, &err);
+	eprj_MapProjectionFromPEString(ETXT_2U(pszPEString), &proj, &unitName, &err);
 	HANDLE_ERR(err, NULL)
 	
 	CPLFree(pszPEString);
@@ -68,16 +67,18 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, std::string &sProjName, st
 
 
 std::string MapProjToWKT( Eprj_MapProjection *proj,
-                   std::string &sUnits, std::string &sProjName )
+                   etxt::tstring &sUnits, etxt::tstring &sProjName )
 {
     Eerr_ErrorReport* err = NULL;
-	
-	char *pszPEString = NULL;
-	eprj_MapProjectionToPEString(&pszPEString, proj, const_cast<char*>(sUnits.c_str()), &err);
+	ETXT_CONVERSION;
+
+	Etxt_Text pszPEString = NULL;
+	eprj_MapProjectionToPEString(&pszPEString, proj, const_cast<Etxt_Text>(sUnits.c_str()), &err);
 	HANDLE_ERR(err, "")
 	
 	OGRSpatialReference sr;
-	sr.importFromESRI(&pszPEString);
+	char *pszP = ETXT_2A(pszPEString);
+	sr.importFromESRI(&pszP);
 	
 	char *pszWKT = NULL;
 	sr.exportToWkt(&pszWKT);

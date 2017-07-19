@@ -69,7 +69,7 @@ time_t getModifiedTime(char *fileName)
 }
 
 void *
-keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
+keaFileTitleIdentifyAndOpen(Etxt_Text fileName, long *fileType, Etxt_Text inFileMode)
 {
 #ifdef KEADEBUG
     if( inFileMode == NULL )
@@ -82,6 +82,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
     }
 #endif
     Eerr_ErrorReport* err = NULL;
+	ETXT_CONVERSION;
     // check if writing
     if( ( inFileMode != NULL ) && ( EFIO_MODE_CREATE( inFileMode ) == EMSC_TRUE ) )
     {
@@ -100,7 +101,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
     try
     {
         // is this a KEA file?
-        isKEA = kealib::KEAImageIO::isKEAImage( fileName );
+        isKEA = kealib::KEAImageIO::isKEAImage( ETXT_2A(fileName) );
     }
     catch (kealib::KEAIOException &e)
     {
@@ -120,11 +121,11 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
             {
                 if( ( inFileMode == NULL ) || EFIO_MODE_READONLY(inFileMode) )
                 {
-                    pH5File = kealib::KEAImageIO::openKeaH5RDOnly( fileName );
+                    pH5File = kealib::KEAImageIO::openKeaH5RDOnly( ETXT_2A(fileName) );
                 }
                 else
                 {
-                    pH5File = kealib::KEAImageIO::openKeaH5RW( fileName );
+                    pH5File = kealib::KEAImageIO::openKeaH5RW( ETXT_2A(fileName) );
                 }
                 pImageIO = new kealib::KEAImageIO();
                 pImageIO->openKEAImageHeader( pH5File );
@@ -136,7 +137,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                 kealib::KEAImageSpatialInfo *pSpatialInfo = pImageIO->getSpatialInfo();
                 // turn from WKT into something Imagine understands
                 pKEAFile->pProj = WKTToMapProj(pSpatialInfo->wktString.c_str(), pKEAFile->sProjName, pKEAFile->sUnits);
-                pKEAFile->modTime = getModifiedTime(fileName); // for keaFileDataModTimeGet
+                pKEAFile->modTime = getModifiedTime(ETXT_2A(fileName)); // for keaFileDataModTimeGet
                 uint32_t nBands = pImageIO->getNumOfImageBands();
                 for( uint32_t n = 0; n < nBands; n++ )
                 {
@@ -152,9 +153,9 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                     // the 'real' layer
                     KEA_Layer *pLayer = new KEA_Layer();
                     pLayer->pKEAFile = pKEAFile;
-                    std::string sName = pImageIO->getImageBandDescription(nBand);
+                    etxt::tstring sName = ETXT_2U(pImageIO->getImageBandDescription(nBand).c_str());
                     // Imagine doesn't like spaces
-                    std::replace(sName.begin(), sName.end(), ' ', '_');
+                    std::replace(sName.begin(), sName.end(), ETXT_LTEXT(' '), ETXT_LTEXT('_'));
 #ifdef KEADEBUG                        
                     keaDebugOut( "added layer '%s'\n", sName.c_str());
 #endif                        
@@ -173,7 +174,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                     // mask - Imagine 2015 requires us to have one for each band
                     KEA_Layer *pMask = new KEA_Layer();
                     pMask->pKEAFile = pKEAFile;
-                    char *name = estr_Sprintf( NULL, (char*)"%s:Mask", &err, 
+                    Etxt_Text name = estr_Sprintf( NULL, ETXT_LTEXT("%s:Mask"), &err, 
                                 sName.c_str(), NULL );
                     HANDLE_ERR(err, NULL);
                     pMask->sName = name;
@@ -196,7 +197,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                         unsigned int nOverview = o + 1;
                         KEA_Layer *pOverview = new KEA_Layer();
                         pOverview->pKEAFile = pKEAFile;
-                        char *name = estr_Sprintf( NULL, (char*)"%s:Overview_%d", &err, 
+                        Etxt_Text name = estr_Sprintf( NULL, ETXT_LTEXT("%s:Overview_%d"), &err, 
                                 sName.c_str(), nOverview, NULL );
                         HANDLE_ERR(err, NULL);
                         pOverview->sName = name;
@@ -217,7 +218,7 @@ keaFileTitleIdentifyAndOpen(char *fileName, long *fileType, char *inFileMode)
                         // mask for the overview
                         KEA_Layer *pOverviewMask = new KEA_Layer();
                         pOverviewMask->pKEAFile = pKEAFile;
-                        name = estr_Sprintf( NULL, (char*)"%s:Overview_%d:Mask", &err, 
+                        name = estr_Sprintf( NULL, ETXT_LTEXT("%s:Overview_%d:Mask"), &err, 
                                 sName.c_str(), nOverview, NULL );
                         HANDLE_ERR(err, NULL);
                         pOverviewMask->sName = name;
@@ -296,7 +297,7 @@ keaFileClose(void *fileHandle)
 }
 
 long
-keaFileLayerNamesGet(void *fileHandle, unsigned long *count, char ***layerNames)
+keaFileLayerNamesGet(void *fileHandle, unsigned long *count, Etxt_Text **layerNames)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s %p\n", __FUNCTION__, fileHandle );
@@ -320,7 +321,7 @@ keaFileLayerNamesGet(void *fileHandle, unsigned long *count, char ***layerNames)
     if( layerCount > 0 )
     {
         *count = layerCount;
-        *layerNames = emsc_New(layerCount, char *);
+        *layerNames = emsc_New(layerCount, Etxt_Text);
         layerCount = 0;
 
         for( std::vector<KEA_Layer*>::iterator itr = pKEAFile->aLayers.begin();
@@ -329,7 +330,7 @@ keaFileLayerNamesGet(void *fileHandle, unsigned long *count, char ***layerNames)
             KEA_Layer *pCandidate = (*itr);
             if( !pCandidate->bIsOverview && !pCandidate->bIsMask )
             {
-                (*layerNames)[layerCount] = estr_Duplicate((char*)pCandidate->sName.c_str());
+                (*layerNames)[layerCount] = estr_Duplicate(pCandidate->sName.c_str());
                 layerCount++;
             }
         }
@@ -345,8 +346,8 @@ keaFileLayerNamesGet(void *fileHandle, unsigned long *count, char ***layerNames)
 }
 
 long
-keaFileDataRead(void *fileHandle, char *dataName, unsigned char **MIFDataObject,
-        unsigned long *MIFDataSize, char **MIFDataDictionary, char **MIFDataType)
+keaFileDataRead(void *fileHandle, Etxt_Text dataName, unsigned char **MIFDataObject,
+        unsigned long *MIFDataSize, Etxt_Text *MIFDataDictionary, Etxt_Text *MIFDataType)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
@@ -361,25 +362,25 @@ keaFileDataRead(void *fileHandle, char *dataName, unsigned char **MIFDataObject,
     // currently we only support getting the histogram bin function in this manner
     // will be in the form:
     // :LayerName:OverviewName:Descriptor_Table:#Bin_Function#
-    char *pszNameCopy = estr_Duplicate(dataName);
-    char *pszLastColon = strrchr(pszNameCopy, ':');
+    Etxt_Text pszNameCopy = estr_Duplicate(dataName);
+    Etxt_Text pszLastColon = etxt_Text_strrchr(pszNameCopy, ':');
     // is it looking for the bin function?
-    if( ( pszLastColon != NULL ) &&  ( strcmp(pszLastColon+1, "#Bin_Function#") == 0 ) )
+    if( ( pszLastColon != NULL ) &&  ( etxt_Text_strcmp(pszLastColon+1, ETXT_LTEXT("#Bin_Function#")) == 0 ) )
     {
 #ifdef KEADEBUG        
         keaDebugOut( "Found #Bin_Function# %s\n", pszNameCopy );
 #endif        
         *pszLastColon = '\0'; // put a null there and look at the next one back
-        pszLastColon = strrchr(pszNameCopy, ':');
-        if( ( pszLastColon != NULL ) && (strcmp(pszLastColon+1, "Descriptor_Table" ) == 0 ) )
+        pszLastColon = etxt_Text_strrchr(pszNameCopy, ETXT_LTEXT(':'));
+        if( ( pszLastColon != NULL ) && (etxt_Text_strcmp(pszLastColon+1, ETXT_LTEXT("Descriptor_Table") ) == 0 ) )
         {
             //fprintf( stderr, "Found Descriptor_Table\n" );
             // now find the second colon
-            char *pszSecondColon = strchr(&pszNameCopy[1], ':');
+            Etxt_Text pszSecondColon = etxt_Text_strchr(&pszNameCopy[1], ':');
             if( pszSecondColon != NULL )
             {
-                *pszSecondColon = '\0';
-                char *pszLayerName = &pszNameCopy[1];
+                *pszSecondColon = ETXT_LTEXT('\0');
+                Etxt_Text pszLayerName = &pszNameCopy[1];
 #ifdef KEADEBUG                
                 keaDebugOut( "looking for layer %s\n", pszLayerName );
 #endif
@@ -433,8 +434,8 @@ keaFileDataRead(void *fileHandle, char *dataName, unsigned char **MIFDataObject,
 }
 
 long
-keaFileDataWrite( void  *fileHandle, char  *dataName,  unsigned char  *MIFDataObject, 
-    unsigned long  MIFDataSize, char  *MIFDataDictionary, char  *MIFDataType )
+keaFileDataWrite( void  *fileHandle, Etxt_Text dataName,  unsigned char  *MIFDataObject, 
+    unsigned long  MIFDataSize, Etxt_Text MIFDataDictionary, Etxt_Text MIFDataType )
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
@@ -444,27 +445,27 @@ keaFileDataWrite( void  *fileHandle, char  *dataName,  unsigned char  *MIFDataOb
     // currently we only support getting the histogram bin function in this manner
     // will be in the form:
     // :LayerName:OverviewName:Descriptor_Table:#Bin_Function#
-    char *pszNameCopy = estr_Duplicate(dataName);
-    char *pszLastColon = strrchr(pszNameCopy, ':');
+    Etxt_Text pszNameCopy = estr_Duplicate(dataName);
+    Etxt_Text pszLastColon = etxt_Text_strrchr(pszNameCopy, ':');
     // is it looking for the bin function?
-    if( ( pszLastColon != NULL ) &&  ( strcmp(pszLastColon+1, "#Bin_Function#") == 0 ) )
+    if( ( pszLastColon != NULL ) &&  ( etxt_Text_strcmp(pszLastColon+1, ETXT_LTEXT("#Bin_Function#")) == 0 ) )
     {
 #ifdef KEADEBUG        
-        fprintf( stderr, "Found #Bin_Function# %s\n", pszNameCopy );
+        keaDebugOut( "Found #Bin_Function# %s\n", pszNameCopy );
 #endif        
-        *pszLastColon = '\0'; // put a null there and look at the next one back
-        pszLastColon = strrchr(pszNameCopy, ':');
-        if( ( pszLastColon != NULL ) && (strcmp(pszLastColon+1, "Descriptor_Table" ) == 0 ) )
+        *pszLastColon = ETXT_LTEXT('\0'); // put a null there and look at the next one back
+        pszLastColon =  etxt_Text_strrchr(pszNameCopy, ':');
+        if( ( pszLastColon != NULL ) && (etxt_Text_strcmp(pszLastColon+1, ETXT_LTEXT("Descriptor_Table") ) == 0 ) )
         {
             //fprintf( stderr, "Found Descriptor_Table\n" );
             // now find the second colon
-            char *pszSecondColon = strchr(&pszNameCopy[1], ':');
+            Etxt_Text pszSecondColon = etxt_Text_strchr(&pszNameCopy[1], ':');
             if( pszSecondColon != NULL )
             {
-                *pszSecondColon = '\0';
-                char *pszLayerName = &pszNameCopy[1];
+                *pszSecondColon = ETXT_LTEXT('\0');
+                Etxt_Text pszLayerName = &pszNameCopy[1];
 #ifdef KEADEBUG                
-                fprintf( stderr, "looking for layer %s\n", pszLayerName );
+               keaDebugOut( "looking for layer %s\n", pszLayerName );
 #endif
                 unsigned long dtype, width, height, bWidth, bHeight, compression;
                 KEA_Layer *pKEALayer;
@@ -506,7 +507,7 @@ keaFileDataWrite( void  *fileHandle, char  *dataName,  unsigned char  *MIFDataOb
 }
 
 long
-keaFileDataDestroy(void *fileHandle, char *dataName )
+keaFileDataDestroy(void *fileHandle, Etxt_Text dataName )
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
@@ -531,7 +532,7 @@ keaFileFlush( void *fileHandle )
 }
     
 long
-keaFileDataModTimeGet(void *fileHandle, char *dataName, time_t *lastModTime)
+keaFileDataModTimeGet(void *fileHandle, Etxt_Text dataName, time_t *lastModTime)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
@@ -546,23 +547,24 @@ keaFileDataModTimeGet(void *fileHandle, char *dataName, time_t *lastModTime)
 
 long
 keaFileLayerNamesSet( void  *fileHandle,  unsigned long  count, 
- char  **oldLayerNames, char  **newLayerNames )
+ Etxt_Text *oldLayerNames, Etxt_Text *newLayerNames )
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s %p %ld\n", __FUNCTION__, fileHandle, count );
 #endif
     KEA_File *pKEAFile = (KEA_File*)fileHandle;
+	ETXT_CONVERSION;
     
     for( unsigned long oldN = 0; oldN < count; oldN++ )
     {
-        std::string sOldName = oldLayerNames[oldN];
+        etxt::tstring sOldName = oldLayerNames[oldN];
         // need to do overviews, masks etc with same base name
-        std::string sOldNameBase = sOldName + ':';
+        etxt::tstring sOldNameBase = sOldName + ETXT_LTEXT(':');
         for( std::vector<KEA_Layer*>::iterator itr = pKEAFile->aLayers.begin();
             itr != pKEAFile->aLayers.end(); itr++ )
         {
             KEA_Layer *pLayer = (*itr);
-            std::string sNewName = newLayerNames[oldN];
+            etxt::tstring sNewName = newLayerNames[oldN];
             if( !pLayer->bIsOverview && !pLayer->bIsMask && (pLayer->sName == sOldName ))
             {
                 unsigned int nBand = pLayer->nBand;
@@ -571,7 +573,7 @@ keaFileLayerNamesSet( void  *fileHandle,  unsigned long  count,
 #endif
                 try
                 {
-                    pKEAFile->pImageIO->setImageBandDescription(nBand, sNewName);
+                    pKEAFile->pImageIO->setImageBandDescription(nBand, ETXT_2A(sNewName.c_str()));
                     pLayer->sName = sNewName;
                 }
                 catch (kealib::KEAIOException &e)
@@ -585,9 +587,9 @@ keaFileLayerNamesSet( void  *fileHandle,  unsigned long  count,
                 (pLayer->sName.compare(0, sOldNameBase.size(), sOldNameBase) == 0 ))
             {
                 // is an overview or mask attached to the layer to be renamed
-                std::string sNewNameBase = sNewName + ':';
+               etxt::tstring sNewNameBase = sNewName + ETXT_LTEXT(':');
 #ifdef KEADEBUG
-                std::string sDebugOldName = pLayer->sName;
+                etxt::tstring sDebugOldName = pLayer->sName;
 #endif
                 pLayer->sName.replace(0, sOldNameBase.size(), sNewNameBase);
 #ifdef KEADEBUG

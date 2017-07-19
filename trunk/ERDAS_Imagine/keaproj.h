@@ -34,8 +34,8 @@
 #include <string>
 #include "eprj.h"
 
-Eprj_MapProjection* WKTToMapProj(const char *pszProj, std::string &sProjName, std::string &sUnits);
+Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, etxt::tstring &sUnits);
 std::string MapProjToWKT( Eprj_MapProjection *projparams,
-                   std::string &sUnits, std::string &sProjName );
+                   etxt::tstring &sUnits, etxt::tstring &sProjName );
 				   
 #endif //_KEAPROJ_H_

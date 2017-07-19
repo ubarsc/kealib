@@ -37,56 +37,56 @@ Support for KEA file format within Imagine
 #include "../include/libkea/kea-config.h"
 
 long
-keaInstanceTitleListGet(unsigned long *count, char ***titleList )
+keaInstanceTitleListGet(unsigned long *count, Etxt_Text **titleList )
 {
 #ifdef KEADEBUG
    keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
-    *titleList = emsc_New(1, char * );
-    (*titleList)[0] = estr_Duplicate((char*)"KEA File Format");
+    *titleList = emsc_New(1, Etxt_Text );
+    (*titleList)[0] = estr_Duplicate(ETXT_LTEXT("KEA File Format"));
     *count = 1;
 
 	return 0;
 }
 
 long
-keaInstanceTemplateListGet(char ***templateList, char **templateListPseudoFlags)
+keaInstanceTemplateListGet(Etxt_Text **templateList, Etxt_Text *templateListPseudoFlags)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
-    *templateList = emsc_New(1, char * );
-    (*templateList)[0] = estr_Duplicate((char*)"*.kea");
+    *templateList = emsc_New(1, Etxt_Text );
+    (*templateList)[0] = estr_Duplicate(ETXT_LTEXT("*.kea"));
 
 	/*
 	** None of these extensions are pseudo extensions, so we do not
 	** need to set any flags
 	*/
-	*templateListPseudoFlags = (char*)NULL;
+	*templateListPseudoFlags = (Etxt_Text)NULL;
 
 	return 0;
 }
 
 long
-keaInstanceExtListGet(char ***extList)
+keaInstanceExtListGet(Etxt_Text **extList)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
-    *extList = emsc_New(1, char * );
-    (*extList)[0] = estr_Duplicate((char*)".kea");
+    *extList = emsc_New(1, Etxt_Text );
+    (*extList)[0] = estr_Duplicate(ETXT_LTEXT(".kea"));
 
 	return 0;
 }
 
 long
-keaInstanceShortNameListGet(char ***shortNameList)
+keaInstanceShortNameListGet(Etxt_Text **shortNameList)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
-    *shortNameList = emsc_New(1, char * );
-    (*shortNameList)[0] = estr_Duplicate((char*)"kea");
+    *shortNameList = emsc_New(1, Etxt_Text );
+    (*shortNameList)[0] = estr_Duplicate(ETXT_LTEXT("kea"));
 
 	return 0;
 }
@@ -125,7 +125,7 @@ keaInstanceIsDirFlagsGet( char **flags )
 }
 
 long
-keaInstancePixelTypesGet(unsigned long *count, char  ***pixelTypes)
+keaInstancePixelTypesGet(unsigned long *count, Etxt_Text **pixelTypes)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s\n", __FUNCTION__ );
@@ -136,24 +136,24 @@ keaInstancePixelTypesGet(unsigned long *count, char  ***pixelTypes)
     // we are in trouble if the enum ever changes...
     // also do the same for kea_64int and kea_64uint
     *count = kealib::kea_64float + 1;
-    *pixelTypes = emsc_New(kealib::kea_64float + 1, char *);
-    (*pixelTypes)[0] = estr_Duplicate((char*)"s8"); // kea_undefined
-    (*pixelTypes)[1] = estr_Duplicate((char*)"s8"); // kea_8int
-    (*pixelTypes)[2] = estr_Duplicate((char*)"s16"); // kea_16int
-    (*pixelTypes)[3] = estr_Duplicate((char*)"s32"); // kea_32int
-    (*pixelTypes)[4] = estr_Duplicate((char*)"s32"); // kea_64int - not supported
-    (*pixelTypes)[5] = estr_Duplicate((char*)"u8"); // kea_8uint
-    (*pixelTypes)[6] = estr_Duplicate((char*)"u16"); // kea_16uint
-    (*pixelTypes)[7] = estr_Duplicate((char*)"u32"); // kea_32uint
-    (*pixelTypes)[8] = estr_Duplicate((char*)"u32"); // kea_64uint - not supported
-    (*pixelTypes)[9] = estr_Duplicate((char*)"f32"); //  kea_32float
-    (*pixelTypes)[10] = estr_Duplicate((char*)"f64"); // kea_64float
+    *pixelTypes = emsc_New(kealib::kea_64float + 1, Etxt_Text);
+    (*pixelTypes)[0] = estr_Duplicate(ETXT_LTEXT("s8")); // kea_undefined
+    (*pixelTypes)[1] = estr_Duplicate(ETXT_LTEXT("s8")); // kea_8int
+    (*pixelTypes)[2] = estr_Duplicate(ETXT_LTEXT("s16")); // kea_16int
+    (*pixelTypes)[3] = estr_Duplicate(ETXT_LTEXT("s32")); // kea_32int
+    (*pixelTypes)[4] = estr_Duplicate(ETXT_LTEXT("s32")); // kea_64int - not supported
+    (*pixelTypes)[5] = estr_Duplicate(ETXT_LTEXT("u8")); // kea_8uint
+    (*pixelTypes)[6] = estr_Duplicate(ETXT_LTEXT("u16")); // kea_16uint
+    (*pixelTypes)[7] = estr_Duplicate(ETXT_LTEXT("u32")); // kea_32uint
+    (*pixelTypes)[8] = estr_Duplicate(ETXT_LTEXT("u32")); // kea_64uint - not supported
+    (*pixelTypes)[9] = estr_Duplicate(ETXT_LTEXT("f32")); //  kea_32float
+    (*pixelTypes)[10] = estr_Duplicate(ETXT_LTEXT("f64")); // kea_64float
 
     return 0;
 }
 
 long
-keaInstanceCompressionTypesGet(unsigned long *count, char  ***compressionTypes)
+keaInstanceCompressionTypesGet(unsigned long *count, Etxt_Text  **compressionTypes)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s\n", __FUNCTION__ );
@@ -161,69 +161,69 @@ keaInstanceCompressionTypesGet(unsigned long *count, char  ***compressionTypes)
     // we just support one type - zlib. Note that this is just for display
     // data is expected to be uncompressed by the time Imagine sees it
     *count = 1;
-    *compressionTypes = emsc_New(1, char *);
-    (*compressionTypes)[0] = estr_Duplicate((char*)"zlib");
+    *compressionTypes = emsc_New(1, Etxt_Text);
+    (*compressionTypes)[0] = estr_Duplicate(ETXT_LTEXT("zlib"));
 
     return 0;
 }
 
 long
-keaInstanceLayerTypesGet( unsigned long  *count,  char  ***layerTypes)
+keaInstanceLayerTypesGet( unsigned long  *count,  Etxt_Text  **layerTypes)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     // make it match the KEALayerType enum
     *count = 2;
-    *layerTypes = emsc_New(2, char *);
-    (*layerTypes)[0] = estr_Duplicate((char*)"athematic");
-    (*layerTypes)[1] = estr_Duplicate((char*)"thematic");
+    *layerTypes = emsc_New(2, Etxt_Text);
+    (*layerTypes)[0] = estr_Duplicate(ETXT_LTEXT("athematic"));
+    (*layerTypes)[1] = estr_Duplicate(ETXT_LTEXT("thematic"));
 
     return 0;
 }
 
 long
-keaInstanceColumnTypesGet(unsigned long *count, char ***columnTypes)
+keaInstanceColumnTypesGet(unsigned long *count, Etxt_Text **columnTypes)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     // make it match KEAFieldDataType enum
     *count = kealib::kea_att_string + 1;
-    *columnTypes = emsc_New(kealib::kea_att_string + 1, char *);
-    (*columnTypes)[0] = estr_Duplicate((char*)"integer"); // kea_att_na
-    (*columnTypes)[1] = estr_Duplicate((char*)"integer"); // kea_att_bool - treat as int
-    (*columnTypes)[2] = estr_Duplicate((char*)"integer"); // kea_att_int
-    (*columnTypes)[3] = estr_Duplicate((char*)"real"); // kea_att_float
-    (*columnTypes)[4] = estr_Duplicate((char*)"string"); // kea_att_string
+    *columnTypes = emsc_New(kealib::kea_att_string + 1, Etxt_Text);
+    (*columnTypes)[0] = estr_Duplicate(ETXT_LTEXT("integer")); // kea_att_na
+    (*columnTypes)[1] = estr_Duplicate(ETXT_LTEXT("integer")); // kea_att_bool - treat as int
+    (*columnTypes)[2] = estr_Duplicate(ETXT_LTEXT("integer")); // kea_att_int
+    (*columnTypes)[3] = estr_Duplicate(ETXT_LTEXT("real")); // kea_att_float
+    (*columnTypes)[4] = estr_Duplicate(ETXT_LTEXT("string")); // kea_att_string
 
     return 0;
 }
 
 long
-keaInstanceRasterDataOrderTypesGet(unsigned long  *count, char  ***rdoTypes, unsigned char  **rdoWriteFlags)
+keaInstanceRasterDataOrderTypesGet(unsigned long  *count, Etxt_Text  **rdoTypes, unsigned char  **rdoWriteFlags)
 {     
 #ifdef KEADEBUG
     keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     /* If this isn't implemented we end up with BIK (??) in the file info */
     *count = 1;
-    *rdoTypes = emsc_New(1, char *);
-    (*rdoTypes)[0] = estr_Duplicate((char*)"BSQ");
+    *rdoTypes = emsc_New(1, Etxt_Text);
+    (*rdoTypes)[0] = estr_Duplicate(ETXT_LTEXT("BSQ"));
     *rdoWriteFlags = NULL;
     
     return 0;
 }
 
 long
-keaInstanceDescriptionGet(char **description)
+keaInstanceDescriptionGet(Etxt_Text *description)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     Eerr_ErrorReport* err = NULL;
-    *description = estr_Sprintf(NULL, (char*)"KEA Raster Support Library Version %s", &err,
-            LIBKEA_VERSION, NULL);
+    *description = estr_Sprintf(NULL, ETXT_LTEXT("KEA Raster Support Library Version %s"), &err,
+            ETXT_LTEXT(LIBKEA_VERSION), NULL);
     HANDLE_ERR(err, -1);
     return 0;
 }
@@ -258,9 +258,9 @@ keaInstanceSupportsUnicode(void)
 }
 
 long
-keaInstanceMapProjectionIsSupported(long  rfTitle, char  *projTitle, unsigned char  *MIFproj,
-unsigned long  MIFprojSize, char  *MIFprojDictionary, char  *MIFprojName, unsigned char  *MIFearthModel, 
-unsigned long  MIFearthModelSize, char  *MIFearthModelDictionary, char  *MIFearthModelName )
+keaInstanceMapProjectionIsSupported(long  rfTitle, Etxt_Text  projTitle, unsigned char  *MIFproj,
+unsigned long  MIFprojSize, Etxt_Text  MIFprojDictionary, Etxt_Text  MIFprojName, unsigned char  *MIFearthModel, 
+unsigned long  MIFearthModelSize, Etxt_Text MIFearthModelDictionary, Etxt_Text MIFearthModelName )
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s %s\n", __FUNCTION__, projTitle );

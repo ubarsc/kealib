@@ -44,7 +44,7 @@
 #define MAXSIZE_BLOCK 1000
 
 long
-keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **tableHandle)
+keaTableOpen(void *fileHandle, Etxt_Text tableName, unsigned long *numRows, void **tableHandle)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s %p %s\n", __FUNCTION__, fileHandle, tableName );
@@ -58,19 +58,19 @@ keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **t
     // we will assume fileHandle is always a KEA_File - seems to be the case
     KEA_File *pKEAFile = (KEA_File*)fileHandle;
     kealib::KEAAttributeTable *pKEATable = NULL;
-    char *pszLastColon = strrchr(tableName, ':');
+    Etxt_Text pszLastColon = etxt_Text_strrchr(tableName, ETXT_LTEXT(':'));
     if( pszLastColon != NULL )
     {
 #ifdef KEADEBUG
         keaDebugOut( "Table name: %s\n", pszLastColon+1);
 #endif        
         // Imagine always asks for this one, so perhaps don't need to check
-        if( strcmp(pszLastColon+1, "Descriptor_Table") == 0 )
+        if( etxt_Text_strcmp(pszLastColon+1, ETXT_LTEXT("Descriptor_Table")) == 0 )
         {
             int nNameLen = pszLastColon - tableName;
-            char *pszLayerName = (char*)malloc((nNameLen + 1) * sizeof(char));
-            strncpy(pszLayerName, &tableName[1], nNameLen - 1);
-            pszLayerName[nNameLen - 1] = '\0';
+            Etxt_Text pszLayerName = emsc_New(nNameLen + 1, Etxt_Char );
+            etxt_Text_strncpy(pszLayerName, &tableName[1], nNameLen - 1);
+            pszLayerName[nNameLen - 1] = ETXT_LTEXT('\0');
 
             unsigned long dtype, width, height, bWidth, bHeight, compression;
             KEA_Layer *pKEALayer;
@@ -115,7 +115,7 @@ keaTableOpen(void *fileHandle, char *tableName, unsigned long *numRows, void **t
 #endif                
                 rCode = -1;
             }
-            free(pszLayerName);
+            emsc_Free(pszLayerName);
         }
     }
 #ifdef KEADEBUG
@@ -138,7 +138,7 @@ keaTableClose(void *tableHandle)
 }
 
 long
-keaTableCreate(void  *dataSource, char  *tableName, unsigned long  numRows, 
+keaTableCreate(void  *dataSource, Etxt_Text tableName, unsigned long  numRows, 
  void  **tableHandle)
 {
 #ifdef KEADEBUG
@@ -149,21 +149,21 @@ keaTableCreate(void  *dataSource, char  *tableName, unsigned long  numRows,
     // :LayerName:Descriptor_Table
     // or:
     // :LayerName:OverviewName:Descriptor_Table
-
+	
     // we will assume dataSource is always a KEA_File - seems to be the case
     KEA_File *pKEAFile = (KEA_File*)dataSource;
     kealib::KEAAttributeTable *pKEATable = NULL;
-    char *pszLastColon = strrchr(tableName, ':');
+    Etxt_Text pszLastColon = etxt_Text_strrchr(tableName, ETXT_LTEXT(':'));
     if( pszLastColon != NULL )
     {
         //fprintf( stderr, "Table name: %s\n", pszLastColon+1);
         // Imagine always asks for this one, so perhaps don't need to check
-        if( strcmp(pszLastColon+1, "Descriptor_Table") == 0 )
+        if( etxt_Text_strcmp(pszLastColon+1, ETXT_LTEXT("Descriptor_Table")) == 0 )
         {
             int nNameLen = pszLastColon - tableName;
-            char *pszLayerName = (char*)malloc((nNameLen + 1) * sizeof(char));
-            strncpy(pszLayerName, &tableName[1], nNameLen - 1);
-            pszLayerName[nNameLen - 1] = '\0';
+            Etxt_Text pszLayerName = emsc_New(nNameLen + 1, Etxt_Char );
+            etxt_Text_strncpy(pszLayerName, &tableName[1], nNameLen - 1);
+            pszLayerName[nNameLen - 1] = ETXT_LTEXT('\0');
 
             unsigned long dtype, width, height, bWidth, bHeight, compression;
             KEA_Layer *pKEALayer;
@@ -238,7 +238,7 @@ keaTableCreate(void  *dataSource, char  *tableName, unsigned long  numRows,
 				}
 			}
 			
-            free(pszLayerName);
+            emsc_Free(pszLayerName);
         }
     }
 #ifdef KEADEBUG
@@ -250,16 +250,17 @@ keaTableCreate(void  *dataSource, char  *tableName, unsigned long  numRows,
  
  
 long
-keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNames)
+keaTableColumnNamesGet(void *tableHandle, unsigned long *count, Etxt_Text **columnNames)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s %p\n", __FUNCTION__, tableHandle );
 #endif
     kealib::KEAAttributeTable *pKEATable = (kealib::KEAAttributeTable*)tableHandle;
+	ETXT_CONVERSION;
 
     std::vector<std::string> colNames = pKEATable->getFieldNames();
     *count = colNames.size();
-    *columnNames = emsc_New(*count, char *);
+    *columnNames = emsc_New(*count, Etxt_Text);
 
     // Do it in the Imagine preferred order
     unsigned long nIdx = 0;
@@ -268,7 +269,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
     itr = std::find(colNames.begin(), colNames.end(), COLUMN_HISTOGRAM);
     if( itr != colNames.end() )
     {
-        (*columnNames)[nIdx] = estr_Duplicate((char*)COLUMN_HISTOGRAM);
+        (*columnNames)[nIdx] = estr_Duplicate(ETXT_LTEXT(COLUMN_HISTOGRAM));
         colNames.erase(itr);
         nIdx++;
 #ifdef KEADEBUG
@@ -278,7 +279,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
     itr = std::find(colNames.begin(), colNames.end(), COLUMN_RED);
     if( itr != colNames.end() )
     {
-        (*columnNames)[nIdx] = estr_Duplicate((char*)COLUMN_RED);
+        (*columnNames)[nIdx] = estr_Duplicate(ETXT_LTEXT(COLUMN_RED));
         colNames.erase(itr);
         nIdx++;
 #ifdef KEADEBUG
@@ -288,7 +289,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
     itr = std::find(colNames.begin(), colNames.end(), COLUMN_GREEN);
     if( itr != colNames.end() )
     {
-        (*columnNames)[nIdx] = estr_Duplicate((char*)COLUMN_GREEN);
+        (*columnNames)[nIdx] = estr_Duplicate(ETXT_LTEXT(COLUMN_GREEN));
         colNames.erase(itr);
         nIdx++;
 #ifdef KEADEBUG
@@ -298,7 +299,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
     itr = std::find(colNames.begin(), colNames.end(), COLUMN_BLUE);
     if( itr != colNames.end() )
     {
-        (*columnNames)[nIdx] = estr_Duplicate((char*)COLUMN_BLUE);
+        (*columnNames)[nIdx] = estr_Duplicate(ETXT_LTEXT(COLUMN_BLUE));
         colNames.erase(itr);
         nIdx++;
 #ifdef KEADEBUG
@@ -309,7 +310,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
     if( itr != colNames.end() )
     {
         // call it Opacity for Imagine
-        (*columnNames)[nIdx] = estr_Duplicate((char*)COLUMN_OPACITY);
+        (*columnNames)[nIdx] = estr_Duplicate(ETXT_LTEXT(COLUMN_OPACITY));
         colNames.erase(itr);
         nIdx++;
 #ifdef KEADEBUG
@@ -319,7 +320,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
     itr = std::find(colNames.begin(), colNames.end(), COLUMN_CLASSNAMES);
     if( itr != colNames.end() )
     {
-        (*columnNames)[nIdx] = estr_Duplicate((char*)COLUMN_CLASSNAMES);
+        (*columnNames)[nIdx] = estr_Duplicate(ETXT_LTEXT(COLUMN_CLASSNAMES));
         colNames.erase(itr);
         nIdx++;
 #ifdef KEADEBUG
@@ -331,7 +332,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
     for( std::vector<std::string>::iterator itr = colNames.begin(); itr != colNames.end(); itr++)
     {
         std::string sVal = (*itr);
-        (*columnNames)[nIdx] = estr_Duplicate((char*)sVal.c_str());
+        (*columnNames)[nIdx] = estr_Duplicate(ETXT_2U(sVal.c_str()));
 #ifdef KEADEBUG
         keaDebugOut( "Returning column (%s)\n", sVal.c_str());
 #endif
@@ -345,7 +346,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, char ***columnNa
 KEA doesn't currently have the ability to rename layers but imagine requires it. */
 long
 keaTableColumnNamesSet(void  *tableHandle,  unsigned long  count, 
-char  **oldColumnNames, char  **newColumnNames)
+Etxt_Text *oldColumnNames, Etxt_Text *newColumnNames)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s %p\n", __FUNCTION__, tableHandle);
@@ -385,7 +386,7 @@ keaTableRowCountSet(void  *tableHandle, unsigned long  rowCount)
 
 // KEA doesn't support this, but Imagine needs the function before it will create tables
 long
-keaTableDestroy(void  *dataSource,  char  *tableName)
+keaTableDestroy(void  *dataSource,  Etxt_Text tableName)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s %p %s\n", __FUNCTION__, dataSource, tableName );
@@ -394,7 +395,7 @@ keaTableDestroy(void  *dataSource,  char  *tableName)
 }
 
 long 
-keaColumnOpen(void *tableHandle, char *columnName, unsigned long *dataType, 
+keaColumnOpen(void *tableHandle, Etxt_Text columnName, unsigned long *dataType, 
                         unsigned long *maxStringLength, void **columnHandle)
 {
 #ifdef KEADEBUG
@@ -402,10 +403,11 @@ keaColumnOpen(void *tableHandle, char *columnName, unsigned long *dataType,
 #endif
     kealib::KEAAttributeTable *pKEATable = (kealib::KEAAttributeTable*)tableHandle;
     long rCode = -1;
+	ETXT_CONVERSION;
 
     try
     {
-        std::string sColumnName = columnName;
+        std::string sColumnName = ETXT_2A(columnName);
         if( sColumnName == COLUMN_OPACITY )
             sColumnName = COLUMN_ALPHA; // KEA uses Alpha
 
@@ -492,7 +494,7 @@ keaColumnClose(void *columnHandle)
 }
 
 long
-keaColumnCreate(void  *tableHandle, char  *columnName, 
+keaColumnCreate(void  *tableHandle, Etxt_Text columnName, 
  unsigned long  dataType, unsigned long  maxStringLength, 
  void  **columnHandle)
 {
@@ -504,8 +506,9 @@ keaColumnCreate(void  *tableHandle, char  *columnName,
     size_t nColIdx = 0;
     bool bTreatIntAsFloat = false;
     kealib::KEAFieldDataType ktype = (kealib::KEAFieldDataType)dataType;
+	ETXT_CONVERSION;
 
-    std::string sColumnName = columnName;
+    std::string sColumnName = ETXT_2A(columnName);
     if( sColumnName == COLUMN_OPACITY )
         sColumnName = COLUMN_ALPHA; // KEA uses Alpha
         
@@ -689,7 +692,7 @@ keaColumnDataRead(void *columnHandle, unsigned long startRow, unsigned long numR
 					// now go through and duplicate strings using the Imagine routine
 					for( unsigned long i = 0; i < numRows; i++ )
 					{
-						ppszStringData[i] = estr_Duplicate((char*)aStrings[i].c_str());
+						ppszStringData[i] = estr_DuplicateA((char*)aStrings[i].c_str());
 					}
 				}
                 break;
@@ -816,7 +819,7 @@ keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long num
 }
 
 long
-keaColumnDestroy(void *tableHandle, char *columnName)
+keaColumnDestroy(void *tableHandle, Etxt_Text columnName)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s %p %s\n", __FUNCTION__, tableHandle, columnName);

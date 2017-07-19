@@ -72,6 +72,11 @@
 
 #include <eimg_RasterFormats.h>
 
+// for unicode conversions
+#include "atlconv.h"
+// ?
+#define alloca _alloca
+
 class KEA_Layer; 
 
 class KEA_File
@@ -79,10 +84,10 @@ class KEA_File
 public:
     H5::H5File *pH5File;  // NULL if not created yet
     kealib::KEAImageIO *pImageIO; // NULL if not created yet
-    std::string       sFilePath;
+    etxt::tstring       sFilePath;
     Eprj_MapProjection* pProj;
-    std::string sUnits;
-    std::string sProjName;
+    etxt::tstring sUnits;
+    etxt::tstring sProjName;
     bool        bUpdate;
     time_t  modTime;    // maybe should have whole _stat struct here, not sure.
                         // Put it here for keaDataModTimeGet
@@ -102,9 +107,9 @@ public:
         }
         return pIO;
     }
-    std::string getFilePath()
+    etxt::tstring getFilePath()
     {
-        std::string filePath;
+        etxt::tstring filePath;
         if( pKEAFile != NULL )
         {
             filePath = pKEAFile->sFilePath;
@@ -112,7 +117,7 @@ public:
         return filePath;
     }
     KEA_File           *pKEAFile; 
-    std::string         sName;   // as presented to Imagine
+    etxt::tstring         sName;   // as presented to Imagine
 	unsigned int		nBand;  // in ImageIO land
 
     bool                bIsOverview;
