@@ -48,10 +48,10 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, 
 	char *pszP = const_cast<char*>(pszProj);
 	sr.importFromWkt(&pszP);
 	sr.morphToESRI();
-	
+
 	char *pszPEString = NULL;
 	sr.exportToWkt(&pszPEString);
-
+	
 	Eprj_MapProjection *proj = NULL;
 	Etxt_Text unitName;
 	eprj_MapProjectionFromPEString(ETXT_2U(pszPEString), &proj, &unitName, &err);
@@ -77,7 +77,9 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, 
         eprj_CharStrCreate(ETXT_LTEXT("New Zealand Map Grid"), &proParams->proName, &err);
         HANDLE_ERR(err, NULL)
         proParams->proZone = 0;
-		eprj_DblArrayCreate(8, &proParams->proParams, &err);
+		// note: hfadataset code originally had 8 params, but I now get a 
+		// relative/absolute error coming up. Creating 9 params seems to fix it.
+		eprj_DblArrayCreate(9, &proParams->proParams, &err);
 		HANDLE_ERR(err, NULL)
         proParams->proParams.data[0] = 0;  // False easting etc not stored in ->img it seems
         proParams->proParams.data[1] = 0;  // always fixed by definition->
@@ -87,6 +89,7 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, 
         proParams->proParams.data[5] = 0;
         proParams->proParams.data[6] = 0;
         proParams->proParams.data[7] = 0;
+        proParams->proParams.data[8] = 0;
 		
 		// need to get this or we can't find spheroids etc
 		Eint_InitToolkitData* init = eint_GetInit();
@@ -100,6 +103,46 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, 
         proj = eprj_ProjectionInit(init, proParams, &err);
         HANDLE_ERR(err, NULL)
 		
+		// seems eprj_ProjectionInit takes a copy
+        eprj_ProParametersFree(&proParams);
+		
+		sProjName = eprj_MapProjectionName(proj);
+	}
+	else if( sProjName == ETXT_LTEXT("NZGD_2000_New_Zealand_Transverse_Mercator") )
+	{
+		// this one doesn't seem to be right either
+		eprj_ProjectionFree(&proj);
+		Eprj_ProParameters *proParams = eprj_ProParametersCreate(&err);
+		HANDLE_ERR(err, NULL)
+		
+		proParams->proType = EPRJ_INTERNAL;
+		proParams->proNumber = 9;
+        eprj_CharStrCreate(ETXT_LTEXT("Transverse Mercator"), &proParams->proName, &err);
+        HANDLE_ERR(err, NULL)
+        proParams->proZone = 0;
+		eprj_DblArrayCreate(8, &proParams->proParams, &err);
+		HANDLE_ERR(err, NULL)
+        proParams->proParams.data[0] = 0;  
+        proParams->proParams.data[1] = 0;  
+        proParams->proParams.data[2] = 0.99960;
+        proParams->proParams.data[3] = 0;
+        proParams->proParams.data[4] = 173.0;
+        proParams->proParams.data[5] = 0;
+        proParams->proParams.data[6] = 1600000;
+        proParams->proParams.data[7] = 10000000;
+		
+		// need to get this or we can't find spheroids etc
+		Eint_InitToolkitData* init = eint_GetInit();
+		
+		eprj_SpheroidByName(init, ETXT_LTEXT("GRS 1980"), proParams->proSpheroid, &err);
+        HANDLE_ERR(err, NULL)
+
+		eprj_DatumByName(init, ETXT_LTEXT("GRS 1980"), ETXT_LTEXT("NZGD2000 (NTv2)"), proParams->proSpheroid->datum, &err);
+        HANDLE_ERR(err, NULL)
+
+        proj = eprj_ProjectionInit(init, proParams, &err);
+        HANDLE_ERR(err, NULL)
+
 		// seems eprj_ProjectionInit takes a copy
         eprj_ProParametersFree(&proParams);
 		
