@@ -21,7 +21,7 @@ AppUpdatesURL={#MyAppURL}
 ;CreateAppDir=yes
 LicenseFile=C:\dev\keainstall\LICENSE.txt
 OutputDir=C:\dev\keainstall
-OutputBaseFilename=setup_kea_erdas2015
+OutputBaseFilename=setup_kea_erdas2011
 Compression=lzma
 SolidCompression=yes
 DefaultDirName={code:GetImagineDir}
@@ -30,12 +30,10 @@ AppendDefaultDirName=no
 DirExistsWarning=no
 
 [Files]
-Source: "C:\dev\keainstall\2015\x86\kea.dll"; DestDir: "{app}\usr\lib\Win32Release\rasterformats"; Flags: ignoreversion
-Source: "C:\dev\keainstall\2015\x64\kea.dll"; DestDir: "{app}\usr\lib\x64URelease\rasterformats"; Check: IsWin64; Flags: ignoreversion 
+Source: "C:\dev\keainstall\2011\x86\kea.dll"; DestDir: "{app}\usr\lib\Win32Release\rasterformats"; Flags: ignoreversion
 
 [Run]
 Filename: "{app}\bin\Win32Release\configure_rf.exe"; StatusMsg: "Configuring Raster Formats"
-; seems to do both 32 and 64 bit formats
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -46,24 +44,12 @@ var
 InstallDir : string;
 begin
   // default value
-  Result := 'C:\Program Files\Hexagon\ERDAS IMAGINE 2015';
-  // setup.exe is 32, bit need to do this for 64 bit registry
-  if RegQueryStringValue(HKEY_LOCAL_MACHINE_64, 'SOFTWARE\ERDAS\Shared\15\GIO\Environment',
-     'IMAGINE_HOME', InstallDir) then
+  Result := 'C:\ERDAS\ERDAS Desktop 2011\';
+  if RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\ERDAS\IMAGINE\11',
+     'ImagineHome', InstallDir) then
   begin
     // Successfully read the value.
     Result := InstallDir;
     //MsgBox('Successfully read ' + Result, mbInformation, MB_OK);
   end
-  else
-   // Fall back on 32 bit HKEY_LOCAL_MACHINE
-    begin
-      if RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\ERDAS\Shared\15\GIO\Environment',
-       'IMAGINE_HOME', InstallDir) then
-    begin
-      // Successfully read the value.
-      Result := InstallDir;
-      //MsgBox('Successfully read ' + Result, mbInformation, MB_OK);
-    end
-   end;
 end;

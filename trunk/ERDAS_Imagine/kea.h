@@ -72,10 +72,13 @@
 
 #include <eimg_RasterFormats.h>
 
-// for unicode conversions
-#include "atlconv.h"
-// ?
-#define alloca _alloca
+// for unicode conversions - MSVC 2008 (Imagine 2011) doesn't have atlconv.h 
+// but we don't need it anyway since no Unicode support on this version of Imagine.
+#if defined(_MSC_VER) && (_MSC_VER > 1500)
+	#include "atlconv.h"
+	// ?
+	#define alloca _alloca
+#endif
 
 class KEA_Layer; 
 

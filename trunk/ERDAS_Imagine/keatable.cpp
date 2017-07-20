@@ -633,10 +633,11 @@ keaColumnDataRead(void *columnHandle, unsigned long startRow, unsigned long numR
     kealib::KEAAttributeTable *pKEATable = pKEAColumn->pKEATable;
     //fprintf( stderr, "Column name = %s\n", pKEAColumn->sName.c_str());
     long rCode = -1;
+	ETXT_CONVERSION;
 
     int32_t *pIntData = (int32_t*)data;
     double *pDoubleData = (double*)data;
-    char **ppszStringData = (char**)data;
+    Etxt_Text *ppszStringData = (Etxt_Text*)data;
 
     try
     {
@@ -692,7 +693,7 @@ keaColumnDataRead(void *columnHandle, unsigned long startRow, unsigned long numR
 					// now go through and duplicate strings using the Imagine routine
 					for( unsigned long i = 0; i < numRows; i++ )
 					{
-						ppszStringData[i] = estr_DuplicateA((char*)aStrings[i].c_str());
+						ppszStringData[i] = estr_Duplicate(ETXT_2U(aStrings[i].c_str()));
 					}
 				}
                 break;
