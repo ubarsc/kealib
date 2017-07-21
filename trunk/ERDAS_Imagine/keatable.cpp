@@ -726,10 +726,11 @@ keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long num
     kealib::KEAAttributeTable *pKEATable = pKEAColumn->pKEATable;
     //fprintf( stderr, "Column name = %s\n", pKEAColumn->sName.c_str());
     long rCode = -1;
+	ETXT_CONVERSION;
 
     int32_t *pIntData = (int32_t*)data;
     double *pDoubleData = (double*)data;
-    char **ppszStringData = (char**)data;
+    Etxt_Text *ppszStringData = (Etxt_Text*)data;
 
     try
     {
@@ -792,7 +793,7 @@ keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long num
                     for( unsigned long i = 0; i < numRows; i++ )
 					{
 						if( ppszStringData[i] != NULL )
-							aStrings.push_back(ppszStringData[i]);
+							aStrings.push_back(ETXT_2A(ppszStringData[i]));
 						else
 							aStrings.push_back("");
 					}
