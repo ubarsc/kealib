@@ -125,9 +125,10 @@ keaFileTitleIdentifyAndOpen(Etxt_Text fileName, long *fileType, Etxt_Text inFile
 				// in both modes at one. 
 				// Workaround is to always attempt to open the file read-write
 				// unless that fails and we are only actually wanting readonly.
+				char *asciiFileName = ETXT_2A(fileName);
 				try
 				{
-					pH5File = kealib::KEAImageIO::openKeaH5RW( ETXT_2A(fileName) );
+					pH5File = kealib::KEAImageIO::openKeaH5RW( asciiFileName );
 				}
 				catch (kealib::KEAIOException &e)
 				{
@@ -135,7 +136,7 @@ keaFileTitleIdentifyAndOpen(Etxt_Text fileName, long *fileType, Etxt_Text inFile
 					if( ( inFileMode == NULL ) || EFIO_MODE_READONLY(inFileMode) )
 					{
 						// exception (if any) should be caught in the enclosing try
-						pH5File = kealib::KEAImageIO::openKeaH5RDOnly( ETXT_2A(fileName) );
+						pH5File = kealib::KEAImageIO::openKeaH5RDOnly( asciiFileName );
 					}
 					else
 					{
