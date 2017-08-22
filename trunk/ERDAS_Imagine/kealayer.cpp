@@ -553,17 +553,89 @@ long
 keaLayerRRDLayerNamesSet(void  *lHandle, unsigned long  count, Etxt_Text *layerNames, 
  Etxt_Text algorithm)
  {
- #ifdef KEADEBUG
+#ifdef KEADEBUG
     keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
 
+#ifdef KEADEBUG                        
     for(unsigned long n = 0; n < count; n++ )
     {
         keaDebugOut( "request to RRD %s\n", layerNames[n]);
     }
+#endif
+	// TODO: should be 0?
     return -1;
  }
+ 
+long keaLayerRRDInfoGet(void *lHandle, unsigned long *count,
+					Etxt_Text **layerNames,	Etxt_Text *algorithm, unsigned long **dims)
+{
+#ifdef KEADEBUG
+    keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
+#endif
+    KEA_Layer *pLayer = (KEA_Layer*)lHandle;
+	Eerr_ErrorReport* err = NULL;
+													 
+	unsigned long layerCount = 0;
+	// get the pointer back to the KEA_File object 
+	// and iterate through the list of layers looking for overviews
+	for( std::vector<KEA_Layer*>::iterator itr = pLayer->pKEAFile->aLayers.begin();
+		itr != pLayer->pKEAFile->aLayers.end(); itr++ )
+	{
+		KEA_Layer *pCandidate = (*itr);
+		if( pCandidate->bIsOverview && !pCandidate->bIsMask )
+		{
+			size_t nColonLoc = pCandidate->sName.find(ETXT_LTEXT(':'));
+			if( ( nColonLoc != std::string::npos ) && ( pCandidate->sName.compare(0, nColonLoc, pLayer->sName) == 0 ) )
+			{
+				layerCount++;
+			}
+		}
+	}
+
+	if( layerCount > 0 )
+	{
+		*count = layerCount;
+		*layerNames = emsc_New(layerCount, Etxt_Text);
+		*algorithm = estr_Duplicate(ETXT_LTEXT("Unknown"));
+		*dims = emsc_New(layerCount * 2, unsigned long);
+		layerCount = 0;
+		for( std::vector<KEA_Layer*>::iterator itr = pLayer->pKEAFile->aLayers.begin();
+		itr != pLayer->pKEAFile->aLayers.end(); itr++ )
+		{
+			KEA_Layer *pCandidate = (*itr);
+			if( pCandidate->bIsOverview  && !pCandidate->bIsMask )
+			{
+				size_t nColonLoc = pCandidate->sName.find(ETXT_LTEXT(':'));
+				if( ( nColonLoc != std::string::npos ) && ( pCandidate->sName.compare(0, nColonLoc, pLayer->sName) == 0 ) )
+				{
+					// couldn't work out efnp_FileNodeCreate...
+					etxt::tstring sFilePath = pLayer->getFilePath();
+					Etxt_Text name = estr_Sprintf( NULL, ETXT_LTEXT("%s(:%s)"), &err, 
+						sFilePath.c_str(), pCandidate->sName.c_str(), NULL );
+					HANDLE_ERR(err, -1);
+					(*layerNames)[layerCount] = name;
+					(*dims)[layerCount * 2] = pCandidate->nXSize;
+					(*dims)[(layerCount * 2) + 1] = pCandidate->nYSize;
+#ifdef KEADEBUG                        
+					keaDebugOut( "RRD: %s\n", name);
+#endif                        
+					layerCount++;
+				}
+			}
+		}
+	}
+	else
+	{
+		// no overviews
+		*layerNames = NULL;
+		*count = 0;
+		*algorithm = NULL;
+		*dims = NULL;
+	}
+	return 0;
+}
 
 // common GDAL strings
 #define METADATA_MIN "STATISTICS_MINIMUM" 

@@ -119,14 +119,32 @@ keaFileTitleIdentifyAndOpen(Etxt_Text fileName, long *fileType, Etxt_Text inFile
             kealib::KEAImageIO *pImageIO = NULL;
             try
             {
-                if( ( inFileMode == NULL ) || EFIO_MODE_READONLY(inFileMode) )
-                {
-                    pH5File = kealib::KEAImageIO::openKeaH5RDOnly( ETXT_2A(fileName) );
-                }
-                else
-                {
-                    pH5File = kealib::KEAImageIO::openKeaH5RW( ETXT_2A(fileName) );
-                }
+				// Imagine 2015 seems to have a perculiar bug where it opens a file
+				// readonly, and before closing it opens it read-write which then
+				// fails as HDF5 appears to have some locks to prevent opening a file
+				// in both modes at one. 
+				// Workaround is to always attempt to open the file read-write
+				// unless that fails and we are only actually wanting readonly.
+				try
+				{
+					pH5File = kealib::KEAImageIO::openKeaH5RW( ETXT_2A(fileName) );
+				}
+				catch (kealib::KEAIOException &e)
+				{
+					// open in read-write mode failed. Did they only want readonly?
+					if( ( inFileMode == NULL ) || EFIO_MODE_READONLY(inFileMode) )
+					{
+						// exception (if any) should be caught in the enclosing try
+						pH5File = kealib::KEAImageIO::openKeaH5RDOnly( ETXT_2A(fileName) );
+					}
+					else
+					{
+						// request to open read-write and original attempt failed
+						// so rethrow. Should be caught in the enclosing try.
+						throw;
+					}
+				}
+				
                 pImageIO = new kealib::KEAImageIO();
                 pImageIO->openKEAImageHeader( pH5File );
 
@@ -345,6 +363,20 @@ keaFileLayerNamesGet(void *fileHandle, unsigned long *count, Etxt_Text **layerNa
 	return rCode;
 }
 
+long keaFileRasterFormatsNonStandardDataNamesGet(void *fileHandle,
+	unsigned long	*count,	Etxt_Text		**dataNamesList)
+{
+#ifdef KEADEBUG
+    keaDebugOut( "%s %p\n", __FUNCTION__, fileHandle);
+#endif
+	// assume #Bin_Function# always available
+	// since we don't have a layer to easily check
+	*count = 1;
+	*dataNamesList = emsc_New(1, Etxt_Text);
+	(*dataNamesList)[0] = estr_Duplicate(ETXT_LTEXT("Descriptor_Table:#Bin_Function#"));
+	return 0;
+}
+
 long
 keaFileDataRead(void *fileHandle, Etxt_Text dataName, unsigned char **MIFDataObject,
         unsigned long *MIFDataSize, Etxt_Text *MIFDataDictionary, Etxt_Text *MIFDataType)
@@ -389,7 +421,9 @@ keaFileDataRead(void *fileHandle, Etxt_Text dataName, unsigned char **MIFDataObj
                 if( keaLayerOpen(fileHandle, pszLayerName, &dtype, &width, &height, 
                             &compression, &bWidth, &bHeight, (void**)&pKEALayer) == 0 )
                 {
-                    //fprintf( stderr, "Found layer\n" );
+#ifdef KEADEBUG
+                    keaDebugOut( "Found layer\n" );
+#endif
                     Edsc_BinFunction *pBinFn = keaLayerGetHistoBinFunction(pKEALayer);
                     if( pBinFn != NULL )
                     {
@@ -622,6 +656,22 @@ keaFileRasterDataOrderSet( void  *fileHandle,  unsigned long  order,
 #endif
     // we don't support changing this so just pretend we succeeded
     return 0;
+}
+ 
+long keaFileAuxiliaryFileNamesGet(void *fileHandle, unsigned long *fileCount, 
+	Etxt_Text **fileList)
+{
+#ifdef KEADEBUG
+    keaDebugOut( "%s %p\n", __FUNCTION__, fileHandle );
+#endif
+
+	// according to the doco:
+	// If the dataset represented by fileHandle has no existing auxiliary files associated with it, 
+	// 0 should be returned in *fileCount and NULL should be returned in *fileList. 
+	//This should not be considered an error.
+	*fileCount = 0;
+	*fileList = NULL;
+	return 0;
 }
  
 // Don't need to implement the following. Yes I know keaFileModeGet

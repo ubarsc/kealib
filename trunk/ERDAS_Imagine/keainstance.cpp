@@ -36,6 +36,14 @@ Support for KEA file format within Imagine
 #include "kea.h"
 #include "../include/libkea/kea-config.h"
 
+extern "C" 
+{
+	// For some reason these aren't in the Imagine headers but provided 
+	// by other Imagine DLL's.
+	IFDExport long IFD_NAME(InstanceSupportsUnicode)(void);
+	IFDExport long IFD_NAME(InstanceIsThreadsafe)(void);
+}
+
 long
 keaInstanceTitleListGet(unsigned long *count, Etxt_Text **titleList )
 {
@@ -247,14 +255,26 @@ keaInstanceSupportsMasks(unsigned char **flags)
 }
 
 // not strictly necessary I guess but the Imagine format DLL's export this
-// At some stage we are going to have to update this code to support Unicode...
-long 
-keaInstanceSupportsUnicode(void)
+// for some reason we have to mark as exportable since they aren't in the headers
+long keaInstanceSupportsUnicode(void)
 {
 #ifdef KEADEBUG
     keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
+
+#ifdef UNICODE
+	return 1;
+#else
     return 0;
+#endif
+}
+
+long keaInstanceIsThreadsafe(void)
+{
+#ifdef KEADEBUG
+    keaDebugOut( "%s\n", __FUNCTION__ );
+#endif
+	return 0;
 }
 
 long
