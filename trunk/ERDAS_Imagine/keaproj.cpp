@@ -108,7 +108,8 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, 
 		
 		sProjName = eprj_MapProjectionName(proj);
 	}
-	else if( sProjName == ETXT_LTEXT("NZGD_2000_New_Zealand_Transverse_Mercator") )
+	else if( (sProjName == ETXT_LTEXT("NZGD_2000_New_Zealand_Transverse_Mercator") ) ||
+				(sProjName == ETXT_LTEXT("NZGD2000_New_Zealand_Transverse_Mercator_2000")) )
 	{
 		// this one doesn't seem to be right either
 		eprj_ProjectionFree(&proj);

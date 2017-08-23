@@ -282,6 +282,7 @@ keaLayerRasterRead(void	*lHandle, unsigned long	bRow, unsigned long bCol, unsign
         {
             // is int8 - set to 1
             // According to Haiyan Qu: "IMAGINE mask layer is a binary layer, 1 is data, 0 is nodata"
+			// but he is wrong - 255 is data
             if( pLayer->bMaskIsReal )
             {
                 // read the mask out of the KEA file
@@ -298,14 +299,14 @@ keaLayerRasterRead(void	*lHandle, unsigned long	bRow, unsigned long bCol, unsign
                 {
                     if( pMaskData[i] > 1 )
                     {
-                        pMaskData[i] = 1;
+                        pMaskData[i] = 255; // still needed?
                     }
                 }
             }
             else
             {
                 // fake it by saying all valid
-                memset(*pixels, 1, pLayer->nBlockSize * pLayer->nBlockSize);
+                memset(*pixels, 255, pLayer->nBlockSize * pLayer->nBlockSize);
             }
         }
         else
@@ -382,12 +383,13 @@ keaLayerRasterWrite(void *lHandle, unsigned long bRow, unsigned long bCol, unsig
                 // recode the data we about to write - not sure this is a good idea
                 // is int8 - set to 1
                 // According to Haiyan Qu: "IMAGINE mask layer is a binary layer, 1 is data,
+				// but he is wrong - 255 is data
                 unsigned char *pGDALMask = (unsigned char*)malloc(pLayer->nBlockSize*pLayer->nBlockSize * sizeof(unsigned char));
                 if( pGDALMask == NULL )
                     return -1;
                 for( uint64_t i = 0; i < (pLayer->nBlockSize*pLayer->nBlockSize); i++ )
                 {
-                    if( pixels[i] == 1 )
+                    if( pixels[i] > 0 )
                     {
                         pGDALMask[i] = 255;
                     }
@@ -567,7 +569,7 @@ keaLayerRRDLayerNamesSet(void  *lHandle, unsigned long  count, Etxt_Text *layerN
 	// TODO: should be 0?
     return -1;
  }
- 
+
 long keaLayerRRDInfoGet(void *lHandle, unsigned long *count,
 					Etxt_Text **layerNames,	Etxt_Text *algorithm, unsigned long **dims)
 {
@@ -619,7 +621,7 @@ long keaLayerRRDInfoGet(void *lHandle, unsigned long *count,
 					(*dims)[layerCount * 2] = pCandidate->nXSize;
 					(*dims)[(layerCount * 2) + 1] = pCandidate->nYSize;
 #ifdef KEADEBUG                        
-					keaDebugOut( "RRD: %s\n", name);
+					keaDebugOut( "RRD: %s %d %d\n", name, pCandidate->nXSize, pCandidate->nYSize);
 #endif                        
 					layerCount++;
 				}
@@ -963,7 +965,7 @@ keaLayerRasterNullValueRead(void  *lHandle, unsigned char  **pixel)
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
     kealib::KEAImageIO *pImageIO = pLayer->getImageIO();
-
+	
     if( pLayer->bIsMask )
     {
         **pixel = 0; // according to Haiyan Qu: "IMAGINE mask layer is a binary layer, 1 is data, 0 is nodata"
