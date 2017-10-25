@@ -28,6 +28,7 @@
 # *
 # */
 
+# Build with VS2013
 IMAGINE_HOME = "C:\Program Files\Hexagon\ERDAS IMAGINE 2015"
 KEA_HOME = "C:\dev\keastatic\VC2013_x64"
 GDAL_HOME = "C:\dev\gdalstatic_2013_x64"

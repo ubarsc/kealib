@@ -32,6 +32,8 @@
 
 # Include dir will have to be updated also
 
+# Build with VS2008
+
 IMAGINE_HOME = "C:\ERDAS\ERDAS Desktop 2011"
 KEA_HOME = "C:\dev\keastatic\VC2008_x86"
 GDAL_HOME = "C:\dev\gdalstatic_2008_x86"

@@ -1,4 +1,5 @@
-
+:: Use this to build a static GDAL so the kea stuff can link against it and 
+:: use the WKT stuff....
 
 :: Comment out the DLLBUILD=1 and ODBC_SUPPORTED=1 lines in nmake.opt
 :: add ws2_32.lib and Psapi.lib to LINKER_FLAGS
@@ -11,7 +12,7 @@ call "C:\Users\sam\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python
 ::if errorlevel 1 exit /B 1
 
 :: make clean doesn't completely work
-d::el /s /q *.obj
+del /s /q *.obj
 
 nmake /f makefile.vc MSVC_VER=1500 GDAL_HOME=c:\dev\gdalstatic_2008_x86 devinstall
 if errorlevel 1 exit /B 1

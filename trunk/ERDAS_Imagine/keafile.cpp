@@ -173,6 +173,14 @@ keaFileTitleIdentifyAndOpen(Etxt_Text fileName, long *fileType, Etxt_Text inFile
                     KEA_Layer *pLayer = new KEA_Layer();
                     pLayer->pKEAFile = pKEAFile;
                     etxt::tstring sName = ETXT_2U(pImageIO->getImageBandDescription(nBand).c_str());
+					if( sName.empty() )
+					{
+						// Imagine doesn't like empty names so make one up
+						Etxt_Text madeupname = estr_Sprintf( NULL, ETXT_LTEXT("Band_%d"), &err, 
+                                nBand, NULL );
+						sName = madeupname;
+						emsc_Free(madeupname);
+					}
                     // Imagine doesn't like spaces
                     std::replace(sName.begin(), sName.end(), ETXT_LTEXT(' '), ETXT_LTEXT('_'));
 #ifdef KEADEBUG                        

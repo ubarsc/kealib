@@ -5,6 +5,7 @@
 #define MyAppVersion "1.4.7"
 #define MyAppPublisher "Landcare Research NZ"
 #define MyAppURL "http://kealib.org/"
+#define MyOutputFilename "setup_kea_erdas2015_" + GetDateTimeString('yyyymmdd', '', '')
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -21,7 +22,7 @@ AppUpdatesURL={#MyAppURL}
 ;CreateAppDir=yes
 LicenseFile=C:\dev\keainstall\LICENSE.txt
 OutputDir=C:\dev\keainstall
-OutputBaseFilename=setup_kea_erdas2015
+OutputBaseFilename={#MyOutputFilename}
 Compression=lzma
 SolidCompression=yes
 DefaultDirName={code:GetImagineDir}
