@@ -1,9 +1,8 @@
 
 ###############################################################################
 # set file locations
-set(LIBKEA_SRC_DIR libkea)
-set(LIBKEA_HEADERS_DIR ../include/libkea)
-
+set(LIBKEA_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libkea)
+set(LIBKEA_HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../include/libkea)
 
 set(LIBKEA_H
 	${LIBKEA_HEADERS_DIR}/KEACommon.h
@@ -30,9 +29,12 @@ source_group("include_kea" FILES ${LIBKEA_H})
 
 ###############################################################################
 # Build and link library
-
-add_library(${LIBKEA_LIB_NAME} ${LIBKEA_CPP} ${LIBKEA_H} )
-target_link_libraries(${LIBKEA_LIB_NAME} ${HDF5_LIBRARIES} )
+if(BUILD_SHARED_LIBS)
+    add_library(${LIBKEA_LIB_NAME} SHARED ${LIBKEA_CPP} ${LIBKEA_H} )
+else()
+	add_library(${LIBKEA_LIB_NAME} STATIC ${LIBKEA_CPP} ${LIBKEA_H} )
+endif()
+target_link_libraries(${LIBKEA_LIB_NAME} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 ###############################################################################
 
 ###############################################################################
@@ -40,19 +42,6 @@ target_link_libraries(${LIBKEA_LIB_NAME} ${HDF5_LIBRARIES} )
 # exe needs to be in 'src' otherwise it doesn't work
 add_executable (test1 ${PROJECT_TEST_DIR}/test1.cpp)
 target_link_libraries (test1 ${LIBKEA_LIB_NAME})
-if(NOT WIN32)
-    # set rpath so the text exe finds hdf5. Really only needed
-    # by Conda builds as LD_LIBRARY_PATH not set on Unix by Conda
-    # No rpath on Windows so Conda sets PATH properly
-    if(CMAKE_COMPILER_IS_GNUCC)
-        set_target_properties (test1 PROPERTIES LINK_FLAGS "-Wl,-rpath ${HDF5_LIB_PATH}")
-    elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        # this matches AppleClang also
-        set_target_properties (test1 PROPERTIES LINK_FLAGS "-Xlinker -rpath ${HDF5_LIB_PATH}")
-    endif()
-    # probably should match other compilers, but since this is a Conda
-    # specific hack I'm not going to bother
-endif()
 
 ###############################################################################
 # Set target properties
