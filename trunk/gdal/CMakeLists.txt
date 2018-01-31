@@ -52,17 +52,46 @@ include_directories(${LIBKEA_HEADERS_DIR})
 ###############################################################################
 
 ###############################################################################
-# Installation
-if(UNIX OR APPLE)
-    execute_process(COMMAND "gdal-config" --prefix OUTPUT_VARIABLE GDAL_PREFIX)
+set(GDAL_PLUGIN_DIRS)
+find_program(GDAL_CONFIG_EXECUTABLE "gdal-config" HINSTS ${GDAL_CONFIG})
+if(EXISTS "${GDAL_CONFIG_EXECUTABLE}")
+    # find gdal prefix and version
+    execute_process(COMMAND ${GDAL_CONFIG_EXECUTABLE} --prefix OUTPUT_VARIABLE GDAL_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
     string(STRIP ${GDAL_PREFIX} GDAL_PREFIX)
-    # find gdal version
-    execute_process(COMMAND "gdal-config" --version OUTPUT_VARIABLE GDAL_VERSION_STRING)
+    execute_process(COMMAND ${GDAL_CONFIG_EXECUTABLE} --version OUTPUT_VARIABLE GDAL_VERSION_STRING)
     include(TransformVersion)
     transform_version(GDAL_VERSION_NUM GDAL_VERSION_MAJOR GDAL_VERSION_MINOR GDAL_VERSION_PATCH ${GDAL_VERSION_STRING})
-    set(GDAL_PLUGIN_DIR "${GDAL_PREFIX}/lib/gdalplugins/${GDAL_VERSION_MAJOR}.${GDAL_VERSION_MINOR}")
-else()
-    set(GDAL_PLUGIN_DIR "${GDAL_PREFIX}/PlugIns")
+    if(OSX_FRAMEWORK)
+        list(APPEND GDAL_PLUGIN_DIRS "${GDAL_PREFIX}/PlugIns")
+    endif()
+    # debian/ubuntu/mint
+    list(APPEND GDAL_PLUGIN_DIRS "${GDAL_PREFIX}/lib/gdalplugins/${GDAL_VERSION_MAJOR}.${GDAL_VERSION_MINOR}")
+    # standard unix location such as /usr/local/lib/gdalplugins, /opt/gdal/lib/gdalplugins
+    list(APPEND GDAL_PLUGIN_DIRS "${GDAL_PREFIX}/lib/gdalplugins")
 endif()
-install (TARGETS ${LIBKEA_GDAL_DRIVER} DESTINATION ${GDAL_PLUGIN_DIR})
+# windows/osge4w
+if(WINDOWS)
+     list(APPEND GDAL_PLUGIN_DIRS "c:\\OSGEO4W\\bin\\gdalplugins")
+endif()
+if(UNIX)
+    # default location for unix/mac
+    list(APPEND GDAL_PLUGIN_DIRS "/usr/local/lib/gdalplugins/")
+endif()
+
+# detect plugin directory
+set(GDAL_PLUGIN_DIR "NOTFOUND")
+foreach(dir ${GDAL_PLUGIN_DIRS})
+    # FIXME: we should check library existence in a proper location
+    if(EXISTS "${dir}" AND IS_DIRECTORY "${dir}")
+        set(GDAL_PLUGIN_DIR "${dir}")
+        message(STATUS "GDAL plugin installation dir: ${GDAL_PLUGIN_DIR}")
+        break()
+    endif()
+endforeach()
+unset(GDAL_PLUGIN_DIRS)
+
+# Installation
+if(EXISTS "${GDAL_PLUGIN_DIR}")
+    install (TARGETS ${LIBKEA_GDAL_DRIVER} DESTINATION ${GDAL_PLUGIN_DIR})
+endif()
 ###############################################################################
