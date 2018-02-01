@@ -1,6 +1,5 @@
 ###############################################################################
 # set file locations
-set(LIBKEA_HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 set(LIBKEA_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 option(KEAHDF5_STATIC_LIBS "Build against static KEA and HDF5" OFF)
 
@@ -31,11 +30,7 @@ add_library(${LIBKEA_GDAL_DRIVER} ${KEA_GDAL_CPP} ${KEA_GDAL_H} )
 set_target_properties(${LIBKEA_GDAL_DRIVER} PROPERTIES PREFIX "")
 
 find_package(GDAL REQUIRED)
-if (WIN32)
-  target_link_libraries(${LIBKEA_GDAL_DRIVER} ${GDAL_LIBRARY} -LIBPATH:${LIBKEA_LIB_PATH} libkea.lib)
-else()
-  target_link_libraries(${LIBKEA_GDAL_DRIVER} ${GDAL_LIBRARY} "-L${LIBKEA_LIB_PATH}" -lkea)
-endif(WIN32)
+target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} PRIVATE Kealib)
 include_directories(${GDAL_INCLUDE_DIR})
 include_directories(${LIBKEA_HEADERS_DIR})
 ###############################################################################
@@ -70,7 +65,7 @@ if(EXISTS "${GDAL_CONFIG_EXECUTABLE}")
     list(APPEND GDAL_PLUGIN_DIRS "${GDAL_PREFIX}/lib/gdalplugins")
 endif()
 # windows/osge4w
-if(WINDOWS)
+if(WIN32)
      list(APPEND GDAL_PLUGIN_DIRS "c:\\OSGEO4W\\bin\\gdalplugins")
 endif()
 if(UNIX)

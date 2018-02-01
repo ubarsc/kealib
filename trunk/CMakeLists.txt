@@ -25,10 +25,6 @@ project (LIBKEA)
 set(CMAKE_CXX_STANDARD 98)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if (WIN32)
-  set (WINDOWS ${WIN32})
-endif()
-
 set (PROJECT_BINARY_DIR bin)
 set (PROJECT_LIBRARY_DIR lib)
 set (PROJECT_SOURCE_DIR src)
@@ -50,15 +46,35 @@ set (LIBKEA_PACKAGE "LibKEA")
 set (LIBKEA_COPYRIGHT_YEAR 2013)
 
 # set Name of C++ library
-if(MSVC)
-    set(LIBKEA_LIB_NAME libkea)
-else()
-    set(LIBKEA_LIB_NAME kea)
-endif()
+set(LIBKEA_LIB_NAME kea)
 
 include(CMakeDependentOption)
-option (BUILD_SHARED_LIBS "Build with shared library" ON)
-cmake_dependent_option(HDF5_USE_STATIC_LIBRARIES "On Windows, allow linking against static HDF5 libs" OFF "BUILD_SHARED_LIBS" ON)
+# CMake global option valiable
+option (BUILD_SHARED_LIBS "Build shared library" ON)
+
+# FindHDF5 feature
+# -------------------
+# On UNIX systems, this module will read the variable
+# HDF5_USE_STATIC_LIBRARIES to determine whether or not to prefer a
+# static link to a dynamic link for HDF5 and all of it's dependencies.
+# To use this feature, make sure that the HDF5_USE_STATIC_LIBRARIES
+# variable is set before the call to find_package.
+if(UNIX)
+    option(HDF5_USE_STATIC_LIBRARIES "Force to use HDF5 static libraries." OFF)
+endif()
+# Both the serial and parallel HDF5 wrappers are considered and the first
+# directory to contain either one will be used.  In the event that both appear
+# in the same directory the serial version is preferentially selected. This
+# behavior can be reversed by setting the variable HDF5_PREFER_PARALLEL to
+# true.
+option(HDF5_PREFER_PARALLEL "Prefer HDF5 parallel wrapper instead of serial one." OFF)
+# To provide the module with a hint about where to find your HDF5
+# installation, you can set the environment variable HDF5_ROOT.  The
+# Find module will then look in this path when searching for HDF5
+# executables, paths, and libraries.
+if(NOT "x$ENV{HDF5_ROOT}" STREQUAL "x")
+    message(STATUS "HDF5_ROOT environment variable specified: $ENV{HDF5_ROOT}")
+endif()
 find_package(HDF5 COMPONENTS CXX HL REQUIRED)
 find_package(GDAL)
 cmake_dependent_option(LIBKEA_WITH_GDAL  "Choose if .kea GDAL driver should be built" ON "GDAL_FOUND" OFF)
@@ -67,13 +83,6 @@ cmake_dependent_option(LIBKEA_WITH_GDAL  "Choose if .kea GDAL driver should be b
 
 ###############################################################################
 # CMake settings
-
-IF(NOT CMAKE_BUILD_TYPE)
-  #SET(CMAKE_BUILD_TYPE "DEBUG")
-  SET(CMAKE_BUILD_TYPE "RELEASE")
-  #SET(CMAKE_BUILD_TYPE "RELWITHDEBINFO")
-  #SET(CMAKE_BUILD_TYPE "MINSIZEREL")
-ENDIF()
 
 set(CMAKE_COLOR_MAKEFILE ON)
 set(CMAKE_MACOSX_RPATH 1)
@@ -143,13 +152,19 @@ set(CPACK_SOURCE_PACKAGE_FILE_NAME
 
 # Set files to ignore
 list(APPEND CPACK_SOURCE_IGNORE_FILES "_CPack_Packages")
-list(APPEND CPACK_SOURCE_IGNORE_FILES ".gz")
+list(APPEND CPACK_SOURCE_IGNORE_FILES ".bak")
 list(APPEND CPACK_SOURCE_IGNORE_FILES ".bz2")
-list(APPEND CPACK_SOURCE_IGNORE_FILES ".zip")
+list(APPEND CPACK_SOURCE_IGNORE_FILES ".gz")
+list(APPEND CPACK_SOURCE_IGNORE_FILES ".hg")
+list(APPEND CPACK_SOURCE_IGNORE_FILES ".hgtags")
+list(APPEND CPACK_SOURCE_IGNORE_FILES ".idea")
+list(APPEND CPACK_SOURCE_IGNORE_FILES ".orig")
 list(APPEND CPACK_SOURCE_IGNORE_FILES ".svn")
+list(APPEND CPACK_SOURCE_IGNORE_FILES ".zip")
 list(APPEND CPACK_SOURCE_IGNORE_FILES "README")
 list(APPEND CPACK_SOURCE_IGNORE_FILES "HOWTORELEASE.txt")
 list(APPEND CPACK_SOURCE_IGNORE_FILES "CMakeCache.txt")
+list(APPEND CPACK_SOURCE_IGNORE_FILES "cmake-build-*")
 list(APPEND CPACK_SOURCE_IGNORE_FILES "CPackConfig.cmake")
 list(APPEND CPACK_SOURCE_IGNORE_FILES "schemas")
 
