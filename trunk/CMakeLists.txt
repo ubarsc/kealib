@@ -59,9 +59,7 @@ option (BUILD_SHARED_LIBS "Build shared library" ON)
 # static link to a dynamic link for HDF5 and all of it's dependencies.
 # To use this feature, make sure that the HDF5_USE_STATIC_LIBRARIES
 # variable is set before the call to find_package.
-if(UNIX)
-    option(HDF5_USE_STATIC_LIBRARIES "Force to use HDF5 static libraries." OFF)
-endif()
+option(HDF5_USE_STATIC_LIBRARIES "Force to use HDF5 static libraries." OFF)
 # Both the serial and parallel HDF5 wrappers are considered and the first
 # directory to contain either one will be used.  In the event that both appear
 # in the same directory the serial version is preferentially selected. This
@@ -78,7 +76,6 @@ endif()
 find_package(HDF5 COMPONENTS CXX HL REQUIRED)
 find_package(GDAL)
 cmake_dependent_option(LIBKEA_WITH_GDAL  "Choose if .kea GDAL driver should be built" ON "GDAL_FOUND" OFF)
-
 ###############################################################################
 
 ###############################################################################
@@ -95,16 +92,16 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 # Platform and compiler specific settings
 
 if(MSVC)
-        add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
-        add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-        add_definitions(-D_CRT_NONSTDC_NO_WARNING)
-        add_definitions(-D_SCL_SECURE_NO_WARNINGS)
-        
-        # by default the compiler produces gratuitous warnings. Disable some of them
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4290 /wd4005 /wd4101 /wd4244 /wd4800 /wd4251 /wd4996")
+    add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    add_definitions(-D_CRT_NONSTDC_NO_WARNING)
+    add_definitions(-D_SCL_SECURE_NO_WARNINGS)
+    
+    # by default the compiler produces gratuitous warnings. Disable some of them
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4290 /wd4005 /wd4101 /wd4244 /wd4800 /wd4251 /wd4996")
 else()
-  set(CMAKE_CXX_FLAGS
-	"${CMAKE_CXX_FLAGS} -Wall -Wpointer-arith -Wcast-align -Wcast-qual -Wredundant-decls -Wno-long-long -DNDEBUG")
+    set(CMAKE_CXX_FLAGS
+	      "${CMAKE_CXX_FLAGS} -Wall -Wpointer-arith -Wcast-align -Wcast-qual -Wredundant-decls -Wno-long-long -DNDEBUG")
 endif(MSVC)
 
 ###############################################################################
