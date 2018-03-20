@@ -33,15 +33,15 @@ DirExistsWarning=no
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "C:\dev\arckea\dist\arc93\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('9.3', '0'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc100\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.0', '0'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc101\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.1', '0'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc104\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.4', '32'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc104\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.4', '64'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc105\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5', '32'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc105\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5', '64'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc1051\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5.1', '32'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc1051\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5.1', '64'); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc93\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('9.3', 0); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc100\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.0', 0); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc101\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.1', 0); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc104\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.4', 32); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc104\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.4', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc105\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5', 32); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc105\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1051\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5.1', 32); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1051\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5.1', 64); Flags: ignoreversion
 
 [code]
 const
@@ -50,42 +50,48 @@ const
   // info that needs to go in RasterFormats.dat
   ArcKEAFmtLine = '<e on="y" nm="KEA" ex="*.kea" et="KEA" at="0x27" />';
 var
-  // these global vars are set by GetArcGISDir() and checked by ArcVersion()
+  // these global vars are set by InitializeSetup() and checked by ArcVersion() and GetArcGISDir()
   ArcVersionClass : string; // one of: 9.3, 10.0, 10.1, 10.4, 10.5, 10.5.1
   ArcRealVersion : string; // the contents of the "RealVersion" key
   Is64BitArc : boolean;  // the contents of the "64Bit" key
+  ArcInstallDir : string; // the directory in which Arc is installed
+
+#include "arccommon.isi"
 
 // For calling from Check: above
-// bits parameter is '0' for don't care or '32' or '64'
+// bits parameter is 0 for don't care or 32 or 64
 // ideally would have used enums but that doesn't seem to work when calling from Check:
-function ArcVersion(versionClass, bits: string): boolean;
+function ArcVersion(versionClass : string; bits : Integer): boolean;
 begin
   Result := False;
   if versionClass = ArcVersionClass then
     // matches the version class
-    if bits = '0' then
+    if bits = 0 then
       Result := True // always match
-    else if bits = '32' then
+    else if bits = 32 then
       Result := not Is64BitArc
-    else if bits = '64' then
+    else if bits = 64 then
       Result := Is64BitArc
     else
-      MsgBox('Unknown number of bits ' + bits, mbInformation, MB_OK)
+      MsgBox('Unknown number of bits ' + IntToStr(bits), mbInformation, MB_OK)
 end;
 
 // forward declarations
-function CompareVersion(V1, V2: string): Integer; forward;
 function GetArcVersionClass(realVersion: string): string; forward;
 
 // get the dir of ArcGIS and fill in global variables
-function GetArcGISDir(Value: string): string;
+function InitializeSetup(): Boolean;
 var
   ArcNames : TArrayOfString;
   I : Integer;
   S : String;
   currSubKey : String;
+  ErrorDisplayed : Boolean;
 begin
-  Result := ''; // not sure what a suitable default is...
+  ErrorDisplayed := False;
+  Result := False;
+  // init global vars
+  ArcInstallDir := '';
   ArcRealVersion := '0.0';
   ArcVersionClass := '';
   Is64BitArc := False;
@@ -104,15 +110,17 @@ begin
           begin
             // it's the most recent version
             // get the install dir
-            if RegQueryStringValue(HKEY_LOCAL_MACHINE, currSubKey, 'InstallDir', Result) then
+            if RegQueryStringValue(HKEY_LOCAL_MACHINE, currSubKey, 'InstallDir', ArcInstallDir) then
             begin
               ArcRealVersion := S;
               ArcVersionClass := GetArcVersionClass(ArcRealVersion);
               if ArcVersionClass = '' then
               begin
                 MsgBox('Unsupported ArcGIS Version ' + ArcRealVersion, mbCriticalError, MB_OK);
-                Result := '';
-              end;
+                ErrorDisplayed := True;
+              end
+              else
+                Result := True
 
               if RegQueryStringValue(HKEY_LOCAL_MACHINE, currSubKey, '64Bit', S) then
               begin
@@ -125,10 +133,30 @@ begin
     end;
   end;
 
-  if Result = '' then
-    MsgBox('Failed to read ArcGIS Install info', mbCriticalError, MB_OK)
+  if not Result and not ErrorDisplayed then
+    MsgBox('Failed to read ArcGIS Install info. ArcGIS may not be installed on this PC', mbCriticalError, MB_OK)
+end;
+
+procedure InitializeWizard;
+var
+  InstallDirPage: TWizardPage;
+  bits: string;
+begin
+  // get the Dir page and customize the text
+  InstallDirPage := PageFromID(wpSelectDir);
+
+  if Is64BitArc then
+    bits := '64'
   else
-    MsgBox('successfully read ' + Result + ' ' + ArcRealVersion, mbInformation, MB_OK)
+    bits := '32'
+
+  InstallDirPage.Description := FmtMessage('ArcGIS Version %1 (%2bit) has been found in the following location.'  + #13#10 + 'The support files for this version will be installed.', [ArcVersionClass, bits]);
+end; 
+
+function GetArcGISDir(Value: string): string;
+begin
+  // return global var set in InitializeSetup()
+  Result := ArcInstallDir;
 end;
 
 // run after the files have been copied. Updates the RasterFormats.dat
@@ -163,50 +191,3 @@ begin
     Result := ''
 end;
 
-// From: https://stackoverflow.com/questions/37825650/compare-version-strings-in-inno-setup
-function CompareVersion(V1, V2: string): Integer;
-var
-  P, N1, N2: Integer;
-begin
-  Result := 0;
-  while (Result = 0) and ((V1 <> '') or (V2 <> '')) do
-  begin
-    P := Pos('.', V1);
-    if P > 0 then
-    begin
-      N1 := StrToInt(Copy(V1, 1, P - 1));
-      Delete(V1, 1, P);
-    end
-      else
-    if V1 <> '' then
-    begin
-      N1 := StrToInt(V1);
-      V1 := '';
-    end
-      else
-    begin
-      N1 := 0;
-    end;
-
-    P := Pos('.', V2);
-    if P > 0 then
-    begin
-      N2 := StrToInt(Copy(V2, 1, P - 1));
-      Delete(V2, 1, P);
-    end
-      else
-    if V2 <> '' then
-    begin
-      N2 := StrToInt(V2);
-      V2 := '';
-    end
-      else
-    begin
-      N2 := 0;
-    end;
-
-    if N1 < N2 then Result := -1
-      else
-    if N1 > N2 then Result := 1;
-  end;
-end;
