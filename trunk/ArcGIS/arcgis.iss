@@ -42,20 +42,21 @@ Source: "C:\dev\arckea\dist\arc105\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "
 Source: "C:\dev\arckea\dist\arc105\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5', 64); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc1051\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5.1', 32); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc1051\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5.1', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc106_arcpro21\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6', 32); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc106_arcpro21\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6', 64); Flags: ignoreversion
 
 [code]
 const
   // this is where ArcGIS seems to put the install information
   ArcSubKey = 'SOFTWARE\Wow6432Node\ESRI';
-  // info that needs to go in RasterFormats.dat
-  ArcKEAFmtLine = '<e on="y" nm="KEA" ex="*.kea" et="KEA" at="0x27" />';
 var
   // these global vars are set by InitializeSetup() and checked by ArcVersion() and GetArcGISDir()
-  ArcVersionClass : string; // one of: 9.3, 10.0, 10.1, 10.4, 10.5, 10.5.1
+  ArcVersionClass : string; // one of: 9.3, 10.0, 10.1, 10.4, 10.5, 10.5.1, 10.6
   ArcRealVersion : string; // the contents of the "RealVersion" key
   Is64BitArc : boolean;  // the contents of the "64Bit" key
   ArcInstallDir : string; // the directory in which Arc is installed
 
+// CompareVersion() and CurStepChanged (for updating RasterFormats.dat) live here
 #include "arccommon.isi"
 
 // For calling from Check: above
@@ -159,19 +160,6 @@ begin
   Result := ArcInstallDir;
 end;
 
-// run after the files have been copied. Updates the RasterFormats.dat
-procedure CurStepChanged(CurStep: TSetupStep);
-var
-  rfpath : string;
-begin
-  if CurStep = ssPostInstall then
-  begin
-    rfpath := ExpandConstant('{app}\bin\RasterFormats.dat');
-    // TODO: check it is already there??
-    SaveStringToFile(rfpath, #13#10 + ArcKEAFmtLine + #13#10, True);
-  end;
-end;
-
 // convert from the arc version string to one of the version classes we recognise
 function GetArcVersionClass(realVersion: string): string;
 begin
@@ -187,6 +175,8 @@ begin
     Result := '10.5'
   else if (CompareVersion(realVersion, '10.5.1') <> -1) and (CompareVersion(realVersion, '10.6') = -1) then
     Result := '10.5.1'
+  else if (CompareVersion(realVersion, '10.6') <> -1) and (CompareVersion(realVersion, '10.7') = -1) then
+    Result := '10.6'
   else
     Result := ''
 end;
