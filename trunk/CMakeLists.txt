@@ -20,7 +20,7 @@ if (WIN32)
   set (WINDOWS ${WIN32})
 endif()
 
-set (PROJECT_BINARY_DIR bin)
+#set (PROJECT_BINARY_DIR bin) - set by cmake to work for out of tree builds
 set (PROJECT_LIBRARY_DIR lib)
 set (PROJECT_SOURCE_DIR src)
 set (PROJECT_TEST_DIR tests)
