@@ -6,7 +6,7 @@ setlocal
 :: vars (below) to the locations. Also set INSTALLDIR to where you want the files to 
 :: be installed to. 
 
-:: You will also need Visual Studio 2008 and 2013. For 2008 I used MS C++ for Python 2.7
+:: You will also need Visual Studio 2008, 2013, 2015 and 2017. For 2008 I used MS C++ for Python 2.7
 :: (https://www.microsoft.com/en-au/download/details.aspx?id=44266) which is the same thing.
 :: VS 2013 Community Edition is available here (https://www.visualstudio.com/en-us/news/releasenotes/vs2013-community-vs).
 :: I have assumed these are installed in the standard locations. If not you might need to tweak the code below.
@@ -14,10 +14,13 @@ setlocal
 set ZLIBDIR=C:\dev\arc\zlib-1.2.11
 set HDF5DIR=C:\dev\arc\hdf5-1.8.19
 set INSTALLDIR=c:\dev\arckea
+:: Stop PATH getting too long be resetting it
+set oldpath=%PATH%
 
 :: Visual Studio 2008 x86
 set VCYEAR=VC2008
 set VCMACH=x86
+set PATH=%oldpath%
 call "C:\Users\sam\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" %VCMACH%
 @echo on
 call :build
@@ -25,20 +28,37 @@ call :build
 :: Visual Studio 2013 x86 and x64
 set VCYEAR=VC2013
 set VCMACH=x86
+set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %VCMACH%
 @echo on
 call :build
 
 set VCMACH=x64
 :: Note VS2013 doesn't understand 'x64'...
+set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64
 @echo on
 call :build
 
-:: Visual Studio 2015 for ArcPro
+:: Visual Studio 2015 for ArcPro <= 2.0
 set VCYEAR=VC2015
 set VCMACH=x64
+set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH%
+@echo on
+call :build
+
+:: Visual Studio 2015 for ArcPro > 2.0, ArcGIS 10.6
+set VCYEAR=VC2017
+set VCMACH=x86
+set PATH=%oldpath%
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
+@echo on
+call :build
+
+set VCMACH=x64
+set PATH=%oldpath%
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
 @echo on
 call :build
 

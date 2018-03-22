@@ -9,7 +9,11 @@ SET GDALDIR=C:\dev\arcgdalforcompilation
 :: HDF5DIR is the same as INSTALLDIR in buildzlibhdf5.bat
 SET HDF5DIR=c:\dev\arckea
 
+:: Stop PATH getting too long by resetting it
+set oldpath=%PATH%
+
 set VCMACH=x86
+set PATH=%oldpath%
 call "C:\Users\sam\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" %VCMACH%
 @echo on
 call :build_arc93
@@ -21,6 +25,7 @@ if errorlevel 1 exit /B 1
 
 :: Now the vs2013 builds x86
 set VCMACH=x86
+set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %VCMACH%
 @echo on
 call :build_arc104
@@ -32,6 +37,7 @@ call :build_arc1051
 :: Now x64
 set VCMACH=x64
 :: Note VS2013 doesn't understand 'x64'...
+set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64
 @echo on
 call :build_arc104
@@ -43,11 +49,28 @@ if errorlevel 1 exit /B 1
 
 :: Visual Studio 2015 x64 builds
 set VCMACH=x64
+set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH%
 @echo on
 call :build_arcpro14
 if errorlevel 1 exit /B 1
 call :build_arcpro20
+if errorlevel 1 exit /B 1
+
+:: Visual Studio 2017 x86 Builds
+set VCMACH=x86
+set PATH=%oldpath%
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
+@echo on
+call :build_arc106_arcpro21
+if errorlevel 1 exit /B 1
+
+:: Visual Studio 2017 x64 Builds
+set VCMACH=x64
+set PATH=%oldpath%
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
+@echo on
+call :build_arc106_arcpro21
 if errorlevel 1 exit /B 1
 
 EXIT /B %ERRORLEVEL%
@@ -295,5 +318,38 @@ if errorlevel 1 exit /B 1
 
 cd ..
 rmdir /s /q build_arcpro20
+
+EXIT /B 0
+
+:build_arc106_arcpro21
+
+set ARCGDALDIR=%GDALDIR%\gdal211b
+set ARCHDF5DIR=%HDF5DIR%\VC2017_%VCMACH%
+mkdir build_arc106_arcpro21
+cd build_arc106_arcpro21
+
+IF "%VCMACH%" == "x86" (
+  SET GDALLIBPATH=%ARCGDALDIR%\lib\vc14.10 
+) ELSE (
+  SET GDALLIBPATH=%ARCGDALDIR%\lib\vc14.10\x64 
+)
+  
+cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
+      -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc106_arcpro21\%VCMACH% ^
+      -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
+      -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
+      -D GDAL_INCLUDE_DIR=%ARCGDALDIR%\include ^
+      -D GDAL_LIB_PATH=%GDALLIBPATH% ^
+      -D HDF5_INCLUDE_DIR=%ARCHDF5DIR%\include ^
+      -D HDF5_LIB_PATH=%ARCHDF5DIR%\lib ^
+      -D CMAKE_BUILD_TYPE=Release ^
+      -G "NMake Makefiles" ^
+      ..\..\gdal
+if errorlevel 1 exit /B 1
+nmake install
+if errorlevel 1 exit /B 1 
+
+cd ..
+rmdir /s /q build_arc106_arcpro21
 
 EXIT /B 0
