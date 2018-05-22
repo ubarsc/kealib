@@ -38,7 +38,7 @@ target_link_libraries(${LIBKEA_LIB_NAME} ${HDF5_LIBRARIES} )
 ###############################################################################
 # Testing
 # exe needs to be in 'src' otherwise it doesn't work
-add_executable (test1 ${PROJECT_TEST_DIR}/test1.cpp)
+add_executable (test1 ${PROJECT_SOURCE_DIR}/src/tests/test1.cpp)
 target_link_libraries (test1 ${LIBKEA_LIB_NAME})
 if(NOT WIN32)
     # set rpath so the text exe finds hdf5. Really only needed

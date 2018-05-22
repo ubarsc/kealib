@@ -20,14 +20,6 @@ if (WIN32)
   set (WINDOWS ${WIN32})
 endif()
 
-#set (PROJECT_BINARY_DIR bin) - set by cmake to work for out of tree builds
-set (PROJECT_LIBRARY_DIR lib)
-set (PROJECT_SOURCE_DIR src)
-set (PROJECT_TEST_DIR tests)
-set (PROJECT_HEADER_DIR include)
-set (PROJECT_TOOLS_DIR tools)
-set (PROJECT_GDAL_DIR gdal)
-
 # The version number.
 set (LIBKEA_HG_VERSION 289)
 set (LIBKEA_VERSION_MAJOR 1)
@@ -160,8 +152,8 @@ endif(MSVC)
 
 ###############################################################################
 # Setup configure file
-configure_file ( "${PROJECT_HEADER_DIR}/kea-config.h.in" "${PROJECT_HEADER_DIR}/libkea/kea-config.h" )
-configure_file ( "${PROJECT_TOOLS_DIR}/kea-config.in" "${PROJECT_BINARY_DIR}/kea-config" )
+configure_file ( "${PROJECT_SOURCE_DIR}/include/kea-config.h.in" "${PROJECT_BINARY_DIR}/include/libkea/kea-config.h" )
+configure_file ( "${PROJECT_SOURCE_DIR}/tools/kea-config.in" "${PROJECT_BINARY_DIR}/bin/kea-config" )
 ###############################################################################
 
 ###############################################################################
@@ -173,11 +165,12 @@ file(WRITE "README.txt" "${README}")
 ###############################################################################
 # Build library
 
-include_directories ("${PROJECT_HEADER_DIR}")
+include_directories ("${PROJECT_SOURCE_DIR}/include")
+include_directories ("${PROJECT_BINARY_DIR}/include") # for kea-config.h
 include_directories(${HDF5_INCLUDE_DIR})
-add_subdirectory ("${PROJECT_SOURCE_DIR}")
+add_subdirectory ("${PROJECT_SOURCE_DIR}/src")
 if (LIBKEA_WITH_GDAL)
-	add_subdirectory ("${PROJECT_GDAL_DIR}")
+	add_subdirectory ("${PROJECT_SOURCE_DIR}/gdal")
 endif(LIBKEA_WITH_GDAL)
 ###############################################################################
 
@@ -191,7 +184,7 @@ add_test(NAME test1 COMMAND src/test1)
 ###############################################################################
 # Installation
 
-install (FILES "${PROJECT_BINARY_DIR}/kea-config" DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+install (FILES "${PROJECT_BINARY_DIR}/bin/kea-config" DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 ###############################################################################
 
 ###############################################################################
