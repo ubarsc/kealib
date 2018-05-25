@@ -22,6 +22,13 @@ if (POLICY CMP0018)
 endif ()
 project (LIBKEA)
 
+IF(NOT CMAKE_BUILD_TYPE)
+  #SET(CMAKE_BUILD_TYPE "DEBUG")
+  SET(CMAKE_BUILD_TYPE "RELEASE")
+  #SET(CMAKE_BUILD_TYPE "RELWITHDEBINFO")
+  #SET(CMAKE_BUILD_TYPE "MINSIZEREL")
+ENDIF()
+
 set(CMAKE_CXX_STANDARD 98)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -124,7 +131,7 @@ include_directories ("${CMAKE_BINARY_DIR}/${PROJECT_HEADER_DIR}")
 include_directories(${HDF5_INCLUDE_DIRS})
 add_subdirectory ("${PROJECT_SOURCE_DIR}")
 if (LIBKEA_WITH_GDAL)
-	add_subdirectory ("${PROJECT_SOURCE_DIR}/gdal")
+	add_subdirectory ("${CMAKE_SOURCE_DIR}/${PROJECT_GDAL_DIR}")
 endif(LIBKEA_WITH_GDAL)
 ###############################################################################
 
