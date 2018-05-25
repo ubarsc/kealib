@@ -82,6 +82,8 @@ if(NOT "x$ENV{HDF5_ROOT}" STREQUAL "x")
 endif()
 find_package(HDF5 COMPONENTS CXX HL REQUIRED)
 find_package(GDAL)
+# required to get compilation on Windows
+find_package(Threads)
 cmake_dependent_option(LIBKEA_WITH_GDAL  "Choose if .kea GDAL driver should be built" OFF "GDAL_FOUND" OFF)
 ###############################################################################
 

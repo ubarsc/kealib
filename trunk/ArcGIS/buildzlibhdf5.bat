@@ -48,7 +48,7 @@ call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCM
 @echo on
 call :build
 
-:: Visual Studio 2015 for ArcPro > 2.0, ArcGIS 10.6
+:: Visual Studio 2017 for ArcPro > 2.0, ArcGIS 10.6
 set VCYEAR=VC2017
 set VCMACH=x86
 set PATH=%oldpath%
