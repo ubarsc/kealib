@@ -1,12 +1,7 @@
 ###############################################################################
-# CMake settings
-cmake_minimum_required(VERSION 2.8.10)
-
-###############################################################################
 # set file locations
-set(LIBKEA_HEADERS_DIR ../include CACHE PATH "Path to KEA headers")
-SET(LIBKEA_LIB_PATH ../src CACHE PATH "Path to KEA library")
-option(KEAHDF5_STATIC_LIBS "Build against static KEA and HDF5")
+set(LIBKEA_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+option(KEAHDF5_STATIC_LIBS "Build against static KEA and HDF5" OFF)
 
 set(KEA_GDAL_H keadataset.h keaband.h keaoverview.h keacopy.h keamaskband.h kearat.h)
 
@@ -34,31 +29,15 @@ add_library(${LIBKEA_GDAL_DRIVER} ${KEA_GDAL_CPP} ${KEA_GDAL_H} )
 # remove the leading "lib" as GDAL won't look for files with this prefix
 set_target_properties(${LIBKEA_GDAL_DRIVER} PROPERTIES PREFIX "")
 
-# If we are not being called from the main kealib build set libs etc
-IF(NOT GDAL_LIBRARIES)
-  IF(WIN32)
-    IF(KEAHDF5_STATIC_LIBS)
-        set(GDAL_LIBRARIES -LIBPATH:${GDAL_LIB_PATH} gdal_i.lib -LIBPATH:"${HDF5_LIB_PATH}" libhdf5_cpp.lib libhdf5.lib zlibstatic.lib)
-    else()
-        set(GDAL_LIBRARIES -LIBPATH:${GDAL_LIB_PATH} gdal_i.lib -LIBPATH:"${HDF5_LIB_PATH}" libhdf5_cpp.lib libhdf5.lib)
-    endif(KEAHDF5_STATIC_LIBS)
-  else()
-    set(GDAL_LIBRARIES "-L${GDAL_LIB_PATH} -lgdal -L${HDF5_LIB_PATH} -lhdf5 -lhdf5_hl -lhdf5_cpp")
-  endif()
-endif(NOT GDAL_LIBRARIES)
-
-if (WIN32)
-  target_link_libraries(${LIBKEA_GDAL_DRIVER} ${GDAL_LIBRARIES} -LIBPATH:${LIBKEA_LIB_PATH} libkea.lib)
-else()
-  target_link_libraries(${LIBKEA_GDAL_DRIVER} ${GDAL_LIBRARIES} "-L${LIBKEA_LIB_PATH}" -lkea)
-endif(WIN32)
+find_package(GDAL REQUIRED)
+target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} PRIVATE Kealib)
 include_directories(${GDAL_INCLUDE_DIR})
 include_directories(${LIBKEA_HEADERS_DIR})
 ###############################################################################
 
 ###############################################################################
-# Set target properties
 
+# Set target properties
 #SET_TARGET_PROPERTIES(${LIBKEA_GDAL_DRIVER}
 #PROPERTIES
 #        SOVERSION ${LIBKEA_VERSION}
@@ -68,6 +47,46 @@ include_directories(${LIBKEA_HEADERS_DIR})
 ###############################################################################
 
 ###############################################################################
-# Installation 
-install (TARGETS ${LIBKEA_GDAL_DRIVER} DESTINATION lib/gdalplugins)
+set(GDAL_PLUGIN_DIRS)
+find_program(GDAL_CONFIG_EXECUTABLE "gdal-config" HINSTS ${GDAL_CONFIG})
+if(EXISTS "${GDAL_CONFIG_EXECUTABLE}")
+    # find gdal prefix and version
+    execute_process(COMMAND ${GDAL_CONFIG_EXECUTABLE} --prefix OUTPUT_VARIABLE GDAL_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
+    string(STRIP ${GDAL_PREFIX} GDAL_PREFIX)
+    execute_process(COMMAND ${GDAL_CONFIG_EXECUTABLE} --version OUTPUT_VARIABLE GDAL_VERSION_STRING)
+    include(TransformVersion)
+    transform_version(GDAL_VERSION_NUM GDAL_VERSION_MAJOR GDAL_VERSION_MINOR GDAL_VERSION_PATCH ${GDAL_VERSION_STRING})
+    if(OSX_FRAMEWORK)
+        list(APPEND GDAL_PLUGIN_DIRS "${GDAL_PREFIX}/PlugIns")
+    endif()
+    # debian/ubuntu/mint
+    list(APPEND GDAL_PLUGIN_DIRS "${GDAL_PREFIX}/lib/gdalplugins/${GDAL_VERSION_MAJOR}.${GDAL_VERSION_MINOR}")
+    # standard unix location such as /usr/local/lib/gdalplugins, /opt/gdal/lib/gdalplugins
+    list(APPEND GDAL_PLUGIN_DIRS "${GDAL_PREFIX}/lib/gdalplugins")
+endif()
+# windows/osge4w
+if(WIN32)
+     list(APPEND GDAL_PLUGIN_DIRS "c:\\OSGEO4W\\bin\\gdalplugins")
+endif()
+if(UNIX)
+    # default location for unix/mac
+    list(APPEND GDAL_PLUGIN_DIRS "/usr/local/lib/gdalplugins/")
+endif()
+
+# detect plugin directory
+set(GDAL_PLUGIN_DIR "NOTFOUND")
+foreach(dir ${GDAL_PLUGIN_DIRS})
+    # FIXME: we should check library existence in a proper location
+    if(EXISTS "${dir}" AND IS_DIRECTORY "${dir}")
+        set(GDAL_PLUGIN_DIR "${dir}")
+        message(STATUS "GDAL plugin installation dir: ${GDAL_PLUGIN_DIR}")
+        break()
+    endif()
+endforeach()
+unset(GDAL_PLUGIN_DIRS)
+
+# Installation
+if(EXISTS "${GDAL_PLUGIN_DIR}")
+    install (TARGETS ${LIBKEA_GDAL_DRIVER} DESTINATION ${GDAL_PLUGIN_DIR})
+endif()
 ###############################################################################

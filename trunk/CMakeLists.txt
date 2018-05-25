@@ -8,17 +8,30 @@
 # which were derived from those used by libLAS (http://liblas.org/) 
 #
 # History
+# 2018/01/25 - updated by Hiroshi Miura
 # 2012/07/02 - Created by Peter Bunting
 #
 ###############################################################################
 
 ###############################################################################
 # Set Project name and version
+cmake_minimum_required (VERSION 3.5)
+if (POLICY CMP0018)
+  # position independent code policy
+  cmake_policy(SET CMP0018 NEW)
+endif ()
 project (LIBKEA)
 
-if (WIN32)
-  set (WINDOWS ${WIN32})
-endif()
+set(CMAKE_CXX_STANDARD 98)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set (PROJECT_BINARY_DIR bin)
+set (PROJECT_LIBRARY_DIR lib)
+set (PROJECT_SOURCE_DIR src)
+set (PROJECT_TEST_DIR tests)
+set (PROJECT_HEADER_DIR include)
+set (PROJECT_TOOLS_DIR tools)
+set (PROJECT_GDAL_DIR gdal)
 
 # The version number.
 set (LIBKEA_HG_VERSION 289)
@@ -32,128 +45,69 @@ set (LIBKEA_PACKAGE_BUGREPORT "petebunting@mac.com")
 set (LIBKEA_PACKAGE "LibKEA")
 set (LIBKEA_COPYRIGHT_YEAR 2013)
 
-if(MSVC)
-    # Name of C++ library
-    set(LIBKEA_LIB_NAME libkea)
-else()
-    # Name of C++ library
-    set(LIBKEA_LIB_NAME kea)
+# set Name of C++ library
+set(LIBKEA_LIB_NAME kea)
+
+include(CMakeDependentOption)
+# CMake global option valiable
+option (BUILD_SHARED_LIBS "Build shared library" ON)
+
+# FindHDF5 feature
+# -------------------
+# On UNIX systems, this module will read the variable
+# HDF5_USE_STATIC_LIBRARIES to determine whether or not to prefer a
+# static link to a dynamic link for HDF5 and all of it's dependencies.
+# To use this feature, make sure that the HDF5_USE_STATIC_LIBRARIES
+# variable is set before the call to find_package.
+option(HDF5_USE_STATIC_LIBRARIES "Force to use HDF5 static libraries." OFF)
+# Both the serial and parallel HDF5 wrappers are considered and the first
+# directory to contain either one will be used.  In the event that both appear
+# in the same directory the serial version is preferentially selected. This
+# behavior can be reversed by setting the variable HDF5_PREFER_PARALLEL to
+# true.
+option(HDF5_PREFER_PARALLEL "Prefer HDF5 parallel wrapper instead of serial one." OFF)
+# To provide the module with a hint about where to find your HDF5
+# installation, you can set the environment variable HDF5_ROOT.  The
+# Find module will then look in this path when searching for HDF5
+# executables, paths, and libraries.
+if(NOT "x$ENV{HDF5_ROOT}" STREQUAL "x")
+    message(STATUS "HDF5_ROOT environment variable specified: $ENV{HDF5_ROOT}")
 endif()
-
-option (BUILD_SHARED_LIBS "Build with shared library" ON)
-
-set(HDF5_INCLUDE_DIR /usr/local/include CACHE PATH "Include PATH for HDF5")
-set(HDF5_LIB_PATH /usr/local/lib CACHE PATH "Library PATH for HDF5")
-
-set(GDAL_INCLUDE_DIR "NOTFOUND" CACHE PATH "Include PATH for GDAL")
-set(GDAL_LIB_PATH "NOTFOUND" CACHE PATH "Library PATH for GDAL")
-
-set(HDF5_STATIC_LIBS FALSE CACHE BOOL "On Windows, link against static HDF5 libs")
-
-IF(GDAL_INCLUDE_DIR AND GDAL_LIB_PATH)
-    # by default, only build if paths are set
-    set(LIBKEA_WITH_GDAL TRUE CACHE BOOL "Choose if .kea GDAL driver should be built")
-ELSE()
-    set(LIBKEA_WITH_GDAL FALSE CACHE BOOL "Choose if .kea GDAL driver should be built")
-ENDIF()
-
+find_package(HDF5 COMPONENTS CXX HL REQUIRED)
+find_package(GDAL)
+cmake_dependent_option(LIBKEA_WITH_GDAL  "Choose if .kea GDAL driver should be built" ON "GDAL_FOUND" OFF)
 ###############################################################################
 
 ###############################################################################
 # CMake settings
-cmake_minimum_required(VERSION 2.8.10)
-
-IF(NOT CMAKE_BUILD_TYPE)
-  #SET(CMAKE_BUILD_TYPE "DEBUG")
-  SET(CMAKE_BUILD_TYPE "RELEASE")
-  #SET(CMAKE_BUILD_TYPE "RELWITHDEBINFO")
-  #SET(CMAKE_BUILD_TYPE "MINSIZEREL")
-ENDIF()
 
 set(CMAKE_COLOR_MAKEFILE ON)
-
 set(CMAKE_MACOSX_RPATH 1)
 
-# Allow advanced users to generate Makefiles printing detailed commands
-mark_as_advanced(CMAKE_VERBOSE_MAKEFILE)
-
 # Path to additional CMake modules
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ./cmake/modules/)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 ###############################################################################
 
 ###############################################################################
 # Platform and compiler specific settings
 
 if(MSVC)
-        add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
-        add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-        add_definitions(-D_CRT_NONSTDC_NO_WARNING)
-        add_definitions(-D_SCL_SECURE_NO_WARNINGS)
-        
-        # by default the compiler produces gratuitous warnings. Disable some of them
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4290 /wd4005 /wd4101 /wd4244 /wd4800 /wd4251 /wd4996")
-
-        # Generate dot-user file with user-specific settings for Visual Studio project
-        set(MSVC_ENVIRONMENT_PATH "" CACHE STRING
-            "Custom PATH for Environment property in Visual Studio project configuration")
-        mark_as_advanced(MSVC_ENVIRONMENT_PATH)
-        set(VCPROJ_USER_ENVIRONMENT_PATH_DEBUG "${ENVIRONMENT_PATH}")
-        mark_as_advanced(VCPROJ_USER_ENVIRONMENT_PATH_DEBUG)
-
+    add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    add_definitions(-D_CRT_NONSTDC_NO_WARNING)
+    add_definitions(-D_SCL_SECURE_NO_WARNINGS)
+    
+    # by default the compiler produces gratuitous warnings. Disable some of them
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4290 /wd4005 /wd4101 /wd4244 /wd4800 /wd4251 /wd4996")
 else()
-  # Recommended C++ compilation flags
-  # -Weffc++
-  set(LIBKEA_COMMON_CXX_FLAGS
-	"-Wall -Wpointer-arith -Wcast-align -Wcast-qual -Wredundant-decls -Wno-long-long -DNDEBUG")
-	#"-pedantic -ansi -Wall -Wpointer-arith -Wcast-align -Wcast-qual -Wfloat-equal -Wredundant-decls -Wno-long-long")
-
-  if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC ${LIBKEA_COMMON_CXX_FLAGS}")
-    if (CMAKE_COMPILER_IS_GNUCXX)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98")
-    endif()
-
-  elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER}" MATCHES "clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LIBKEA_COMMON_CXX_FLAGS}")
-  endif()
+    set(CMAKE_CXX_FLAGS
+	      "${CMAKE_CXX_FLAGS} -Wall -Wpointer-arith -Wcast-align -Wcast-qual -Wredundant-decls -Wno-long-long -DNDEBUG")
 endif(MSVC)
-
-if (APPLE)
-  set(SO_EXT dylib)
- # set(CMAKE_FIND_FRAMEWORK "LAST")
-elseif(WIN32)
-  set(SO_EXT dll)
-else()
-  set(SO_EXT so)
-endif(APPLE)
-###############################################################################
-
-###############################################################################
-# Check the required libraries are present
-
-if (MSVC)
-  if(HDF5_STATIC_LIBS)
-    set(HDF5_LIBRARIES -LIBPATH:"${HDF5_LIB_PATH}" libhdf5_cpp.lib libhdf5.lib zlibstatic.lib)
-  else()
-    set(HDF5_LIBRARIES -LIBPATH:"${HDF5_LIB_PATH}" hdf5_cpp.lib hdf5.lib)
-    set_property(DIRECTORY PROPERTY COMPILE_DEFINITIONS H5_BUILT_AS_DYNAMIC_LIB)
-  endif()
-else()
-  set(HDF5_LIBRARIES "-L${HDF5_LIB_PATH} -lhdf5 -lhdf5_hl -lhdf5_cpp")
-endif(MSVC)
-
-if (MSVC)
-  set(GDAL_LIBRARIES -LIBPATH:"${GDAL_LIB_PATH}" gdal_i.lib)
-else()
-  set(GDAL_LIBRARIES -L${GDAL_LIB_PATH} -lgdal)
-endif(MSVC)
-###############################################################################
 
 ###############################################################################
 # Setup configure file
-configure_file ( "${PROJECT_SOURCE_DIR}/include/kea-config.h.in" "${PROJECT_BINARY_DIR}/include/libkea/kea-config.h" )
-configure_file ( "${PROJECT_SOURCE_DIR}/tools/kea-config.in" "${PROJECT_BINARY_DIR}/bin/kea-config" )
+configure_file ( "${PROJECT_HEADER_DIR}/kea-config.h.in" "${CMAKE_BINARY_DIR}/${PROJECT_HEADER_DIR}/libkea/kea-config.h" )
+configure_file ( "${PROJECT_TOOLS_DIR}/kea-config.in" "${CMAKE_BINARY_DIR}/${PROJECT_BINARY_DIR}/kea-config" )
 ###############################################################################
 
 ###############################################################################
@@ -165,10 +119,10 @@ file(WRITE "README.txt" "${README}")
 ###############################################################################
 # Build library
 
-include_directories ("${PROJECT_SOURCE_DIR}/include")
-include_directories ("${PROJECT_BINARY_DIR}/include") # for kea-config.h
-include_directories(${HDF5_INCLUDE_DIR})
-add_subdirectory ("${PROJECT_SOURCE_DIR}/src")
+include_directories ("${PROJECT_HEADER_DIR}")
+include_directories ("${CMAKE_BINARY_DIR}/${PROJECT_HEADER_DIR}")
+include_directories(${HDF5_INCLUDE_DIRS})
+add_subdirectory ("${PROJECT_SOURCE_DIR}")
 if (LIBKEA_WITH_GDAL)
 	add_subdirectory ("${PROJECT_SOURCE_DIR}/gdal")
 endif(LIBKEA_WITH_GDAL)
@@ -178,13 +132,11 @@ endif(LIBKEA_WITH_GDAL)
 # Tests
 enable_testing()
 add_test(NAME test1 COMMAND src/test1)
-
 ###############################################################################
 
 ###############################################################################
 # Installation
-
-install (FILES "${PROJECT_BINARY_DIR}/bin/kea-config" DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+install (FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_BINARY_DIR}/kea-config" DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 ###############################################################################
 
 ###############################################################################
@@ -197,13 +149,19 @@ set(CPACK_SOURCE_PACKAGE_FILE_NAME
 
 # Set files to ignore
 list(APPEND CPACK_SOURCE_IGNORE_FILES "_CPack_Packages")
-list(APPEND CPACK_SOURCE_IGNORE_FILES ".gz")
+list(APPEND CPACK_SOURCE_IGNORE_FILES ".bak")
 list(APPEND CPACK_SOURCE_IGNORE_FILES ".bz2")
-list(APPEND CPACK_SOURCE_IGNORE_FILES ".zip")
+list(APPEND CPACK_SOURCE_IGNORE_FILES ".gz")
+list(APPEND CPACK_SOURCE_IGNORE_FILES ".hg")
+list(APPEND CPACK_SOURCE_IGNORE_FILES ".hgtags")
+list(APPEND CPACK_SOURCE_IGNORE_FILES ".idea")
+list(APPEND CPACK_SOURCE_IGNORE_FILES ".orig")
 list(APPEND CPACK_SOURCE_IGNORE_FILES ".svn")
+list(APPEND CPACK_SOURCE_IGNORE_FILES ".zip")
 list(APPEND CPACK_SOURCE_IGNORE_FILES "README")
 list(APPEND CPACK_SOURCE_IGNORE_FILES "HOWTORELEASE.txt")
 list(APPEND CPACK_SOURCE_IGNORE_FILES "CMakeCache.txt")
+list(APPEND CPACK_SOURCE_IGNORE_FILES "cmake-build-*")
 list(APPEND CPACK_SOURCE_IGNORE_FILES "CPackConfig.cmake")
 list(APPEND CPACK_SOURCE_IGNORE_FILES "schemas")
 
