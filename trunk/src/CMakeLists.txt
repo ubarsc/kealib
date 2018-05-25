@@ -58,19 +58,6 @@ target_include_directories(Kealib INTERFACE
 # exe needs to be in 'src' otherwise it doesn't work
 add_executable (test1 ${CMAKE_SOURCE_DIR}/src/tests/test1.cpp)
 target_link_libraries (test1 ${LIBKEA_LIB_NAME})
-if(NOT WIN32)
-    # set rpath so the text exe finds hdf5. Really only needed
-    # by Conda builds as LD_LIBRARY_PATH not set on Unix by Conda
-    # No rpath on Windows so Conda sets PATH properly
-    if(CMAKE_COMPILER_IS_GNUCC)
-        set_target_properties (test1 PROPERTIES LINK_FLAGS "-Wl,-rpath ${HDF5_LIB_PATH}")
-    elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        # this matches AppleClang also
-        set_target_properties (test1 PROPERTIES LINK_FLAGS "-Xlinker -rpath ${HDF5_LIB_PATH}")
-    endif()
-    # probably should match other compilers, but since this is a Conda
-    # specific hack I'm not going to bother
-endif()
 
 ###############################################################################
 # Set target properties
