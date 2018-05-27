@@ -52,8 +52,14 @@ set (LIBKEA_PACKAGE_BUGREPORT "petebunting@mac.com")
 set (LIBKEA_PACKAGE "LibKEA")
 set (LIBKEA_COPYRIGHT_YEAR 2013)
 
-# set Name of C++ library
-set(LIBKEA_LIB_NAME kea)
+if(MSVC)
+    # set Name of C++ library
+    # this forces it to be libkea on Windows with VC
+    set(LIBKEA_LIB_NAME libkea)
+else()
+    # set Name of C++ library
+    set(LIBKEA_LIB_NAME kea)
+endif()
 
 include(CMakeDependentOption)
 # CMake global option valiable
