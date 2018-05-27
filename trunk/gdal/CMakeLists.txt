@@ -47,6 +47,12 @@ include_directories(${LIBKEA_HEADERS_DIR})
 ###############################################################################
 
 ###############################################################################
+# Installation 
+# Always install into the prefix
+# to keep compatibility with previous versions
+install (TARGETS ${LIBKEA_GDAL_DRIVER} DESTINATION lib/gdalplugins)
+
+# Then look for existing plugins directories
 set(GDAL_PLUGIN_DIRS)
 find_program(GDAL_CONFIG_EXECUTABLE "gdal-config" HINSTS ${GDAL_CONFIG})
 if(EXISTS "${GDAL_CONFIG_EXECUTABLE}")
