@@ -1,6 +1,7 @@
 ###############################################################################
 # set file locations
-set(LIBKEA_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+set(LIBKEA_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../src CACHE PATH "Path to KEA library")
+set(LIBKEA_HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../include CACHE PATH "Path to KEA Headers")
 option(KEAHDF5_STATIC_LIBS "Build against static KEA and HDF5" OFF)
 
 set(KEA_GDAL_H keadataset.h keaband.h keaoverview.h keacopy.h keamaskband.h kearat.h)
@@ -30,7 +31,15 @@ add_library(${LIBKEA_GDAL_DRIVER} ${KEA_GDAL_CPP} ${KEA_GDAL_H} )
 set_target_properties(${LIBKEA_GDAL_DRIVER} PROPERTIES PREFIX "")
 
 find_package(GDAL REQUIRED)
-target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} PRIVATE Kealib)
+if(KEAHDF5_STATIC_LIBS)
+    set(HDF5_USE_STATIC_LIBRARIES ON)
+	# Need to link to HDF5 also
+	find_package(HDF5 COMPONENTS CXX HL REQUIRED)
+
+	target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} ${HDF5_LIBRARIES} ${LIBKEA_LIB_PATH}/liblibkea.lib)
+else()
+    target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} PRIVATE Kealib)
+endif()
 include_directories(${GDAL_INCLUDE_DIR})
 include_directories(${LIBKEA_HEADERS_DIR})
 ###############################################################################

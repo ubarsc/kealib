@@ -12,55 +12,69 @@ setlocal
 :: I have assumed these are installed in the standard locations. If not you might need to tweak the code below.
 
 set ZLIBDIR=C:\dev\arc\zlib-1.2.11
-set HDF5DIR=C:\dev\arc\hdf5-1.8.19
+set HDF5DIR=C:\dev\arc\hdf5-1.10.1
 set INSTALLDIR=c:\dev\arckea
-:: Stop PATH getting too long be resetting it
+:: Stop PATH getting too long by resetting it
 set oldpath=%PATH%
 
 :: Visual Studio 2008 x86
+SetLocal
 set VCYEAR=VC2008
 set VCMACH=x86
 set PATH=%oldpath%
 call "C:\Users\sam\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" %VCMACH%
 @echo on
 call :build
+EndLocal
 
 :: Visual Studio 2013 x86 and x64
+SetLocal
 set VCYEAR=VC2013
 set VCMACH=x86
 set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %VCMACH%
 @echo on
 call :build
+EndLocal
 
+SetLocal
+set VCYEAR=VC2013
 set VCMACH=x64
 :: Note VS2013 doesn't understand 'x64'...
 set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64
 @echo on
 call :build
+EndLocal
 
 :: Visual Studio 2015 for ArcPro <= 2.0
+SetLocal
 set VCYEAR=VC2015
 set VCMACH=x64
 set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH%
 @echo on
 call :build
+EndLocal
 
 :: Visual Studio 2017 for ArcPro > 2.0, ArcGIS 10.6
+SetLocal
 set VCYEAR=VC2017
 set VCMACH=x86
 set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
 @echo on
 call :build
+EndLocal
 
+SetLocal
+set VCYEAR=VC2017
 set VCMACH=x64
 set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
 @echo on
 call :build
+EndLocal
 
 EXIT /B %ERRORLEVEL%
 

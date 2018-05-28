@@ -12,6 +12,7 @@ SET HDF5DIR=c:\dev\arckea
 :: Stop PATH getting too long by resetting it
 set oldpath=%PATH%
 
+SetLocal
 set VCMACH=x86
 set PATH=%oldpath%
 call "C:\Users\sam\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" %VCMACH%
@@ -22,8 +23,10 @@ call :build_arc100
 if errorlevel 1 exit /B 1
 call :build_arc101
 if errorlevel 1 exit /B 1
+EndLocal
 
 :: Now the vs2013 builds x86
+SetLocal
 set VCMACH=x86
 set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %VCMACH%
@@ -33,8 +36,11 @@ if errorlevel 1 exit /B 1
 call :build_arc105
 if errorlevel 1 exit /B 1
 call :build_arc1051
+if errorlevel 1 exit /B 1
+EndLocal
 
 :: Now x64
+SetLocal
 set VCMACH=x64
 :: Note VS2013 doesn't understand 'x64'...
 set PATH=%oldpath%
@@ -46,8 +52,10 @@ call :build_arc105
 if errorlevel 1 exit /B 1
 call :build_arc1051
 if errorlevel 1 exit /B 1
+EndLocal
 
 :: Visual Studio 2015 x64 builds
+SetLocal
 set VCMACH=x64
 set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH%
@@ -56,22 +64,27 @@ call :build_arcpro14
 if errorlevel 1 exit /B 1
 call :build_arcpro20
 if errorlevel 1 exit /B 1
+EndLocal
 
 :: Visual Studio 2017 x86 Builds
+SetLocal
 set VCMACH=x86
 set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
 @echo on
 call :build_arc106_arcpro21
 if errorlevel 1 exit /B 1
+EndLocal
 
 :: Visual Studio 2017 x64 Builds
+SetLocal
 set VCMACH=x64
 set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
 @echo on
 call :build_arc106_arcpro21
 if errorlevel 1 exit /B 1
+EndLocal
 
 EXIT /B %ERRORLEVEL%
 
@@ -84,12 +97,11 @@ cd build_arc93
 
 cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
       -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc93 ^
+	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
+	  -D GDAL_DIR=%ARCGDALDIR% ^
+	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
-      -D GDAL_INCLUDE_DIR=%ARCGDALDIR%\include ^
-      -D GDAL_LIB_PATH=%ARCGDALDIR%\lib ^
-      -D HDF5_INCLUDE_DIR=%ARCHDF5DIR%\include ^
-      -D HDF5_LIB_PATH=%ARCHDF5DIR%\lib ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
@@ -111,12 +123,11 @@ cd build_arc100
 
 cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
       -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc100 ^
+	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
-      -D GDAL_INCLUDE_DIR=%ARCGDALDIR%\include ^
-      -D GDAL_LIB_PATH=%ARCGDALDIR%\lib ^
-      -D HDF5_INCLUDE_DIR=%ARCHDF5DIR%\include ^
-      -D HDF5_LIB_PATH=%ARCHDF5DIR%\lib ^
+	  -D GDAL_DIR=%ARCGDALDIR% ^
+	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
@@ -138,12 +149,11 @@ cd build_arc101
 
 cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
       -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc101 ^
+	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
-      -D GDAL_INCLUDE_DIR=%ARCGDALDIR%\include ^
-      -D GDAL_LIB_PATH=%ARCGDALDIR%\lib ^
-      -D HDF5_INCLUDE_DIR=%ARCHDF5DIR%\include ^
-      -D HDF5_LIB_PATH=%ARCHDF5DIR%\lib ^
+	  -D GDAL_DIR=%ARCGDALDIR% ^
+	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
@@ -158,25 +168,18 @@ EXIT /B 0
 
 :build_arc104
 
-set ARCGDALDIR=%GDALDIR%\gdal18b
+set ARCGDALDIR=%GDALDIR%\gdal18b\%VCMACH%
 set ARCHDF5DIR=%HDF5DIR%\VC2013_%VCMACH%
 mkdir build_arc104
 cd build_arc104
 
-IF "%VCMACH%" == "x86" (
-  SET GDALLIBPATH=%ARCGDALDIR%\lib 
-) ELSE (
-  SET GDALLIBPATH=%ARCGDALDIR%\lib\amd64 
-)
-  
 cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
       -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc104\%VCMACH% ^
+	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
-      -D GDAL_INCLUDE_DIR=%ARCGDALDIR%\include ^
-      -D GDAL_LIB_PATH=%GDALLIBPATH% ^
-      -D HDF5_INCLUDE_DIR=%ARCHDF5DIR%\include ^
-      -D HDF5_LIB_PATH=%ARCHDF5DIR%\lib ^
+      -D GDAL_DIR=%ARCGDALDIR% ^
+	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
@@ -191,25 +194,18 @@ EXIT /B 0
 
 :build_arc105
 
-set ARCGDALDIR=%GDALDIR%\gdal201
+set ARCGDALDIR=%GDALDIR%\gdal201\vc12\%VCMACH%
 set ARCHDF5DIR=%HDF5DIR%\VC2013_%VCMACH%
 mkdir build_arc105
 cd build_arc105
 
-IF "%VCMACH%" == "x86" (
-  SET GDALLIBPATH=%ARCGDALDIR%\lib\vc12 
-) ELSE (
-  SET GDALLIBPATH=%ARCGDALDIR%\lib\vc12\x64 
-)
-  
 cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
       -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc105\%VCMACH% ^
+	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
-      -D GDAL_INCLUDE_DIR=%ARCGDALDIR%\include ^
-      -D GDAL_LIB_PATH=%GDALLIBPATH% ^
-      -D HDF5_INCLUDE_DIR=%ARCHDF5DIR%\include ^
-      -D HDF5_LIB_PATH=%ARCHDF5DIR%\lib ^
+	  -D GDAL_DIR=%ARCGDALDIR% ^
+	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
@@ -224,25 +220,18 @@ EXIT /B 0
 
 :build_arc1051
 
-set ARCGDALDIR=%GDALDIR%\gdal211
+set ARCGDALDIR=%GDALDIR%\gdal211\vc12\%VCMACH%
 set ARCHDF5DIR=%HDF5DIR%\VC2013_%VCMACH%
 mkdir build_arc1051
 cd build_arc1051
 
-IF "%VCMACH%" == "x86" (
-  SET GDALLIBPATH=%ARCGDALDIR%\lib\vc12 
-) ELSE (
-  SET GDALLIBPATH=%ARCGDALDIR%\lib\vc12\x64 
-)
-  
 cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
       -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc1051\%VCMACH% ^
+	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
-      -D GDAL_INCLUDE_DIR=%ARCGDALDIR%\include ^
-      -D GDAL_LIB_PATH=%GDALLIBPATH% ^
-      -D HDF5_INCLUDE_DIR=%ARCHDF5DIR%\include ^
-      -D HDF5_LIB_PATH=%ARCHDF5DIR%\lib ^
+      -D GDAL_DIR=%ARCGDALDIR% ^
+	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
@@ -257,25 +246,18 @@ EXIT /B 0
 
 :build_arcpro14
 
-set ARCGDALDIR=%GDALDIR%\gdal201
+set ARCGDALDIR=%GDALDIR%\gdal201\vc14\%VCMACH%
 set ARCHDF5DIR=%HDF5DIR%\VC2015_%VCMACH%
 mkdir build_arcpro14
 cd build_arcpro14
 
-IF "%VCMACH%" == "x86" (
-  SET GDALLIBPATH=%ARCGDALDIR%\lib\vc14 
-) ELSE (
-  SET GDALLIBPATH=%ARCGDALDIR%\lib\vc14\x64 
-)
-  
 cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
       -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arcpro14\%VCMACH% ^
+	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
-      -D GDAL_INCLUDE_DIR=%ARCGDALDIR%\include ^
-      -D GDAL_LIB_PATH=%GDALLIBPATH% ^
-      -D HDF5_INCLUDE_DIR=%ARCHDF5DIR%\include ^
-      -D HDF5_LIB_PATH=%ARCHDF5DIR%\lib ^
+      -D GDAL_DIR=%ARCGDALDIR% ^
+	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
@@ -290,25 +272,18 @@ EXIT /B 0
 
 :build_arcpro20
 
-set ARCGDALDIR=%GDALDIR%\gdal211
+set ARCGDALDIR=%GDALDIR%\gdal211\vc14\%VCMACH%
 set ARCHDF5DIR=%HDF5DIR%\VC2015_%VCMACH%
 mkdir build_arcpro20
 cd build_arcpro20
-
-IF "%VCMACH%" == "x86" (
-  SET GDALLIBPATH=%ARCGDALDIR%\lib\vc14 
-) ELSE (
-  SET GDALLIBPATH=%ARCGDALDIR%\lib\vc14\x64 
-)
   
 cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
       -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arcpro20\%VCMACH% ^
+	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
-      -D GDAL_INCLUDE_DIR=%ARCGDALDIR%\include ^
-      -D GDAL_LIB_PATH=%GDALLIBPATH% ^
-      -D HDF5_INCLUDE_DIR=%ARCHDF5DIR%\include ^
-      -D HDF5_LIB_PATH=%ARCHDF5DIR%\lib ^
+      -D GDAL_DIR=%ARCGDALDIR% ^
+	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
@@ -323,25 +298,18 @@ EXIT /B 0
 
 :build_arc106_arcpro21
 
-set ARCGDALDIR=%GDALDIR%\gdal211b
+set ARCGDALDIR=%GDALDIR%\gdal211b\%VCMACH%
 set ARCHDF5DIR=%HDF5DIR%\VC2017_%VCMACH%
 mkdir build_arc106_arcpro21
 cd build_arc106_arcpro21
-
-IF "%VCMACH%" == "x86" (
-  SET GDALLIBPATH=%ARCGDALDIR%\lib\vc14.10 
-) ELSE (
-  SET GDALLIBPATH=%ARCGDALDIR%\lib\vc14.10\x64 
-)
   
 cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
       -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc106_arcpro21\%VCMACH% ^
+	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
-      -D GDAL_INCLUDE_DIR=%ARCGDALDIR%\include ^
-      -D GDAL_LIB_PATH=%GDALLIBPATH% ^
-      -D HDF5_INCLUDE_DIR=%ARCHDF5DIR%\include ^
-      -D HDF5_LIB_PATH=%ARCHDF5DIR%\lib ^
+      -D GDAL_DIR=%ARCGDALDIR% ^
+	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
