@@ -63,7 +63,7 @@ install (TARGETS ${LIBKEA_GDAL_DRIVER} DESTINATION lib/gdalplugins)
 
 # Then look for existing plugins directories
 set(GDAL_PLUGIN_DIRS)
-find_program(GDAL_CONFIG_EXECUTABLE "gdal-config" HINSTS ${GDAL_CONFIG})
+find_program(GDAL_CONFIG_EXECUTABLE "gdal-config" HINTS ${GDAL_CONFIG})
 if(EXISTS "${GDAL_CONFIG_EXECUTABLE}")
     # find gdal prefix and version
     execute_process(COMMAND ${GDAL_CONFIG_EXECUTABLE} --prefix OUTPUT_VARIABLE GDAL_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
