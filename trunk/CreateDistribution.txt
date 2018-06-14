@@ -1,0 +1,29 @@
+How to create a distribution of kealib. 
+
+1. Ensure that you have fetched and committed everything which needs to go in.
+2. Update the LIBKEA_VERSION_MAJOR, LIBKEA_VERSION_MINOR, LIBKEA_VERSION_PATCH
+   and LIBKEA_HG_VERSION fields in CMakeLists.txt. Version number
+   is of the form MAJOR.MINOR.PATCH, as discussed below. 
+3. Close any inactive branches.
+4. Update Changes.txt, by going through the 
+   change logs since the last release, and noting what has been done. 
+   DON'T FORGET TO COMMIT THIS, BEFORE THE NEXT STEP!!!!
+5. Use "hg tag" to add a version number tag, e.g.
+    hg tag kealib-1.4.7
+6. hg push
+7. Download the .zip and .tar.gz for the new version from 
+   https://bitbucket.org/chchrsc/kealib/downloads/?tab=tags and add to the 
+   'Downloads' tab (https://bitbucket.org/chchrsc/kealib/downloads/).
+8. Update the kealib to the latest version on conda-forge by creating a PR at 
+   https://github.com/conda-forge/kealib-feedstock.
+
+Version Numbers.
+The kealib version number is structured as MAJOR.MINOR.PATCH
+- The MAJOR number should change for major alterations, most particularly those 
+  which break backward compatability, or which involve major restructuring of 
+  code or data structures. 
+- The MINOR number should change for introduction of significant new features
+  Note: this includes adding new data members on C++ classes as this breaks 
+  ABI compatibility.
+- The PATCH number should change for bug fixes or very minor changes. There should
+  be no change to the ABI for these releases.

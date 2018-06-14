@@ -1,0 +1,17 @@
+1.4.8
+-----
+
+* Improvements to Arc and Imagine Drivers
+* Installer for ArcGIS, ArcPro and Imagine.
+* Improvements to cmake scripts by Hiroshi Miura. Among other things,
+    out of tree builds now work.
+* Fix building against recent HDF5 on Windows
+
+1.4.7
+-----
+
+* Improvements to metadata handling
+* Add Get/SetLinearBinning on RAT objects.
+* Add DeleteNoValue on band objects.
+
+
