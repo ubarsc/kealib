@@ -9,11 +9,12 @@ How to create a distribution of kealib.
    change logs since the last release, and noting what has been done. 
    DON'T FORGET TO COMMIT THIS, BEFORE THE NEXT STEP!!!!
 5. Use "hg tag" to add a version number tag, e.g.
-    hg tag kealib-1.4.7
+    hg tag kealib-1.4.8
 6. hg push
-7. Download the .zip and .tar.gz for the new version from 
-   https://bitbucket.org/chchrsc/kealib/downloads/?tab=tags and add to the 
-   'Downloads' tab (https://bitbucket.org/chchrsc/kealib/downloads/).
+7. Create .zip and .tar.gz using the 'hg archive' command and the tag
+   created in the previous step:
+    hg archive -r kealib-1.4.8 -t tgz kealib-1.4.8.tar.gz
+    hg archive -r kealib-1.4.8 -t zip kealib-1.4.8.zip
 8. Update the kealib to the latest version on conda-forge by creating a PR at 
    https://github.com/conda-forge/kealib-feedstock.
 
