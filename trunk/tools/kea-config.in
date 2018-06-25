@@ -55,7 +55,7 @@ case $1 in
       echo -n "-I@HDF5_INCLUDE_DIR@ "
       ;;
 	--hdflibs)
-      echo -n "@HDF5_LIBRARIES@ "
+      echo -n "@HDF5_LIBRARIES_LIBTOOL@ "
       ;;
   esac
   shift

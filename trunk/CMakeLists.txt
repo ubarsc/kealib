@@ -92,6 +92,37 @@ find_package(GDAL)
 find_package(Threads)
 cmake_dependent_option(LIBKEA_WITH_GDAL  "Choose if .kea GDAL driver should be built" OFF "GDAL_FOUND" OFF)
 ###############################################################################
+# Code to change HDF5_LIBRARIES (from FindHDF5.cmake) into a form
+# that can be understood by libtool and put into kea-config
+
+SET(HDF5_LIBRARIES_PATHS)
+SET(HDF5_LIBRARIES_NAMES)
+foreach(lib_name ${HDF5_LIBRARIES})
+    get_filename_component(DIRNAME ${lib_name} DIRECTORY)
+    get_filename_component(LIBNAME ${lib_name} NAME_WE)
+    list(APPEND HDF5_LIBRARIES_PATHS ${DIRNAME})
+
+    # remove the 'lib' bit if it has one
+    string(FIND ${LIBNAME} "lib" lib_index)
+    if(${lib_index} EQUAL "0")
+        string(SUBSTRING ${LIBNAME} 3 -1 LIBNAME)
+    endif()
+
+    list(APPEND HDF5_LIBRARIES_NAMES ${LIBNAME})
+endforeach(lib_name)
+
+list(REMOVE_DUPLICATES HDF5_LIBRARIES_PATHS)
+list(REMOVE_DUPLICATES HDF5_LIBRARIES_NAMES)
+
+set(HDF5_LIBRARIES_LIBTOOL) # variable with the fixed syntax
+foreach(dir_name ${HDF5_LIBRARIES_PATHS})
+    string(CONCAT HDF5_LIBRARIES_LIBTOOL ${HDF5_LIBRARIES_LIBTOOL} " -L" ${dir_name})
+endforeach(dir_name)
+
+foreach(lib_name ${HDF5_LIBRARIES_NAMES})
+    string(CONCAT HDF5_LIBRARIES_LIBTOOL ${HDF5_LIBRARIES_LIBTOOL} " -l" ${lib_name})
+endforeach(lib_name)
+message(STATUS "HDF5_LIBRARIES_LIBTOOL ${HDF5_LIBRARIES_LIBTOOL}")
 
 ###############################################################################
 # CMake settings
