@@ -17,6 +17,7 @@ How to create a distribution of kealib.
     hg archive -r kealib-1.4.8 -t zip kealib-1.4.8.zip
 8. Update the kealib to the latest version on conda-forge by creating a PR at 
    https://github.com/conda-forge/kealib-feedstock.
+9. Let the Spack guys know there is a new release.
 
 Version Numbers.
 The kealib version number is structured as MAJOR.MINOR.PATCH
