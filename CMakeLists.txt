@@ -158,8 +158,8 @@ configure_file ( "${PROJECT_TOOLS_DIR}/kea-config.in" "${CMAKE_BINARY_DIR}/${PRO
 
 ###############################################################################
 # Documentation
-file(READ "doc/index.txt" README )
-file(WRITE "README.txt" "${README}")
+#file(READ "doc/index.txt" README )
+#file(WRITE "README.txt" "${README}")
 ###############################################################################
 
 ###############################################################################
