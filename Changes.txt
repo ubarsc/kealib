@@ -1,3 +1,9 @@
+1.4.9
+-----
+
+* Fix output from "kea-config --hdflibs" so it works with libtool
+* Tidy directory structure by removing "trunk" subdirectory.
+
 1.4.8
 -----
 
