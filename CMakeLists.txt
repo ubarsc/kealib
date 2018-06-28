@@ -111,8 +111,13 @@ foreach(lib_name ${HDF5_LIBRARIES})
     list(APPEND HDF5_LIBRARIES_NAMES ${LIBNAME})
 endforeach(lib_name)
 
-list(REMOVE_DUPLICATES HDF5_LIBRARIES_PATHS)
-list(REMOVE_DUPLICATES HDF5_LIBRARIES_NAMES)
+# Remove duplicates if stuff was actually in there
+if(HDF5_LIBRARIES_PATHS)
+    list(REMOVE_DUPLICATES HDF5_LIBRARIES_PATHS)
+endif()
+if(HDF5_LIBRARIES_NAMES)
+    list(REMOVE_DUPLICATES HDF5_LIBRARIES_NAMES)
+endif()
 
 set(HDF5_LIBRARIES_LIBTOOL) # variable with the fixed syntax
 foreach(dir_name ${HDF5_LIBRARIES_PATHS})
