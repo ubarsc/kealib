@@ -29,9 +29,6 @@ IF(NOT CMAKE_BUILD_TYPE)
   #SET(CMAKE_BUILD_TYPE "MINSIZEREL")
 ENDIF()
 
-set(CMAKE_CXX_STANDARD 98)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 set (PROJECT_BINARY_DIR bin)
 set (PROJECT_LIBRARY_DIR lib)
 set (PROJECT_SOURCE_DIR src)
@@ -147,6 +144,11 @@ if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     add_definitions(-D_CRT_NONSTDC_NO_WARNING)
     add_definitions(-D_SCL_SECURE_NO_WARNINGS)
+
+    if(NOT HDF5_USE_STATIC_LIBRARIES)
+        # for some reason FindHDF5.cmake doesn't always set this
+        add_definitions(-DH5_BUILT_AS_DYNAMIC_LIB)
+    endif(NOT HDF5_USE_STATIC_LIBRARIES)
     
     # by default the compiler produces gratuitous warnings. Disable some of them
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4290 /wd4005 /wd4101 /wd4244 /wd4800 /wd4251 /wd4996")
