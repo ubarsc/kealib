@@ -49,7 +49,7 @@ namespace kealib{
         return this->attType;
     }
     
-    void KEAAttributeTable::setBoolValue(const std::string &name, bool value) throw(KEAATTException)
+    void KEAAttributeTable::setBoolValue(const std::string &name, bool value)
     {
         try 
         {
@@ -68,7 +68,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTable::setIntValue(const std::string &name, int64_t value) throw(KEAATTException)
+    void KEAAttributeTable::setIntValue(const std::string &name, int64_t value)
     {
         try 
         {
@@ -87,7 +87,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTable::setFloatValue(const std::string &name, double value) throw(KEAATTException)
+    void KEAAttributeTable::setFloatValue(const std::string &name, double value)
     {
         try 
         {
@@ -106,7 +106,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTable::setStringValue(const std::string &name, const std::string &value) throw(KEAATTException)
+    void KEAAttributeTable::setStringValue(const std::string &name, const std::string &value)
     {
         try 
         {
@@ -125,7 +125,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTable::setBoolValue(size_t colIdx, bool value) throw(KEAATTException)
+    void KEAAttributeTable::setBoolValue(size_t colIdx, bool value)
     {
         if(colIdx > numBoolFields)
         {
@@ -136,7 +136,7 @@ namespace kealib{
         throw KEAATTException("Setting all has not be implemented yet as needs an iterator...");
     }
     
-    void KEAAttributeTable::setIntValue(size_t colIdx, int64_t value) throw(KEAATTException)
+    void KEAAttributeTable::setIntValue(size_t colIdx, int64_t value)
     {
         if(colIdx > numIntFields)
         {
@@ -147,7 +147,7 @@ namespace kealib{
         throw KEAATTException("Setting all has not be implemented yet as needs an iterator...");
     }
     
-    void KEAAttributeTable::setFloatValue(size_t colIdx, double value) throw(KEAATTException)
+    void KEAAttributeTable::setFloatValue(size_t colIdx, double value)
     {
         if(colIdx > numFloatFields)
         {
@@ -158,7 +158,7 @@ namespace kealib{
         throw KEAATTException("Setting all has not be implemented yet as needs an iterator...");
     }
     
-    void KEAAttributeTable::setStringValue(size_t colIdx, const std::string &value) throw(KEAATTException)
+    void KEAAttributeTable::setStringValue(size_t colIdx, const std::string &value)
     {
         if(colIdx > numStringFields)
         {
@@ -169,7 +169,7 @@ namespace kealib{
         throw KEAATTException("Setting all has not be implemented yet as needs an iterator...");
     }
     
-    KEAFieldDataType KEAAttributeTable::getDataFieldType(const std::string &name) const throw(KEAATTException)
+    KEAFieldDataType KEAAttributeTable::getDataFieldType(const std::string &name) const
     {
         std::map<std::string, KEAATTField>::iterator iterField = fields->find(name);
         if(iterField == fields->end())
@@ -181,7 +181,7 @@ namespace kealib{
         return (*iterField).second.dataType;
     }
     
-    size_t KEAAttributeTable::getFieldIndex(const std::string &name) const throw(KEAATTException)
+    size_t KEAAttributeTable::getFieldIndex(const std::string &name) const
     {
         std::map<std::string, KEAATTField>::iterator iterField = fields->find(name);
         if(iterField == fields->end())
@@ -193,7 +193,7 @@ namespace kealib{
         return (*iterField).second.idx;
     }
     
-    KEAATTField KEAAttributeTable::getField(const std::string &name) const throw(KEAATTException)
+    KEAATTField KEAAttributeTable::getField(const std::string &name) const
     {
         std::map<std::string, KEAATTField>::iterator iterField = fields->find(name);
         if(iterField == fields->end())
@@ -205,7 +205,7 @@ namespace kealib{
         return (*iterField).second;
     }
     
-    KEAATTField KEAAttributeTable::getField(size_t globalColIdx) const throw(KEAATTException)
+    KEAATTField KEAAttributeTable::getField(size_t globalColIdx) const
     {
         KEAATTField field;
         bool found = false;
@@ -277,7 +277,7 @@ namespace kealib{
         return numOfCols;
     }
     
-    void KEAAttributeTable::addAttBoolField(const std::string &name, bool val, std::string usage) throw(KEAATTException)
+    void KEAAttributeTable::addAttBoolField(const std::string &name, bool val, std::string usage)
     {
         try 
         {
@@ -310,7 +310,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTable::addAttIntField(const std::string &name, int64_t val, std::string usage) throw(KEAATTException)
+    void KEAAttributeTable::addAttIntField(const std::string &name, int64_t val, std::string usage)
     {
         try 
         {
@@ -343,7 +343,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTable::addAttFloatField(const std::string &name, double val, std::string usage) throw(KEAATTException)
+    void KEAAttributeTable::addAttFloatField(const std::string &name, double val, std::string usage)
     {
         try 
         {
@@ -376,7 +376,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTable::addAttStringField(const std::string &name, const std::string &val, std::string usage) throw(KEAATTException)
+    void KEAAttributeTable::addAttStringField(const std::string &name, const std::string &val, std::string usage)
     {
         try 
         {
@@ -409,7 +409,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTable::addFields(std::vector<KEAATTField*> *inFields) throw(KEAATTException)
+    void KEAAttributeTable::addFields(std::vector<KEAATTField*> *inFields)
     {
         try 
         {
@@ -448,7 +448,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTable::addFields(std::vector<KEAATTField> inFields) throw(KEAATTException)
+    void KEAAttributeTable::addFields(std::vector<KEAATTField> inFields)
     {
         try 
         {
@@ -482,7 +482,7 @@ namespace kealib{
         }
     }
     
-    KEAATTFeature* KEAAttributeTable::createKeaFeature() throw(KEAATTException)
+    KEAATTFeature* KEAAttributeTable::createKeaFeature()
     {
         KEAATTFeature *feat = new KEAATTFeature();
         feat->boolFields = new std::vector<bool>();
@@ -511,7 +511,7 @@ namespace kealib{
         return feat;
     }
     
-    void KEAAttributeTable::deleteKeaFeature(KEAATTFeature *feat) throw(KEAATTException)
+    void KEAAttributeTable::deleteKeaFeature(KEAATTFeature *feat)
     {
         delete feat->boolFields;
         delete feat->intFields;
@@ -521,7 +521,7 @@ namespace kealib{
         delete feat;
     }
     
-    void KEAAttributeTable::exportToASCII(const std::string &outputFile)throw(KEAATTException, KEAIOException)
+    void KEAAttributeTable::exportToASCII(const std::string &outputFile)
     {
         
     }
@@ -572,7 +572,7 @@ namespace kealib{
         std::cout << "Max. Column Index: " << this->numOfCols << std::endl;
     }
     
-    H5::CompType* KEAAttributeTable::createAttibuteIdxCompTypeDisk() throw(KEAATTException)
+    H5::CompType* KEAAttributeTable::createAttibuteIdxCompTypeDisk()
     {
         try
         {
@@ -603,7 +603,7 @@ namespace kealib{
         }
     }
     
-    H5::CompType* KEAAttributeTable::createAttibuteIdxCompTypeMem() throw(KEAATTException)
+    H5::CompType* KEAAttributeTable::createAttibuteIdxCompTypeMem()
     {
         try
         {
@@ -634,7 +634,7 @@ namespace kealib{
         }
     }
     
-    H5::CompType* KEAAttributeTable::createKeaStringCompTypeDisk() throw(KEAATTException)
+    H5::CompType* KEAAttributeTable::createKeaStringCompTypeDisk()
     {
         try
         {
@@ -662,7 +662,7 @@ namespace kealib{
         }
     }
     
-    H5::CompType* KEAAttributeTable::createKeaStringCompTypeMem() throw(KEAATTException)
+    H5::CompType* KEAAttributeTable::createKeaStringCompTypeMem()
     {
         try
         {

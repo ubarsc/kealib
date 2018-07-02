@@ -54,7 +54,7 @@ namespace kealib{
         bandPathBase = bandPathBaseIn;
     }
     
-    bool KEAAttributeTableFile::getBoolField(size_t fid, const std::string &name) const throw(KEAATTException)
+    bool KEAAttributeTableFile::getBoolField(size_t fid, const std::string &name) const
     {
         bool value = false;
         try
@@ -75,7 +75,7 @@ namespace kealib{
         return value;
     }
     
-    int64_t KEAAttributeTableFile::getIntField(size_t fid, const std::string &name) const throw(KEAATTException)
+    int64_t KEAAttributeTableFile::getIntField(size_t fid, const std::string &name) const
     {
         int64_t value = 0;
         try
@@ -96,7 +96,7 @@ namespace kealib{
         return value;
     }
     
-    double KEAAttributeTableFile::getFloatField(size_t fid, const std::string &name) const throw(KEAATTException)
+    double KEAAttributeTableFile::getFloatField(size_t fid, const std::string &name) const
     {
         double value = 0.;
         try
@@ -117,7 +117,7 @@ namespace kealib{
         return value;
     }
     
-    std::string KEAAttributeTableFile::getStringField(size_t fid, const std::string &name) const throw(KEAATTException)
+    std::string KEAAttributeTableFile::getStringField(size_t fid, const std::string &name) const
     {
         std::string value = "";
         try
@@ -138,7 +138,7 @@ namespace kealib{
         return value;
     }
     
-    void KEAAttributeTableFile::setBoolField(size_t fid, const std::string &name, bool value) throw(KEAATTException)
+    void KEAAttributeTableFile::setBoolField(size_t fid, const std::string &name, bool value)
     {
         try
         {
@@ -157,7 +157,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTableFile::setIntField(size_t fid, const std::string &name, int64_t value) throw(KEAATTException)
+    void KEAAttributeTableFile::setIntField(size_t fid, const std::string &name, int64_t value)
     {
         try
         {
@@ -176,7 +176,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTableFile::setFloatField(size_t fid, const std::string &name, double value) throw(KEAATTException)
+    void KEAAttributeTableFile::setFloatField(size_t fid, const std::string &name, double value)
     {
         try
         {
@@ -195,7 +195,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTableFile::setStringField(size_t fid, const std::string &name, const std::string &value) throw(KEAATTException)
+    void KEAAttributeTableFile::setStringField(size_t fid, const std::string &name, const std::string &value)
     {
         try
         {
@@ -214,7 +214,7 @@ namespace kealib{
         }
     }
     
-    bool KEAAttributeTableFile::getBoolField(size_t fid, size_t colIdx) const throw(KEAATTException)
+    bool KEAAttributeTableFile::getBoolField(size_t fid, size_t colIdx) const
     {
         if(fid >= numRows)
         {
@@ -239,7 +239,7 @@ namespace kealib{
         return value;
     }
     
-    int64_t KEAAttributeTableFile::getIntField(size_t fid, size_t colIdx) const throw(KEAATTException)
+    int64_t KEAAttributeTableFile::getIntField(size_t fid, size_t colIdx) const
     {
         if(fid >= numRows)
         {
@@ -264,7 +264,7 @@ namespace kealib{
         return value;
     }
     
-    double KEAAttributeTableFile::getFloatField(size_t fid, size_t colIdx) const throw(KEAATTException)
+    double KEAAttributeTableFile::getFloatField(size_t fid, size_t colIdx) const
     {
         if(fid >= numRows)
         {
@@ -289,7 +289,7 @@ namespace kealib{
         return value;
     }
     
-    std::string KEAAttributeTableFile::getStringField(size_t fid, size_t colIdx) const throw(KEAATTException)
+    std::string KEAAttributeTableFile::getStringField(size_t fid, size_t colIdx) const
     {
         if(fid >= numRows)
         {
@@ -318,7 +318,7 @@ namespace kealib{
     }
     
     // RFC40
-    void KEAAttributeTableFile::getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const throw(KEAATTException)
+    void KEAAttributeTableFile::getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const
     {
         if((startfid+len) > numRows)
         {
@@ -415,7 +415,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTableFile::getIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) const throw(KEAATTException)
+    void KEAAttributeTableFile::getIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) const
     {
         if((startfid+len) > numRows)
         {
@@ -505,7 +505,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTableFile::getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const throw(KEAATTException)
+    void KEAAttributeTableFile::getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const
     {
         if((startfid+len) > numRows)
         {
@@ -595,7 +595,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTableFile::getStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *psBuffer) const throw(KEAATTException)
+    void KEAAttributeTableFile::getStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *psBuffer) const
     {
         if((startfid+len) > numRows)
         {
@@ -696,7 +696,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTableFile::getNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const throw(KEAATTException)
+    void KEAAttributeTableFile::getNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const
     {
         try
         {
@@ -780,7 +780,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTableFile::setBoolField(size_t fid, size_t colIdx, bool value) throw(KEAATTException)
+    void KEAAttributeTableFile::setBoolField(size_t fid, size_t colIdx, bool value)
     {
         if(fid >= numRows)
         {
@@ -796,7 +796,7 @@ namespace kealib{
         this->setBoolFields(fid, 1, colIdx, &value);
     }
     
-    void KEAAttributeTableFile::setIntField(size_t fid, size_t colIdx, int64_t value) throw(KEAATTException)
+    void KEAAttributeTableFile::setIntField(size_t fid, size_t colIdx, int64_t value)
     {
         if(fid >= numRows)
         {
@@ -813,7 +813,7 @@ namespace kealib{
         this->setIntFields(fid, 1, colIdx, &value);
     }
     
-    void KEAAttributeTableFile::setFloatField(size_t fid, size_t colIdx, double value) throw(KEAATTException)
+    void KEAAttributeTableFile::setFloatField(size_t fid, size_t colIdx, double value)
     {
         if(fid >= numRows)
         {
@@ -830,7 +830,7 @@ namespace kealib{
         this->setFloatFields(fid, 1, colIdx, &value);
     }
     
-    void KEAAttributeTableFile::setStringField(size_t fid, size_t colIdx, std::string value) throw(KEAATTException)
+    void KEAAttributeTableFile::setStringField(size_t fid, size_t colIdx, std::string value)
     {
         if(fid >= numRows)
         {
@@ -850,7 +850,7 @@ namespace kealib{
     }
     
     // RFC40
-    void KEAAttributeTableFile::setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) throw(KEAATTException)
+    void KEAAttributeTableFile::setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer)
     {
         if((startfid+len) > numRows)
         {
@@ -948,7 +948,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTableFile::setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) throw(KEAATTException)
+    void KEAAttributeTableFile::setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer)
     {
         if((startfid+len) > numRows)
         {
@@ -1038,7 +1038,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTableFile::setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) throw(KEAATTException)
+    void KEAAttributeTableFile::setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer)
     {
         if((startfid+len) > numRows)
         {
@@ -1128,7 +1128,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTableFile::setStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *papszStrList) throw(KEAATTException)
+    void KEAAttributeTableFile::setStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *papszStrList)
     {
         if((startfid+len) > numRows)
         {
@@ -1233,7 +1233,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTableFile::setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) throw(KEAATTException)
+    void KEAAttributeTableFile::setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours)
     {
         //throw KEAATTException("KEAAttributeTableFile::setNeighbours(size_t startfid, size_t len, std::vector<size_t> neighbours) is not implemented.");
         
@@ -1348,7 +1348,7 @@ namespace kealib{
         
     }
     
-    KEAATTFeature* KEAAttributeTableFile::getFeature(size_t fid) const throw(KEAATTException)
+    KEAATTFeature* KEAAttributeTableFile::getFeature(size_t fid) const
     {
         throw KEAATTException("KEAAttributeTableFile::getFeature(size_t fid) has not been implemented.");
         if(fid >= numRows)
@@ -1393,7 +1393,7 @@ namespace kealib{
         return numRows;
     }
     
-    void KEAAttributeTableFile::updateSizeHeader(hsize_t nbools, hsize_t nints, hsize_t nfloats, hsize_t nstrings) throw(KEAATTException)
+    void KEAAttributeTableFile::updateSizeHeader(hsize_t nbools, hsize_t nints, hsize_t nfloats, hsize_t nstrings)
     {
         try
         {
@@ -1441,7 +1441,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTableFile::addAttBoolField(KEAATTField field, bool val) throw(KEAATTException)
+    void KEAAttributeTableFile::addAttBoolField(KEAATTField field, bool val)
     {
         // field already been inserted into this->fields by base class
         updateSizeHeader(numBoolFields+1, numIntFields, numFloatFields, numStringFields);
@@ -1577,7 +1577,7 @@ namespace kealib{
         delete boolDataset;
     }
     
-    void KEAAttributeTableFile::addAttIntField(KEAATTField field, int64_t val) throw(KEAATTException)
+    void KEAAttributeTableFile::addAttIntField(KEAATTField field, int64_t val)
     {
         // field already been inserted into this->fields by base class
         updateSizeHeader(numBoolFields, numIntFields+1, numFloatFields, numStringFields);
@@ -1712,7 +1712,7 @@ namespace kealib{
         delete intDataset;
     }
     
-    void KEAAttributeTableFile::addAttFloatField(KEAATTField field, float val) throw(KEAATTException)
+    void KEAAttributeTableFile::addAttFloatField(KEAATTField field, float val)
     {
         // field already been inserted into this->fields by base class
         updateSizeHeader(numBoolFields, numIntFields, numFloatFields+1, numStringFields);
@@ -1847,7 +1847,7 @@ namespace kealib{
         delete floatDataset;
     }
     
-    void KEAAttributeTableFile::addAttStringField(KEAATTField field, const std::string &val) throw(KEAATTException)
+    void KEAAttributeTableFile::addAttStringField(KEAATTField field, const std::string &val)
     {
         // field already been inserted into this->fields by base class
         updateSizeHeader(numBoolFields, numIntFields, numFloatFields, numStringFields+1);
@@ -2052,7 +2052,7 @@ namespace kealib{
         }
     }
     
-    KEAAttributeTable* KEAAttributeTableFile::createKeaAtt(H5::H5File *keaImg, unsigned int band, unsigned int chunkSizeIn, unsigned int deflate)throw(KEAATTException, KEAIOException)
+    KEAAttributeTable* KEAAttributeTableFile::createKeaAtt(H5::H5File *keaImg, unsigned int band, unsigned int chunkSizeIn, unsigned int deflate)
     {
         // Create instance of class to populate and return.
         std::string bandPathBase = KEA_DATASETNAME_BAND + uint2Str(band);
@@ -2405,7 +2405,7 @@ namespace kealib{
         return att;
     }
     
-    void KEAAttributeTableFile::exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize, unsigned int deflate)throw(KEAATTException, KEAIOException)
+    void KEAAttributeTableFile::exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize, unsigned int deflate)
     {
         throw KEAIOException("KEAAttributeTableFile does not support exporting to file");
     }

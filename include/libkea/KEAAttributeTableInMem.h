@@ -48,52 +48,52 @@ namespace kealib{
     public:
         KEAAttributeTableInMem();
         
-        bool getBoolField(size_t fid, const std::string &name) const throw(KEAATTException);
-        int64_t getIntField(size_t fid, const std::string &name) const throw(KEAATTException);
-        double getFloatField(size_t fid, const std::string &name) const throw(KEAATTException);
-        std::string getStringField(size_t fid, const std::string &name) const throw(KEAATTException);
+        bool getBoolField(size_t fid, const std::string &name) const;
+        int64_t getIntField(size_t fid, const std::string &name) const;
+        double getFloatField(size_t fid, const std::string &name) const;
+        std::string getStringField(size_t fid, const std::string &name) const;
 
-        void setBoolField(size_t fid, const std::string &name, bool value) throw(KEAATTException);
-        void setIntField(size_t fid, const std::string &name, int64_t value) throw(KEAATTException);
-        void setFloatField(size_t fid, const std::string &name, double value) throw(KEAATTException);
-        void setStringField(size_t fid, const std::string &name, const std::string &value) throw(KEAATTException);
+        void setBoolField(size_t fid, const std::string &name, bool value);
+        void setIntField(size_t fid, const std::string &name, int64_t value);
+        void setFloatField(size_t fid, const std::string &name, double value);
+        void setStringField(size_t fid, const std::string &name, const std::string &value);
         
-        bool getBoolField(size_t fid, size_t colIdx) const throw(KEAATTException);
-        int64_t getIntField(size_t fid, size_t colIdx) const throw(KEAATTException);
-        double getFloatField(size_t fid, size_t colIdx) const throw(KEAATTException);
-        std::string getStringField(size_t fid, size_t colIdx) const throw(KEAATTException);
+        bool getBoolField(size_t fid, size_t colIdx) const;
+        int64_t getIntField(size_t fid, size_t colIdx) const;
+        double getFloatField(size_t fid, size_t colIdx) const;
+        std::string getStringField(size_t fid, size_t colIdx) const;
 
-        void getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const throw(KEAATTException);
-        void getIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) const throw(KEAATTException);
-        void getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const throw(KEAATTException);
-        void getStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *psBuffer) const throw(KEAATTException);
-        void getNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const throw(KEAATTException);
+        void getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const;
+        void getIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) const;
+        void getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const;
+        void getStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *psBuffer) const;
+        void getNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const;
         
-        void setBoolField(size_t fid, size_t colIdx, bool value) throw(KEAATTException);
-        void setIntField(size_t fid, size_t colIdx, int64_t value) throw(KEAATTException);
-        void setFloatField(size_t fid, size_t colIdx, double value) throw(KEAATTException);
-        void setStringField(size_t fid, size_t colIdx, std::string value) throw(KEAATTException);
+        void setBoolField(size_t fid, size_t colIdx, bool value);
+        void setIntField(size_t fid, size_t colIdx, int64_t value);
+        void setFloatField(size_t fid, size_t colIdx, double value);
+        void setStringField(size_t fid, size_t colIdx, std::string value);
 
-        void setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) throw(KEAATTException);
-        void setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) throw(KEAATTException);
-        void setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) throw(KEAATTException);
-        void setStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *papszStrList) throw(KEAATTException);
-        void setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) throw(KEAATTException);
+        void setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer);
+        void setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer);
+        void setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer);
+        void setStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *papszStrList);
+        void setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours);
 
-        KEAATTFeature* getFeature(size_t fid) const throw(KEAATTException);
+        KEAATTFeature* getFeature(size_t fid) const;
         
         size_t getSize() const;
         
-        void addAttBoolField(KEAATTField field, bool val) throw(KEAATTException);
-        void addAttIntField(KEAATTField field, int64_t val) throw(KEAATTException);
-        void addAttFloatField(KEAATTField field, float val) throw(KEAATTException);
-        void addAttStringField(KEAATTField field, const std::string &val) throw(KEAATTException);
+        void addAttBoolField(KEAATTField field, bool val);
+        void addAttIntField(KEAATTField field, int64_t val);
+        void addAttFloatField(KEAATTField field, float val);
+        void addAttStringField(KEAATTField field, const std::string &val);
         
         void addRows(size_t numRows);
         
-        void exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE)throw(KEAATTException, KEAIOException);
+        void exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE);
         
-        static KEAAttributeTable* createKeaAtt(H5::H5File *keaImg, unsigned int band)throw(KEAATTException, KEAIOException);
+        static KEAAttributeTable* createKeaAtt(H5::H5File *keaImg, unsigned int band);
         
         ~KEAAttributeTableInMem();
     protected:

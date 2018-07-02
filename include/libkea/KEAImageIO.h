@@ -50,83 +50,83 @@ namespace kealib{
     public:
         KEAImageIO();
                 
-        void openKEAImageHeader(H5::H5File *keaImgH5File)throw(KEAIOException);
+        void openKEAImageHeader(H5::H5File *keaImgH5File);
         
-        void writeImageBlock2Band(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)throw(KEAIOException);
-        void readImageBlock2Band(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)throw(KEAIOException);
+        void writeImageBlock2Band(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType);
+        void readImageBlock2Band(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType);
         
-        void createMask(uint32_t band, uint32_t deflate=KEA_DEFLATE)throw(KEAIOException);
-        void writeImageBlock2BandMask(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)throw(KEAIOException);
-        void readImageBlock2BandMask(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)throw(KEAIOException);
-        bool maskCreated(uint32_t band)throw(KEAIOException);
+        void createMask(uint32_t band, uint32_t deflate=KEA_DEFLATE);
+        void writeImageBlock2BandMask(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType);
+        void readImageBlock2BandMask(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType);
+        bool maskCreated(uint32_t band);
         
-        void setImageMetaData(std::string name, std::string value)throw(KEAIOException);
-        std::string getImageMetaData(std::string name)throw(KEAIOException);
-        std::vector<std::string> getImageMetaDataNames()throw(KEAIOException);
-        std::vector< std::pair<std::string, std::string> > getImageMetaData()throw(KEAIOException);
-        void setImageMetaData(std::vector< std::pair<std::string, std::string> > data)throw(KEAIOException);
+        void setImageMetaData(std::string name, std::string value);
+        std::string getImageMetaData(std::string name);
+        std::vector<std::string> getImageMetaDataNames();
+        std::vector< std::pair<std::string, std::string> > getImageMetaData();
+        void setImageMetaData(std::vector< std::pair<std::string, std::string> > data);
         
-        void setImageBandMetaData(uint32_t band, std::string name, std::string value)throw(KEAIOException);
-        std::string getImageBandMetaData(uint32_t band, std::string name)throw(KEAIOException);
-        std::vector<std::string> getImageBandMetaDataNames(uint32_t band)throw(KEAIOException);
-        std::vector< std::pair<std::string, std::string> > getImageBandMetaData(uint32_t band)throw(KEAIOException);
-        void setImageBandMetaData(uint32_t band, std::vector< std::pair<std::string, std::string> > data)throw(KEAIOException);
+        void setImageBandMetaData(uint32_t band, std::string name, std::string value);
+        std::string getImageBandMetaData(uint32_t band, std::string name);
+        std::vector<std::string> getImageBandMetaDataNames(uint32_t band);
+        std::vector< std::pair<std::string, std::string> > getImageBandMetaData(uint32_t band);
+        void setImageBandMetaData(uint32_t band, std::vector< std::pair<std::string, std::string> > data);
         
-        void setImageBandDescription(uint32_t band, std::string description)throw(KEAIOException);
-        std::string getImageBandDescription(uint32_t band)throw(KEAIOException);
+        void setImageBandDescription(uint32_t band, std::string description);
+        std::string getImageBandDescription(uint32_t band);
         
-        void setNoDataValue(uint32_t band, const void *data, KEADataType inDataType)throw(KEAIOException);
-        void getNoDataValue(uint32_t band, void *data, KEADataType inDataType)throw(KEAIOException);
-        void undefineNoDataValue(uint32_t band)throw(KEAIOException);
+        void setNoDataValue(uint32_t band, const void *data, KEADataType inDataType);
+        void getNoDataValue(uint32_t band, void *data, KEADataType inDataType);
+        void undefineNoDataValue(uint32_t band);
         
         
-        std::vector<KEAImageGCP*>* getGCPs()throw(KEAIOException);
-        void setGCPs(std::vector<KEAImageGCP*> *gcps, std::string projWKT)throw(KEAIOException);
-        uint32_t getGCPCount()throw(KEAIOException);
-        std::string getGCPProjection()throw(KEAIOException);
-        void setGCPProjection(std::string projWKT)throw(KEAIOException);
+        std::vector<KEAImageGCP*>* getGCPs();
+        void setGCPs(std::vector<KEAImageGCP*> *gcps, std::string projWKT);
+        uint32_t getGCPCount();
+        std::string getGCPProjection();
+        void setGCPProjection(std::string projWKT);
         
-        void setSpatialInfo(KEAImageSpatialInfo *spatialInfo)throw(KEAIOException);
-        KEAImageSpatialInfo* getSpatialInfo() throw(KEAIOException);
+        void setSpatialInfo(KEAImageSpatialInfo *spatialInfo);
+        KEAImageSpatialInfo* getSpatialInfo();
                 
-        uint32_t getNumOfImageBands() throw(KEAIOException);
+        uint32_t getNumOfImageBands();
         
-        uint32_t getImageBlockSize(uint32_t band) throw(KEAIOException);
+        uint32_t getImageBlockSize(uint32_t band);
         
-        KEADataType getImageBandDataType(uint32_t band) throw(KEAIOException);
+        KEADataType getImageBandDataType(uint32_t band);
         
-        std::string getKEAImageVersion() throw(KEAIOException);
+        std::string getKEAImageVersion();
         
-        void setImageBandLayerType(uint32_t band, KEALayerType imgLayerType) throw(KEAIOException);
-        KEALayerType getImageBandLayerType(uint32_t band) throw(KEAIOException);
+        void setImageBandLayerType(uint32_t band, KEALayerType imgLayerType);
+        KEALayerType getImageBandLayerType(uint32_t band);
         
-        void setImageBandClrInterp(uint32_t band, KEABandClrInterp imgLayerClrInterp) throw(KEAIOException);
-        KEABandClrInterp getImageBandClrInterp(uint32_t band) throw(KEAIOException);
+        void setImageBandClrInterp(uint32_t band, KEABandClrInterp imgLayerClrInterp);
+        KEABandClrInterp getImageBandClrInterp(uint32_t band);
         
-        void createOverview(uint32_t band, uint32_t overview, uint64_t xSize, uint64_t ySize) throw(KEAIOException);
-        void removeOverview(uint32_t band, uint32_t overview) throw(KEAIOException);
-        uint32_t getOverviewBlockSize(uint32_t band, uint32_t overview) throw(KEAIOException);
-        void writeToOverview(uint32_t band, uint32_t overview, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType) throw(KEAIOException);
-        void readFromOverview(uint32_t band, uint32_t overview, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType) throw(KEAIOException);
-        uint32_t getNumOfOverviews(uint32_t band) throw(KEAIOException);
-        void getOverviewSize(uint32_t band, uint32_t overview, uint64_t *xSize, uint64_t *ySize) throw(KEAIOException);
+        void createOverview(uint32_t band, uint32_t overview, uint64_t xSize, uint64_t ySize);
+        void removeOverview(uint32_t band, uint32_t overview);
+        uint32_t getOverviewBlockSize(uint32_t band, uint32_t overview);
+        void writeToOverview(uint32_t band, uint32_t overview, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType);
+        void readFromOverview(uint32_t band, uint32_t overview, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType);
+        uint32_t getNumOfOverviews(uint32_t band);
+        void getOverviewSize(uint32_t band, uint32_t overview, uint64_t *xSize, uint64_t *ySize);
                 
-        KEAAttributeTable* getAttributeTable(KEAATTType type, uint32_t band) throw(KEAATTException, KEAIOException);
-        void setAttributeTable(KEAAttributeTable* att, uint32_t band, uint32_t chunkSize=KEA_ATT_CHUNK_SIZE, uint32_t deflate=KEA_DEFLATE) throw(KEAATTException, KEAIOException);
+        KEAAttributeTable* getAttributeTable(KEAATTType type, uint32_t band);
+        void setAttributeTable(KEAAttributeTable* att, uint32_t band, uint32_t chunkSize=KEA_ATT_CHUNK_SIZE, uint32_t deflate=KEA_DEFLATE);
         bool attributeTablePresent(uint32_t band);
-        uint32_t getAttributeTableChunkSize(uint32_t band) throw(KEAIOException);
+        uint32_t getAttributeTableChunkSize(uint32_t band);
         
-        void close()throw(KEAIOException);
+        void close();
 
         /**
          * Adds a new image band to the file.
          */
-        virtual void addImageBand(const KEADataType dataType, const std::string bandDescrip, const uint32_t imageBlockSize = KEA_IMAGE_CHUNK_SIZE, const uint32_t attBlockSize = KEA_ATT_CHUNK_SIZE, const uint32_t deflate = KEA_DEFLATE) throw(KEAIOException);
+        virtual void addImageBand(const KEADataType dataType, const std::string bandDescrip, const uint32_t imageBlockSize = KEA_IMAGE_CHUNK_SIZE, const uint32_t attBlockSize = KEA_ATT_CHUNK_SIZE, const uint32_t deflate = KEA_DEFLATE);
 
-        static H5::H5File* createKEAImage(std::string fileName, KEADataType dataType, uint32_t xSize, uint32_t ySize, uint32_t numImgBands, std::vector<std::string> *bandDescrips=NULL, KEAImageSpatialInfo *spatialInfo=NULL, uint32_t imageBlockSize=KEA_IMAGE_CHUNK_SIZE, uint32_t attBlockSize=KEA_ATT_CHUNK_SIZE, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE, uint32_t deflate=KEA_DEFLATE)throw(KEAIOException);
-        static bool isKEAImage(std::string fileName)throw(KEAIOException);
-        static H5::H5File* openKeaH5RW(std::string fileName, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE)throw(KEAIOException);
-        static H5::H5File* openKeaH5RDOnly(std::string fileName, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE)throw(KEAIOException);
+        static H5::H5File* createKEAImage(std::string fileName, KEADataType dataType, uint32_t xSize, uint32_t ySize, uint32_t numImgBands, std::vector<std::string> *bandDescrips=NULL, KEAImageSpatialInfo *spatialInfo=NULL, uint32_t imageBlockSize=KEA_IMAGE_CHUNK_SIZE, uint32_t attBlockSize=KEA_ATT_CHUNK_SIZE, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE, uint32_t deflate=KEA_DEFLATE);
+        static bool isKEAImage(std::string fileName);
+        static H5::H5File* openKeaH5RW(std::string fileName, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE);
+        static H5::H5File* openKeaH5RDOnly(std::string fileName, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE);
         virtual ~KEAImageIO();
 
     protected:
@@ -134,12 +134,12 @@ namespace kealib{
         /**
          * Converts KEA datatypes to the respective standard HDF5 datatypes.
          */
-        static H5::DataType convertDatatypeKeaToH5STD(const KEADataType dataType) throw(KEAIOException);
+        static H5::DataType convertDatatypeKeaToH5STD(const KEADataType dataType);
 
         /**
          * Converts KEA datatypes to the respective native HDF5 datatypes.
          */
-        static H5::DataType convertDatatypeKeaToH5Native( const KEADataType dataType) throw(KEAIOException);
+        static H5::DataType convertDatatypeKeaToH5Native( const KEADataType dataType);
 
         /**
          * Adds an image band to the specified file. Does NOT flush the file
@@ -147,18 +147,18 @@ namespace kealib{
          *
          * NOTE: attBlockSize doesn't have any effect at the moment
          */
-        static void addImageBandToFile(H5::H5File *keaImgH5File, const KEADataType dataType, const uint32_t xSize, const uint32_t ySize, const uint32_t bandIndex, std::string bandDescrip, const uint32_t imageBlockSize, const uint32_t attBlockSize, const uint32_t deflate) throw(KEAIOException);
+        static void addImageBandToFile(H5::H5File *keaImgH5File, const KEADataType dataType, const uint32_t xSize, const uint32_t ySize, const uint32_t bandIndex, std::string bandDescrip, const uint32_t imageBlockSize, const uint32_t attBlockSize, const uint32_t deflate);
 
         /**
          * Updates the number of image bands in the file metadata. Does NOT
          * flush the file buffer.
          */
-        static void setNumImgBandsInFileMetadata(H5::H5File *keaImgH5File, const uint32_t numImgBands) throw(KEAIOException);
+        static void setNumImgBandsInFileMetadata(H5::H5File *keaImgH5File, const uint32_t numImgBands);
 
-        static H5::CompType* createGCPCompTypeDisk() throw(KEAIOException);
-        static H5::CompType* createGCPCompTypeMem() throw(KEAIOException);
+        static H5::CompType* createGCPCompTypeDisk();
+        static H5::CompType* createGCPCompTypeMem();
         
-        static std::string readString(H5::DataSet& dataset, H5::DataType strDataType) throw(KEAIOException);
+        static std::string readString(H5::DataSet& dataset, H5::DataType strDataType);
         
         /********** PROTECTED MEMBERS **********/
         bool fileOpen;
