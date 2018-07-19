@@ -39,6 +39,8 @@
 #include "ogr_spatialref.h"
 #include "ogr_srs_api.h"
 
+#define D2R (M_PI / 180.0)
+
 Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, etxt::tstring &sUnits)
 {
     Eerr_ErrorReport* err = NULL;
@@ -108,8 +110,7 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, 
 		
 		sProjName = eprj_MapProjectionName(proj);
 	}
-	else if( (sProjName == ETXT_LTEXT("NZGD_2000_New_Zealand_Transverse_Mercator") ) ||
-				(sProjName == ETXT_LTEXT("NZGD2000_New_Zealand_Transverse_Mercator_2000")) )
+	else if( sProjName.find(ETXT_LTEXT("New_Zealand_Transverse_Mercator")) != std::string::npos)
 	{
 		// this one doesn't seem to be right either
 		eprj_ProjectionFree(&proj);
@@ -127,7 +128,7 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, 
         proParams->proParams.data[1] = 0;  
         proParams->proParams.data[2] = 0.99960;
         proParams->proParams.data[3] = 0;
-        proParams->proParams.data[4] = 173.0;
+        proParams->proParams.data[4] = 173.0 * D2R;
         proParams->proParams.data[5] = 0;
         proParams->proParams.data[6] = 1600000;
         proParams->proParams.data[7] = 10000000;
