@@ -1,3 +1,10 @@
+1.4.10
+------
+
+* Remove requirement to build in C++98 mode. Fixes linking against HDF5 built in C++11 mode.
+* Fix C++17 compilation
+* Fix NZTM problem in Imagine driver
+
 1.4.9
 -----
 
