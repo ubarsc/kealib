@@ -41,8 +41,12 @@ Arc 10.1-10.3 = arc101
 Arc 10.4 = arc104
 Arc 10.5 = arc105
 Arc 10.5.1 = arc1051
+Arc 10.6 = arc106_arcpro21
+Arc 10.6.1 = arc1061_arcpro22
 ArcPro 1.4 = arcpro14
 ArcPro 2.0 = arcpro20
+ArcPro 2.1 = arc106_arcpro21
+ArcPro 2.2 = arc1061_arcpro22
 
 Note you may have to select the x86 subfolder for 32bit Arc, or x64 for 64bit Arc.
 

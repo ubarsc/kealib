@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "KEA for ArcPro"
-#define MyAppVersion "1.4.7"
+#define MyAppVersion "1.4.10"
 #define MyAppPublisher "Landcare Research NZ"
 #define MyAppURL "http://kealib.org/"
 #define MyOutputFilename "setup_kea_arcpro_" + GetDateTimeString('yyyymmdd', '', '')
@@ -36,6 +36,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Source: "C:\dev\arckea\dist\arcpro14\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('1.4'); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arcpro20\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.0'); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc106_arcpro21\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.1'); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1061_arcpro22\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.2'); Flags: ignoreversion
 
 [code]
 const
@@ -116,6 +117,8 @@ begin
     Result := '2.0'
   else if (CompareVersion(realVersion, '2.1') <> -1) and (CompareVersion(realVersion, '2.2') = -1) then
     Result := '2.1'
+  else if (CompareVersion(realVersion, '2.2') <> -1) and (CompareVersion(realVersion, '2.3') = -1) then
+    Result := '2.2'
   else
     Result := ''
 end;

@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "KEA for ArcGIS"
-#define MyAppVersion "1.4.7"
+#define MyAppVersion "1.4.10"
 #define MyAppPublisher "Landcare Research NZ"
 #define MyAppURL "http://kealib.org/"
 #define MyOutputFilename "setup_kea_arcgis_" + GetDateTimeString('yyyymmdd', '', '')
@@ -44,6 +44,8 @@ Source: "C:\dev\arckea\dist\arc1051\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: 
 Source: "C:\dev\arckea\dist\arc1051\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5.1', 64); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc106_arcpro21\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6', 32); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc106_arcpro21\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1061_arcpro22\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6.1', 32); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1061_arcpro22\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6.1', 64); Flags: ignoreversion
 
 [code]
 const
@@ -175,8 +177,10 @@ begin
     Result := '10.5'
   else if (CompareVersion(realVersion, '10.5.1') <> -1) and (CompareVersion(realVersion, '10.6') = -1) then
     Result := '10.5.1'
-  else if (CompareVersion(realVersion, '10.6') <> -1) and (CompareVersion(realVersion, '10.7') = -1) then
+  else if (CompareVersion(realVersion, '10.6') <> -1) and (CompareVersion(realVersion, '10.6.1') = -1) then
     Result := '10.6'
+  else if (CompareVersion(realVersion, '10.6.1') <> -1) and (CompareVersion(realVersion, '10.7') = -1) then
+    Result := '10.6.1'
   else
     Result := ''
 end;
