@@ -116,7 +116,12 @@ if(HDF5_LIBRARIES_NAMES)
     list(REMOVE_DUPLICATES HDF5_LIBRARIES_NAMES)
 endif()
 
-set(HDF5_LIBRARIES_LIBTOOL) # variable with the fixed syntax
+# Code below changes from arrays returned by FindHDF5.cmake 
+# into strings as expected by kea-config.in and used by libtool
+# (otherwise things end up separated by semicolons etc)
+
+# variables "fixed" in this way have the _LIBTOOL suffix
+set(HDF5_LIBRARIES_LIBTOOL) 
 foreach(dir_name ${HDF5_LIBRARIES_PATHS})
     string(CONCAT HDF5_LIBRARIES_LIBTOOL ${HDF5_LIBRARIES_LIBTOOL} " -L" ${dir_name})
 endforeach(dir_name)
@@ -125,6 +130,16 @@ foreach(lib_name ${HDF5_LIBRARIES_NAMES})
     string(CONCAT HDF5_LIBRARIES_LIBTOOL ${HDF5_LIBRARIES_LIBTOOL} " -l" ${lib_name})
 endforeach(lib_name)
 message(STATUS "HDF5_LIBRARIES_LIBTOOL ${HDF5_LIBRARIES_LIBTOOL}")
+
+set(HDF5_INCLUDE_LIBTOOL)
+set(HDF5_CFLAGS_LIBTOOL)
+foreach(dir_name ${HDF5_INCLUDE_DIRS})
+    message(STATUS "dir_name ${dir_name}")
+    string(CONCAT HDF5_INCLUDE_LIBTOOL ${HDF5_INCLUDE_LIBTOOL} " " ${dir_name})
+    string(CONCAT HDF5_CFLAGS_LIBTOOL ${HDF5_CFLAGS_LIBTOOL} " -I" ${dir_name})
+endforeach(dir_name)
+message(STATUS "HDF5_INCLUDE_LIBTOOL ${HDF5_INCLUDE_LIBTOOL}")
+message(STATUS "HDF5_CFLAGS_LIBTOOL ${HDF5_CFLAGS_LIBTOOL}")
 
 ###############################################################################
 # CMake settings

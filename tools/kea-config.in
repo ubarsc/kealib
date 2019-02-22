@@ -49,10 +49,10 @@ case $1 in
       echo -n "@CMAKE_INSTALL_PREFIX@/@PROJECT_HEADER_DIR@ "
       ;;
 	--hdfincludes)
-      echo -n "@HDF5_INCLUDE_DIR@ "
+      echo -n "@HDF5_INCLUDE_LIBTOOL@ "
       ;;
 	--hdfcflags)
-      echo -n "-I@HDF5_INCLUDE_DIR@ "
+      echo -n "@HDF5_CFLAGS_LIBTOOL@ "
       ;;
 	--hdflibs)
       echo -n "@HDF5_LIBRARIES_LIBTOOL@ "
