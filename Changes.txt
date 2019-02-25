@@ -1,3 +1,11 @@
+1.4.11
+------
+
+* Fix creation of kea-config for situations where multiple
+   HDF5 include paths are returned from FindHDF5. This
+   happens with recent versions of Spack.
+* Update Arc build scripts for Arc 10.6.1 and ArcPro 2.2
+
 1.4.10
 ------
 
