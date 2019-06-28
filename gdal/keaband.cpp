@@ -392,6 +392,11 @@ CPLErr KEARasterBand::SetMetadataItem(const char *pszName, const char *pszValue,
     // only deal with 'default' domain - no geolocation etc
     if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
         return CE_Failure;
+
+    // kealib doesn't currently support removing values
+    if( pszValue == NULL )
+        return CE_Failure;
+
     try
     {
         // if it is LAYER_TYPE handle it seperately
