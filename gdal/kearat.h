@@ -86,6 +86,12 @@ public:
 
     virtual CPLXMLNode   *Serialize() const;
 
+    // see https://github.com/OSGeo/gdal/pull/743
+#if (GDAL_VERSION_MAJOR >= 3) || ((GDAL_VERSION_MAJOR == 2) && (GDAL_VERSION_MINOR >= 4))
+    virtual CPLErr        SetTableType(const GDALRATTableType eInTableType);
+    virtual GDALRATTableType GetTableType() const;
+    virtual void          RemoveStatistics();
+#endif
 };
 
 #endif //HAVE_RFC40
