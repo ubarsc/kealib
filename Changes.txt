@@ -1,3 +1,10 @@
+1.4.12
+------
+
+* Backporting of fixes to the GDAL driver from GDAL trunk
+   (GDAL PRs #743 and #1681). Fixes compilation of driver
+   with GDAL versions <= 2.4.
+
 1.4.11
 ------
 
