@@ -183,6 +183,8 @@ begin
     Result := '10.6'
   else if (CompareVersion(realVersion, '10.6.1') <> -1) and (CompareVersion(realVersion, '10.7') = -1) then
     Result := '10.6.1'
+  else if (CompareVersion(realVersion, '10.7.1') <> -1) and (CompareVersion(realVersion, '10.8') = -1) then
+    Result := '10.6.1'
   else
     Result := ''
 end;
