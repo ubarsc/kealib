@@ -93,6 +93,7 @@ set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
 @echo on
 call :build_arc1061_arcpro22
+call :build_arc1071_arcpro24
 if errorlevel 1 exit /B 1
 EndLocal
 
@@ -103,6 +104,7 @@ set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
 @echo on
 call :build_arc1061_arcpro22
+call :build_arc1071_arcpro24
 if errorlevel 1 exit /B 1
 EndLocal
 
@@ -363,4 +365,29 @@ if errorlevel 1 exit /B 1
 
 cd ..
 rmdir /s /q build_arc1061_arcpro22
+EXIT /B 0
+
+:build_arc1071_arcpro24
+
+set ARCGDALDIR=%GDALDIR%\gdal211e\%VCMACH%
+set ARCHDF5DIR=%HDF5DIR%\VC2017_%VCMACH%
+mkdir build_arc1071_arcpro24
+cd build_arc1071_arcpro24
+  
+cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
+      -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc1071_arcpro24\%VCMACH% ^
+	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
+      -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
+      -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
+      -D GDAL_DIR=%ARCGDALDIR% ^
+	  -D HDF5_ROOT=%ARCHDF5DIR% ^
+      -D CMAKE_BUILD_TYPE=Release ^
+      -G "NMake Makefiles" ^
+      ..\..\gdal
+if errorlevel 1 exit /B 1
+nmake install
+if errorlevel 1 exit /B 1 
+
+cd ..
+rmdir /s /q build_arc1071_arcpro24
 EXIT /B 0

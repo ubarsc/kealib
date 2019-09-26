@@ -46,6 +46,8 @@ Source: "C:\dev\arckea\dist\arc106_arcpro21\x86\lib\gdalplugins\gdal_KEA.dll"; D
 Source: "C:\dev\arckea\dist\arc106_arcpro21\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6', 64); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc1061_arcpro22\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6.1', 32); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc1061_arcpro22\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6.1', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1071_arcpro24\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.7.1', 32); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1071_arcpro24\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.7.1', 64); Flags: ignoreversion
 
 [code]
 const
