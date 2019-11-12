@@ -86,6 +86,8 @@ endif()
 find_package(HDF5 COMPONENTS CXX HL REQUIRED)
 # required to get compilation on Windows
 find_package(Threads)
+# Needed for dependent option below
+find_package(GDAL)
 cmake_dependent_option(LIBKEA_WITH_GDAL  "Choose if .kea GDAL driver should be built" OFF "GDAL_FOUND" OFF)
 ###############################################################################
 # Code to change HDF5_LIBRARIES (from FindHDF5.cmake) into a form

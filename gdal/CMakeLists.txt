@@ -1,3 +1,4 @@
+cmake_minimum_required (VERSION 3.5)
 ###############################################################################
 # set file locations
 set(LIBKEA_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../src CACHE PATH "Path to KEA library")
@@ -66,17 +67,6 @@ else()
 endif()
 include_directories(${GDAL_INCLUDE_DIR})
 include_directories(${LIBKEA_HEADERS_DIR})
-###############################################################################
-
-###############################################################################
-
-# Set target properties
-#SET_TARGET_PROPERTIES(${LIBKEA_GDAL_DRIVER}
-#PROPERTIES
-#        SOVERSION ${LIBKEA_VERSION}
-#        VERSION ${LIBKEA_VERSION}
-#)
-
 ###############################################################################
 
 ###############################################################################
