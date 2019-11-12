@@ -7,6 +7,26 @@ option(KEAHDF5_STATIC_LIBS "Build against static KEA and HDF5" OFF)
 set(KEA_GDAL_H keadataset.h keaband.h keaoverview.h keacopy.h keamaskband.h kearat.h)
 
 set(KEA_GDAL_CPP keadriver.cpp keadataset.cpp keaband.cpp keaoverview.cpp keacopy.cpp keamaskband.cpp kearat.cpp)
+if(MSVC)
+    # cmake ends up with some inconsistently slashed paths. If there are single
+    # slashes in there they end up being interpreted as escape sequences
+    # which result in a very strange looking string table. Create sanitised versions
+    file(TO_CMAKE_PATH "${CMAKE_INSTALL_PREFIX}" CMAKE_INSTALL_PREFIX_SAN)
+    file(TO_CMAKE_PATH "${CMAKE_PREFIX_PATH}" CMAKE_PREFIX_PATH_SAN)
+    file(TO_CMAKE_PATH "${GDAL_DIR}" GDAL_DIR_SAN)
+    file(TO_CMAKE_PATH "${HDF5_ROOT}" HDF5_ROOT_SAN)
+    file(TO_CMAKE_PATH "${LIBKEA_HEADERS_DIR}" LIBKEA_HEADERS_DIR_SAN)
+    file(TO_CMAKE_PATH "${LIBKEA_LIB_PATH}" LIBKEA_LIB_PATH_SAN)
+    file(TO_CMAKE_PATH "${CMAKE_CURRENT_BINARY_DIR}" CMAKE_CURRENT_BINARY_DIR_SAN)
+    file(TO_CMAKE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" CMAKE_CURRENT_SOURCE_DIR_SAN)
+    configure_file(resource.rc.in resource.rc @ONLY)
+    set(KEA_GDAL_RC ${CMAKE_CURRENT_BINARY_DIR}/resource.rc)
+    
+    # so the resource compiler can find kea-config.h
+    set(CMAKE_RC_FLAGS "/I${LIBKEA_HEADERS_DIR}")
+else()
+    set(KEA_GDAL_RC)
+endif()
 
 ###############################################################################
 set(LIBKEA_GDAL_DRIVER gdal_KEA)
@@ -14,7 +34,7 @@ set(LIBKEA_GDAL_DRIVER gdal_KEA)
 ###############################################################################
 # Group source files for IDE source explorers
 source_group("CMake Files" FILES CMakeLists.txt)
-source_group("gdal_src_kea" FILES ${KEA_GDAL_CPP})
+source_group("gdal_src_kea" FILES ${KEA_GDAL_CPP} ${KEA_GDAL_RC})
 source_group("gdal_include_kea" FILES ${KEA_GDAL_H})
 ###############################################################################
 
@@ -26,7 +46,7 @@ endif()
 # Build and link library
 option (BUILD_SHARED_LIBS "Build with shared library" ON)
 
-add_library(${LIBKEA_GDAL_DRIVER} ${KEA_GDAL_CPP} ${KEA_GDAL_H} )
+add_library(${LIBKEA_GDAL_DRIVER} ${KEA_GDAL_CPP} ${KEA_GDAL_H} ${KEA_GDAL_RC})
 # remove the leading "lib" as GDAL won't look for files with this prefix
 set_target_properties(${LIBKEA_GDAL_DRIVER} PROPERTIES PREFIX "")
 
@@ -37,6 +57,10 @@ if(KEAHDF5_STATIC_LIBS)
 	find_package(HDF5 COMPONENTS CXX HL REQUIRED)
 
 	target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} ${HDF5_LIBRARIES} ${LIBKEA_LIB_PATH}/liblibkea.lib)
+    
+    # Bizarelly, something about this combination forces the MSVC Non-DLL flags
+    # which then causes linking to fail (as everything else is build to be a DLL). Reset.
+    set_target_properties(${LIBKEA_GDAL_DRIVER} PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 else()
     target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} PRIVATE Kealib)
 endif()

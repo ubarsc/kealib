@@ -1,0 +1,18 @@
+
+// pick up LIBKEA_VERSION from include file
+#include "libkea/kea-config.h"
+
+STRINGTABLE
+{
+    101, LIBKEA_VERSION    // see kea-config.h
+    102, "@CMAKE_INSTALL_PREFIX_SAN@"
+    103, "@CMAKE_PREFIX_PATH_SAN@"
+    104, "@GDAL_DIR_SAN@"
+    105, "@HDF5_ROOT_SAN@"
+    106, "@LIBKEA_HEADERS_DIR_SAN@"
+    107, "@LIBKEA_LIB_PATH_SAN@"
+    108, "@CMAKE_CURRENT_BINARY_DIR_SAN@"
+    109, "@CMAKE_CURRENT_SOURCE_DIR_SAN@"
+    110, "@MSVC_VERSION@"
+    111, "@MSVC_TOOLSET_VERSION@"
+}

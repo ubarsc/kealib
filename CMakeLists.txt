@@ -41,7 +41,7 @@ set (PROJECT_GDAL_DIR gdal)
 set (LIBKEA_HG_VERSION 357)
 set (LIBKEA_VERSION_MAJOR 1)
 set (LIBKEA_VERSION_MINOR 4)
-set (LIBKEA_VERSION_PATCH 12)
+set (LIBKEA_VERSION_PATCH 13)
 set (LIBKEA_VERSION "${LIBKEA_VERSION_MAJOR}.${LIBKEA_VERSION_MINOR}.${LIBKEA_VERSION_PATCH}")
 set (LIBKEA_PACKAGE_VERSION "${LIBKEA_VERSION_MAJOR}.${LIBKEA_VERSION_MINOR}.${LIBKEA_VERSION_PATCH}")
 set (LIBKEA_PACKAGE_STRING "LibKEA ${LIBKEA_VERSION_MAJOR}.${LIBKEA_VERSION_MINOR}.${LIBKEA_VERSION_PATCH}")
@@ -84,7 +84,6 @@ if(NOT "x$ENV{HDF5_ROOT}" STREQUAL "x")
     message(STATUS "HDF5_ROOT environment variable specified: $ENV{HDF5_ROOT}")
 endif()
 find_package(HDF5 COMPONENTS CXX HL REQUIRED)
-find_package(GDAL)
 # required to get compilation on Windows
 find_package(Threads)
 cmake_dependent_option(LIBKEA_WITH_GDAL  "Choose if .kea GDAL driver should be built" OFF "GDAL_FOUND" OFF)
@@ -205,6 +204,7 @@ add_test(NAME test1 COMMAND src/test1)
 ###############################################################################
 # Installation
 install (FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_BINARY_DIR}/kea-config" DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+install (FILES "${CMAKE_BINARY_DIR}/${PROJECT_HEADER_DIR}/libkea/kea-config.h" DESTINATION include/libkea)
 ###############################################################################
 
 ###############################################################################

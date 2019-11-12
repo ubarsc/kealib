@@ -52,7 +52,7 @@ SetLocal
 set VCYEAR=VC2017
 set VCMACH=x86
 set PATH=%oldpath%
-call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
 @echo on
 call :build
 EndLocal
@@ -61,7 +61,7 @@ SetLocal
 set VCYEAR=VC2017
 set VCMACH=x64
 set PATH=%oldpath%
-call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
 @echo on
 call :build
 EndLocal

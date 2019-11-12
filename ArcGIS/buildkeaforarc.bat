@@ -9,12 +9,8 @@ SET GDALDIR=C:\dev\arcgdalforcompilation
 :: HDF5DIR is the same as INSTALLDIR in buildzlibhdf5.bat
 SET HDF5DIR=c:\dev\arckea
 
-:: Stop PATH getting too long by resetting it
-set oldpath=%PATH%
-
 SetLocal
 set VCMACH=x86
-set PATH=%oldpath%
 call "C:\Users\sam\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" %VCMACH%
 @echo on
 call :build_arc93
@@ -28,7 +24,6 @@ EndLocal
 :: Now the vs2013 builds x86
 SetLocal
 set VCMACH=x86
-set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %VCMACH%
 @echo on
 call :build_arc104
@@ -43,7 +38,6 @@ EndLocal
 SetLocal
 set VCMACH=x64
 :: Note VS2013 doesn't understand 'x64'...
-set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64
 @echo on
 call :build_arc104
@@ -57,7 +51,6 @@ EndLocal
 :: Visual Studio 2015 x64 builds
 SetLocal
 set VCMACH=x64
-set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH%
 @echo on
 call :build_arcpro14
@@ -67,10 +60,11 @@ if errorlevel 1 exit /B 1
 EndLocal
 
 :: Visual Studio 2017 x86 Builds
+:: ESRI Says "Visual Studio 2017 Update 2" which is 14.09(?) but this is the earliest 
+:: I have installed.
 SetLocal
 set VCMACH=x86
-set PATH=%oldpath%
-call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
 @echo on
 call :build_arc106_arcpro21
 if errorlevel 1 exit /B 1
@@ -79,18 +73,17 @@ EndLocal
 :: Visual Studio 2017 x64 Builds
 SetLocal
 set VCMACH=x64
-set PATH=%oldpath%
-call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
 @echo on
 call :build_arc106_arcpro21
 if errorlevel 1 exit /B 1
 EndLocal
 
 :: Visual Studio 2017 x86 Builds
+:: ESRI Says "Visual Studio 2017 version 15.5.6" which is 14.11
 SetLocal
 set VCMACH=x86
-set PATH=%oldpath%
-call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
 @echo on
 call :build_arc1061_arcpro22
 call :build_arc1071_arcpro24
@@ -100,8 +93,7 @@ EndLocal
 :: Visual Studio 2017 x64 Builds
 SetLocal
 set VCMACH=x64
-set PATH=%oldpath%
-call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
 @echo on
 call :build_arc1061_arcpro22
 call :build_arc1071_arcpro24
