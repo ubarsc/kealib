@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <title>KEALib: An HDF5 Based Raster File Format</title>
+  </head>
+  <body>
+
+<div class="logo-class">
+	<table>
+	<tr>
+	    <td><a href="http://kealib.org" class="logo"><img src="images/kea2.png" alt=""></a></td>
+         <td><div class="logo-title-class">KEALib</div></td>
+    </tr>
+	</table>
+    <div class="title-class">
+		<p>An HDF5 Based Raster File Format</p>
+	</div>
+</div>
+
+
+<style>
+.logo-class{
+
+width: 50%;
+margin-left: auto;
+    margin-right: auto;
+margin-bottom: 30px;
+}
+.title-class{
+  width: 50%;
+margin-left: 0;
+    margin-right: auto;
+}
+.logo-title-class{
+    font-size: 350%;
+}
+.code-class{
+	font-family: "Courier New", Courier, monospace;
+	background: #D3D3D3;
+}
+
+body {
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+}
+</style>
+<div class="logo-class">
+<p>
+KEALib provides an implementation of the <a href="http://gdal.org/">GDAL</a> data model. The format supports raster attribute tables, image pyramids, meta-data and in-built statistics while also handling very large files and compression throughout.</p> 
+
+<p>
+Based on the <a href="https://www.hdfgroup.org/HDF5/">HDF5</a> standard, it also provides a base from which other formats can be derived and is a good choice for long term data archiving. An independent software library (libkea) provides complete access to the KEA image format and a GDAL driver allowing KEA images to be used from any GDAL supported software.
+</p>
+
+<p>
+Development work on this project has been funded by <a href="http://www.landcareresearch.co.nz">Landcare Research</a>.
+</p>
+
+<h1>Download</h1>
+<h2>Binaries</h2>
+<p>Once you have installed <a href="http://conda.pydata.org/miniconda.html#miniconda">Conda</a>, run the following commands 
+on the command line to install kealib and GDAL:<br>
+<code>conda config --add channels conda-forge<br>
+conda create -n myenv gdal<br>
+conda activate myenv</code></p>
+
+<p>Drivers for ArcMap and ERDAS Imagine are available from <a href="https://bitbucket.org/chchrsc/kealib/downloads">bitbucket</a></p>
+
+<h2>Source</h2>
+<p>KEALib requires: <a href="https://www.hdfgroup.org/HDF5/">HDF5</a> with the C++ libraries and headers. <a href="http://gdal.org/">GDAL</a> is required to build the GDAL driver.<br>
+Download releases through Git at <a href="https://github.com/ubarsc/kealib">GitHub</a></p>
+
+<h1>Documentation</h1>
+<p>Some documentation on compilation is available in the <a href="https://github.com/ubarsc/kealib/wiki">KEALib wiki</a>.</p> <p>Documentation on the GDAL data model and API is available from the <a href="http://gdal.org/">GDAL website</a>.</p>
+<p>There is also a <a href="http://dx.doi.org/10.1016/j.cageo.2013.03.025">paper</a> describing the features of the format.</p>
+</div>
+  </body>
+</html>
+
