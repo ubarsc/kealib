@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "KEA for ArcGIS"
-#define MyAppVersion "1.4.10"
+#define MyAppVersion "1.4.13"
 #define MyAppPublisher "Landcare Research NZ"
 #define MyAppURL "http://kealib.org/"
 #define MyOutputFilename "setup_kea_arcgis_" + GetDateTimeString('yyyymmdd', '', '')
@@ -37,17 +37,17 @@ Source: "C:\dev\arckea\dist\arc93\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}
 Source: "C:\dev\arckea\dist\arc100\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.0', 0); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc101\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.1', 0); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc104\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.4', 32); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc104\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.4', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc104\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.4', 64); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc105\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5', 32); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc105\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc105\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.5', 64); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc1051\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5.1', 32); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc1051\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5.1', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1051\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.5.1', 64); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc106_arcpro21\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6', 32); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc106_arcpro21\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc106_arcpro21\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.6', 64); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc1061_arcpro22\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6.1', 32); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc1061_arcpro22\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6.1', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1061_arcpro22\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.6.1', 64); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc1071_arcpro24\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.7.1', 32); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc1071_arcpro24\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.7.1', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1071_arcpro24\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.7.1', 64); Flags: ignoreversion
 
 [code]
 const
@@ -57,7 +57,7 @@ var
   // these global vars are set by InitializeSetup() and checked by ArcVersion() and GetArcGISDir()
   ArcVersionClass : string; // one of: 9.3, 10.0, 10.1, 10.4, 10.5, 10.5.1, 10.6
   ArcRealVersion : string; // the contents of the "RealVersion" key
-  Is64BitArc : boolean;  // the contents of the "64Bit" key
+  HasBin64 : boolean;  // Has a "bin64" subdir (BGProcessing) so 64 bit DLL also needs to be installed
   ArcInstallDir : string; // the directory in which Arc is installed
 
 // CompareVersion() and CurStepChanged (for updating RasterFormats.dat) live here
@@ -74,9 +74,9 @@ begin
     if bits = 0 then
       Result := True // always match
     else if bits = 32 then
-      Result := not Is64BitArc
+      Result := True  // always match as Arc is 32 bit application
     else if bits = 64 then
-      Result := Is64BitArc
+      Result := HasBin64 // install 64 bit as 'bin64' dir is present
     else
       MsgBox('Unknown number of bits ' + IntToStr(bits), mbInformation, MB_OK)
 end;
@@ -90,6 +90,7 @@ var
   ArcNames : TArrayOfString;
   I : Integer;
   S : String;
+  bin64dir : String;
   currSubKey : String;
   ErrorDisplayed : Boolean;
 begin
@@ -99,7 +100,7 @@ begin
   ArcInstallDir := '';
   ArcRealVersion := '0.0';
   ArcVersionClass := '';
-  Is64BitArc := False;
+  HasBin64 := False;
   // look at all the subkeys of ArcSubKey and choose the best one
   if RegGetSubkeyNames(HKEY_LOCAL_MACHINE, ArcSubKey, ArcNames) then
   begin
@@ -125,12 +126,12 @@ begin
                 ErrorDisplayed := True;
               end
               else
+                // is there a 'bin64' sub dir?
+                bin64dir := AddBackslash(ArcInstallDir) + 'bin64';
+                HasBin64 := DirExists(bin64dir);
+              
                 Result := True
 
-              if RegQueryStringValue(HKEY_LOCAL_MACHINE, currSubKey, '64Bit', S) then
-              begin
-                Is64BitArc := S = 'True';
-              end;
             end;
           end;
         end;
@@ -145,17 +146,17 @@ end;
 procedure InitializeWizard;
 var
   InstallDirPage: TWizardPage;
-  bits: string;
+  bgpresent: string;
 begin
   // get the Dir page and customize the text
   InstallDirPage := PageFromID(wpSelectDir);
 
-  if Is64BitArc then
-    bits := '64'
+  if HasBin64 then
+    bgpresent := 'with BGProcessor'
   else
-    bits := '32'
+    bgpresent := 'no BGProcessor'
 
-  InstallDirPage.Description := FmtMessage('ArcGIS Version %1 (%2bit) has been found in the following location.'  + #13#10 + 'The support files for this version will be installed.', [ArcVersionClass, bits]);
+  InstallDirPage.Description := FmtMessage('ArcGIS Version %1 (%2) has been found.'  + #13#10 + 'The support files for this version will be installed in the location below.', [ArcVersionClass, bgpresent]);
 end; 
 
 function GetArcGISDir(Value: string): string;
