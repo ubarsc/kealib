@@ -1,7 +1,7 @@
 
 const
   // info that needs to go in RasterFormats.dat
-  ArcKEAFmtLine = '<e on="y" nm="KEA" ex="*.kea" et="KEA" at="0x27" />';
+  ArcKEAFmtLine = '<e on="y" nm="KEA" ex="*.kea" et="KEA" at="0x2f" />';
 
 // updates RasterFormats.dat
 procedure UpdateRasterFormats(rfpath: String);
@@ -16,7 +16,8 @@ begin
   begin
     for I := 0 to GetArrayLength(lines)-1 do
 	begin
-      if Pos(ArcKEAFmtLine, lines[I]) <> 0 then
+      // just search for part of ArcKEAFmtLine as we may have changed the flags, formatting etc
+      if Pos('nm="KEA"', lines[I]) <> 0 then
       begin
         found := True;
         Break;
@@ -26,25 +27,6 @@ begin
 	
   if not found then
     SaveStringToFile(rfpath, #13#10 + ArcKEAFmtLine + #13#10, True)
-end;
-
-// run after the files have been copied. Updates the RasterFormats.dat
-procedure CurStepChanged(CurStep: TSetupStep);
-var
-  rfpath : string;
-begin
-  if CurStep = ssPostInstall then
-  begin
-    rfpath := ExpandConstant('{app}\bin\RasterFormats.dat');
-    UpdateRasterFormats(rfpath);
-    
-    // bin64 there also?
-    rfpath := ExpandConstant('{app}\bin64\RasterFormats.dat');
-    if FileExists(rfpath) then
-    begin
-      UpdateRasterFormats(rfpath);
-    end;
-  end;
 end;
 
 // From: https://stackoverflow.com/questions/37825650/compare-version-strings-in-inno-setup

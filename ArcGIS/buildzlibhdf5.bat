@@ -12,16 +12,13 @@ setlocal
 :: I have assumed these are installed in the standard locations. If not you might need to tweak the code below.
 
 set ZLIBDIR=C:\dev\arc\zlib-1.2.11
-set HDF5DIR=C:\dev\arc\hdf5-1.10.1
+set HDF5DIR=C:\dev\arc\hdf5-1.10.5
 set INSTALLDIR=c:\dev\arckea
-:: Stop PATH getting too long by resetting it
-set oldpath=%PATH%
 
 :: Visual Studio 2008 x86
 SetLocal
 set VCYEAR=VC2008
 set VCMACH=x86
-set PATH=%oldpath%
 call "C:\Users\sam\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" %VCMACH%
 @echo on
 call :build
@@ -31,7 +28,6 @@ EndLocal
 SetLocal
 set VCYEAR=VC2013
 set VCMACH=x86
-set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %VCMACH%
 @echo on
 call :build
@@ -41,7 +37,6 @@ SetLocal
 set VCYEAR=VC2013
 set VCMACH=x64
 :: Note VS2013 doesn't understand 'x64'...
-set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64
 @echo on
 call :build
@@ -51,7 +46,6 @@ EndLocal
 SetLocal
 set VCYEAR=VC2015
 set VCMACH=x64
-set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH%
 @echo on
 call :build
@@ -61,7 +55,6 @@ EndLocal
 SetLocal
 set VCYEAR=VC2017
 set VCMACH=x86
-set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
 @echo on
 call :build
@@ -70,7 +63,6 @@ EndLocal
 SetLocal
 set VCYEAR=VC2017
 set VCMACH=x64
-set PATH=%oldpath%
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
 @echo on
 call :build
@@ -88,19 +80,18 @@ cd %ZLIBDIR%
 mkdir %BUILDDIR%
 cd %BUILDDIR%
 
+:: Edit %ZLIBDIR%\CMakeLists.txt and change
+:: set_target_properties(zlib PROPERTIES SUFFIX "1.dll")
+:: to:
+:: set_target_properties(zlib PROPERTIES SUFFIX "kea.dll")
 cmake -G "NMake Makefiles" ^
     -D CMAKE_BUILD_TYPE=Release ^
+    -D BUILD_SHARED_LIBS=ON ^
     -D CMAKE_INSTALL_PREFIX=%VCINSTALLDIR% ^
-    -D BUILD_SHARED_LIBS=OFF ^
     ..
 if errorlevel 1 exit /B 1
-:: can't seem to just build 'zlibstatic' so do the lot - note BUILD_SHARED_LIBS=OFF doesn't do anything
 nmake install
 if errorlevel 1 exit /B 1
-
-:: delete the dll and implib
-del %VCINSTALLDIR%\bin\zlib.dll
-del %VCINSTALLDIR%\lib\zlib.lib
 
 cd ..
 rmdir /s /q %BUILDDIR%
@@ -110,20 +101,18 @@ cd %HDF5DIR%
 mkdir %BUILDDIR%
 cd %BUILDDIR%
 
-:: ZLIB_USE_EXTERNAL needs to be set to OFF for some reason...
+set HDF5_EXT_ZLIB=zlib.lib
 cmake -G "NMake Makefiles" ^
+      -D HDF5_EXTERNAL_LIB_PREFIX=kea ^
       -D CMAKE_BUILD_TYPE=Release ^
       -D CMAKE_INSTALL_PREFIX=%VCINSTALLDIR% ^
       -D CMAKE_PREFIX_PATH=%VCINSTALLDIR% ^
       -D HDF5_BUILD_CPP_LIB=ON ^
       -D HDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON ^
-      -D ZLIB_ROOT=%VCINSTALLDIR% ^
-      -D BUILD_SHARED_LIBS=OFF ^
       -D HDF5_BUILD_TOOLS=OFF ^
       -D HDF5_BUILD_EXAMPLES=OFF ^
-      -D ZLIB_LIBRARY=%VCINSTALLDIR%\lib\zlibstatic.lib ^
-      -D ZLIB_INCLUDE_DIR=%VCINSTALLDIR%\include ^
-      -D ZLIB_USE_EXTERNAL=OFF ^
+      -D HDF5_ENABLE_THREADSAFE:BOOL=ON ^
+      -D ALLOW_UNSUPPORTED:BOOL=ON ^
       -D BUILD_TESTING=OFF ^
       ..
 if errorlevel 1 exit /B 1
@@ -132,5 +121,13 @@ if errorlevel 1 exit /B 1
 
 cd ..
 rmdir /s /q %BUILDDIR%
+
+:: Even though we set HDF5_EXTERNAL_LIB_PREFIX, cmake won't pick up these files
+:: Create copies without the prefix
+for %%L IN (hdf5.lib,hdf5_cpp.lib,hdf5_hl.lib,hdf5_hl_cpp.lib) DO (
+  COPY "%VCINSTALLDIR%\lib\kea%%L" "%VCINSTALLDIR%\lib\%%L"
+  if errorlevel 1 exit /B 1      
+)
+
      
 EXIT /B 0

@@ -106,14 +106,14 @@ EXIT /B %ERRORLEVEL%
 
 set ARCGDALDIR=%GDALDIR%\gdal14
 set ARCHDF5DIR=%HDF5DIR%\VC2008_x86
+set ARCHINSTALL=%OUTDIR%\arc93
 mkdir build_arc93
 cd build_arc93
 
-cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
-      -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc93 ^
+cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
+      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
 	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
 	  -D GDAL_DIR=%ARCGDALDIR% ^
-	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
       -D CMAKE_BUILD_TYPE=Release ^
@@ -122,6 +122,12 @@ cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
 if errorlevel 1 exit /B 1
 nmake install
 if errorlevel 1 exit /B 1 
+
+:: Copy the necessary dlls over so the installer can find them 
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+  if errorlevel 1 exit /B 1      
+)
 
 cd ..
 rmdir /s /q build_arc93
@@ -132,22 +138,28 @@ EXIT /B 0
 
 set ARCGDALDIR=%GDALDIR%\gdal16
 set ARCHDF5DIR=%HDF5DIR%\VC2008_x86
+set ARCHINSTALL=%OUTDIR%\arc100
 mkdir build_arc100
 cd build_arc100
 
-cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
-      -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc100 ^
+cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
+      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
 	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
 	  -D GDAL_DIR=%ARCGDALDIR% ^
-	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
 if errorlevel 1 exit /B 1
 nmake install
 if errorlevel 1 exit /B 1 
+
+:: Copy the necessary dlls over so the installer can find them 
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+  if errorlevel 1 exit /B 1      
+)
 
 cd ..
 rmdir /s /q build_arc100
@@ -158,22 +170,28 @@ EXIT /B 0
 
 set ARCGDALDIR=%GDALDIR%\gdal18
 set ARCHDF5DIR=%HDF5DIR%\VC2008_x86
+set ARCHINSTALL=%OUTDIR%\arc101
 mkdir build_arc101
 cd build_arc101
 
-cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
-      -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc101 ^
+cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
+      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
 	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
 	  -D GDAL_DIR=%ARCGDALDIR% ^
-	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
 if errorlevel 1 exit /B 1
 nmake install
 if errorlevel 1 exit /B 1 
+
+:: Copy the necessary dlls over so the installer can find them 
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+  if errorlevel 1 exit /B 1      
+)
 
 cd ..
 rmdir /s /q build_arc101
@@ -184,22 +202,28 @@ EXIT /B 0
 
 set ARCGDALDIR=%GDALDIR%\gdal18b\%VCMACH%
 set ARCHDF5DIR=%HDF5DIR%\VC2013_%VCMACH%
+set ARCHINSTALL=%OUTDIR%\arc104\%VCMACH%
 mkdir build_arc104
 cd build_arc104
 
-cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
-      -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc104\%VCMACH% ^
+cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
+      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
 	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
       -D GDAL_DIR=%ARCGDALDIR% ^
-	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
 if errorlevel 1 exit /B 1
 nmake install
 if errorlevel 1 exit /B 1 
+
+:: Copy the necessary dlls over so the installer can find them 
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+  if errorlevel 1 exit /B 1      
+)
 
 cd ..
 rmdir /s /q build_arc104
@@ -210,22 +234,28 @@ EXIT /B 0
 
 set ARCGDALDIR=%GDALDIR%\gdal201\vc12\%VCMACH%
 set ARCHDF5DIR=%HDF5DIR%\VC2013_%VCMACH%
+set ARCHINSTALL=%OUTDIR%\arc105\%VCMACH%
 mkdir build_arc105
 cd build_arc105
 
-cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
-      -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc105\%VCMACH% ^
+cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
+      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
 	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
 	  -D GDAL_DIR=%ARCGDALDIR% ^
-	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
 if errorlevel 1 exit /B 1
 nmake install
 if errorlevel 1 exit /B 1 
+
+:: Copy the necessary dlls over so the installer can find them 
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+  if errorlevel 1 exit /B 1      
+)
 
 cd ..
 rmdir /s /q build_arc105
@@ -236,22 +266,28 @@ EXIT /B 0
 
 set ARCGDALDIR=%GDALDIR%\gdal211\vc12\%VCMACH%
 set ARCHDF5DIR=%HDF5DIR%\VC2013_%VCMACH%
+set ARCHINSTALL=%OUTDIR%\arc1051\%VCMACH%
 mkdir build_arc1051
 cd build_arc1051
 
-cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
-      -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc1051\%VCMACH% ^
+cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
+      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
 	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
       -D GDAL_DIR=%ARCGDALDIR% ^
-	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
 if errorlevel 1 exit /B 1
 nmake install
 if errorlevel 1 exit /B 1 
+
+:: Copy the necessary dlls over so the installer can find them 
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+  if errorlevel 1 exit /B 1      
+)
 
 cd ..
 rmdir /s /q build_arc1051
@@ -262,22 +298,28 @@ EXIT /B 0
 
 set ARCGDALDIR=%GDALDIR%\gdal201\vc14\%VCMACH%
 set ARCHDF5DIR=%HDF5DIR%\VC2015_%VCMACH%
+set ARCHINSTALL=%OUTDIR%\arcpro14\%VCMACH%
 mkdir build_arcpro14
 cd build_arcpro14
 
-cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
-      -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arcpro14\%VCMACH% ^
+cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
+      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
 	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
       -D GDAL_DIR=%ARCGDALDIR% ^
-	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
 if errorlevel 1 exit /B 1
 nmake install
 if errorlevel 1 exit /B 1 
+
+:: Copy the necessary dlls over so the installer can find them 
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+  if errorlevel 1 exit /B 1      
+)
 
 cd ..
 rmdir /s /q build_arcpro14
@@ -288,22 +330,28 @@ EXIT /B 0
 
 set ARCGDALDIR=%GDALDIR%\gdal211\vc14\%VCMACH%
 set ARCHDF5DIR=%HDF5DIR%\VC2015_%VCMACH%
+set ARCHINSTALL=%OUTDIR%\arcpro20\%VCMACH%
 mkdir build_arcpro20
 cd build_arcpro20
   
-cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
-      -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arcpro20\%VCMACH% ^
+cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
+      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
 	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
       -D GDAL_DIR=%ARCGDALDIR% ^
-	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
 if errorlevel 1 exit /B 1
 nmake install
 if errorlevel 1 exit /B 1 
+
+:: Copy the necessary dlls over so the installer can find them 
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+  if errorlevel 1 exit /B 1      
+)
 
 cd ..
 rmdir /s /q build_arcpro20
@@ -314,22 +362,28 @@ EXIT /B 0
 
 set ARCGDALDIR=%GDALDIR%\gdal211b\%VCMACH%
 set ARCHDF5DIR=%HDF5DIR%\VC2017_%VCMACH%
+set ARCHINSTALL=%OUTDIR%\arc106_arcpro21\%VCMACH%
 mkdir build_arc106_arcpro21
 cd build_arc106_arcpro21
   
-cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
-      -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc106_arcpro21\%VCMACH% ^
+cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
+      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
 	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
       -D GDAL_DIR=%ARCGDALDIR% ^
-	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
 if errorlevel 1 exit /B 1
 nmake install
 if errorlevel 1 exit /B 1 
+
+:: Copy the necessary dlls over so the installer can find them 
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+  if errorlevel 1 exit /B 1      
+)
 
 cd ..
 rmdir /s /q build_arc106_arcpro21
@@ -338,22 +392,28 @@ rmdir /s /q build_arc106_arcpro21
 
 set ARCGDALDIR=%GDALDIR%\gdal211c\%VCMACH%
 set ARCHDF5DIR=%HDF5DIR%\VC2017_%VCMACH%
+set ARCHINSTALL=%OUTDIR%\arc1061_arcpro22\%VCMACH%
 mkdir build_arc1061_arcpro22
 cd build_arc1061_arcpro22
   
-cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
-      -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc1061_arcpro22\%VCMACH% ^
+cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
+      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
 	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
       -D GDAL_DIR=%ARCGDALDIR% ^
-	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
 if errorlevel 1 exit /B 1
 nmake install
 if errorlevel 1 exit /B 1 
+
+:: Copy the necessary dlls over so the installer can find them 
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+  if errorlevel 1 exit /B 1      
+)
 
 cd ..
 rmdir /s /q build_arc1061_arcpro22
@@ -363,22 +423,28 @@ EXIT /B 0
 
 set ARCGDALDIR=%GDALDIR%\gdal211e\%VCMACH%
 set ARCHDF5DIR=%HDF5DIR%\VC2017_%VCMACH%
+set ARCHINSTALL=%OUTDIR%\arc1071_arcpro24\%VCMACH%
 mkdir build_arc1071_arcpro24
 cd build_arc1071_arcpro24
   
-cmake -D KEAHDF5_STATIC_LIBS=TRUE ^
-      -D CMAKE_INSTALL_PREFIX=%OUTDIR%\arc1071_arcpro24\%VCMACH% ^
+cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
+      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
 	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
       -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
       -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
       -D GDAL_DIR=%ARCGDALDIR% ^
-	  -D HDF5_ROOT=%ARCHDF5DIR% ^
       -D CMAKE_BUILD_TYPE=Release ^
       -G "NMake Makefiles" ^
       ..\..\gdal
 if errorlevel 1 exit /B 1
 nmake install
 if errorlevel 1 exit /B 1 
+
+:: Copy the necessary dlls over so the installer can find them 
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+  if errorlevel 1 exit /B 1      
+)
 
 cd ..
 rmdir /s /q build_arc1071_arcpro24

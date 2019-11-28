@@ -20,6 +20,10 @@ if (POLICY CMP0018)
   # position independent code policy
   cmake_policy(SET CMP0018 NEW)
 endif ()
+if (POLICY CMP0074)
+  # _ROOT vars policy
+  cmake_policy(SET CMP0074 NEW)
+endif ()
 project (LIBKEA)
 
 IF(NOT CMAKE_BUILD_TYPE)

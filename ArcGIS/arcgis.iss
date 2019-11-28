@@ -33,21 +33,21 @@ DirExistsWarning=no
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "C:\dev\arckea\dist\arc93\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('9.3', 0); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc100\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.0', 0); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc101\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.1', 0); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc104\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.4', 32); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc104\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.4', 64); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc105\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5', 32); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc105\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.5', 64); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc1051\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5.1', 32); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc1051\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.5.1', 64); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc106_arcpro21\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6', 32); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc106_arcpro21\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.6', 64); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc1061_arcpro22\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6.1', 32); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc1061_arcpro22\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.6.1', 64); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc1071_arcpro24\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.7.1', 32); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc1071_arcpro24\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.7.1', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc93\lib\gdalplugins\*.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('9.3', 0); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc100\lib\gdalplugins\*.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.0', 0); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc101\lib\gdalplugins\*.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.1', 0); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc104\x86\lib\gdalplugins\*.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.4', 32); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc104\x64\lib\gdalplugins\*.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.4', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc105\x86\lib\gdalplugins\*.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5', 32); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc105\x64\lib\gdalplugins\*.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.5', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1051\x86\lib\gdalplugins\*.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.5.1', 32); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1051\x64\lib\gdalplugins\*.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.5.1', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc106_arcpro21\x86\lib\gdalplugins\*.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6', 32); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc106_arcpro21\x64\lib\gdalplugins\*.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.6', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1061_arcpro22\x86\lib\gdalplugins\*.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.6.1', 32); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1061_arcpro22\x64\lib\gdalplugins\*.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.6.1', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1071_arcpro24\x86\lib\gdalplugins\*.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.7.1', 32); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1071_arcpro24\x64\lib\gdalplugins\*.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.7.1', 64); Flags: ignoreversion
 
 [code]
 const
@@ -190,3 +190,22 @@ begin
     Result := ''
 end;
 
+
+// run after the files have been copied. Updates the RasterFormats.dat
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  rfpath : string;
+begin
+  if CurStep = ssPostInstall then
+  begin
+    rfpath := ExpandConstant('{app}\bin\RasterFormats.dat');
+    UpdateRasterFormats(rfpath);
+    
+    // bin64 there also?
+    rfpath := ExpandConstant('{app}\bin64\RasterFormats.dat');
+    if FileExists(rfpath) then
+    begin
+      UpdateRasterFormats(rfpath);
+    end;
+  end;
+end;

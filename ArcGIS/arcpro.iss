@@ -33,11 +33,11 @@ DirExistsWarning=no
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "C:\dev\arckea\dist\arcpro14\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('1.4'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arcpro20\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.0'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc106_arcpro21\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.1'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc1061_arcpro22\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.2'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc1071_arcpro24\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.4'); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arcpro14\x64\lib\gdalplugins\*.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('1.4'); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arcpro20\x64\lib\gdalplugins\*.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.0'); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc106_arcpro21\x64\lib\gdalplugins\*.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.1'); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1061_arcpro22\x64\lib\gdalplugins\*.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.2'); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1071_arcpro24\x64\lib\gdalplugins\*.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.4'); Flags: ignoreversion
 
 [code]
 const
@@ -126,5 +126,93 @@ begin
     Result := ''
 end;
 
+// add the 'kea' extension to 'activationExtensions' and 'relevantExtensions'
+// for Rasters in ObjectFactoryInfoCache.json
+procedure UpdateInfoCache(cachePath: string);
+var
+   lines : TArrayOfString;
+   I : Integer;
+   J : Integer;
+   bInObject : Boolean;
+   bIsRaster : Boolean;
+   bFileUpdated : Boolean;
+   trimmedLine : string;
+   currLine : string;
+begin
+  bFileUpdated := False
 
+  // Read the whole thing in
+  bInObject := False;
+  bIsRaster := False;
+  if LoadStringsFromFile(cachePath, lines) then
+  begin
+    for I := 0 to GetArrayLength(lines)-1 do
+    begin
+      trimmedLine := Trim(lines[I]);
+      if trimmedLine = '{' then
+      begin
+        bInObject := True;
+        bIsRaster := False;
+      end
+      else if trimmedLine = '},' then
+      begin
+        bInObject := False;
+        bIsRaster := False;
+      end;
+
+      if (Pos('name', trimmedLine) <> 0) and (Pos('Raster', trimmedLine) <> 0) then
+      begin
+        bIsRaster := True
+      end
+
+      if bInObject and bIsRaster and ((Pos('activationExtensions', trimmedLine) <> 0) or (Pos('relevantExtensions', trimmedLine) <> 0)) and (Pos('kea', trimmedLine) = 0) then
+      begin
+        // on the original line, go backwards until we get to the last extension
+        currLine := lines[I];
+        for J := Length(currLine) downto 0 do
+        begin
+          if (currLine[J] <> ' ') and (currLine[J] <> ',') and (currLine[J] <> '"') then
+          begin
+            break;
+          end;
+        end;
+
+        // insert 'kea' after the last one
+        Insert('|kea', currLine, J+1);
+        //Log('Updated line is ' + currLine);
+        lines[I] := currLine;
+        bFileUpdated := True;
+      end;
+    end;
+  end;
+
+  if bFileUpdated then
+  begin
+    //Log('File updated');
+    // first backup existing file
+    FileCopy(cachePath, cachePath + '.bak', False);
+    // save updated lines
+    SaveStringsToFile(cachePath, lines, False);
+  end;
+end;
+
+// run after the files have been copied. Updates the RasterFormats.dat
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  rfpath : string;
+  cachePath : string;
+begin
+  if CurStep = ssPostInstall then
+  begin
+    rfpath := ExpandConstant('{app}\bin\RasterFormats.dat');
+    UpdateRasterFormats(rfpath);
+    
+    // ObjectFactoryInfoCache.json
+    cachePath := ExpandConstant('{app}\Resources\SearchResources\Schema\ObjectFactoryInfoCache.json');
+    if FileExists(cachePath) then
+    begin
+      UpdateInfoCache(cachePath);
+    end;
+  end;
+end;
 
