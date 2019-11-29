@@ -124,8 +124,8 @@ nmake install
 if errorlevel 1 exit /B 1 
 
 :: Copy the necessary dlls over so the installer can find them 
-for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
-  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
   if errorlevel 1 exit /B 1      
 )
 
@@ -156,8 +156,8 @@ nmake install
 if errorlevel 1 exit /B 1 
 
 :: Copy the necessary dlls over so the installer can find them 
-for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
-  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
   if errorlevel 1 exit /B 1      
 )
 
@@ -188,8 +188,8 @@ nmake install
 if errorlevel 1 exit /B 1 
 
 :: Copy the necessary dlls over so the installer can find them 
-for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
-  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
   if errorlevel 1 exit /B 1      
 )
 
@@ -220,8 +220,8 @@ nmake install
 if errorlevel 1 exit /B 1 
 
 :: Copy the necessary dlls over so the installer can find them 
-for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
-  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
   if errorlevel 1 exit /B 1      
 )
 
@@ -252,8 +252,8 @@ nmake install
 if errorlevel 1 exit /B 1 
 
 :: Copy the necessary dlls over so the installer can find them 
-for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
-  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
   if errorlevel 1 exit /B 1      
 )
 
@@ -284,8 +284,8 @@ nmake install
 if errorlevel 1 exit /B 1 
 
 :: Copy the necessary dlls over so the installer can find them 
-for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
-  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
   if errorlevel 1 exit /B 1      
 )
 
@@ -316,8 +316,8 @@ nmake install
 if errorlevel 1 exit /B 1 
 
 :: Copy the necessary dlls over so the installer can find them 
-for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
-  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
   if errorlevel 1 exit /B 1      
 )
 
@@ -348,8 +348,8 @@ nmake install
 if errorlevel 1 exit /B 1 
 
 :: Copy the necessary dlls over so the installer can find them 
-for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
-  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
   if errorlevel 1 exit /B 1      
 )
 
@@ -380,8 +380,8 @@ nmake install
 if errorlevel 1 exit /B 1 
 
 :: Copy the necessary dlls over so the installer can find them 
-for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
-  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
   if errorlevel 1 exit /B 1      
 )
 
@@ -410,8 +410,8 @@ nmake install
 if errorlevel 1 exit /B 1 
 
 :: Copy the necessary dlls over so the installer can find them 
-for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
-  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
   if errorlevel 1 exit /B 1      
 )
 
@@ -441,8 +441,8 @@ nmake install
 if errorlevel 1 exit /B 1 
 
 :: Copy the necessary dlls over so the installer can find them 
-for %%L IN (keahdf5.dll,keahdf5_cpp.dll,keahdf5_hl.dll,keahdf5_hl_cpp.dll,libkea.dll,zlibkea.dll) DO (
-  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\gdalplugins\%%L"
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
   if errorlevel 1 exit /B 1      
 )
 

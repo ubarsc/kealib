@@ -40,26 +40,9 @@
 
 #include <limits.h>
 
-#ifdef _MSC_VER
-#define TEMPBUF_SIZE 256
-#include <windows.h>
-void DebugMsg(const char *pszMsg, KEARasterBand *pThis)
-{
-    //char pszPath[TEMPBUF_SIZE];
-    //::GetTempPathA(TEMPBUF_SIZE, pszPath);
-    //strncat(pszPath, "kealib.log", TEMPBUF_SIZE);
-    
-    FILE *fh = fopen("C:\\Users\\sam\\AppData\\Local\\Temp\\kealib.log", "a");
-    fprintf(fh, "%s thread=%lu this=%p\n", pszMsg, ::GetCurrentThreadId(), pThis);
-    fclose(fh);
-}
-#endif
-
-
 // constructor
 KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAccess, kealib::KEAImageIO *pImageIO, int *pRefCount )
 {
-    DebugMsg("KEARasterBand::KEARasterBand", this);
     this->poDS = pDataset; // our pointer onto the dataset
     this->nBand = nSrcBand; // this is the band we are
     this->m_eKEADataType = pImageIO->getImageBandDataType(nSrcBand); // get the data type as KEA enum
@@ -108,7 +91,6 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAc
 // destructor
 KEARasterBand::~KEARasterBand()
 {
-    DebugMsg("KEARasterBand::~KEARasterBand", this);
     // destroy RAT if any
     delete this->m_pAttributeTable;
     // destroy color table if any
@@ -321,7 +303,6 @@ void KEARasterBand::CreateOverviews(int nOverviews, int *panOverviewList)
 // virtual method to read a block
 CPLErr KEARasterBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
 {
-    DebugMsg("IReadBlock start", this);
     try
     {
         // GDAL deals in blocks - if we are at the end of a row
@@ -346,12 +327,10 @@ CPLErr KEARasterBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage 
     }
     catch (kealib::KEAIOException &e)
     {
-        DebugMsg("IReadBlock error", this);
         CPLError( CE_Failure, CPLE_AppDefined,
                 "Failed to read file: %s", e.what() );
         return CE_Failure;
     }
-    DebugMsg("IReadBlock start end", this);
 }
 
 // virtual method to write a block
