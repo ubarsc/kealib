@@ -1,7 +1,7 @@
 
-:: Builds static kealib. Run this after buildzlibhdf5.bat
+:: Builds kealib. Run this after buildzlibhdf5.bat
 :: Ensure INSTALLDIR is set the same as buildzlibhdf5.bat - hdf5 etc read from here 
-:: and static kealib installed there.
+:: and kealib installed there.
 
 set INSTALLDIR=c:\dev\arckea
 :: GDALDIR is where arcgdal_for_compilation.zip (from the bitbucket downloads) as been unzipped to
@@ -11,7 +11,7 @@ SET GDALDIR=C:\dev\arcgdalforcompilation
 SetLocal
 set VCYEAR=VC2008
 set VCMACH=x86
-call "C:\Users\sam\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" %VCMACH%
+call "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\vcvarsall.bat" %VCMACH%
 @echo on
 call :build
 EndLocal
@@ -38,7 +38,7 @@ EndLocal
 SetLocal
 set VCYEAR=VC2015
 set VCMACH=x64
-call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH%
+call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH% 8.1
 @echo on
 call :build
 EndLocal

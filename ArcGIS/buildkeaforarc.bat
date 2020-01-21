@@ -4,14 +4,14 @@ setlocal
 :: Update these 3 variables. 
 :: OUTDIR is where the output files will be put
 SET OUTDIR=c:\dev\arckea\dist
-:: GDALDIR is where arcgdal_for_compilation.zip (from the bitbucket downloads) as been unzipped to
+:: GDALDIR is where arcgdal_for_compilation.zip (from the github downloads) as been unzipped to
 SET GDALDIR=C:\dev\arcgdalforcompilation
 :: HDF5DIR is the same as INSTALLDIR in buildzlibhdf5.bat
 SET HDF5DIR=c:\dev\arckea
 
 SetLocal
 set VCMACH=x86
-call "C:\Users\sam\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" %VCMACH%
+call "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\vcvarsall.bat" %VCMACH%
 @echo on
 call :build_arc93
 if errorlevel 1 exit /B 1
@@ -48,10 +48,11 @@ call :build_arc1051
 if errorlevel 1 exit /B 1
 EndLocal
 
-:: Visual Studio 2015 x64 builds
+:: Visual Studio 2015 x64 builds - note 8.1 on the end of vcvarsall.bat - selects Windows SDK 8.1
+:: which has a working rc.exe - removed in 10.1
 SetLocal
 set VCMACH=x64
-call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH%
+call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH% 8.1
 @echo on
 call :build_arcpro14
 if errorlevel 1 exit /B 1

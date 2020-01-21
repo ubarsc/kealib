@@ -6,12 +6,12 @@ setlocal
 :: vars (below) to the locations. Also set INSTALLDIR to where you want the files to 
 :: be installed to. 
 
-:: You will also need Visual Studio 2008, 2013, 2015 and 2017. For 2008 I used MS C++ for Python 2.7
-:: (https://www.microsoft.com/en-au/download/details.aspx?id=44266) which is the same thing.
-:: VS 2013 Community Edition is available here (https://www.visualstudio.com/en-us/news/releasenotes/vs2013-community-vs).
+:: You will also need Visual Studio 2008, 2013, 2015 and 2017. Express or Community
+:: versions are fine.
 :: I have assumed these are installed in the standard locations. If not you might need to tweak the code below.
 
 set ZLIBDIR=C:\dev\arc\zlib-1.2.11
+:: NB: HDF5 1.10.6 and later don't appear to compile with VS 2008
 set HDF5DIR=C:\dev\arc\hdf5-1.10.5
 set INSTALLDIR=c:\dev\arckea
 
@@ -19,7 +19,7 @@ set INSTALLDIR=c:\dev\arckea
 SetLocal
 set VCYEAR=VC2008
 set VCMACH=x86
-call "C:\Users\sam\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" %VCMACH%
+call "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\vcvarsall.bat" %VCMACH%
 @echo on
 call :build
 EndLocal
@@ -46,7 +46,7 @@ EndLocal
 SetLocal
 set VCYEAR=VC2015
 set VCMACH=x64
-call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH%
+call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH% 8.1
 @echo on
 call :build
 EndLocal
