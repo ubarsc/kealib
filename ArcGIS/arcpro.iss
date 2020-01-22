@@ -19,7 +19,7 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-LicenseFile=C:\dev\keainstall\LICENSE.txt
+LicenseFile=C:\dev\kealib\LICENSE.txt
 OutputDir=C:\dev\keainstall
 OutputBaseFilename={#MyOutputFilename}
 Compression=lzma
@@ -174,7 +174,7 @@ begin
       if (Pos('name', trimmedLine) <> 0) and (Pos('Raster', trimmedLine) <> 0) then
       begin
         bIsRaster := True
-      end
+      end;
 
       if bInObject and bIsRaster and ((Pos('activationExtensions', trimmedLine) <> 0) or (Pos('relevantExtensions', trimmedLine) <> 0)) and (Pos('kea', trimmedLine) = 0) then
       begin

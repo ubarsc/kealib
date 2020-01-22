@@ -19,7 +19,7 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-LicenseFile=C:\dev\keainstall\LICENSE.txt
+LicenseFile=C:\dev\kealib\LICENSE.txt
 OutputDir=C:\dev\keainstall
 OutputBaseFilename={#MyOutputFilename}
 Compression=lzma
@@ -185,7 +185,7 @@ begin
   if HasBin64 then
     bgpresent := 'with BGProcessor'
   else
-    bgpresent := 'no BGProcessor'
+    bgpresent := 'no BGProcessor';
 
   InstallDirPage.Description := FmtMessage('ArcGIS Version %1 (%2) has been found.'  + #13#10 + 'The support files for this version will be installed in the location below.', [ArcVersionClass, bgpresent]);
 end; 
