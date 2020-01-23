@@ -20,7 +20,7 @@ AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 ;CreateAppDir=yes
-LicenseFile=C:\dev\keainstall\LICENSE.txt
+LicenseFile=C:\dev\kealib\LICENSE.txt
 OutputDir=C:\dev\keainstall
 OutputBaseFilename={#MyOutputFilename}
 Compression=lzma
@@ -32,6 +32,7 @@ DirExistsWarning=no
 
 [Files]
 Source: "C:\dev\keainstall\2011\x86\kea.dll"; DestDir: "{app}\usr\lib\Win32Release\rasterformats"; Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc93\lib\*.dll"; DestDir: "{app}\usr\lib\Win32Release\rasterformats"; Flags: ignoreversion
 
 [Run]
 Filename: "{app}\bin\Win32Release\configure_rf.exe"; StatusMsg: "Configuring Raster Formats"
