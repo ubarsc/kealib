@@ -36,10 +36,10 @@
 
 IMAGINE_HOME = "C:\ERDAS\ERDAS Desktop 2011"
 KEA_HOME = "C:\dev\arckea\VC2008_x86"
-GDAL_HOME = "C:\dev\gdalstatic_2008_x86"
+GDAL_HOME = "C:\dev\arckea\gdalstatic_2008_x86"
 
 CPPFLAGS = /Ox /MD /DIMAGINE_Toolkit_Packing=8 /DWIN32 /D_WINDOWS /D_X86_ /Dpcnt /D__STDC__ /Di386 /DEMSC_IMAGINE8_COMPATIBILTY /I$(KEA_HOME)\include /I$(IMAGINE_HOME)\usr\include\win32release /I$(GDAL_HOME)\include /DU_HAVE_INT8_T /DEFIO_UNBUFFERED_PROTOTYPES_PASSTHROUGH /DEFIO_STDIO_PROTOTYPES_PASSTHROUGH /DAUTO_EXPORT
-LDFLAGS = /LIBPATH:$(KEA_HOME)\lib liblibkea.lib libhdf5_cpp.lib libhdf5.lib zlibstatic.lib /LIBPATH:$(IMAGINE_HOME)\usr\lib\Win32Release elib.lib eraster.lib /LIBPATH:$(GDAL_HOME)\lib gdal.lib ws2_32.lib Psapi.lib
+LDFLAGS = /LIBPATH:$(KEA_HOME)\lib libkea.lib keahdf5_cpp.lib /LIBPATH:$(IMAGINE_HOME)\usr\lib\Win32Release elib.lib eraster.lib /LIBPATH:$(GDAL_HOME)\lib gdal.lib ws2_32.lib Psapi.lib
 
 OBJS = keainstance.obj keafile.obj kealayer.obj keatable.obj keaproj.obj
 
