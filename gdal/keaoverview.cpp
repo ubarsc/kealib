@@ -31,7 +31,7 @@
 
 // constructor
 KEAOverview::KEAOverview(KEADataset *pDataset, int nSrcBand, GDALAccess eAccess,
-                kealib::KEAImageIO *pImageIO, int *pRefCount,
+                kealib::KEAImageIO *pImageIO, LockedRefCount *pRefCount,
                 int nOverviewIndex, uint64_t nXSize, uint64_t nYSize)
  : KEARasterBand( pDataset, nSrcBand, eAccess, pImageIO, pRefCount )
 {

@@ -47,7 +47,7 @@ class KEAMaskBand;
 class KEARasterBand : public GDALPamRasterBand
 {
 private:
-    int                 *m_pnRefCount; // reference count of m_pImageIO
+    LockedRefCount      *m_pRefCount; // reference count of m_pImageIO
 
     int                  m_nOverviews; // number of overviews
     KEAOverview        **m_panOverviewBands; // array of overview objects
@@ -62,7 +62,7 @@ private:
     int                  m_nAttributeChunkSize; // for reporting via the metadata
 public:
     // constructor/destructor
-    KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAccess, kealib::KEAImageIO *pImageIO, int *pRefCount );
+    KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAccess, kealib::KEAImageIO *pImageIO, LockedRefCount *pRefCount );
     ~KEARasterBand();
 
     // virtual methods for overview support
@@ -140,6 +140,7 @@ protected:
     kealib::KEAImageIO  *m_pImageIO; // our image access pointer - refcounted
     char               **m_papszMetadataList; // CPLStringList of metadata
     kealib::KEADataType  m_eKEADataType; // data type as KEA enum
+    CPLMutex            *m_hMutex;
 };
 
 
