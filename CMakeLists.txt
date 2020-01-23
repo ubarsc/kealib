@@ -88,6 +88,18 @@ if(NOT "x$ENV{HDF5_ROOT}" STREQUAL "x")
     message(STATUS "HDF5_ROOT environment variable specified: $ENV{HDF5_ROOT}")
 endif()
 find_package(HDF5 COMPONENTS CXX HL REQUIRED)
+
+# https://support.hdfgroup.org/HDF5/doc/TechNotes/ThreadSafeLibrary.html
+include(CheckSymbolExists)
+SET(CMAKE_REQUIRED_INCLUDES ${HDF5_INCLUDE_DIRS})
+check_symbol_exists(H5_HAVE_THREADSAFE "H5pubconf.h" HDF5_THREADSAFE)
+if( NOT HDF5_THREADSAFE )
+    message(NOTICE "") 
+    message(NOTICE "*** HDF5 not built with HDF5_ENABLE_THREADSAFE=ON ***")
+    message(NOTICE "*** KEALib WILL NOT be threadsafe ***") 
+    message(NOTICE "")
+endif()
+
 # required to get compilation on Windows
 find_package(Threads)
 # Needed for dependent option below
