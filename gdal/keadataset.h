@@ -110,6 +110,12 @@ kealib::KEADataType GDAL_to_KEA_Type( GDALDataType egdalType );
 // the kealib::KEAImageIO instance between bands and dataset.
 class LockedRefCount
 {
+private:
+    int m_nRefCount;
+    CPLMutex *m_hMutex;
+    
+    CPL_DISALLOW_COPY_ASSIGN(LockedRefCount)
+    
 public:
     LockedRefCount(int initCount=1)
     {
@@ -125,20 +131,17 @@ public:
     
     void IncRef()
     {
-        CPLMutexHolderD( &m_hMutex );
+        CPLMutexHolderD( m_hMutex );
         m_nRefCount++;
     }
     
     // returns true if reference count now 0
     bool DecRef()
     {
-        CPLMutexHolderD( &m_hMutex );
+        CPLMutexHolderD( m_hMutex );
         m_nRefCount--;
         return m_nRefCount == 0;
     }
-private:
-    int m_nRefCount;
-    CPLMutex *m_hMutex;
 };
 
 #endif //KEADATASET_H
