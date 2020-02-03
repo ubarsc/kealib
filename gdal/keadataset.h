@@ -113,8 +113,10 @@ class LockedRefCount
 private:
     int m_nRefCount;
     CPLMutex *m_hMutex;
-    
+
+#ifdef CPL_DISALLOW_COPY_ASSIGN  
     CPL_DISALLOW_COPY_ASSIGN(LockedRefCount)
+#endif
     
 public:
     LockedRefCount(int initCount=1)
@@ -140,7 +142,7 @@ public:
     {
         CPLMutexHolderD( m_hMutex );
         m_nRefCount--;
-        return m_nRefCount == 0;
+        return m_nRefCount <= 0;
     }
 };
 
