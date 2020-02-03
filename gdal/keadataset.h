@@ -125,7 +125,7 @@ public:
     }
     ~LockedRefCount()
     {
-        CPLDestroyMutex( &m_hMutex );
+        CPLDestroyMutex( m_hMutex );
         m_hMutex = NULL;
     }
     
