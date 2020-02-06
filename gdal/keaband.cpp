@@ -95,7 +95,7 @@ KEARasterBand::KEARasterBand( KEADataset *pDataset, int nSrcBand, GDALAccess eAc
 KEARasterBand::~KEARasterBand()
 {
     {
-        CPLMutexHolderD( m_hMutex );
+        CPLMutexHolderD( &m_hMutex );
         // destroy RAT if any
         delete this->m_pAttributeTable;
         // destroy color table if any
@@ -140,7 +140,7 @@ KEARasterBand::~KEARasterBand()
 // internal method that updates the metadata into m_papszMetadataList
 void KEARasterBand::UpdateMetadataList()
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     std::vector< std::pair<std::string, std::string> > data;
 
     // get all the metadata and iterate through
@@ -283,7 +283,7 @@ char *KEARasterBand::GetHistogramAsString()
 // internal method to create the overviews
 void KEARasterBand::CreateOverviews(int nOverviews, int *panOverviewList)
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     // delete any existing overview bands
     this->deleteOverviewObjects();
 
@@ -378,7 +378,7 @@ CPLErr KEARasterBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage
 
 void KEARasterBand::SetDescription(const char *pszDescription)
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     try
     {
         this->m_pImageIO->setImageBandDescription(this->nBand, pszDescription);
@@ -399,7 +399,7 @@ const char *KEARasterBand::GetDescription() const
 // set a metadata item
 CPLErr KEARasterBand::SetMetadataItem(const char *pszName, const char *pszValue, const char *pszDomain)
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     // only deal with 'default' domain - no geolocation etc
     if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
         return CE_Failure;
@@ -457,7 +457,7 @@ CPLErr KEARasterBand::SetMetadataItem(const char *pszName, const char *pszValue,
 // get a single metdata item
 const char *KEARasterBand::GetMetadataItem (const char *pszName, const char *pszDomain)
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     // only deal with 'default' domain - no geolocation etc
     if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
         return NULL;
@@ -489,7 +489,7 @@ char **KEARasterBand::GetMetadata(const char *pszDomain)
 // set the metdata as a CSLStringList
 CPLErr KEARasterBand::SetMetadata(char **papszMetadata, const char *pszDomain)
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     // only deal with 'default' domain - no geolocation etc
     if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
         return CE_Failure;
@@ -749,7 +749,7 @@ CPLErr KEARasterBand::SetDefaultHistogram( double dfMin, double dfMax,
 #ifdef HAVE_RFC40
 GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     if( this->m_pAttributeTable == NULL )
     {
         try
@@ -770,7 +770,7 @@ GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
 // read the attributes into a GDALAttributeTable
 const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     if( this->m_pAttributeTable == NULL )
     {
         try
@@ -1002,7 +1002,7 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
     if( poRAT == NULL )
         return CE_Failure;
 
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     try
     {
         // we assume this is never NULL - creates a new one if none exists
@@ -1146,7 +1146,7 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
 #ifdef HAVE_RFC40
 GDALColorTable *KEARasterBand::GetColorTable()
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     if( this->m_pColorTable == NULL )
     {
         try
@@ -1204,7 +1204,7 @@ GDALColorTable *KEARasterBand::GetColorTable()
 
 GDALColorTable *KEARasterBand::GetColorTable()
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     if( this->m_pColorTable == NULL )
     {
         try
@@ -1298,7 +1298,7 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
     if( poCT == NULL )
         return CE_Failure;
 
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     try
     {
         GDALRasterAttributeTable *pKEATable = this->GetDefaultRAT();
@@ -1397,7 +1397,7 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
     if( poCT == NULL )
         return CE_Failure;
 
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     try
     {
         // we assume this is never NULL - creates a new one if none exists
@@ -1659,7 +1659,7 @@ void KEARasterBand::deleteOverviewObjects()
 // read in any overviews in the file into our array of objects
 void KEARasterBand::readExistingOverviews()
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     // delete any existing overview bands
     this->deleteOverviewObjects();
 
@@ -1696,7 +1696,7 @@ GDALRasterBand* KEARasterBand::GetOverview(int nOverview)
 
 CPLErr KEARasterBand::CreateMaskBand(int nFlags)
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     delete m_pMaskBand;
     m_pMaskBand = NULL;
     try
@@ -1713,7 +1713,7 @@ CPLErr KEARasterBand::CreateMaskBand(int nFlags)
 
 GDALRasterBand* KEARasterBand::GetMaskBand()
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     if( m_pMaskBand == NULL )
     {
         try

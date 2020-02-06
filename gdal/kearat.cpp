@@ -505,7 +505,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
             "Dataset not open in update mode");
         return CE_Failure;
     }*/
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
 
     if( iField < 0 || iField >= (int) m_aoFields.size() )
     {
@@ -873,7 +873,7 @@ CPLErr KEARasterAttributeTable::CreateColumn( const char *pszFieldName,
             "Dataset not open in update mode");
         return CE_Failure;
     }*/
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
 
     std::string strUsage = "Generic";
     switch(eFieldUsage)

@@ -31,9 +31,15 @@
 #define KEADATASET_H
 
 #include "gdal_pam.h"
+#include "cpl_multiproc.h"
 #include "libkea/KEAImageIO.h"
 
 class LockedRefCount;
+
+// old versions of GDAL
+#ifndef CPLMutex
+    #define CPLMutex void
+#endif
 
 // class that implements a GDAL dataset
 class KEADataset : public GDALPamDataset
@@ -133,14 +139,14 @@ public:
     
     void IncRef()
     {
-        CPLMutexHolderD( m_hMutex );
+        CPLMutexHolderD( &m_hMutex );
         m_nRefCount++;
     }
     
     // returns true if reference count now 0
     bool DecRef()
     {
-        CPLMutexHolderD( m_hMutex );
+        CPLMutexHolderD( &m_hMutex );
         m_nRefCount--;
         return m_nRefCount <= 0;
     }

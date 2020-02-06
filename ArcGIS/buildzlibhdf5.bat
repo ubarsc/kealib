@@ -12,7 +12,10 @@ setlocal
 
 set ZLIBDIR=C:\dev\arc\zlib-1.2.11
 :: NB: HDF5 1.10.6 and later don't appear to compile with VS 2008
-set HDF5DIR=C:\dev\arc\hdf5-1.10.5
+:: But earlier versions seem to have problems reporting threadsafety 
+:: properly. So we build with latest where we can
+set HDF5DIR_VS2008=C:\dev\arc\hdf5-1.10.5
+set HDF5DIR_LATEST=C:\dev\arc\hdf5-1.10.6
 set INSTALLDIR=c:\dev\arckea
 
 :: Visual Studio 2008 x86
@@ -21,6 +24,7 @@ set VCYEAR=VC2008
 set VCMACH=x86
 call "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\vcvarsall.bat" %VCMACH%
 @echo on
+set HDF5DIR=%HDF5DIR_VS2008%
 call :build
 EndLocal
 
@@ -30,6 +34,7 @@ set VCYEAR=VC2013
 set VCMACH=x86
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %VCMACH%
 @echo on
+set HDF5DIR=%HDF5DIR_LATEST%
 call :build
 EndLocal
 
@@ -39,6 +44,7 @@ set VCMACH=x64
 :: Note VS2013 doesn't understand 'x64'...
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64
 @echo on
+set HDF5DIR=%HDF5DIR_LATEST%
 call :build
 EndLocal
 
@@ -48,6 +54,7 @@ set VCYEAR=VC2015
 set VCMACH=x64
 call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH% 8.1
 @echo on
+set HDF5DIR=%HDF5DIR_LATEST%
 call :build
 EndLocal
 
@@ -57,6 +64,7 @@ set VCYEAR=VC2017
 set VCMACH=x86
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
 @echo on
+set HDF5DIR=%HDF5DIR_LATEST%
 call :build
 EndLocal
 
@@ -65,6 +73,7 @@ set VCYEAR=VC2017
 set VCMACH=x64
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
 @echo on
+set HDF5DIR=%HDF5DIR_LATEST%
 call :build
 EndLocal
 

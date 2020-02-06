@@ -466,7 +466,7 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File, GDALAccess eAccess )
 KEADataset::~KEADataset()
 {
     {
-        CPLMutexHolderD( m_hMutex );
+        CPLMutexHolderD( &m_hMutex );
         // destroy the metadata
         CSLDestroy(m_papszMetadataList);
         // decrement the refcount and delete if needed
@@ -493,7 +493,7 @@ KEADataset::~KEADataset()
 // read in the metadata into our CSLStringList
 void KEADataset::UpdateMetadataList()
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     std::vector< std::pair<std::string, std::string> > odata;
     // get all the metadata
     odata = this->m_pImageIO->getImageMetaData();
@@ -638,7 +638,7 @@ CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, in
 // set a single metadata item
 CPLErr KEADataset::SetMetadataItem(const char *pszName, const char *pszValue, const char *pszDomain)
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     // only deal with 'default' domain - no geolocation etc
     if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
         return CE_Failure;
@@ -659,7 +659,7 @@ CPLErr KEADataset::SetMetadataItem(const char *pszName, const char *pszValue, co
 // get a single metadata item
 const char *KEADataset::GetMetadataItem (const char *pszName, const char *pszDomain)
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     // only deal with 'default' domain - no geolocation etc
     if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
         return NULL;
@@ -680,7 +680,7 @@ char **KEADataset::GetMetadata(const char *pszDomain)
 // set the whole metadata as a CSLStringList
 CPLErr KEADataset::SetMetadata(char **papszMetadata, const char *pszDomain)
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     // only deal with 'default' domain - no geolocation etc
     if( ( pszDomain != NULL ) && ( *pszDomain != '\0' ) )
         return CE_Failure;
@@ -769,7 +769,7 @@ int KEADataset::GetGCPCount()
 
 const char* KEADataset::GetGCPProjection()
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     if( m_pszGCPProjection == NULL )
     {
         try
@@ -787,7 +787,7 @@ const char* KEADataset::GetGCPProjection()
 
 const GDAL_GCP* KEADataset::GetGCPs()
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     if( m_pGCPs == NULL )
     {
         // convert to GDAL data structures
@@ -820,7 +820,7 @@ const GDAL_GCP* KEADataset::GetGCPs()
 
 CPLErr KEADataset::SetGCPs(int nGCPCount, const GDAL_GCP *pasGCPList, const char *pszGCPProjection)
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     this->DestroyGCPs();
     free( m_pszGCPProjection );
     m_pszGCPProjection = NULL;
@@ -863,7 +863,7 @@ CPLErr KEADataset::SetGCPs(int nGCPCount, const GDAL_GCP *pasGCPList, const char
 
 void KEADataset::DestroyGCPs()
 {
-    CPLMutexHolderD( m_hMutex );
+    CPLMutexHolderD( &m_hMutex );
     if( m_pGCPs != NULL )
     {
         // we assume this is always the same as the internal list...
