@@ -32,9 +32,15 @@ DirExistsWarning=no
 
 [Files]
 Source: "C:\dev\keainstall\2015\x86\kea.dll"; DestDir: "{app}\usr\lib\Win32Release\rasterformats"; Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc104\x86\lib\*.dll"; DestDir: "{app}\usr\lib\Win32Release\rasterformats"; Flags: ignoreversion
+Source: "C:\dev\arckea\VC2013_x86\bin\keahdf5.dll"; DestDir: "{app}\usr\bin\Win32Release"; Flags: ignoreversion
+Source: "C:\dev\arckea\VC2013_x86\bin\keahdf5_cpp.dll"; DestDir: "{app}\usr\bin\Win32Release"; Flags: ignoreversion
+Source: "C:\dev\arckea\VC2013_x86\bin\libkea.dll"; DestDir: "{app}\usr\bin\Win32Release"; Flags: ignoreversion
+Source: "C:\dev\arckea\VC2013_x86\bin\zlibkea.dll"; DestDir: "{app}\usr\bin\Win32Release"; Flags: ignoreversion
 Source: "C:\dev\keainstall\2015\x64\kea.dll"; DestDir: "{app}\usr\lib\x64URelease\rasterformats"; Check: IsWin64; Flags: ignoreversion 
-Source: "C:\dev\arckea\dist\arc104\x64\lib\*.dll"; DestDir: "{app}\usr\lib\Win32Release\rasterformats"; Check: IsWin64; Flags: ignoreversion
+Source: "C:\dev\arckea\VC2013_x64\bin\keahdf5.dll"; DestDir: "{app}\usr\bin\Win32Release"; Flags: ignoreversion
+Source: "C:\dev\arckea\VC2013_x64\bin\keahdf5_cpp.dll"; DestDir: "{app}\usr\bin\Win32Release"; Flags: ignoreversion
+Source: "C:\dev\arckea\VC2013_x64\bin\libkea.dll"; DestDir: "{app}\usr\bin\Win32Release"; Flags: ignoreversion
+Source: "C:\dev\arckea\VC2013_x64\bin\zlibkea.dll"; DestDir: "{app}\usr\bin\Win32Release"; Flags: ignoreversion
 
 [Run]
 Filename: "{app}\bin\Win32Release\configure_rf.exe"; StatusMsg: "Configuring Raster Formats"
