@@ -222,7 +222,9 @@ begin
   else if (CompareVersion(realVersion, '10.6.1') <> -1) and (CompareVersion(realVersion, '10.7') = -1) then
     Result := '10.6.1'
   else if (CompareVersion(realVersion, '10.7.1') <> -1) and (CompareVersion(realVersion, '10.8') = -1) then
-    Result := '10.6.1'
+    Result := '10.7.1'
+  else if (CompareVersion(realVersion, '10.8') <> -1) and (CompareVersion(realVersion, '10.9') = -1) then
+    Result := '10.8'
   else
     Result := ''
 end;

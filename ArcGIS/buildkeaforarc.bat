@@ -9,97 +9,97 @@ SET GDALDIR=C:\dev\arcgdalforcompilation
 :: HDF5DIR is the same as INSTALLDIR in buildzlibhdf5.bat
 SET HDF5DIR=c:\dev\arckea
 
-REM SetLocal
-REM set VCMACH=x86
-REM call "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\vcvarsall.bat" %VCMACH%
-REM @echo on
-REM call :build_arc93
-REM if errorlevel 1 exit /B 1
-REM call :build_arc100
-REM if errorlevel 1 exit /B 1
-REM call :build_arc101
-REM if errorlevel 1 exit /B 1
-REM EndLocal
+SetLocal
+set VCMACH=x86
+call "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\vcvarsall.bat" %VCMACH%
+@echo on
+call :build_arc93
+if errorlevel 1 exit /B 1
+call :build_arc100
+if errorlevel 1 exit /B 1
+call :build_arc101
+if errorlevel 1 exit /B 1
+EndLocal
 
-REM :: Now the vs2013 builds x86
-REM SetLocal
-REM set VCMACH=x86
-REM call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %VCMACH%
-REM @echo on
-REM call :build_arc104
-REM if errorlevel 1 exit /B 1
-REM call :build_arc105
-REM if errorlevel 1 exit /B 1
-REM call :build_arc1051
-REM if errorlevel 1 exit /B 1
-REM EndLocal
+:: Now the vs2013 builds x86
+SetLocal
+set VCMACH=x86
+call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %VCMACH%
+@echo on
+call :build_arc104
+if errorlevel 1 exit /B 1
+call :build_arc105
+if errorlevel 1 exit /B 1
+call :build_arc1051
+if errorlevel 1 exit /B 1
+EndLocal
 
-REM :: Now x64
-REM SetLocal
-REM set VCMACH=x64
-REM :: Note VS2013 doesn't understand 'x64'...
-REM call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64
-REM @echo on
-REM call :build_arc104
-REM if errorlevel 1 exit /B 1
-REM call :build_arc105
-REM if errorlevel 1 exit /B 1
-REM call :build_arc1051
-REM if errorlevel 1 exit /B 1
-REM EndLocal
+:: Now x64
+SetLocal
+set VCMACH=x64
+:: Note VS2013 doesn't understand 'x64'...
+call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64
+@echo on
+call :build_arc104
+if errorlevel 1 exit /B 1
+call :build_arc105
+if errorlevel 1 exit /B 1
+call :build_arc1051
+if errorlevel 1 exit /B 1
+EndLocal
 
-REM :: Visual Studio 2015 x64 builds - note 8.1 on the end of vcvarsall.bat - selects Windows SDK 8.1
-REM :: which has a working rc.exe - removed in 10.1
-REM SetLocal
-REM set VCMACH=x64
-REM call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH% 8.1
-REM @echo on
-REM call :build_arcpro14
-REM if errorlevel 1 exit /B 1
-REM call :build_arcpro20
-REM if errorlevel 1 exit /B 1
-REM EndLocal
+:: Visual Studio 2015 x64 builds - note 8.1 on the end of vcvarsall.bat - selects Windows SDK 8.1
+:: which has a working rc.exe - removed in 10.1
+SetLocal
+set VCMACH=x64
+call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH% 8.1
+@echo on
+call :build_arcpro14
+if errorlevel 1 exit /B 1
+call :build_arcpro20
+if errorlevel 1 exit /B 1
+EndLocal
 
-REM :: Visual Studio 2017 x86 Builds
-REM :: ESRI Says "Visual Studio 2017 Update 2" which is 14.09(?) but this is the earliest 
-REM :: I have installed.
-REM SetLocal
-REM set VCMACH=x86
-REM call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
-REM @echo on
-REM call :build_arc106_arcpro21
-REM if errorlevel 1 exit /B 1
-REM EndLocal
+:: Visual Studio 2017 x86 Builds
+:: ESRI Says "Visual Studio 2017 Update 2" which is 14.09(?) but this is the earliest 
+:: I have installed.
+SetLocal
+set VCMACH=x86
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
+@echo on
+call :build_arc106_arcpro21
+if errorlevel 1 exit /B 1
+EndLocal
 
-REM :: Visual Studio 2017 x64 Builds
-REM SetLocal
-REM set VCMACH=x64
-REM call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
-REM @echo on
-REM call :build_arc106_arcpro21
-REM if errorlevel 1 exit /B 1
-REM EndLocal
+:: Visual Studio 2017 x64 Builds
+SetLocal
+set VCMACH=x64
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
+@echo on
+call :build_arc106_arcpro21
+if errorlevel 1 exit /B 1
+EndLocal
 
-REM :: Visual Studio 2017 x86 Builds
-REM :: ESRI Says "Visual Studio 2017 version 15.5.6" which is 14.11
-REM SetLocal
-REM set VCMACH=x86
-REM call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
-REM @echo on
-REM call :build_arc1061_arcpro22
-REM call :build_arc1071_arcpro24
-REM if errorlevel 1 exit /B 1
-REM EndLocal
+:: Visual Studio 2017 x86 Builds
+:: ESRI Says "Visual Studio 2017 version 15.5.6" which is 14.11
+SetLocal
+set VCMACH=x86
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
+@echo on
+call :build_arc1061_arcpro22
+call :build_arc1071_arcpro24
+if errorlevel 1 exit /B 1
+EndLocal
 
-REM :: Visual Studio 2017 x64 Builds
-REM SetLocal
-REM set VCMACH=x64
-REM call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
-REM @echo on
-REM call :build_arc1061_arcpro22
-REM call :build_arc1071_arcpro24
-REM if errorlevel 1 exit /B 1
-REM EndLocal
+:: Visual Studio 2017 x64 Builds
+SetLocal
+set VCMACH=x64
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
+@echo on
+call :build_arc1061_arcpro22
+call :build_arc1071_arcpro24
+if errorlevel 1 exit /B 1
+EndLocal
 
 :: Visual Studio 2019 x86 Builds
 SetLocal

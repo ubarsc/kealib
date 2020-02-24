@@ -136,6 +136,8 @@ begin
     Result := '2.2'
   else if (CompareVersion(realVersion, '2.4') <> -1) and (CompareVersion(realVersion, '2.5') = -1) then
     Result := '2.4'
+  else if (CompareVersion(realVersion, '2.5') <> -1) and (CompareVersion(realVersion, '2.6') = -1) then
+    Result := '2.5'
   else
     Result := ''
 end;
