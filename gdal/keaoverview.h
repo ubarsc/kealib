@@ -39,7 +39,7 @@ class KEAOverview : public KEARasterBand
     int         m_nOverviewIndex; // the index of this overview
 public:
     KEAOverview(KEADataset *pDataset, int nSrcBand, GDALAccess eAccess, 
-                kealib::KEAImageIO *pImageIO, int *pRefCount,
+                kealib::KEAImageIO *pImageIO, LockedRefCount *pRefCount,
                 int nOverviewIndex, uint64_t nXSize, uint64_t nYSize );
     ~KEAOverview();
 
