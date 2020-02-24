@@ -80,6 +80,12 @@ Source: "C:\dev\arckea\dist\arc1071_arcpro24\x86\lib\gdalplugins\gdal_KEA.dll"; 
 Source: "C:\dev\arckea\dist\arc1071_arcpro24\x64\lib\*.dll"; DestDir: "{app}\bin64"; Check: ArcVersion('10.7.1', 64); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc1071_arcpro24\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.7.1', 64); Flags: ignoreversion
 
+Source: "C:\dev\arckea\dist\arc108_arcpro25\x86\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('10.8', 32); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc108_arcpro25\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.8', 32); Flags: ignoreversion
+
+Source: "C:\dev\arckea\dist\arc108_arcpro25\x64\lib\*.dll"; DestDir: "{app}\bin64"; Check: ArcVersion('10.8', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc108_arcpro25\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.8', 64); Flags: ignoreversion
+
 [code]
 const
   // this is where ArcGIS seems to put the install information

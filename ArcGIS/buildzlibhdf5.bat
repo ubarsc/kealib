@@ -77,6 +77,25 @@ set HDF5DIR=%HDF5DIR_LATEST%
 call :build
 EndLocal
 
+:: Visual Studio 2019 for ArcPro >= 2.5, ArcGIS 10.8
+SetLocal
+set VCYEAR=VC2019
+set VCMACH=x86
+call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
+@echo on
+set HDF5DIR=%HDF5DIR_LATEST%
+call :build
+EndLocal
+
+SetLocal
+set VCYEAR=VC2019
+set VCMACH=x64
+call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
+@echo on
+set HDF5DIR=%HDF5DIR_LATEST%
+call :build
+EndLocal
+
 EXIT /B %ERRORLEVEL%
 
 :build

@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "KEA for ArcPro"
-#define MyAppVersion "1.4.10"
+#define MyAppVersion "1.4.13"
 #define MyAppPublisher "Landcare Research NZ"
 #define MyAppURL "http://kealib.org/"
 #define MyOutputFilename "setup_kea_arcpro_" + GetDateTimeString('yyyymmdd', '', '')
@@ -49,6 +49,9 @@ Source: "C:\dev\arckea\dist\arc1061_arcpro22\x64\lib\gdalplugins\gdal_KEA.dll"; 
 
 Source: "C:\dev\arckea\dist\arc1071_arcpro24\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.4'); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc1071_arcpro24\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.4'); Flags: ignoreversion
+
+Source: "C:\dev\arckea\dist\arc108_arcpro25\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.5'); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc108_arcpro25\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.5'); Flags: ignoreversion
 
 [code]
 const
