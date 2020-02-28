@@ -30,7 +30,9 @@
 #include <windows.h>
 #include <winver.h>
 
-#include "../include/libkea/kea-config.h"
+#include "libkea/kea-config.h"
+#include "ProductVersion.h"
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -67,3 +69,11 @@ BEGIN
         END
     END
 END
+
+// StringTable For debugging
+STRINGTABLE
+{
+	101, LIBKEA_VERSION    // see kea-config.h
+    102, EPRODUCTVERSION
+	103, EPRODUCTNAME
+}

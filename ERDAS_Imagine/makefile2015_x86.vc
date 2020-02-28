@@ -35,6 +35,7 @@ GDAL_HOME = "C:\dev\arckea\gdalstatic_2013_x86"
 
 CPPFLAGS = /DAUTO_EXPORT /Ox /MD /I$(KEA_HOME)\include /I$(IMAGINE_HOME)\usr\include\win32release /I$(GDAL_HOME)\include /fp:precise /D "WIN32" /D "_WINDOWS" /D "_X86_" /D "pcnt" /D "__STDC__" /D "i386" /errorReport:prompt /WX- /Gd /EHsc /DEFIO_UNBUFFERED_PROTOTYPES_PASSTHROUGH /DEFIO_STDIO_PROTOTYPES_PASSTHROUGH
 LDFLAGS = /LIBPATH:$(KEA_HOME)\lib libkea.lib keahdf5_cpp.lib /LIBPATH:$(IMAGINE_HOME)\usr\lib\win32Release ecommon.lib elib.lib eraster.lib eprj.lib /LIBPATH:$(GDAL_HOME)\lib gdal.lib ws2_32.lib /MANIFEST:EMBED
+RFLAGS = /I$(IMAGINE_HOME)\usr\include\win32release /I$(KEA_HOME)\include
 
 OBJS = keainstance.obj keafile.obj kealayer.obj keatable.obj keaproj.obj version.res
 
