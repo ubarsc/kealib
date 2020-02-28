@@ -163,16 +163,19 @@ void KEARasterBand::UpdateMetadataList()
 
     // STATISTICS_HISTONUMBINS
     const GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
-    CPLString osWorkingResult;
-    osWorkingResult.Printf( "%lu", (unsigned long)pTable->GetRowCount());
-    m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "STATISTICS_HISTONUMBINS", osWorkingResult);
-
-    // attribute table chunksize
-    if( this->m_nAttributeChunkSize != -1 )
+    if( pTable != NULL )
     {
-        char szTemp[100];
-        snprintf(szTemp, 100, "%d", this->m_nAttributeChunkSize );
-        m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "ATTRIBUTETABLE_CHUNKSIZE", szTemp );
+        CPLString osWorkingResult;
+        osWorkingResult.Printf( "%lu", (unsigned long)pTable->GetRowCount());
+        m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "STATISTICS_HISTONUMBINS", osWorkingResult);
+
+        // attribute table chunksize
+        if( this->m_nAttributeChunkSize != -1 )
+        {
+            char szTemp[100];
+            snprintf(szTemp, 100, "%d", this->m_nAttributeChunkSize );
+            m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "ATTRIBUTETABLE_CHUNKSIZE", szTemp );
+        }
     }
 }
 
@@ -195,6 +198,8 @@ CPLErr KEARasterBand::SetHistogramFromString(const char *pszString)
 
 #ifdef HAVE_RFC40
     GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
+    if( pTable == NULL )
+        return CE_Failure;
     // find histogram column if it exists
     int nCol = pTable->GetColOfUsage(GFU_PixelCount);
     if( nCol == -1 )
@@ -242,6 +247,8 @@ CPLErr KEARasterBand::SetHistogramFromString(const char *pszString)
 char *KEARasterBand::GetHistogramAsString()
 {
     const GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
+    if( pTable == NULL )
+        return NULL;
     int nRows = pTable->GetRowCount();
     // find histogram column if it exists
     int nCol = pTable->GetColOfUsage(GFU_PixelCount);
@@ -433,7 +440,8 @@ CPLErr KEARasterBand::SetMetadataItem(const char *pszName, const char *pszValue,
         {
 #ifdef HAVE_RFC40
             GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
-            pTable->SetRowCount(atol(pszValue));
+            if( pTable != NULL )
+                pTable->SetRowCount(atol(pszValue));
 #else
             // this is quite hard so I'm leaving it
 #endif
@@ -644,6 +652,8 @@ CPLErr KEARasterBand::GetDefaultHistogram( double *pdfMin, double *pdfMax,
 #else
         const GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
 #endif
+        if( pTable == NULL )
+            return CE_Failure;
         int nRows = pTable->GetRowCount();
         // find histogram column if it exists
         int nCol = pTable->GetColOfUsage(GFU_PixelCount);
@@ -695,6 +705,8 @@ CPLErr KEARasterBand::SetDefaultHistogram( double dfMin, double dfMax,
 {
 #ifdef HAVE_RFC40
     GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
+    if( pTable == NULL )
+        return CE_Failure;
     int nRows = pTable->GetRowCount();
     // find histogram column if it exists
     int nCol = pTable->GetColOfUsage(GFU_PixelCount);
@@ -755,6 +767,7 @@ GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
         try
         {
             // we assume this is never NULL - creates a new one if none exists
+            // (or raises exception)
             kealib::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(kealib::kea_att_file, this->nBand);
             this->m_pAttributeTable = new KEARasterAttributeTable(pKEATable, this);
         }
@@ -903,6 +916,8 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
     try
     {
         KEARasterAttributeTable *pKEATable = (KEARasterAttributeTable*)this->GetDefaultRAT();
+        if( pKEATable == NULL )
+            return CE_Failure;
 
         int numRows = poRAT->GetRowCount();
         pKEATable->SetRowCount(numRows);
@@ -1152,6 +1167,8 @@ GDALColorTable *KEARasterBand::GetColorTable()
         try
         {
             GDALRasterAttributeTable *pKEATable = this->GetDefaultRAT();
+            if( pKEATable == NULL )
+                return NULL;
             int nRedIdx = -1;
             int nGreenIdx = -1;
             int nBlueIdx = -1;
@@ -1302,6 +1319,8 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
     try
     {
         GDALRasterAttributeTable *pKEATable = this->GetDefaultRAT();
+        if( pKEATable == NULL )
+            return CE_Failure;
         int nRedIdx = -1;
         int nGreenIdx = -1;
         int nBlueIdx = -1;
