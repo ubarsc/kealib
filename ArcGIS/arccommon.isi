@@ -9,6 +9,9 @@ var
   lines : TArrayOfString;
   I : Integer;
   found : Boolean;
+  Stream : TFileStream;
+  data : String;
+  W : Word;
 begin
   found := False;
   // check it isn't already there
@@ -24,9 +27,34 @@ begin
       end;
     end;
   end;
-	
+
   if not found then
-    SaveStringToFile(rfpath, #13#10 + ArcKEAFmtLine + #13#10, True)
+  begin
+    // extra check - read the last byte and see if it is #13#10
+    // so we can add it before ArcKEAFmtLine if needed. LoadStringsFromFile
+    // seems to strip out these characters
+    Stream := TFileStream.Create(rfpath, fmOpenRead);
+    try
+      // confusingly Strings and unicode
+      Stream.Seek(-2, soFromEnd);
+      SetLength(data, 1);
+	  Stream.ReadBuffer(data, 2);
+    finally
+      Stream.Free;
+    end;
+  
+    W := Ord(data[1]);
+    //Log(Format('Data is %d %d %d', [W, Byte(W), Byte(W shr 8)]));
+  
+    // Need to convert from Unicode char back to bytes
+    if (Byte(W) <> 13) or (Byte(W shr 8) <> 10) then
+    begin
+	  //Log('Writing newline');
+	  SaveStringToFile(rfPath, #13#10, True);
+    end;
+	
+    SaveStringToFile(rfpath, ArcKEAFmtLine + #13#10, True)
+  end;
 end;
 
 // From: https://stackoverflow.com/questions/37825650/compare-version-strings-in-inno-setup

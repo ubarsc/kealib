@@ -97,7 +97,7 @@ var
   HasBin64 : boolean;  // Has a "bin64" subdir (BGProcessing) so 64 bit DLL also needs to be installed
   ArcInstallDir : string; // the directory in which Arc is installed
 
-// CompareVersion() and CurStepChanged (for updating RasterFormats.dat) live here
+// CompareVersion() and UpdateRasterFormats (for updating RasterFormats.dat) live here
 #include "arccommon.isi"
 
 // For calling from Check: above

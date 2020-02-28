@@ -63,7 +63,7 @@ var
   ArcRealVersion : string; // the contents of the "RealVersion" key
   ArcInstallDir : string; // the directory in which Arc is installed
 
-// CompareVersion() and CurStepChanged (for updating RasterFormats.dat) live here
+// CompareVersion() and UpdateRasterFormats (for updating RasterFormats.dat) live here
 #include "arccommon.isi"
 
 // For calling from Check: above
