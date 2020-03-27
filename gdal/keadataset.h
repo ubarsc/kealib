@@ -72,7 +72,7 @@ public:
     CPLErr      GetGeoTransform( double * padfTransform );
     
 #ifdef HAVE_SPATIALREF
-    const char *_GetProjectionRef() override;
+    const char* _GetProjectionRef() override;
     const OGRSpatialReference* GetSpatialRef() const override {
         return GetSpatialRefFromOldGetProjectionRef();
     }
@@ -82,7 +82,7 @@ public:
         return OldSetProjectionFromSetSpatialRef(poSRS);
     } 
 
-    const char* _GetGCPProjectionRef() override;
+    const char* _GetGCPProjection() override;
     const OGRSpatialReference* GetGCPSpatialRef() const override {
         return GetGCPSpatialRefFromOldGetGCPProjection();
     }

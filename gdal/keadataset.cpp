@@ -529,9 +529,9 @@ CPLErr KEADataset::GetGeoTransform( double * padfTransform )
 
 // read in the projection ref
 #ifdef HAVE_SPATIALREF
-const char *KEADataset::GetProjectionRef()
-#else
 const char *KEADataset::_GetProjectionRef()
+#else
+const char *KEADataset::GetProjectionRef()
 #endif
 {
     try
@@ -776,7 +776,7 @@ int KEADataset::GetGCPCount()
 }
 
 #ifdef HAVE_SPATIALREF
-const char* KEADataset::_GetGCPProjectionRef()
+const char* KEADataset::_GetGCPProjection()
 #else
 const char* KEADataset::GetGCPProjection()
 #endif

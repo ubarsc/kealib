@@ -1715,7 +1715,8 @@ GDALRasterBand* KEARasterBand::GetOverview(int nOverview)
 CPLErr KEARasterBand::CreateMaskBand(int nFlags)
 {
     CPLMutexHolderD( &m_hMutex );
-    delete m_pMaskBand;
+    if( m_bMaskBandOwned )
+        delete m_pMaskBand;
     m_pMaskBand = NULL;
     try
     {
