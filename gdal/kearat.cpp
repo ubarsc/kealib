@@ -371,6 +371,8 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
             "Dataset not open in update mode");
         return CE_Failure;
     }*/
+    CPLMutexHolderD( &m_hMutex );
+    
     if( iField < 0 || iField >= (int) m_aoFields.size() )
     {
         CPLError( CE_Failure, CPLE_AppDefined,

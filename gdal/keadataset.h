@@ -34,6 +34,13 @@
 #include "cpl_multiproc.h"
 #include "libkea/KEAImageIO.h"
 
+#if (GDAL_VERSION_MAJOR >= 3)
+    #define HAVE_SPATIALREF
+    #pragma message ("defining HAVE_SPATIALREF")
+#else
+    #pragma message ("HAVE_SPATIALREF not present")
+#endif
+
 class LockedRefCount;
 
 // old versions of GDAL
@@ -63,10 +70,37 @@ public:
 
     // virtual methods for dealing with transform and projection
     CPLErr      GetGeoTransform( double * padfTransform );
+    
+#ifdef HAVE_SPATIALREF
+    const char *_GetProjectionRef() override;
+    const OGRSpatialReference* GetSpatialRef() const override {
+        return GetSpatialRefFromOldGetProjectionRef();
+    }
+    
+    CPLErr _SetProjection( const char *pszWKT ) override;
+    CPLErr SetSpatialRef(const OGRSpatialReference* poSRS) override {
+        return OldSetProjectionFromSetSpatialRef(poSRS);
+    } 
+
+    const char* _GetGCPProjectionRef() override;
+    const OGRSpatialReference* GetGCPSpatialRef() const override {
+        return GetGCPSpatialRefFromOldGetGCPProjection();
+    }
+
+    CPLErr _SetGCPs( int nGCPCount, const GDAL_GCP *pasGCPList,
+                    const char *pszGCPProjection ) override;
+    CPLErr SetGCPs( int nGCPCountIn, const GDAL_GCP *pasGCPListIn,
+                    const OGRSpatialReference* poSRS ) override {
+        return OldSetGCPsFromNew(nGCPCountIn, pasGCPListIn, poSRS);
+    }
+#else
     const char *GetProjectionRef();
+    CPLErr SetProjection( const char *pszWKT );
+    const char* GetGCPProjection();
+    CPLErr SetGCPs(int nGCPCount, const GDAL_GCP *pasGCPList, const char *pszGCPProjection);
+#endif
 
     CPLErr  SetGeoTransform (double *padfTransform );
-    CPLErr SetProjection( const char *pszWKT );
 
     // method to get a pointer to the imageio class
     void *GetInternalHandle (const char *);
@@ -83,9 +117,7 @@ public:
 
     // GCPs
     int GetGCPCount();
-    const char* GetGCPProjection();
     const GDAL_GCP* GetGCPs();
-    CPLErr SetGCPs(int nGCPCount, const GDAL_GCP *pasGCPList, const char *pszGCPProjection);
 
 protected:
     // this method builds overviews for the specified bands. 

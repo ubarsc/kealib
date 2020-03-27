@@ -469,10 +469,10 @@ KEADataset::~KEADataset()
         CPLMutexHolderD( &m_hMutex );
         // destroy the metadata
         CSLDestroy(m_papszMetadataList);
-        // decrement the refcount and delete if needed
         this->DestroyGCPs();
         free( m_pszGCPProjection );
     }
+    // decrement the refcount and delete if needed
     if( m_pRefcount->DecRef() )
     {
         try
@@ -528,7 +528,11 @@ CPLErr KEADataset::GetGeoTransform( double * padfTransform )
 }
 
 // read in the projection ref
+#ifdef HAVE_SPATIALREF
 const char *KEADataset::GetProjectionRef()
+#else
+const char *KEADataset::_GetProjectionRef()
+#endif
 {
     try
     {
@@ -569,7 +573,11 @@ CPLErr KEADataset::SetGeoTransform (double *padfTransform )
 }
 
 // set the projection
+#ifdef HAVE_SPATIALREF
+CPLErr KEADataset::_SetProjection( const char *pszWKT )
+#else
 CPLErr KEADataset::SetProjection( const char *pszWKT )
+#endif
 {
     try
     {
@@ -767,7 +775,11 @@ int KEADataset::GetGCPCount()
 
 }
 
+#ifdef HAVE_SPATIALREF
+const char* KEADataset::_GetGCPProjectionRef()
+#else
 const char* KEADataset::GetGCPProjection()
+#endif
 {
     CPLMutexHolderD( &m_hMutex );
     if( m_pszGCPProjection == NULL )
@@ -818,7 +830,11 @@ const GDAL_GCP* KEADataset::GetGCPs()
     return m_pGCPs;
 }
 
+#ifdef HAVE_SPATIALREF
+CPLErr KEADataset::_SetGCPs(int nGCPCount, const GDAL_GCP *pasGCPList, const char *pszGCPProjection)
+#else
 CPLErr KEADataset::SetGCPs(int nGCPCount, const GDAL_GCP *pasGCPList, const char *pszGCPProjection)
+#endif
 {
     CPLMutexHolderD( &m_hMutex );
     this->DestroyGCPs();

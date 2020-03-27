@@ -172,9 +172,8 @@ void KEARasterBand::UpdateMetadataList()
         // attribute table chunksize
         if( this->m_nAttributeChunkSize != -1 )
         {
-            char szTemp[100];
-            snprintf(szTemp, 100, "%d", this->m_nAttributeChunkSize );
-            m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "ATTRIBUTETABLE_CHUNKSIZE", szTemp );
+            osWorkingResult.Printf( "%d", this->m_nAttributeChunkSize );
+            m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "ATTRIBUTETABLE_CHUNKSIZE", osWorkingResult );
         }
     }
 }
