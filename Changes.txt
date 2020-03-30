@@ -1,9 +1,24 @@
+1.4.13
+------
+
+* Warn if HDF5 is NOT built with threadsafety turned on.
+   HDF5 needs to be threadsafe for ArcPro.
+* Support for GetSpatialRef() etc and other various GDAL 3.x 
+   changes in driver.
+* Make driver more robust when dealing with corrupted files
+   esp. when the RAT cannot be read.
+* Protect driver internal data structures with mutexes -
+   should be totally threadsafe now.
+* Various improvements to Arc and Imagine installers and 
+    embed string tables in Windows DLLs with version info.
+* Install kea-config.h
+
 1.4.12
 ------
 
 * Backporting of fixes to the GDAL driver from GDAL trunk
    (GDAL PRs #743 and #1681). Fixes compilation of driver
-   with GDAL versions <= 2.4.
+   with GDAL versions >= 2.4.
 
 1.4.11
 ------
