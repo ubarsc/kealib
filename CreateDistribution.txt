@@ -8,15 +8,19 @@ How to create a distribution of kealib.
 4. Update Changes.txt, by going through the 
    change logs since the last release, and noting what has been done. 
    DON'T FORGET TO COMMIT THIS, BEFORE THE NEXT STEP!!!!
-5. Use "hg tag" to add a version number tag, e.g.
-    hg tag kealib-1.4.8
-6. hg push
-7. Create .zip and .tar.gz using the 'hg archive' command and the tag
+5. Export an environment variable with the version to make the following commands
+   easier UPDATE AS NEEDED:
+    export KEAVER=1.4.13
+5. Use "git tag" to add a version number tag, e.g.
+    git tag -a kealib-${KEAVER} -m "Tag version $KEAVER"
+6. git push AND git push origin --tags
+7. Create .zip and .tar.gz using the 'git archive' command and the tag
    created in the previous step:
-    hg archive -r kealib-1.4.8 -t tgz kealib-1.4.8.tar.gz
-    hg archive -r kealib-1.4.8 -t zip kealib-1.4.8.zip
+    git archive --format tar.gz --prefix=kealib-${KEAVER}/ -o kealib-${KEAVER}.tar.gz kealib-${KEAVER}
+    git archive --format zip --prefix=kealib-${KEAVER}/ -o kealib-${KEAVER}.zip kealib-${KEAVER}
 8. Update the kealib to the latest version on conda-forge by creating a PR at 
-   https://github.com/conda-forge/kealib-feedstock.
+   https://github.com/conda-forge/kealib-feedstock. Also update the pinning
+   if required - see https://github.com/conda-forge/conda-forge-pinning-feedstock/
 9. Let the Spack guys know there is a new release.
 
 Version Numbers.
