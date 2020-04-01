@@ -1,27 +1,53 @@
 How to create a distribution of kealib. 
 
-1. Ensure that you have fetched and committed everything which needs to go in.
-2. Update the LIBKEA_VERSION_MAJOR, LIBKEA_VERSION_MINOR, LIBKEA_VERSION_PATCH
-   and LIBKEA_HG_VERSION fields in CMakeLists.txt. Version number
-   is of the form MAJOR.MINOR.PATCH, as discussed below. 
-3. Close any inactive branches.
-4. Update Changes.txt, by going through the 
-   change logs since the last release, and noting what has been done. 
-   DON'T FORGET TO COMMIT THIS, BEFORE THE NEXT STEP!!!!
-5. Export an environment variable with the version to make the following commands
-   easier UPDATE AS NEEDED:
-    export KEAVER=1.4.13
-5. Use "git tag" to add a version number tag, e.g.
-    git tag -a kealib-${KEAVER} -m "Tag version $KEAVER"
-6. git push AND git push origin --tags
-7. Create .zip and .tar.gz using the 'git archive' command and the tag
-   created in the previous step:
-    git archive --format tar.gz --prefix=kealib-${KEAVER}/ -o kealib-${KEAVER}.tar.gz kealib-${KEAVER}
-    git archive --format zip --prefix=kealib-${KEAVER}/ -o kealib-${KEAVER}.zip kealib-${KEAVER}
-8. Update the kealib to the latest version on conda-forge by creating a PR at 
-   https://github.com/conda-forge/kealib-feedstock. Also update the pinning
-   if required - see https://github.com/conda-forge/conda-forge-pinning-feedstock/
-9. Let the Spack guys know there is a new release.
+1.  Ensure that you have fetched and committed everything which needs to go in.
+
+2.  Update the LIBKEA_VERSION_MAJOR, LIBKEA_VERSION_MINOR, LIBKEA_VERSION_PATCH
+    and LIBKEA_HG_VERSION fields in CMakeLists.txt. Version number
+    is of the form MAJOR.MINOR.PATCH, as discussed below. 
+   
+3.  Close any inactive branches.
+
+4.  Update Changes.txt, by going through the 
+    change logs since the last release, and noting what has been done. 
+    DON'T FORGET TO COMMIT THIS, BEFORE THE NEXT STEP!!!!
+   
+5.  Export an environment variable with the version to make the following commands
+    easier UPDATE AS NEEDED:
+    
+        export KEAVER=1.4.13
+    
+6.  Use "git tag" to add a version number tag, e.g.
+
+        git tag -a kealib-${KEAVER} -m "Tag version $KEAVER"
+    
+7.  Push changes AND tag to github:
+
+        git push
+        git push origin --tags
+
+8.  Create .zip and .tar.gz using the 'git archive' command and the tag
+    created in the previous step:
+    
+        git archive --format tar.gz --prefix=kealib-${KEAVER}/ -o kealib-${KEAVER}.tar.gz kealib-${KEAVER}
+        git archive --format zip --prefix=kealib-${KEAVER}/ -o kealib-${KEAVER}.zip kealib-${KEAVER}
+
+9.  Create .sha56 files for both the .tar.gz and the .zip:
+
+        sha256sum kealib-${KEAVER}.tar.gz > kealib-${KEAVER}.tar.gz.sha256
+        sha256sum kealib-${KEAVER}.zip > kealib-${KEAVER}.zip.sha256
+    
+10. Go to https://github.com/ubarsc/kealib/releases and click "Draft a new release".
+       Tag version: kealib-A.B.C
+       Release Title: Version A.B.C
+       Upload files: Add the tar.gz and zip files, and their sha256 checksum files. 
+       Click "Publish release"
+ 
+11. Update the kealib to the latest version on conda-forge by creating a PR at 
+    https://github.com/conda-forge/kealib-feedstock. Also update the pinning
+    if required - see https://github.com/conda-forge/conda-forge-pinning-feedstock/
+    
+12. Let the Spack guys know there is a new release.
 
 Version Numbers.
 The kealib version number is structured as MAJOR.MINOR.PATCH
