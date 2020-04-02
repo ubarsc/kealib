@@ -42,7 +42,6 @@ set (PROJECT_TOOLS_DIR tools)
 set (PROJECT_GDAL_DIR gdal)
 
 # The version number.
-set (LIBKEA_HG_VERSION 357)
 set (LIBKEA_VERSION_MAJOR 1)
 set (LIBKEA_VERSION_MINOR 4)
 set (LIBKEA_VERSION_PATCH 13)
@@ -197,7 +196,11 @@ endif(MSVC)
 ###############################################################################
 # Setup configure file
 configure_file ( "${PROJECT_HEADER_DIR}/kea-config.h.in" "${CMAKE_BINARY_DIR}/${PROJECT_HEADER_DIR}/libkea/kea-config.h" )
-configure_file ( "${PROJECT_TOOLS_DIR}/kea-config.in" "${CMAKE_BINARY_DIR}/${PROJECT_BINARY_DIR}/kea-config" )
+if(MSVC)
+    configure_file ( "${PROJECT_TOOLS_DIR}/kea-config.bat.in" "${CMAKE_BINARY_DIR}/${PROJECT_BINARY_DIR}/kea-config.bat" )
+else()
+    configure_file ( "${PROJECT_TOOLS_DIR}/kea-config.in" "${CMAKE_BINARY_DIR}/${PROJECT_BINARY_DIR}/kea-config" )
+endif(MSVC)
 ###############################################################################
 
 ###############################################################################
@@ -226,7 +229,11 @@ add_test(NAME test1 COMMAND src/test1)
 
 ###############################################################################
 # Installation
-install (FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_BINARY_DIR}/kea-config" DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+if(MSVC)
+    install (FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_BINARY_DIR}/kea-config.bat" DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+else()
+    install (FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_BINARY_DIR}/kea-config" DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+endif(MSVC)    
 install (FILES "${CMAKE_BINARY_DIR}/${PROJECT_HEADER_DIR}/libkea/kea-config.h" DESTINATION include/libkea)
 ###############################################################################
 

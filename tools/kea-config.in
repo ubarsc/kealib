@@ -6,7 +6,6 @@ usage()
 Usage: kea-config [OPTIONS]
 Options:
      [--prefix]
-     [--hgversion]
      [--version]
      [--libs]
      [--cflags]
@@ -29,9 +28,6 @@ esac
 case $1 in
     --prefix)
     echo -n "@CMAKE_INSTALL_PREFIX@ "
-     ;;
-    --hgversion)
-    echo -n "@LIBKEA_HG_VERSION@ "
      ;;
 	--version)
     echo -n "@LIBKEA_VERSION@ "

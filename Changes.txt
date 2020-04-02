@@ -11,7 +11,8 @@
    should be totally threadsafe now.
 * Various improvements to Arc and Imagine installers and 
     embed string tables in Windows DLLs with version info.
-* Install kea-config.h
+* Install kea-config.h on all platforms and install 
+    a kea-config.bat on Windows.
 
 1.4.12
 ------

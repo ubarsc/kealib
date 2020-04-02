@@ -3,7 +3,7 @@ How to create a distribution of kealib.
 1.  Ensure that you have fetched and committed everything which needs to go in.
 
 2.  Update the LIBKEA_VERSION_MAJOR, LIBKEA_VERSION_MINOR, LIBKEA_VERSION_PATCH
-    and LIBKEA_HG_VERSION fields in CMakeLists.txt. Version number
+    fields in CMakeLists.txt. Version number.
     is of the form MAJOR.MINOR.PATCH, as discussed below. 
    
 3.  Close any inactive branches.
