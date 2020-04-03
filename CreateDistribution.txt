@@ -3,8 +3,8 @@ How to create a distribution of kealib.
 1.  Ensure that you have fetched and committed everything which needs to go in.
 
 2.  Update the LIBKEA_VERSION_MAJOR, LIBKEA_VERSION_MINOR, LIBKEA_VERSION_PATCH
-    fields in CMakeLists.txt. Version number.
-    is of the form MAJOR.MINOR.PATCH, as discussed below. 
+    fields in CMakeLists.txt. Version number is of the form MAJOR.MINOR.PATCH, 
+    as discussed below. 
    
 3.  Close any inactive branches.
 
@@ -41,6 +41,7 @@ How to create a distribution of kealib.
        Tag version: kealib-A.B.C
        Release Title: Version A.B.C
        Upload files: Add the tar.gz and zip files, and their sha256 checksum files. 
+       Also any Arc/Imagine installers for this version.
        Click "Publish release"
  
 11. Update the kealib to the latest version on conda-forge by creating a PR at 
