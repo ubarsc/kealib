@@ -706,7 +706,7 @@ CPLErr KEARasterBand::SetDefaultHistogram( double dfMin, double dfMax,
     GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
     if( pTable == NULL )
         return CE_Failure;
-    int nRows = pTable->GetRowCount();
+
     // find histogram column if it exists
     int nCol = pTable->GetColOfUsage(GFU_PixelCount);
     if( nCol == -1 )
@@ -995,7 +995,7 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
                 if( ((GDALRasterAttributeTable*)poRAT)->ValuesIO(GF_Read, nGDALColumnIndex, 0, numRows, papszStringData ) == CE_None )
                 {
                     pKEATable->ValuesIO(GF_Write, nKEAColumnIndex, 0, numRows, papszStringData);
-                    for( size_t n = 0; n < numRows; n++ )
+                    for( int n = 0; n < numRows; n++ )
                         CPLFree(papszStringData[n]);
                 }
                 CPLFree(papszStringData);

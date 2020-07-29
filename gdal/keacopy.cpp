@@ -129,7 +129,6 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
         kealib::KEAAttributeTable *keaAtt = pImageIO->getAttributeTable(kealib::kea_att_file, nBand);
 #else
         kealib::KEAAttributeTable *keaAtt = new kealib::KEAAttributeTableInMem();
-#endif
         
         bool redDef = false;
         int redIdx = -1;
@@ -139,6 +138,7 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
         int blueIdx = -1;
         bool alphaDef = false;
         int alphaIdx = -1;
+#endif
         
         int numCols = gdalAtt->GetColumnCount();
         std::vector<kealib::KEAATTField*> *fields = new std::vector<kealib::KEAATTField*>();
@@ -175,8 +175,10 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
                 field->name = "Alpha";
                 field->usage = "Alpha";
                 field->dataType = kealib::kea_att_int;
+#ifndef HAVE_RFC40
                 alphaDef = true;
                 alphaIdx = ni;
+#endif                
             }
             else
             {
@@ -194,8 +196,10 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
                         if( bInputHFA )
                         {
                             field->dataType = kealib::kea_att_int;
+#ifndef HAVE_RFC40
                             redDef = true;
                             redIdx = ni;
+#endif
                         }
                         break;
                     case GFU_Green:
@@ -203,8 +207,10 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
                         if( bInputHFA )
                         {
                             field->dataType = kealib::kea_att_int;
+#ifndef HAVE_RFC40
                             greenDef = true;
                             greenIdx = ni;
+#endif
                         }
                         break;
                     case GFU_Blue:
@@ -212,8 +218,10 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
                         if( bInputHFA )
                         {
                             field->dataType = kealib::kea_att_int;
+#ifndef HAVE_RFC40
                             blueDef = true;
                             blueIdx = ni;
+#endif
                         }
                         break;
                     case GFU_Alpha:
