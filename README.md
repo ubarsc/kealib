@@ -9,16 +9,15 @@ Based on the [HDF5](https://www.hdfgroup.org/HDF5/) standard, it also provides a
 
 Binaries for Windows, Linux and Mac are available through Conda.
 
-Drivers for ArcMap and ERDAS Imagine are available from [downloads](https://bitbucket.org/chchrsc/kealib/downloads)
+Drivers for ArcMap and ERDAS Imagine are available from [releases](https://github.com/ubarsc/kealib/releases)
 
 ## Source ##
 
 KEALib requires: [HDF5](https://www.hdfgroup.org/HDF5/) with the C++ libraries and headers. [GDAL](http://gdal.org/) is required to build the GDAL driver.
-Download releases from [downloads](https://bitbucket.org/chchrsc/kealib/downloads)
 
 # Documentation #
 
-Some documentation on compilation is available in the [KEALib wiki](https://bitbucket.org/chchrsc/kealib/wiki).
+Some documentation on compilation is available in the [KEALib wiki](https://github.com/ubarsc/kealib/wiki).
 
 Documentation on the GDAL data model and API is available from the [GDAL website](http://gdal.org/).
 
