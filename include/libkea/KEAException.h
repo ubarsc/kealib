@@ -37,7 +37,7 @@
 
 namespace kealib
 {    
-	class DllExport KEAException : public std::exception
+	class KEA_EXPORT KEAException : public std::exception
 	{
     public:
         KEAException() : exception() {msgs = "A KEAException has been created.";};
@@ -49,7 +49,7 @@ namespace kealib
         std::string msgs;
 	};
     
-    class DllExport KEAIOException : public KEAException
+    class KEA_EXPORT KEAIOException : public KEAException
 	{
     public:
         KEAIOException() : KEAException("KEAIOException has been created."){};
@@ -58,7 +58,7 @@ namespace kealib
         ~KEAIOException() throw() {};
 	};
     
-    class DllExport KEAATTException : public KEAException
+    class KEA_EXPORT KEAATTException : public KEAException
 	{
     public:
         KEAATTException() : KEAException("KEAATTException has been created."){};

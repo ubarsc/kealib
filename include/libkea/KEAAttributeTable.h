@@ -98,7 +98,7 @@ namespace kealib{
         void   *p;
     } VarLenFieldHDF;
     
-    class DllExport KEAAttributeTable
+    class KEA_EXPORT KEAAttributeTable
     {
     public:
         KEAAttributeTable(KEAATTType keaAttType);

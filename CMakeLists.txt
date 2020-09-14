@@ -35,7 +35,6 @@ ENDIF()
 
 set (PROJECT_BINARY_DIR bin)
 set (PROJECT_LIBRARY_DIR lib)
-set (PROJECT_SOURCE_DIR src)
 set (PROJECT_TEST_DIR tests)
 set (PROJECT_HEADER_DIR include)
 set (PROJECT_TOOLS_DIR tools)
@@ -52,14 +51,7 @@ set (LIBKEA_PACKAGE_BUGREPORT "petebunting@mac.com")
 set (LIBKEA_PACKAGE "LibKEA")
 set (LIBKEA_COPYRIGHT_YEAR 2013)
 
-if(MSVC)
-    # set Name of C++ library
-    # this forces it to be libkea on Windows with VC
-    set(LIBKEA_LIB_NAME libkea)
-else()
-    # set Name of C++ library
-    set(LIBKEA_LIB_NAME kea)
-endif()
+set(LIBKEA_LIB_NAME kea)
 
 include(CMakeDependentOption)
 # CMake global option valiable
@@ -195,11 +187,11 @@ endif(MSVC)
 
 ###############################################################################
 # Setup configure file
-configure_file ( "${PROJECT_HEADER_DIR}/kea-config.h.in" "${CMAKE_BINARY_DIR}/${PROJECT_HEADER_DIR}/libkea/kea-config.h" )
+configure_file ( "${PROJECT_HEADER_DIR}/kea-config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_HEADER_DIR}/libkea/kea-config.h" )
 if(MSVC)
-    configure_file ( "${PROJECT_TOOLS_DIR}/kea-config.bat.in" "${CMAKE_BINARY_DIR}/${PROJECT_BINARY_DIR}/kea-config.bat" )
+    configure_file ( "${PROJECT_TOOLS_DIR}/kea-config.bat.in" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_BINARY_DIR}/kea-config.bat" )
 else()
-    configure_file ( "${PROJECT_TOOLS_DIR}/kea-config.in" "${CMAKE_BINARY_DIR}/${PROJECT_BINARY_DIR}/kea-config" )
+    configure_file ( "${PROJECT_TOOLS_DIR}/kea-config.in" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_BINARY_DIR}/kea-config" )
 endif(MSVC)
 ###############################################################################
 
@@ -213,11 +205,11 @@ endif(MSVC)
 # Build library
 
 include_directories ("${PROJECT_HEADER_DIR}")
-include_directories ("${CMAKE_BINARY_DIR}/${PROJECT_HEADER_DIR}")
+include_directories ("${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_HEADER_DIR}")
 include_directories(${HDF5_INCLUDE_DIRS})
-add_subdirectory ("${PROJECT_SOURCE_DIR}")
+add_subdirectory (src)
 if (LIBKEA_WITH_GDAL)
-	add_subdirectory ("${CMAKE_SOURCE_DIR}/${PROJECT_GDAL_DIR}")
+	add_subdirectory ("${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_GDAL_DIR}")
 endif(LIBKEA_WITH_GDAL)
 ###############################################################################
 
@@ -234,7 +226,7 @@ if(MSVC)
 else()
     install (FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_BINARY_DIR}/kea-config" DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 endif(MSVC)    
-install (FILES "${CMAKE_BINARY_DIR}/${PROJECT_HEADER_DIR}/libkea/kea-config.h" DESTINATION include/libkea)
+install (FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_HEADER_DIR}/libkea/kea-config.h" DESTINATION include/libkea)
 ###############################################################################
 
 ###############################################################################

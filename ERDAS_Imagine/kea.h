@@ -64,12 +64,6 @@
 // else in one of the earlier headers
 #define	DLL_INSTANCE_NAME	kea
 
-#ifdef _MSC_VER
-	// hack to get the descriptor table exported on Windows
-	// not sure if this affects all versions 
-	#define EDSC_API DllExport
-#endif
-
 #include <eimg_RasterFormats.h>
 
 // for unicode conversions - MSVC 2008 (Imagine 2011) doesn't have atlconv.h 
