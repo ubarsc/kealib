@@ -4,17 +4,18 @@
 :: and kealib installed there.
 
 set INSTALLDIR=c:\dev\arckea
-:: GDALDIR is where arcgdal_for_compilation.zip (from the bitbucket downloads) as been unzipped to
+:: GDALDIR is where arcgdalforcompilation_XXX.zip (from the gitbub downloads) as been unzipped to
 SET GDALDIR=C:\dev\arcgdalforcompilation
 
 :: Visual Studio 2008 x86
-SetLocal
-set VCYEAR=VC2008
-set VCMACH=x86
-call "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\vcvarsall.bat" %VCMACH%
-@echo on
-call :build
-EndLocal
+:: NOTE: DEPRECATED
+:: SetLocal
+:: set VCYEAR=VC2008
+:: set VCMACH=x86
+:: call "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\vcvarsall.bat" %VCMACH%
+:: @echo on
+:: call :build
+:: EndLocal
 
 :: Visual Studio 2013 x86 and x64
 SetLocal
@@ -35,13 +36,14 @@ call :build
 EndLocal
 
 :: Visual Studio 2015 for ArcPro <= 2.0
-SetLocal
-set VCYEAR=VC2015
-set VCMACH=x64
-call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH% 8.1
-@echo on
-call :build
-EndLocal
+:: NOTE: DEPRECATED
+:: SetLocal
+:: set VCYEAR=VC2015
+:: set VCMACH=x64
+:: call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH% 8.1
+:: @echo on
+:: call :build
+:: EndLocal
 
 :: Visual Studio 2017 for ArcPro 2.1 and ArcGIS 10.6
 SetLocal

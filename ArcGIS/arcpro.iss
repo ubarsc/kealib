@@ -35,14 +35,14 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Files]
 ; The support libs (hdf5 etc) are duplicated between releases as some will be done with the same compiler
 ; but I'm hopeful that the compression will work this out.
-Source: "C:\dev\arckea\dist\arcpro14\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('1.4'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arcpro14\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('1.4'); Flags: ignoreversion
+;Source: "C:\dev\arckea\dist\arcpro14\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('1.4'); Flags: ignoreversion
+;Source: "C:\dev\arckea\dist\arcpro14\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('1.4'); Flags: ignoreversion
 
-Source: "C:\dev\arckea\dist\arcpro20\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.0'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arcpro20\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.0'); Flags: ignoreversion
+;Source: "C:\dev\arckea\dist\arcpro20\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.0'); Flags: ignoreversion
+;Source: "C:\dev\arckea\dist\arcpro20\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.0'); Flags: ignoreversion
 
-Source: "C:\dev\arckea\dist\arc106_arcpro21\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.1'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc106_arcpro21\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.1'); Flags: ignoreversion
+;Source: "C:\dev\arckea\dist\arc106_arcpro21\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.1'); Flags: ignoreversion
+;Source: "C:\dev\arckea\dist\arc106_arcpro21\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.1'); Flags: ignoreversion
 
 Source: "C:\dev\arckea\dist\arc1061_arcpro22\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.2'); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc1061_arcpro22\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.2'); Flags: ignoreversion
@@ -53,13 +53,16 @@ Source: "C:\dev\arckea\dist\arc1071_arcpro24\x64\lib\gdalplugins\gdal_KEA.dll"; 
 Source: "C:\dev\arckea\dist\arc108_arcpro25\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.5'); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc108_arcpro25\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.5'); Flags: ignoreversion
 
+Source: "C:\dev\arckea\dist\arc1081_arcpro26\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.6'); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1081_arcpro26\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.6'); Flags: ignoreversion
+
 [code]
 const
   // this is where ArcPro seems to put the install information
   ArcSubKey = 'SOFTWARE\ESRI\ArcGISPro';
 var
   // these global vars are set by InitializeSetup() and checked by ArcVersion() and GetArcProDir()
-  ArcVersionClass : string; // one of: 1.4, 2.0, 2.1
+  ArcVersionClass : string; // string from GetArcVersionClass()
   ArcRealVersion : string; // the contents of the "RealVersion" key
   ArcInstallDir : string; // the directory in which Arc is installed
 
@@ -126,18 +129,20 @@ end;
 // convert from the arc version string to one of the version classes we recognise
 function GetArcVersionClass(realVersion: string): string;
 begin
-  if (CompareVersion(realVersion, '1.4') <> -1) and (CompareVersion(realVersion, '2.0') = -1) then
-    Result := '1.4'
-  else if (CompareVersion(realVersion, '2.0') <> -1) and (CompareVersion(realVersion, '2.1') = -1) then
-    Result := '2.0'
-  else if (CompareVersion(realVersion, '2.1') <> -1) and (CompareVersion(realVersion, '2.2') = -1) then
-    Result := '2.1'
-  else if (CompareVersion(realVersion, '2.2') <> -1) and (CompareVersion(realVersion, '2.3') = -1) then
+  //if (CompareVersion(realVersion, '1.4') <> -1) and (CompareVersion(realVersion, '2.0') = -1) then
+  //  Result := '1.4'
+  //else if (CompareVersion(realVersion, '2.0') <> -1) and (CompareVersion(realVersion, '2.1') = -1) then
+  //  Result := '2.0'
+  //else if (CompareVersion(realVersion, '2.1') <> -1) and (CompareVersion(realVersion, '2.2') = -1) then
+  //  Result := '2.1'
+  if (CompareVersion(realVersion, '2.2') <> -1) and (CompareVersion(realVersion, '2.3') = -1) then
     Result := '2.2'
   else if (CompareVersion(realVersion, '2.4') <> -1) and (CompareVersion(realVersion, '2.5') = -1) then
     Result := '2.4'
   else if (CompareVersion(realVersion, '2.5') <> -1) and (CompareVersion(realVersion, '2.6') = -1) then
     Result := '2.5'
+  else if (CompareVersion(realVersion, '2.6') <> -1) and (CompareVersion(realVersion, '2.7') = -1) then
+    Result := '2.6'
   else
     Result := ''
 end;

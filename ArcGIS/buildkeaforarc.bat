@@ -9,17 +9,18 @@ SET GDALDIR=C:\dev\arcgdalforcompilation
 :: HDF5DIR is the same as INSTALLDIR in buildzlibhdf5.bat
 SET HDF5DIR=c:\dev\arckea
 
-SetLocal
-set VCMACH=x86
-call "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\vcvarsall.bat" %VCMACH%
-@echo on
-call :build_arc93
-if errorlevel 1 exit /B 1
-call :build_arc100
-if errorlevel 1 exit /B 1
-call :build_arc101
-if errorlevel 1 exit /B 1
-EndLocal
+:: NOTE: DEPRECATED
+:: SetLocal
+:: set VCMACH=x86
+:: call "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\vcvarsall.bat" %VCMACH%
+:: @echo on
+:: call :build_arc93
+:: if errorlevel 1 exit /B 1
+:: call :build_arc100
+:: if errorlevel 1 exit /B 1
+:: call :build_arc101
+:: if errorlevel 1 exit /B 1
+:: EndLocal
 
 :: Now the vs2013 builds x86
 SetLocal
@@ -50,15 +51,16 @@ EndLocal
 
 :: Visual Studio 2015 x64 builds - note 8.1 on the end of vcvarsall.bat - selects Windows SDK 8.1
 :: which has a working rc.exe - removed in 10.1
-SetLocal
-set VCMACH=x64
-call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH% 8.1
-@echo on
-call :build_arcpro14
-if errorlevel 1 exit /B 1
-call :build_arcpro20
-if errorlevel 1 exit /B 1
-EndLocal
+:: NOTE: DEPRECATED
+:: SetLocal
+:: set VCMACH=x64
+:: call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH% 8.1
+:: @echo on
+:: call :build_arcpro14
+:: if errorlevel 1 exit /B 1
+:: call :build_arcpro20
+:: if errorlevel 1 exit /B 1
+:: EndLocal
 
 :: Visual Studio 2017 x86 Builds
 :: ESRI Says "Visual Studio 2017 Update 2" which is 14.09(?) but this is the earliest 
@@ -87,6 +89,7 @@ set VCMACH=x86
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
 @echo on
 call :build_arc1061_arcpro22
+if errorlevel 1 exit /B 1
 call :build_arc1071_arcpro24
 if errorlevel 1 exit /B 1
 EndLocal
@@ -97,6 +100,7 @@ set VCMACH=x64
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
 @echo on
 call :build_arc1061_arcpro22
+if errorlevel 1 exit /B 1
 call :build_arc1071_arcpro24
 if errorlevel 1 exit /B 1
 EndLocal
@@ -108,6 +112,8 @@ call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary
 @echo on
 call :build_arc108_arcpro25
 if errorlevel 1 exit /B 1
+call :build_arc1081_arcpro26
+if errorlevel 1 exit /B 1
 EndLocal
 
 :: Visual Studio 2019 x64 Builds
@@ -116,6 +122,8 @@ set VCMACH=x64
 call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
 @echo on
 call :build_arc108_arcpro25
+if errorlevel 1 exit /B 1
+call :build_arc1081_arcpro26
 if errorlevel 1 exit /B 1
 EndLocal
 
@@ -500,3 +508,34 @@ for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
 cd ..
 rmdir /s /q build_arc108_arcpro25
 EXIT /B 0
+
+:build_arc1081_arcpro26
+set ARCGDALDIR=%GDALDIR%\gdal233e_2\%VCMACH%
+set ARCHDF5DIR=%HDF5DIR%\VC2019_%VCMACH%
+set ARCHINSTALL=%OUTDIR%\arc1081_arcpro26\%VCMACH%
+mkdir build_arc1081_arcpro26
+cd build_arc1081_arcpro26
+  
+cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
+      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
+	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
+      -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
+      -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
+      -D GDAL_DIR=%ARCGDALDIR% ^
+      -D CMAKE_BUILD_TYPE=Release ^
+      -G "NMake Makefiles" ^
+      ..\..\gdal
+if errorlevel 1 exit /B 1
+nmake install
+if errorlevel 1 exit /B 1 
+
+:: Copy the necessary dlls over so the installer can find them 
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
+  if errorlevel 1 exit /B 1      
+)
+
+cd ..
+rmdir /s /q build_arc1081_arcpro26
+EXIT /B 0
+

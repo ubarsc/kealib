@@ -35,14 +35,14 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Files]
 ; The support libs (hdf5 etc) are duplicated between releases as some will be done with the same compiler
 ; but I'm hopeful that the compression will work this out.
-Source: "C:\dev\arckea\dist\arc93\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('9.3', 0); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc93\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('9.3', 0); Flags: ignoreversion
+;Source: "C:\dev\arckea\dist\arc93\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('9.3', 0); Flags: ignoreversion
+;Source: "C:\dev\arckea\dist\arc93\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('9.3', 0); Flags: ignoreversion
 
-Source: "C:\dev\arckea\dist\arc100\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('10.0', 0); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc100\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.0', 0); Flags: ignoreversion
+;Source: "C:\dev\arckea\dist\arc100\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('10.0', 0); Flags: ignoreversion
+;Source: "C:\dev\arckea\dist\arc100\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.0', 0); Flags: ignoreversion
 
-Source: "C:\dev\arckea\dist\arc101\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('10.1', 0); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc101\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.1', 0); Flags: ignoreversion
+;Source: "C:\dev\arckea\dist\arc101\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('10.1', 0); Flags: ignoreversion
+;Source: "C:\dev\arckea\dist\arc101\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.1', 0); Flags: ignoreversion
 
 Source: "C:\dev\arckea\dist\arc104\x86\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('10.4', 32); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc104\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.4', 32); Flags: ignoreversion
@@ -86,13 +86,19 @@ Source: "C:\dev\arckea\dist\arc108_arcpro25\x86\lib\gdalplugins\gdal_KEA.dll"; D
 Source: "C:\dev\arckea\dist\arc108_arcpro25\x64\lib\*.dll"; DestDir: "{app}\bin64"; Check: ArcVersion('10.8', 64); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc108_arcpro25\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.8', 64); Flags: ignoreversion
 
+Source: "C:\dev\arckea\dist\arc1081_arcpro26\x86\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('10.8.1', 32); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1081_arcpro26\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.8.1', 32); Flags: ignoreversion
+
+Source: "C:\dev\arckea\dist\arc1081_arcpro26\x64\lib\*.dll"; DestDir: "{app}\bin64"; Check: ArcVersion('10.8.1', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc1081_arcpro26\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.8.1', 64); Flags: ignoreversion
+
 [code]
 const
   // this is where ArcGIS seems to put the install information
   ArcSubKey = 'SOFTWARE\Wow6432Node\ESRI';
 var
   // these global vars are set by InitializeSetup() and checked by ArcVersion() and GetArcGISDir()
-  ArcVersionClass : string; // one of: 9.3, 10.0, 10.1, 10.4, 10.5, 10.5.1, 10.6
+  ArcVersionClass : string; // string with version - see GetArcVersionClass()
   ArcRealVersion : string; // the contents of the "RealVersion" key
   HasBin64 : boolean;  // Has a "bin64" subdir (BGProcessing) so 64 bit DLL also needs to be installed
   ArcInstallDir : string; // the directory in which Arc is installed
@@ -205,13 +211,13 @@ end;
 // convert from the arc version string to one of the version classes we recognise
 function GetArcVersionClass(realVersion: string): string;
 begin
-  if (CompareVersion(realVersion, '9.3') <> -1) and (CompareVersion(realVersion, '9.4') = -1) then
-    Result := '9.3'
-  else if (CompareVersion(realVersion, '10.0') <> -1) and (CompareVersion(realVersion, '10.1') = -1) then
-    Result := '10.0'
-  else if (CompareVersion(realVersion, '10.1') <> -1) and (CompareVersion(realVersion, '10.4') = -1) then
-    Result := '10.1'
-  else if (CompareVersion(realVersion, '10.4') <> -1) and (CompareVersion(realVersion, '10.5') = -1) then
+  //if (CompareVersion(realVersion, '9.3') <> -1) and (CompareVersion(realVersion, '9.4') = -1) then
+  //  Result := '9.3'
+  //else if (CompareVersion(realVersion, '10.0') <> -1) and (CompareVersion(realVersion, '10.1') = -1) then
+  //  Result := '10.0'
+  //else if (CompareVersion(realVersion, '10.1') <> -1) and (CompareVersion(realVersion, '10.4') = -1) then
+  //  Result := '10.1'
+  if (CompareVersion(realVersion, '10.4') <> -1) and (CompareVersion(realVersion, '10.5') = -1) then
     Result := '10.4'
   else if (CompareVersion(realVersion, '10.5') <> -1) and (CompareVersion(realVersion, '10.5.1') = -1) then
     Result := '10.5'
@@ -223,8 +229,10 @@ begin
     Result := '10.6.1'
   else if (CompareVersion(realVersion, '10.7.1') <> -1) and (CompareVersion(realVersion, '10.8') = -1) then
     Result := '10.7.1'
-  else if (CompareVersion(realVersion, '10.8') <> -1) and (CompareVersion(realVersion, '10.9') = -1) then
+  else if (CompareVersion(realVersion, '10.8') <> -1) and (CompareVersion(realVersion, '10.8.1') = -1) then
     Result := '10.8'
+  else if (CompareVersion(realVersion, '10.8.1') <> -1) and (CompareVersion(realVersion, '10.8.9') = -1) then
+    Result := '10.8.1'
   else
     Result := ''
 end;
