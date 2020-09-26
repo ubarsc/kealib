@@ -45,7 +45,7 @@
 
 namespace kealib{
         
-    class DllExport KEAImageIO
+    class KEA_EXPORT KEAImageIO
     {
     public:
         KEAImageIO();
@@ -171,7 +171,7 @@ namespace kealib{
 }
 
 // returns the current KEA version as a double
-extern "C" DllExport double get_kealibversion();
+extern "C" KEA_EXPORT double get_kealibversion();
 
 #endif
 

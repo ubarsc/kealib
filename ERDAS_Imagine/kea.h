@@ -67,7 +67,7 @@
 #ifdef _MSC_VER
 	// hack to get the descriptor table exported on Windows
 	// not sure if this affects all versions 
-	#define EDSC_API DllExport
+	#define EDSC_API __declspec(dllexport)
 #endif
 
 #include <eimg_RasterFormats.h>

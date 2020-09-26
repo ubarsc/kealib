@@ -43,7 +43,7 @@
 
 namespace kealib{
        
-    class DllExport KEAAttributeTableFile : public KEAAttributeTable
+    class KEA_EXPORT KEAAttributeTableFile : public KEAAttributeTable
     {
     public:
         KEAAttributeTableFile(H5::H5File *keaImgIn, const std::string &bandPathBaseIn, size_t numRowsIn, size_t chunkSizeIn, unsigned int deflateIn=KEA_DEFLATE);

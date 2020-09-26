@@ -32,42 +32,39 @@ source_group("include_kea" FILES ${LIBKEA_H})
 add_library(${LIBKEA_LIB_NAME} ${LIBKEA_CPP} ${LIBKEA_H} )
 target_link_libraries(${LIBKEA_LIB_NAME} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 
-if(BUILD_SHARED_LIBS)
-    SET_TARGET_PROPERTIES(${LIBKEA_LIB_NAME}
-            PROPERTIES
-            SOVERSION ${LIBKEA_VERSION_MAJOR}.${LIBKEA_VERSION_MINOR}
-            VERSION ${LIBKEA_VERSION}
-            CLEAN_DIRECT_OUTPUT 1)
-else()
-    SET_TARGET_PROPERTIES(${LIBKEA_LIB_NAME}
-            PROPERTIES
-            OUTPUT_NAME "${LIBKEA_LIB_NAME}"
-            PREFIX "lib"
-            VERSION ${LIBKEA_VERSION}
-            CLEAN_DIRECT_OUTPUT 1)
+include(GenerateExportHeader)
+generate_export_header(${LIBKEA_LIB_NAME}
+  EXPORT_MACRO_NAME KEA_EXPORT
+  EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/include/libkea/kea_export.h
+)
+target_include_directories(${LIBKEA_LIB_NAME} PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+set_target_properties(${LIBKEA_LIB_NAME}
+  PROPERTIES
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN 1
+    PREFIX "lib"
+    IMPORT_PREFIX "lib"
+    SOVERSION ${LIBKEA_VERSION_MAJOR}.${LIBKEA_VERSION_MINOR}
+    VERSION ${LIBKEA_VERSION}
+)
+if(MSVC AND NOT BUILD_SHARED_LIBS)
+  set_target_properties(${LIBKEA_LIB_NAME} PROPERTIES OUTPUT_NAME "libkea")
 endif()
+
 add_library(Kealib INTERFACE)
 target_link_libraries(Kealib INTERFACE "${LIBKEA_LIB_NAME}")
-target_include_directories(Kealib INTERFACE
-                             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
-                             $<INSTALL_INTERFACE:include/kealib>)
 ###############################################################################
 
 ###############################################################################
 # Testing
 # exe needs to be in 'src' otherwise it doesn't work
-add_executable (test1 ${CMAKE_SOURCE_DIR}/src/tests/test1.cpp)
+add_executable (test1 ${PROJECT_SOURCE_DIR}/src/tests/test1.cpp)
 target_link_libraries (test1 ${LIBKEA_LIB_NAME})
-
-###############################################################################
-# Set target properties
-
-SET_TARGET_PROPERTIES(${LIBKEA_LIB_NAME}
-PROPERTIES
-        SOVERSION ${LIBKEA_VERSION_MAJOR}.${LIBKEA_VERSION_MINOR}
-        VERSION ${LIBKEA_VERSION}
-)
-
 ###############################################################################
 
 ###############################################################################
@@ -76,5 +73,6 @@ install (TARGETS ${LIBKEA_LIB_NAME}
           RUNTIME DESTINATION bin
           LIBRARY DESTINATION lib
           ARCHIVE DESTINATION lib)
-install (FILES ${LIBKEA_H} DESTINATION include/libkea)
+install(FILES ${LIBKEA_H} ${CMAKE_CURRENT_BINARY_DIR}/include/libkea/kea_export.h
+        DESTINATION include/libkea)
 ###############################################################################

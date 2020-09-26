@@ -31,22 +31,14 @@
 #ifndef KEACommon_H
 #define KEACommon_H
 
+#include "libkea/kea_export.h"
+
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "H5Cpp.h"
-
-// mark all exported classes/functions with DllExport to have
-// them exported by Visual Studio
-#ifndef DllExport
-    #ifdef _MSC_VER
-        #define DllExport   __declspec( dllexport )
-    #else
-        #define DllExport
-    #endif
-#endif
 
 // MSVC 2008 uses different names....
 #ifdef _MSC_VER

@@ -43,7 +43,7 @@
 
 namespace kealib{
        
-    class DllExport KEAAttributeTableInMem : public KEAAttributeTable
+    class KEA_EXPORT KEAAttributeTableInMem : public KEAAttributeTable
     {
     public:
         KEAAttributeTableInMem();
