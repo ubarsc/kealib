@@ -198,7 +198,11 @@ CPLErr KEARasterBand::SetHistogramFromString(const char *pszString)
 #ifdef HAVE_RFC40
     GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
     if( pTable == NULL )
+    {
+        CPLFree(pszBinValues);
         return CE_Failure;
+    }
+    
     // find histogram column if it exists
     int nCol = pTable->GetColOfUsage(GFU_PixelCount);
     if( nCol == -1 )
@@ -461,7 +465,7 @@ CPLErr KEARasterBand::SetMetadataItem(const char *pszName, const char *pszValue,
     }
 }
 
-// get a single metdata item
+// get a single metadata item
 const char *KEARasterBand::GetMetadataItem (const char *pszName, const char *pszDomain)
 {
     CPLMutexHolderD( &m_hMutex );
@@ -493,7 +497,7 @@ char **KEARasterBand::GetMetadata(const char *pszDomain)
     return m_papszMetadataList; 
 }
 
-// set the metdata as a CSLStringList
+// set the metadata as a CSLStringList
 CPLErr KEARasterBand::SetMetadata(char **papszMetadata, const char *pszDomain)
 {
     CPLMutexHolderD( &m_hMutex );
