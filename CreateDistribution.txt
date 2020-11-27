@@ -38,7 +38,7 @@ How to create a distribution of kealib.
         sha256sum kealib-${KEAVER}.zip > kealib-${KEAVER}.zip.sha256
     
 10. Go to https://github.com/ubarsc/kealib/releases and click on the release
-    for the tag just created. Cliek "Edit".
+    for the tag just created. Click "Edit".
        Tag version: kealib-A.B.C
        Release Title: Version A.B.C
        Upload files: Add the tar.gz and zip files, and their sha256 checksum files. 

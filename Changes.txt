@@ -1,3 +1,13 @@
+1.4.14
+------
+
+* On Windows, hide symbols if building a shared library.
+* Also on Windows change the name of the "DllExport" define 
+   to "KEA_EXPORT" to reduce the likelihood of clashes with
+   other headers.
+* Retire some older Arc versions.
+* Fix some compile warnings.
+
 1.4.13
 ------
 
