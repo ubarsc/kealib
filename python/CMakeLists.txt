@@ -34,11 +34,10 @@ include_directories(BEFORE "${AWKWARD_INCLUDE}" "${KEALIB_INCLUDE}" "${GDAL_INCL
 add_subdirectory(pybind11)
 
 find_library(CPU-KERNELS awkward-cpu-kernels REQUIRED HINTS ${AWKWARD_LIBRARIES})
-find_library(LIBAWKWARD awkward-static REQUIRED HINTS ${AWKWARD_LIBRARIES})
+find_library(LIBAWKWARD awkward REQUIRED HINTS ${AWKWARD_LIBRARIES})
 find_library(LIBKEA kea REQUIRED HINTS ${KEALIB_LIBRARIES})
-find_library(LIBDL dl REQUIRED)
-message(STATUS "Libraries: ${CPU-KERNELS} ${LIBAWKWARD} ${LIBKEA} ${GDAL_LIBRARIES} ${LIBDL}")
+message(STATUS "Libraries: ${CPU-KERNELS} ${LIBAWKWARD} ${LIBKEA} ${GDAL_LIBRARIES}")
 
 pybind11_add_module(pykealib pykealib.cpp)
 set_target_properties(pykealib PROPERTIES CXX_VISIBILITY_PRESET hidden)
-target_link_libraries(pykealib PRIVATE ${CPU-KERNELS} ${LIBAWKWARD} ${LIBKEA} ${GDAL_LIBRARIES} ${LIBDL})
+target_link_libraries(pykealib PRIVATE ${CPU-KERNELS} ${LIBAWKWARD} ${LIBKEA} ${GDAL_LIBRARIES})

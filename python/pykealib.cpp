@@ -36,6 +36,7 @@
 #include "awkward/builder/ArrayBuilder.h"
 #include "awkward/builder/ArrayBuilderOptions.h"
 #include "awkward/kernels.h"
+#include "awkward/array/NumpyArray.h"
 
 #include "gdal_priv.h"
 #include "libkea/KEAImageIO.h"
@@ -189,15 +190,66 @@ void setNeighbours(pybind11::object &dataset, int nBand, int startfid, awkward::
         {
             throw PyKeaLibException("No Attribute table in this file");
         }
-        
+
         int64_t length = neighbours.get()->length();
         std::vector<std::vector<size_t>* > cppneighbours(length);
-        for( size_t n = 0; n < length; n++ )
+        for( int64_t n = 0; n < length; n++ )
         {
             awkward::ContentPtr row = neighbours.get()->getitem_at_nowrap(n);
-            std::vector<size_t> *pVec = new std::vector<size_t>;
+            int64_t rowLength = row.get()->length();
+            
+            std::vector<size_t> *pVec = new std::vector<size_t>(rowLength);
+            
+            for( int64_t i = 0; i < rowLength; i++ ) 
+            {
+                awkward::ContentPtr el = row.get()->getitem_at_nowrap(i);
+                awkward::NumpyArray *elnp = dynamic_cast<awkward::NumpyArray*>(el.get());
+                    
+                // this is all very strange but seems to work...
+                size_t val = 0;    
+                switch(elnp->dtype())
+                {
+                    case awkward::util::dtype::int8:
+                        val = awkward_NumpyArray8_getitem_at0(static_cast<int8_t*>(elnp->data()));
+                        break;
+                    case awkward::util::dtype::uint8:
+                        val = awkward_NumpyArrayU8_getitem_at0(static_cast<uint8_t*>(elnp->data()));
+                        break;
+                    case awkward::util::dtype::int16:
+                        val = awkward_NumpyArray16_getitem_at0(static_cast<int16_t*>(elnp->data()));
+                        break;
+                    case awkward::util::dtype::uint16:
+                        val = awkward_NumpyArrayU16_getitem_at0(static_cast<uint16_t*>(elnp->data()));
+                        break;
+                    case awkward::util::dtype::int32:
+                        val = awkward_NumpyArray32_getitem_at0(static_cast<int32_t*>(elnp->data()));
+                        break;
+                    case awkward::util::dtype::uint32:
+                        val = awkward_NumpyArrayU32_getitem_at0(static_cast<uint32_t*>(elnp->data()));
+                        break;
+                    case awkward::util::dtype::int64:
+                        val = awkward_NumpyArray64_getitem_at0(static_cast<int64_t*>(elnp->data()));
+                        break;
+                    case awkward::util::dtype::uint64:
+                        val = awkward_NumpyArrayU64_getitem_at0(static_cast<uint64_t*>(elnp->data()));
+                        break;
+                    case awkward::util::dtype::float32:
+                        val = awkward_NumpyArrayfloat32_getitem_at0(static_cast<float*>(elnp->data()));
+                        break;
+                    case awkward::util::dtype::float64:
+                        val = awkward_NumpyArrayfloat64_getitem_at0(static_cast<double*>(elnp->data()));
+                        break;
+                }
+                
+                pVec->at(i) = val;
+            }
+            
+            cppneighbours.at(n) = pVec;
         }
         
+        pRAT->setNeighbours(startfid, cppneighbours.size(), &cppneighbours);
+        
+        freeNeighbourLists(&cppneighbours);
     }
     catch(kealib::KEAException &e)
     {

@@ -25,8 +25,9 @@ Test script for kealib Neighbours python bindings
 from __future__ import print_function
 import os
 import numpy
+import awkward
 from osgeo import gdal
-from kealib import neighbours
+import build.pykealib
 
 TESTFILE = 'test.kea'
 N_VALUES = 8
@@ -47,49 +48,54 @@ def setupFile():
     rat = band.GetDefaultRAT()
     rat.CreateColumn('Values', gdal.GFT_Integer, gdal.GFU_Generic)
     rat.SetRowCount(N_VALUES)
-    values = numpy.arange(N_VALUES, dtype=numpy.integer)
+    values = numpy.arange(N_VALUES, dtype=numpy.int32)
     rat.WriteArray(values, 0)
 
     return ds
 
-def testList(ds):
+def testAwkward(ds):
     """
-    Tests the ability to read and write lists of neighbours
+    Tests the ability to read and write awkward array of neighbours
     """
-    neighbourData = [[2, 3, 1], [5], [8, 0, 2], [6, 7,2]]
-    neighbours.setNeighbours(ds, 1, 0, neighbourData)
+    builder = awkward.ArrayBuilder()
+    builder.begin_list()
+    builder.integer(2)
+    builder.integer(3)
+    builder.integer(1)
+    builder.end_list()
+    
+    builder.begin_list()
+    builder.integer(5)
+    builder.end_list()
+    
+    builder.begin_list()
+    builder.integer(8)
+    builder.integer(0)
+    builder.integer(2)
+    builder.end_list()
 
-    readData = neighbours.getNeighbours(ds, 1, 0, 4)
-    if readData != neighbourData:
+    builder.begin_list()
+    builder.integer(6)
+    builder.integer(7)
+    builder.integer(2)
+    builder.end_list()
+    
+    neighbourData = builder.snapshot()
+    
+    build.pykealib.setNeighbours(ds, 1, 0, neighbourData.layout)
+
+    readData = build.pykealib.getNeighbours(ds, 1, 0, 4)
+    
+    if awkward.any(readData != neighbourData):
         raise SystemExit("Data doesn't match")
-
-def testArray(ds):
-    """
-    Tests the ability to read and write numpy masked arrays
-    """
-    # create a masked array to test
-    numpyNeighboursData = numpy.array([[8, 7, 0], [9, 0, 0], [1, 4, 3], 
-                        [7, 0, 0]])
-    numpyNeighboursMask = numpy.array([[False, False, True], [False, True, True], 
-                    [False, False, False], [False, True, True]])
-    numpyNeighbours = numpy.ma.MaskedArray(numpyNeighboursData, 
-                    mask=numpyNeighboursMask)
-    # set it
-    neighbours.setNeighbours(ds, 1, 4, numpyNeighbours)
-
-    # get it
-    readData, readMask = neighbours.getNeighbours(ds, 1, 4, 4, 
-                    neighbours.NEIGHBOURS_ARRAY)
-
-    # turn back into a masked array
-    numpyNeighboursOut = numpy.ma.MaskedArray(readData, mask=readMask)
-    if not (numpyNeighbours == numpyNeighboursOut).all():
-        raise SystemExit("Array Data doesn't match")
 
 def doTests():
     """
     Main function
     """
     ds = setupFile()
-    testList(ds)
-    testArray(ds)
+    testAwkward(ds)
+
+if __name__ == '__main__':
+    doTests()
+    
