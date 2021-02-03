@@ -196,6 +196,15 @@ void setNeighbours(pybind11::object &dataset, int nBand, int startfid, awkward::
         for( int64_t n = 0; n < length; n++ )
         {
             awkward::ContentPtr row = neighbours.get()->getitem_at_nowrap(n);
+            if( row.get()->classname() != "NumpyArray" ) 
+            {
+                // this always *seems* to be a NumpyArray class (which is unrelated
+                // to an actual numpy array - don't ask), but it appears
+                // to be other options. Just do a check for now, and extend this
+                // if required.
+                throw PyKeaLibException("Currently only handle NumpyArray for rows");
+            }
+            
             int64_t rowLength = row.get()->length();
             
             std::vector<size_t> *pVec = new std::vector<size_t>(rowLength);
@@ -203,7 +212,14 @@ void setNeighbours(pybind11::object &dataset, int nBand, int startfid, awkward::
             for( int64_t i = 0; i < rowLength; i++ ) 
             {
                 awkward::ContentPtr el = row.get()->getitem_at_nowrap(i);
+                // if the 'row' was a NumpyArray an element should is a scalar
+                // NumpyArray (don't ask).
                 awkward::NumpyArray *elnp = dynamic_cast<awkward::NumpyArray*>(el.get());
+                if( !elnp->isscalar() )
+                {
+                    // they must have given us more than a 2d awkward array. Bail.
+                    throw PyKeaLibException("Only support 2D awkward arrays");
+                }
                     
                 // this is all very strange but seems to work...
                 size_t val = 0;    
