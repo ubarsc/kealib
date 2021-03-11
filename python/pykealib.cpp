@@ -30,8 +30,10 @@
  
 #include <string>
 #include <exception>
+#include <algorithm>
 
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 
 #include "awkward/builder/ArrayBuilder.h"
 #include "awkward/builder/ArrayBuilderOptions.h"
@@ -40,6 +42,7 @@
 
 #include "gdal_priv.h"
 #include "libkea/KEAImageIO.h"
+#include "numpy/arrayobject.h"
 
 class PyKeaLibException : public std::exception
 {
@@ -273,12 +276,140 @@ void setNeighbours(pybind11::object &dataset, int nBand, int startfid, awkward::
     }
 }
 
+class NeighbourAccumulator
+{
+public:
+    NeighbourAccumulator(size_t len, size_t offset);
+    ~NeighbourAccumulator();
+    
+    void addArray(pybind11::array &arr);
+    
+private:
+    template<typename T>
+    void addNeighbours(PyArrayObject *pInput)
+    {
+        npy_intp nYSize = PyArray_DIM(pInput, 0);
+        npy_intp nXSize = PyArray_DIM(pInput, 1);
+        
+        for( npy_intp y = 1; y < (nYSize - 1); y++ )
+        {
+            for( npy_intp x = 1; x < (nXSize - 1); x++ )
+            {
+                T val = *(T*)PyArray_GETPTR2(pInput, y, x);
+                if( (val >= m_minVal) && (val < m_maxVal) )
+                {
+                    // check neighbouring pixels
+                    for( npy_intp y_sub = (y - 1); y_sub < (y + 1); y_sub++ )
+                    {
+                        for( npy_intp x_sub = (x - 1); x_sub < (x + 1); x_sub++ )
+                        {
+                            if( (y != y_sub) && (x != x_sub) )
+                            {
+                                T val_sub = *(T*)PyArray_GETPTR2(pInput, y_sub, x_sub);
+                                // don't do the range check for val_sub as we are 
+                                // finding *ALL NEIGHBOURS*
+                                if( val != val_sub )
+                                {
+                                    std::vector<size_t> *pVec = m_cppneighbours.at(val - m_minVal);
+                                    if( std::find(pVec->begin(), pVec->end(), val_sub) == pVec->end() )
+                                    {
+                                        // not already in there...
+                                        pVec->push_back(val_sub);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    
+    }
+
+    std::vector<std::vector<size_t>* > m_cppneighbours;
+    size_t m_minVal;
+    size_t m_maxVal;
+};
+
+NeighbourAccumulator::NeighbourAccumulator(size_t minVal, size_t maxVal)
+    : m_cppneighbours(maxVal - minVal),
+      m_minVal(minVal),
+      m_maxVal(maxVal)
+{
+    for( size_t i = 0; i < m_cppneighbours.size(); i++ )
+    {
+        m_cppneighbours.at(i) = new std::vector<size_t>();
+    }
+}
+
+NeighbourAccumulator::~NeighbourAccumulator()
+{
+    freeNeighbourLists(&m_cppneighbours);
+}
+
+void NeighbourAccumulator::addArray(pybind11::array &arr)
+{
+    if( arr.ndim() != 2 )
+    {
+        throw PyKeaLibException("Only support 2D arrays");
+    }
+
+    PyArrayObject *pInput = reinterpret_cast<PyArrayObject*>(arr.ptr());
+    
+    int arrayType = PyArray_TYPE(pInput);
+    
+    switch(arrayType)
+    {
+        case NPY_INT8:
+            addNeighbours <npy_int8> (pInput);
+            break;
+        case NPY_UINT8:
+            addNeighbours <npy_uint8> (pInput);
+            break;
+        case NPY_INT16:
+            addNeighbours <npy_int16> (pInput);
+            break;
+        case NPY_UINT16:
+            addNeighbours <npy_uint16> (pInput);
+            break;
+        case NPY_INT32:
+            addNeighbours <npy_int32> (pInput);
+            break;
+        case NPY_UINT32:
+            addNeighbours <npy_uint32> (pInput);
+            break;
+        case NPY_INT64:
+            addNeighbours <npy_int64> (pInput);
+            break;
+        case NPY_UINT64:
+            addNeighbours <npy_uint64> (pInput);
+            break;
+            // TODO: should be error?
+        case NPY_FLOAT16:
+            addNeighbours <npy_float16> (pInput);
+            break;
+        case NPY_FLOAT32:
+            addNeighbours <npy_float32> (pInput);
+            break;
+        case NPY_FLOAT64:
+            addNeighbours <npy_float64> (pInput);
+            break;
+        default:
+            throw PyKeaLibException("Unsupported data type");
+            break;
+    }
+}
+
 PYBIND11_MODULE(pykealib, m) {
   // Ensure dependencies are loaded.
   pybind11::module::import("awkward");
 
   m.def("getNeighbours", &getNeighbours);
   m.def("setNeighbours", &setNeighbours);
+  
+  pybind11::class_<NeighbourAccumulator>(m, "NeighbourAccumulator")
+        .def(pybind11::init<size_t, size_t>())
+        .def("addArray", &NeighbourAccumulator::addArray);
   
   pybind11::register_exception<PyKeaLibException>(m, "KeaLibException");
 }

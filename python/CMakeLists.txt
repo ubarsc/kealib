@@ -28,8 +28,9 @@ execute_process(COMMAND kea-config --includes OUTPUT_VARIABLE KEALIB_INCLUDE OUT
 execute_process(COMMAND kea-config --ldflags OUTPUT_VARIABLE KEALIB_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 find_package(GDAL REQUIRED)
+find_package(Python3 COMPONENTS NumPy)
 
-include_directories(BEFORE "${AWKWARD_INCLUDE}" "${KEALIB_INCLUDE}" "${GDAL_INCLUDE_DIRS}")
+include_directories(BEFORE "${AWKWARD_INCLUDE}" "${KEALIB_INCLUDE}" "${GDAL_INCLUDE_DIRS}" "${Python3_NumPy_INCLUDE_DIRS}")
 
 add_subdirectory(pybind11)
 
@@ -39,5 +40,6 @@ find_library(LIBKEA kea REQUIRED HINTS ${KEALIB_LIBRARIES})
 message(STATUS "Libraries: ${CPU-KERNELS} ${LIBAWKWARD} ${LIBKEA} ${GDAL_LIBRARIES}")
 
 pybind11_add_module(pykealib pykealib.cpp)
+target_compile_definitions(pykealib PRIVATE NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
 set_target_properties(pykealib PROPERTIES CXX_VISIBILITY_PRESET hidden)
 target_link_libraries(pykealib PRIVATE ${CPU-KERNELS} ${LIBAWKWARD} ${LIBKEA} ${GDAL_LIBRARIES})
