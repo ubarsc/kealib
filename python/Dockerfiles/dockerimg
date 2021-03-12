@@ -1,0 +1,7 @@
+# Simple docker image that is the conda build image
+# Plus the conda packages required to build pykealib
+
+FROM condaforge/linux-anvil-comp7
+
+RUN /opt/conda/bin/tini -- /opt/docker/bin/entrypoint bash -c "conda create -n mybuild -c conda-forge python=3.8 gxx_linux-64 cmake awkward gdal=3.2"
+
