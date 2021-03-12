@@ -88,6 +88,26 @@ def testAwkward(ds):
     
     if awkward.any(readData != neighbourData):
         raise SystemExit("Data doesn't match")
+        
+def testImage(ds):
+    """
+    Tests the ability to write neightbours with the
+    NeighbourAccumulator object
+    """
+    data = numpy.array([[1, 2, 3, 0], [1, 4, 3, 0], 
+                [6, 0, 5, 4], [6, 4, 4, 7]])
+    print(data)
+    for eightConnected in (False, True):
+    
+        accum = build.pykealib.NeighbourAccumulator(0, 8, 0, eightConnected)
+        accum.addArray(data)
+        accum.saveNeighbours(ds, 1)
+
+        readData = build.pykealib.getNeighbours(ds, 1, 0, 8)
+        print('eightConnected', eightConnected)
+        for i, d in enumerate(readData):
+            print(i, list(d))
+    
 
 def doTests():
     """
@@ -95,6 +115,7 @@ def doTests():
     """
     ds = setupFile()
     testAwkward(ds)
+    testImage(ds)
 
 if __name__ == '__main__':
     doTests()

@@ -293,32 +293,34 @@ private:
         npy_intp nYSize = PyArray_DIM(pInput, 0);
         npy_intp nXSize = PyArray_DIM(pInput, 1);
         
-        for( npy_intp y = 0; y < (nYSize - 1); y++ )
+        for( npy_intp y = 0; y < nYSize; y++ )
         {
-            for( npy_intp x = 0; x < (nXSize - 1); x++ )
+            for( npy_intp x = 0; x < nXSize; x++ )
             {
                 T val = *(T*)PyArray_GETPTR2(pInput, y, x);
                 if( (val != nTypeIgnore) && (val >= m_minVal) && (val < m_maxVal) )
                 {
-                    // check neighbouring pixels - right and below
-                    T right_val = *(T*)PyArray_GETPTR2(pInput, y, x + 1);
-                    if( right_val != nTypeIgnore )
+                    // check neighbouring pixels - left/right and up/down
+                    for( npy_intp x_off = -1; x_off < 2; x_off++ )
                     {
-                        addNeighbour(val, right_val);
-                    }
-                    
-                    T below_val = *(T*)PyArray_GETPTR2(pInput, y + 1, x);
-                    if( below_val != nTypeIgnore )
-                    {
-                        addNeighbour(val, below_val);
-                    }
-
-                    if( m_eightConnected ) 
-                    {
-                        T right_below_val = *(T*)PyArray_GETPTR2(pInput, y + 1, x + 1);
-                        if( right_below_val != nTypeIgnore )
+                        for( npy_intp y_off = -1; y_off < 2; y_off++ )
                         {
-                            addNeighbour(val, right_below_val);
+                            if( (x_off != 0) || (y_off != 0) )
+                            {
+                                npy_intp x_idx = x + x_off;
+                                npy_intp y_idx = y + y_off;
+                                if( (x_idx >= 0) && (x_idx < nXSize) && (y_idx >= 0) && (y_idx < nYSize) )
+                                {
+                                    if( m_eightConnected || ((x_off == 0) || (y_off == 0)) )
+                                    {
+                                        T other_val = *(T*)PyArray_GETPTR2(pInput, y_idx, x_idx);
+                                        if( (val != other_val) && (other_val != nTypeIgnore ) )
+                                        {
+                                            addNeighbour(val, other_val);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
