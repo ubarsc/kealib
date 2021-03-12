@@ -279,62 +279,79 @@ void setNeighbours(pybind11::object &dataset, int nBand, int startfid, awkward::
 class NeighbourAccumulator
 {
 public:
-    NeighbourAccumulator(size_t len, size_t offset);
+    NeighbourAccumulator(size_t len, size_t offset, double ignore, bool eightConnected=false);
     ~NeighbourAccumulator();
     
     void addArray(pybind11::array &arr);
+    void saveNeighbours(pybind11::object &dataset, int nBand);
     
 private:
     template<typename T>
     void addNeighbours(PyArrayObject *pInput)
     {
+        T nTypeIgnore = (T)m_ignore;
         npy_intp nYSize = PyArray_DIM(pInput, 0);
         npy_intp nXSize = PyArray_DIM(pInput, 1);
         
-        for( npy_intp y = 1; y < (nYSize - 1); y++ )
+        for( npy_intp y = 0; y < (nYSize - 1); y++ )
         {
-            for( npy_intp x = 1; x < (nXSize - 1); x++ )
+            for( npy_intp x = 0; x < (nXSize - 1); x++ )
             {
                 T val = *(T*)PyArray_GETPTR2(pInput, y, x);
-                if( (val >= m_minVal) && (val < m_maxVal) )
+                if( (val != nTypeIgnore) && (val >= m_minVal) && (val < m_maxVal) )
                 {
-                    // check neighbouring pixels
-                    for( npy_intp y_sub = (y - 1); y_sub < (y + 1); y_sub++ )
+                    // check neighbouring pixels - right and below
+                    T right_val = *(T*)PyArray_GETPTR2(pInput, y, x + 1);
+                    if( right_val != nTypeIgnore )
                     {
-                        for( npy_intp x_sub = (x - 1); x_sub < (x + 1); x_sub++ )
+                        addNeighbour(val, right_val);
+                    }
+                    
+                    T below_val = *(T*)PyArray_GETPTR2(pInput, y + 1, x);
+                    if( below_val != nTypeIgnore )
+                    {
+                        addNeighbour(val, below_val);
+                    }
+
+                    if( m_eightConnected ) 
+                    {
+                        T right_below_val = *(T*)PyArray_GETPTR2(pInput, y + 1, x + 1);
+                        if( right_below_val != nTypeIgnore )
                         {
-                            if( (y != y_sub) && (x != x_sub) )
-                            {
-                                T val_sub = *(T*)PyArray_GETPTR2(pInput, y_sub, x_sub);
-                                // don't do the range check for val_sub as we are 
-                                // finding *ALL NEIGHBOURS*
-                                if( val != val_sub )
-                                {
-                                    std::vector<size_t> *pVec = m_cppneighbours.at(val - m_minVal);
-                                    if( std::find(pVec->begin(), pVec->end(), val_sub) == pVec->end() )
-                                    {
-                                        // not already in there...
-                                        pVec->push_back(val_sub);
-                                    }
-                                }
-                            }
+                            addNeighbour(val, right_below_val);
                         }
                     }
                 }
             }
         }
+    }
     
+    void addNeighbour(size_t val, size_t neighbour)
+    {
+        // adds a neighbour, checking it isn't there already
+        // and taking into account m_minVal
+        std::vector<size_t> *pVec = m_cppneighbours.at(val - m_minVal);
+        if( std::find(pVec->begin(), pVec->end(), neighbour) == pVec->end() )
+        {
+            // not already in there...
+            pVec->push_back(neighbour);
+        }
     }
 
     std::vector<std::vector<size_t>* > m_cppneighbours;
     size_t m_minVal;
     size_t m_maxVal;
+    double m_ignore;
+    bool m_eightConnected;
 };
 
-NeighbourAccumulator::NeighbourAccumulator(size_t minVal, size_t maxVal)
+NeighbourAccumulator::NeighbourAccumulator(size_t minVal, size_t maxVal, 
+                double ignore, bool eightConnected/*=false*/)
     : m_cppneighbours(maxVal - minVal),
       m_minVal(minVal),
-      m_maxVal(maxVal)
+      m_maxVal(maxVal),
+      m_ignore(ignore),
+      m_eightConnected(eightConnected)
 {
     for( size_t i = 0; i < m_cppneighbours.size(); i++ )
     {
@@ -384,33 +401,85 @@ void NeighbourAccumulator::addArray(pybind11::array &arr)
         case NPY_UINT64:
             addNeighbours <npy_uint64> (pInput);
             break;
-            // TODO: should be error?
-        case NPY_FLOAT16:
-            addNeighbours <npy_float16> (pInput);
-            break;
-        case NPY_FLOAT32:
-            addNeighbours <npy_float32> (pInput);
-            break;
-        case NPY_FLOAT64:
-            addNeighbours <npy_float64> (pInput);
-            break;
+            
+        // note: don't support float types
         default:
             throw PyKeaLibException("Unsupported data type");
             break;
     }
 }
 
-PYBIND11_MODULE(pykealib, m) {
-  // Ensure dependencies are loaded.
-  pybind11::module::import("awkward");
+void NeighbourAccumulator::saveNeighbours(pybind11::object &dataset, int nBand)
+{
+    void *pPtr = getUnderlyingPtrFromSWIGPyObject(dataset);
 
-  m.def("getNeighbours", &getNeighbours);
-  m.def("setNeighbours", &setNeighbours);
-  
-  pybind11::class_<NeighbourAccumulator>(m, "NeighbourAccumulator")
-        .def(pybind11::init<size_t, size_t>())
-        .def("addArray", &NeighbourAccumulator::addArray);
-  
-  pybind11::register_exception<PyKeaLibException>(m, "KeaLibException");
+    // cast - and hope!
+    GDALDataset *pDataset = (GDALDataset*)pPtr;
+
+    GDALDriver *pDriver = pDataset->GetDriver();
+    const char *pszName = pDriver->GetDescription();
+    if( (strlen(pszName) != 3) || (pszName[0] != 'K') || (pszName[1] != 'E') || (pszName[2] != 'A'))
+    {
+        throw PyKeaLibException("This function only works on KEA files");
+    }
+
+    kealib::KEAImageIO *pImageIO = (kealib::KEAImageIO*)pDataset->GetInternalHandle(NULL);
+    if( pImageIO == NULL )
+    {
+        throw PyKeaLibException("GetInternalHandle returned NULL");
+    }
+
+    try
+    {
+        kealib::KEAAttributeTable *pRAT = pImageIO->getAttributeTable(kealib::kea_att_file, nBand);
+        if( pRAT == NULL )
+        {
+            throw PyKeaLibException("No Attribute table in this file");
+        }
+
+        pRAT->setNeighbours(m_minVal, m_cppneighbours.size(), &m_cppneighbours);
+    }
+    catch(kealib::KEAException &e)
+    {
+        throw PyKeaLibException(e.what());
+    }
+}
+
+PYBIND11_MODULE(pykealib, m) {
+    // Ensure dependencies are loaded.
+    // TODO: currently we need to ensure this is imported in Python
+    // otherwise link failures happen...
+    pybind11::module::import("awkward");
+
+    m.def("getNeighbours", &getNeighbours,
+        "Return all the neighbours for the given dataset and band from startfid "
+        "returing length features. Returned value is an awkward array",
+        pybind11::arg("dataset"), pybind11::arg("band"), pybind11::arg("startfid"),
+        pybind11::arg("length"));
+    m.def("setNeighbours", &setNeighbours,
+        "Set the neighbours for the given dataset band from startfid. "
+        "neighbours should be an awkward array",
+        pybind11::arg("dataset"), pybind11::arg("band"), pybind11::arg("startfid"),
+        pybind11::arg("neighbours"));
+
+    pybind11::class_<NeighbourAccumulator>(m, "NeighbourAccumulator")
+        .def(pybind11::init<size_t, size_t, double>(),
+            "Construct a NeighbourAccumulator to find all the neighbours "
+            "of pixels between the given minVal and maxVal ignoring values equal to ignore",
+            pybind11::arg("minVal"), pybind11::arg("maxVal"), pybind11::arg("ignore"))
+        .def(pybind11::init<size_t, size_t, double, bool>(),
+            "Construct a NeighbourAccumulator to find all the neighbours "
+            "of pixels between the given minVal and maxVal ignoring values equal to ignore. "
+            "eightConnected controls whether their are 4 or 8 neighbours for a pixel.",
+            pybind11::arg("minVal"), pybind11::arg("maxVal"), pybind11::arg("ignore"),
+            pybind11::arg("eightConnected"))
+        .def("addArray", &NeighbourAccumulator::addArray, 
+            "Process a 2D array (from an image) adding all neighbours found",
+            pybind11::arg("array"))
+        .def("saveNeighbours", &NeighbourAccumulator::saveNeighbours,
+            "Save found neighbours to given dataset and band",
+            pybind11::arg("dataset"), pybind11::arg("band"));
+
+    pybind11::register_exception<PyKeaLibException>(m, "KeaLibException");
 }
 
