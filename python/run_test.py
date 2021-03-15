@@ -97,14 +97,14 @@ def testImage(ds):
     data = numpy.array([[1, 2, 3, 0], [1, 4, 3, 0], 
                 [6, 0, 5, 4], [6, 4, 4, 7]])
     print(data)
-    for eightConnected in (False, True):
+    for fourConnected in (True, False):
     
-        accum = build.pykealib.NeighbourAccumulator(0, 8, 0, eightConnected)
+        accum = build.pykealib.NeighbourAccumulator(0, 8, 0, fourConnected)
         accum.addArray(data)
         accum.saveNeighbours(ds, 1)
 
         readData = build.pykealib.getNeighbours(ds, 1, 0, 8)
-        print('eightConnected', eightConnected)
+        print('fourConnected', fourConnected)
         for i, d in enumerate(readData):
             print(i, list(d))
     

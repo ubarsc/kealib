@@ -279,7 +279,7 @@ void setNeighbours(pybind11::object &dataset, int nBand, int startfid, awkward::
 class NeighbourAccumulator
 {
 public:
-    NeighbourAccumulator(size_t len, size_t offset, double ignore, bool eightConnected=false);
+    NeighbourAccumulator(size_t len, size_t offset, double ignore, bool fourConnected=true);
     ~NeighbourAccumulator();
     
     void addArray(pybind11::array &arr);
@@ -311,7 +311,7 @@ private:
                                 npy_intp y_idx = y + y_off;
                                 if( (x_idx >= 0) && (x_idx < nXSize) && (y_idx >= 0) && (y_idx < nYSize) )
                                 {
-                                    if( m_eightConnected || ((x_off == 0) || (y_off == 0)) )
+                                    if( !m_fourConnected || ((x_off == 0) || (y_off == 0)) )
                                     {
                                         T other_val = *(T*)PyArray_GETPTR2(pInput, y_idx, x_idx);
                                         if( (val != other_val) && (other_val != nTypeIgnore ) )
@@ -344,16 +344,16 @@ private:
     size_t m_minVal;
     size_t m_maxVal;
     double m_ignore;
-    bool m_eightConnected;
+    bool m_fourConnected;
 };
 
 NeighbourAccumulator::NeighbourAccumulator(size_t minVal, size_t maxVal, 
-                double ignore, bool eightConnected/*=false*/)
+                double ignore, bool fourConnected/*=true*/)
     : m_cppneighbours(maxVal - minVal),
       m_minVal(minVal),
       m_maxVal(maxVal),
       m_ignore(ignore),
-      m_eightConnected(eightConnected)
+      m_fourConnected(fourConnected)
 {
     for( size_t i = 0; i < m_cppneighbours.size(); i++ )
     {
@@ -472,9 +472,9 @@ PYBIND11_MODULE(pykealib, m) {
         .def(pybind11::init<size_t, size_t, double, bool>(),
             "Construct a NeighbourAccumulator to find all the neighbours "
             "of pixels between the given minVal and maxVal ignoring values equal to ignore. "
-            "eightConnected controls whether their are 4 or 8 neighbours for a pixel.",
+            "fourConnected controls whether their are 4 or 8 neighbours for a pixel.",
             pybind11::arg("minVal"), pybind11::arg("maxVal"), pybind11::arg("ignore"),
-            pybind11::arg("eightConnected"))
+            pybind11::arg("fourConnected"))
         .def("addArray", &NeighbourAccumulator::addArray, 
             "Process a 2D array (from an image) adding all neighbours found",
             pybind11::arg("array"))
