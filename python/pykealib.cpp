@@ -343,7 +343,7 @@ private:
                     {
                         // need to write this one out.
                         // Create a vector wrapping pVec
-                        fprintf(stderr, "Writing neighbours for %d\n", (int)val);
+                        //fprintf(stderr, "Writing neighbours for %d\n", (int)val);
                         std::vector<std::vector<size_t>* > cppneighbours(1);
                         cppneighbours.at(0) = pVec;
                         try

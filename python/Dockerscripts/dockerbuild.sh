@@ -56,5 +56,6 @@ rm -rf build
 mkdir build
 cd build
 
-cmake $CONDA_PREFIX ..
+cmake -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -D CMAKE_BUILD_TYPE=Release ..
 make
+make install
