@@ -31,6 +31,7 @@ import build.pykealib
 
 TESTFILE = 'test.kea'
 N_VALUES = 8
+IGNORE_VAL = 0
 
 def setupFile():
     """
@@ -44,6 +45,7 @@ def setupFile():
     ds = driver.Create(TESTFILE, 100, 100, 1, gdal.GDT_Byte)
     band = ds.GetRasterBand(1)
     band.SetMetadataItem('LAYER_TYPE', 'thematic')
+    band.SetNoDataValue(IGNORE_VAL)
 
     rat = band.GetDefaultRAT()
     rat.CreateColumn('Values', gdal.GFT_Integer, gdal.GFU_Generic)
@@ -94,14 +96,22 @@ def testImage(ds):
     Tests the ability to write neightbours with the
     NeighbourAccumulator object
     """
-    data = numpy.array([[1, 2, 3, 0], [1, 4, 3, 0], 
+    subdata = numpy.array([[1, 2, 3, 0], [1, 4, 3, 0], 
                 [6, 0, 5, 4], [6, 4, 4, 7]])
+    
+    # put the ignore value one pixel wide around the outside
+    ysize, xsize = subdata.shape
+    data = numpy.full((ysize+2, xsize+2), IGNORE_VAL, dtype=subdata.dtype)
+    data[1:ysize+1,1:xsize+1] = subdata
     print(data)
+    topHistVal = data.max() + 1
+    hist = numpy.histogram(data, bins=(topHistVal), range=(0, topHistVal))[0]
+    #print(hist)
+    
     for fourConnected in (True, False):
     
-        accum = build.pykealib.NeighbourAccumulator(0, 8, 0, fourConnected)
+        accum = build.pykealib.NeighbourAccumulator(hist, ds, 1, fourConnected)
         accum.addArray(data)
-        accum.saveNeighbours(ds, 1)
 
         readData = build.pykealib.getNeighbours(ds, 1, 0, 8)
         print('fourConnected', fourConnected)
@@ -115,6 +125,8 @@ def doTests():
     """
     ds = setupFile()
     testAwkward(ds)
+    
+    ds = setupFile()
     testImage(ds)
 
 if __name__ == '__main__':

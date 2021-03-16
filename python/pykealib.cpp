@@ -31,6 +31,7 @@
 #include <string>
 #include <exception>
 #include <algorithm>
+#include <unordered_map>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -109,7 +110,9 @@ void freeNeighbourLists(std::vector<std::vector<size_t>* > *pNeighbours)
     }
 }
 
-awkward::ContentPtr getNeighbours(pybind11::object &dataset, int nBand, int &startfid, int &length)
+// helper function to get the underlying KEA KEAImageIO object from GDAL
+// given a dataset and band number.
+kealib::KEAImageIO *getImageIOFromDataset(pybind11::object &dataset, int nBand)
 {
     void *pPtr = getUnderlyingPtrFromSWIGPyObject(dataset);
 
@@ -128,6 +131,13 @@ awkward::ContentPtr getNeighbours(pybind11::object &dataset, int nBand, int &sta
     {
         throw PyKeaLibException("GetInternalHandle returned NULL");
     }
+
+    return pImageIO;
+}
+
+awkward::ContentPtr getNeighbours(pybind11::object &dataset, int nBand, int &startfid, int &length)
+{
+    kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset, nBand);
     
     awkward::ArrayBuilder builder(awkward::ArrayBuilderOptions(1024, 2.0));
 
@@ -168,23 +178,7 @@ awkward::ContentPtr getNeighbours(pybind11::object &dataset, int nBand, int &sta
 
 void setNeighbours(pybind11::object &dataset, int nBand, int startfid, awkward::ContentPtr &neighbours)
 {
-    void *pPtr = getUnderlyingPtrFromSWIGPyObject(dataset);
-
-    // cast - and hope!
-    GDALDataset *pDataset = (GDALDataset*)pPtr;
-
-    GDALDriver *pDriver = pDataset->GetDriver();
-    const char *pszName = pDriver->GetDescription();
-    if( (strlen(pszName) != 3) || (pszName[0] != 'K') || (pszName[1] != 'E') || (pszName[2] != 'A'))
-    {
-        throw PyKeaLibException("This function only works on KEA files");
-    }
-
-    kealib::KEAImageIO *pImageIO = (kealib::KEAImageIO*)pDataset->GetInternalHandle(NULL);
-    if( pImageIO == NULL )
-    {
-        throw PyKeaLibException("GetInternalHandle returned NULL");
-    }
+    kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset, nBand);
 
     try
     {
@@ -279,11 +273,11 @@ void setNeighbours(pybind11::object &dataset, int nBand, int startfid, awkward::
 class NeighbourAccumulator
 {
 public:
-    NeighbourAccumulator(size_t len, size_t offset, double ignore, bool fourConnected=true);
+    NeighbourAccumulator(pybind11::array &hist, pybind11::object &dataset, 
+                    int nBand, bool fourConnected=true);
     ~NeighbourAccumulator();
     
     void addArray(pybind11::array &arr);
-    void saveNeighbours(pybind11::object &dataset, int nBand);
     
 private:
     template<typename T>
@@ -293,13 +287,30 @@ private:
         npy_intp nYSize = PyArray_DIM(pInput, 0);
         npy_intp nXSize = PyArray_DIM(pInput, 1);
         
-        for( npy_intp y = 0; y < nYSize; y++ )
+        // note: starting/ending one pixel in
+        // so overlap of one must be selected
+        // otherwise everything will be out of sync with the
+        // histogram.
+        for( npy_intp y = 1; y < (nYSize-1); y++ )
         {
-            for( npy_intp x = 0; x < nXSize; x++ )
+            for( npy_intp x = 1; x < (nXSize-1); x++ )
             {
                 T val = *(T*)PyArray_GETPTR2(pInput, y, x);
-                if( (val != nTypeIgnore) && (val >= m_minVal) && (val < m_maxVal) )
+                if( val != nTypeIgnore )
                 {
+                    std::vector<size_t> *pVec = NULL;
+                    auto found = m_neighbourMap.find(val);
+                    if( found != m_neighbourMap.end() )
+                    {
+                        pVec = found->second;
+                    }
+                    else
+                    {
+                        // not in our map - add it
+                        pVec = new std::vector<size_t>();
+                        m_neighbourMap.insert({val, pVec});
+                    }
+                
                     // check neighbouring pixels - left/right and up/down
                     for( npy_intp x_off = -1; x_off < 2; x_off++ )
                     {
@@ -307,63 +318,147 @@ private:
                         {
                             if( (x_off != 0) || (y_off != 0) )
                             {
-                                npy_intp x_idx = x + x_off;
-                                npy_intp y_idx = y + y_off;
-                                if( (x_idx >= 0) && (x_idx < nXSize) && (y_idx >= 0) && (y_idx < nYSize) )
+                                if( !m_fourConnected || ((x_off == 0) || (y_off == 0)) )
                                 {
-                                    if( !m_fourConnected || ((x_off == 0) || (y_off == 0)) )
+                                    // don't need to check within the image here as we are 
+                                    // starting/ending one pixel in (see above)
+                                    npy_intp x_idx = x + x_off;
+                                    npy_intp y_idx = y + y_off;
+                                    T other_val = *(T*)PyArray_GETPTR2(pInput, y_idx, x_idx);
+                                    if( (val != other_val) && (other_val != nTypeIgnore ) )
                                     {
-                                        T other_val = *(T*)PyArray_GETPTR2(pInput, y_idx, x_idx);
-                                        if( (val != other_val) && (other_val != nTypeIgnore ) )
+                                        if( std::find(pVec->begin(), pVec->end(), other_val) == pVec->end() )
                                         {
-                                            addNeighbour(val, other_val);
+                                            // not already in there...
+                                            pVec->push_back(other_val);
                                         }
                                     }
                                 }
                             }
                         }
                     }
+                    
+                    m_pHistogram[val]--;
+                    if( m_pHistogram[val] == 0 )
+                    {
+                        // need to write this one out.
+                        // Create a vector wrapping pVec
+                        fprintf(stderr, "Writing neighbours for %d\n", (int)val);
+                        std::vector<std::vector<size_t>* > cppneighbours(1);
+                        cppneighbours.at(0) = pVec;
+                        try
+                        {
+                            m_pRAT->setNeighbours(val, 1, &cppneighbours);
+                        }
+                        catch(kealib::KEAException &e)
+                        {
+                            throw PyKeaLibException(e.what());
+                        }
+                        
+                        m_neighbourMap.erase(val);
+                        delete pVec;
+                    }
                 }
             }
         }
     }
     
-    void addNeighbour(size_t val, size_t neighbour)
+    template<typename T>
+    void copyHistogram(PyArrayObject *pInput)
     {
-        // adds a neighbour, checking it isn't there already
-        // and taking into account m_minVal
-        std::vector<size_t> *pVec = m_cppneighbours.at(val - m_minVal);
-        if( std::find(pVec->begin(), pVec->end(), neighbour) == pVec->end() )
+        npy_intp nSize = PyArray_DIM(pInput, 0);
+        m_pHistogram = new npy_uintp[nSize];
+        for( npy_intp i = 0; i < nSize; i++ )
         {
-            // not already in there...
-            pVec->push_back(neighbour);
+            T val = *(T*)PyArray_GETPTR1(pInput, i);
+            m_pHistogram[i] = val;
         }
     }
-
-    std::vector<std::vector<size_t>* > m_cppneighbours;
-    size_t m_minVal;
-    size_t m_maxVal;
+    
+    std::unordered_map<size_t, std::vector<size_t>* > m_neighbourMap;
+    kealib::KEAAttributeTable *m_pRAT;
+    npy_uintp *m_pHistogram;
     double m_ignore;
     bool m_fourConnected;
 };
 
-NeighbourAccumulator::NeighbourAccumulator(size_t minVal, size_t maxVal, 
-                double ignore, bool fourConnected/*=true*/)
-    : m_cppneighbours(maxVal - minVal),
-      m_minVal(minVal),
-      m_maxVal(maxVal),
-      m_ignore(ignore),
-      m_fourConnected(fourConnected)
+NeighbourAccumulator::NeighbourAccumulator(pybind11::array &hist, 
+                    pybind11::object &dataset, 
+                    int nBand, bool fourConnected/*=true*/)
+    : m_fourConnected(fourConnected)
 {
-    for( size_t i = 0; i < m_cppneighbours.size(); i++ )
+    PyArrayObject *pInput = reinterpret_cast<PyArrayObject*>(hist.ptr());
+    int arrayType = PyArray_TYPE(pInput);
+    
+    // TODO: is it wise to always copy the histogram, or is there
+    // a better way?
+    switch(arrayType)
     {
-        m_cppneighbours.at(i) = new std::vector<size_t>();
+        case NPY_INT8:
+            copyHistogram <npy_int8> (pInput);
+            break;
+        case NPY_UINT8:
+            copyHistogram <npy_uint8> (pInput);
+            break;
+        case NPY_INT16:
+            copyHistogram <npy_int16> (pInput);
+            break;
+        case NPY_UINT16:
+            copyHistogram <npy_uint16> (pInput);
+            break;
+        case NPY_INT32:
+            copyHistogram <npy_int32> (pInput);
+            break;
+        case NPY_UINT32:
+            copyHistogram <npy_uint32> (pInput);
+            break;
+        case NPY_INT64:
+            copyHistogram <npy_int64> (pInput);
+            break;
+        case NPY_UINT64:
+            copyHistogram <npy_uint64> (pInput);
+            break;
+        case NPY_FLOAT16:
+            copyHistogram <npy_float16> (pInput);
+            break;
+        case NPY_FLOAT32:
+            copyHistogram <npy_float32> (pInput);
+            break;
+        case NPY_FLOAT64:
+            copyHistogram <npy_float64> (pInput);
+            break;
+        default:
+            throw PyKeaLibException("Unsupported data type");
+            break;
+    }    
+
+    kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset, nBand);
+    
+    try
+    {
+        pImageIO->getNoDataValue(nBand, &m_ignore, kealib::kea_64float);
+    
+        m_pRAT = pImageIO->getAttributeTable(kealib::kea_att_file, nBand);
+        if( m_pRAT == NULL )
+        {
+            throw PyKeaLibException("No Attribute table in this file");
+        }
+    }
+    catch(kealib::KEAException &e)
+    {
+        throw PyKeaLibException(e.what());
     }
 }
 
 NeighbourAccumulator::~NeighbourAccumulator()
 {
-    freeNeighbourLists(&m_cppneighbours);
+    delete[] m_pHistogram;
+    
+    for( auto itr = m_neighbourMap.begin(); itr != m_neighbourMap.end(); itr++)
+    {
+        fprintf(stderr, "Neighbours not written for %d\n", (int)itr->first);
+        delete itr->second;
+    }
 }
 
 void NeighbourAccumulator::addArray(pybind11::array &arr)
@@ -411,42 +506,6 @@ void NeighbourAccumulator::addArray(pybind11::array &arr)
     }
 }
 
-void NeighbourAccumulator::saveNeighbours(pybind11::object &dataset, int nBand)
-{
-    void *pPtr = getUnderlyingPtrFromSWIGPyObject(dataset);
-
-    // cast - and hope!
-    GDALDataset *pDataset = (GDALDataset*)pPtr;
-
-    GDALDriver *pDriver = pDataset->GetDriver();
-    const char *pszName = pDriver->GetDescription();
-    if( (strlen(pszName) != 3) || (pszName[0] != 'K') || (pszName[1] != 'E') || (pszName[2] != 'A'))
-    {
-        throw PyKeaLibException("This function only works on KEA files");
-    }
-
-    kealib::KEAImageIO *pImageIO = (kealib::KEAImageIO*)pDataset->GetInternalHandle(NULL);
-    if( pImageIO == NULL )
-    {
-        throw PyKeaLibException("GetInternalHandle returned NULL");
-    }
-
-    try
-    {
-        kealib::KEAAttributeTable *pRAT = pImageIO->getAttributeTable(kealib::kea_att_file, nBand);
-        if( pRAT == NULL )
-        {
-            throw PyKeaLibException("No Attribute table in this file");
-        }
-
-        pRAT->setNeighbours(m_minVal, m_cppneighbours.size(), &m_cppneighbours);
-    }
-    catch(kealib::KEAException &e)
-    {
-        throw PyKeaLibException(e.what());
-    }
-}
-
 PYBIND11_MODULE(pykealib, m) {
     // Ensure dependencies are loaded.
     // TODO: currently we need to ensure this is imported in Python
@@ -465,22 +524,23 @@ PYBIND11_MODULE(pykealib, m) {
         pybind11::arg("neighbours"));
 
     pybind11::class_<NeighbourAccumulator>(m, "NeighbourAccumulator")
-        .def(pybind11::init<size_t, size_t, double>(),
+        .def(pybind11::init<pybind11::array&, pybind11::object&, int>(),
             "Construct a NeighbourAccumulator to find all the neighbours "
-            "of pixels between the given minVal and maxVal ignoring values equal to ignore",
-            pybind11::arg("minVal"), pybind11::arg("maxVal"), pybind11::arg("ignore"))
-        .def(pybind11::init<size_t, size_t, double, bool>(),
-            "Construct a NeighbourAccumulator to find all the neighbours "
-            "of pixels between the given minVal and maxVal ignoring values equal to ignore. "
-            "fourConnected controls whether their are 4 or 8 neighbours for a pixel.",
-            pybind11::arg("minVal"), pybind11::arg("maxVal"), pybind11::arg("ignore"),
+            "of pixels of arrays passed to addArray(). hist should be a "
+            "histogram of the imagery data. The neighbours are written "
+            "to the RAT of the given band of the dataset.",
+            pybind11::arg("hist"), pybind11::arg("dataset"), pybind11::arg("band"))
+        .def(pybind11::init<pybind11::array&, pybind11::object&, int, bool>(),
+            "Like the other constructor, but fourConnected controls whether there "
+            "are 4 or 8 neighbours for a pixel.",
+            pybind11::arg("hist"), pybind11::arg("dataset"), pybind11::arg("band"),
             pybind11::arg("fourConnected"))
         .def("addArray", &NeighbourAccumulator::addArray, 
-            "Process a 2D array (from an image) adding all neighbours found",
-            pybind11::arg("array"))
-        .def("saveNeighbours", &NeighbourAccumulator::saveNeighbours,
-            "Save found neighbours to given dataset and band",
-            pybind11::arg("dataset"), pybind11::arg("band"));
+            "Process a 2D array (from an image) adding all neighbours found. "
+            "Very important: a one pixel overlap should be given between "
+            "multiple tiles. Around the outside of the image, the ignore value "
+            "should be used to fill in. ",
+            pybind11::arg("array"));
 
     pybind11::register_exception<PyKeaLibException>(m, "KeaLibException");
 }
