@@ -45,6 +45,7 @@
 #include "libkea/KEAImageIO.h"
 #include "numpy/arrayobject.h"
 
+// Exception class. Wrapped by Python.
 class PyKeaLibException : public std::exception
 {
 public:
@@ -100,6 +101,8 @@ void *getUnderlyingPtrFromSWIGPyObject(pybind11::object &input/*, PyObject *pExc
     return pUnderlying;
 }
 
+// helper function to delete the contained neighbour vectors from the 
+// KEA data structure.
 void freeNeighbourLists(std::vector<std::vector<size_t>* > *pNeighbours)
 {
     /* frees all the sub vectors of pNeighbours */
@@ -135,6 +138,10 @@ kealib::KEAImageIO *getImageIOFromDataset(pybind11::object &dataset, int nBand)
     return pImageIO;
 }
 
+// Get the neighbours for the given dataset and band. The
+// neighbours are returned as an awkward array. The reading
+// of neighbours starts at the startfid row in the RAT and
+// stops after 'length' rows.
 awkward::ContentPtr getNeighbours(pybind11::object &dataset, int nBand, int &startfid, int &length)
 {
     kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset, nBand);
@@ -176,7 +183,11 @@ awkward::ContentPtr getNeighbours(pybind11::object &dataset, int nBand, int &sta
     return builder.snapshot();
 }
 
-void setNeighbours(pybind11::object &dataset, int nBand, int startfid, awkward::ContentPtr &neighbours)
+// Set the neighbours for the given dataset and band. The
+// neighbours are to be given as an awkward array and the writing
+// starts at the startfid row in the table.
+void setNeighbours(pybind11::object &dataset, int nBand, 
+        int startfid, awkward::ContentPtr &neighbours)
 {
     kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset, nBand);
 
@@ -270,6 +281,35 @@ void setNeighbours(pybind11::object &dataset, int nBand, int startfid, awkward::
     }
 }
 
+// Function to add a boolean column to the RAT of a KEA file.
+// GDAL doesn't support this, but will provide any existing bool columns
+// as integers, converting as it goes. 
+// The user will need to close the dataset and open again to see the
+// new column
+void addBoolField(pybind11::object &dataset, int nBand, 
+        const std::string& name, bool bInitVal, const std::string &usage)
+{
+    kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset, nBand);
+
+    try
+    {
+        kealib::KEAAttributeTable *pRAT = pImageIO->getAttributeTable(kealib::kea_att_file, nBand);
+        if( pRAT == NULL )
+        {
+            throw PyKeaLibException("No Attribute table in this file");
+        }
+        
+        pRAT->addAttBoolField(name, bInitVal, usage);
+
+    }
+    catch(kealib::KEAException &e)
+    {
+        throw PyKeaLibException(e.what());
+    }
+}
+
+// class that holds the neighbours and accumulates new neighbours
+// from given 2d numpy arrays
 class NeighbourAccumulator
 {
 public:
@@ -280,6 +320,8 @@ public:
     void addArray(pybind11::array &arr);
     
 private:
+    // templated member function to find all neighbours from given 
+    // 2d numby array. Type should match that of the numpy array.
     template<typename T>
     void addNeighbours(PyArrayObject *pInput)
     {
@@ -302,6 +344,7 @@ private:
                     auto found = m_neighbourMap.find(val);
                     if( found != m_neighbourMap.end() )
                     {
+                        // already in our map - grab it
                         pVec = found->second;
                     }
                     else
@@ -316,17 +359,22 @@ private:
                     {
                         for( npy_intp y_off = -1; y_off < 2; y_off++ )
                         {
+                            // don't worry about the middle pixel 
+                            // - is the one we are trying to find neighbours for.
                             if( (x_off != 0) || (y_off != 0) )
                             {
+                                // if 8 connected we consider all pixels
+                                // otherwise only the horizontal and vertical ones.
                                 if( !m_fourConnected || ((x_off == 0) || (y_off == 0)) )
                                 {
                                     // don't need to check within the image here as we are 
-                                    // starting/ending one pixel in (see above)
+                                    // starting/ending one pixel in from the edge (see above)
                                     npy_intp x_idx = x + x_off;
                                     npy_intp y_idx = y + y_off;
                                     T other_val = *(T*)PyArray_GETPTR2(pInput, y_idx, x_idx);
                                     if( (val != other_val) && (other_val != nTypeIgnore ) )
                                     {
+                                        // check we don't already have this pixel
                                         if( std::find(pVec->begin(), pVec->end(), other_val) == pVec->end() )
                                         {
                                             // not already in there...
@@ -338,10 +386,12 @@ private:
                         }
                     }
                     
+                    // decrement our copy of the histogram. 
                     m_pHistogram[val]--;
                     if( m_pHistogram[val] == 0 )
                     {
-                        // need to write this one out.
+                        // need to write this one out - have visited each occurrance of it
+                        // and searched for neighbours.
                         // Create a vector wrapping pVec
                         //fprintf(stderr, "Writing neighbours for %d\n", (int)val);
                         std::vector<std::vector<size_t>* > cppneighbours(1);
@@ -355,6 +405,7 @@ private:
                             throw PyKeaLibException(e.what());
                         }
                         
+                        // remove it from our map and delete it.
                         m_neighbourMap.erase(val);
                         delete pVec;
                     }
@@ -363,6 +414,8 @@ private:
         }
     }
     
+    // templated member function to create and copy
+    // the user supplied histogram into a known type.
     template<typename T>
     void copyHistogram(PyArrayObject *pInput)
     {
@@ -375,13 +428,20 @@ private:
         }
     }
     
+    // map keyed on image values where the value is a vector of neighbours
     std::unordered_map<size_t, std::vector<size_t>* > m_neighbourMap;
+    // refernce to the RAT 
     kealib::KEAAttributeTable *m_pRAT;
+    // our copy of the user supplied histogram
     npy_uintp *m_pHistogram;
+    // the ignore value obtained from the file
     double m_ignore;
+    // whether to consider just 4 neighbours or 8.
     bool m_fourConnected;
 };
 
+// Constructor. Copy the histogram into our array and obtain 
+// a reference to the RAT and get the ignore value
 NeighbourAccumulator::NeighbourAccumulator(pybind11::array &hist, 
                     pybind11::object &dataset, 
                     int nBand, bool fourConnected/*=true*/)
@@ -450,6 +510,9 @@ NeighbourAccumulator::NeighbourAccumulator(pybind11::array &hist,
     }
 }
 
+// destructor. Delete our copy of the histogram and 
+// check if anything is left in our map - should be 
+// all written out if the histogram is correct.
 NeighbourAccumulator::~NeighbourAccumulator()
 {
     delete[] m_pHistogram;
@@ -461,6 +524,7 @@ NeighbourAccumulator::~NeighbourAccumulator()
     }
 }
 
+// get all neighbours from a 2d array
 void NeighbourAccumulator::addArray(pybind11::array &arr)
 {
     if( arr.ndim() != 2 )
@@ -506,6 +570,8 @@ void NeighbourAccumulator::addArray(pybind11::array &arr)
     }
 }
 
+// Main mondule initialisation
+
 PYBIND11_MODULE(pykealib, m) {
     // Ensure dependencies are loaded.
     // TODO: currently we need to ensure this is imported in Python
@@ -522,7 +588,15 @@ PYBIND11_MODULE(pykealib, m) {
         "neighbours should be an awkward array",
         pybind11::arg("dataset"), pybind11::arg("band"), pybind11::arg("startfid"),
         pybind11::arg("neighbours"));
-
+    m.def("addBoolField", &addBoolField,
+        "Add a boolean column for the given dataset band. "
+        "GDAL doesn't support creation of boolean columns, but "
+        "presents boolean columns as integers and allows you to "
+        "read and write them converting to/from integers. "
+        "You will have to re-open the dataset with GDAL to see "
+        "the new column.", pybind11::arg("dataset"), pybind11::arg("band"),
+        pybind11::arg("name"), pybind11::arg("initval"), pybind11::arg("usage"));
+        
     pybind11::class_<NeighbourAccumulator>(m, "NeighbourAccumulator")
         .def(pybind11::init<pybind11::array&, pybind11::object&, int>(),
             "Construct a NeighbourAccumulator to find all the neighbours "

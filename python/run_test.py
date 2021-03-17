@@ -93,7 +93,7 @@ def testAwkward(ds):
         
 def testImage(ds):
     """
-    Tests the ability to write neightbours with the
+    Tests the ability to write neighbours with the
     NeighbourAccumulator object
     """
     subdata = numpy.array([[1, 2, 3, 0], [1, 4, 3, 0], 
@@ -118,6 +118,26 @@ def testImage(ds):
         for i, d in enumerate(readData):
             print(i, list(d))
     
+def testBoolColumn(ds):
+    """
+    Test the ability to add a boolean column to the RAT of
+    the dataset.
+    """
+    newColName = "mybool"
+    build.pykealib.addBoolField(ds, 1, newColName, False, "Generic")
+    ds.FlushCache()
+    
+    # re-open file
+    del ds
+    # because we can't effectively close the dataset 
+    # (owned by caller) workaround is to open it in update mode
+    # (not sure why)
+    ds = gdal.Open(TESTFILE, gdal.GA_Update)
+
+    band = ds.GetRasterBand(1)
+    rat = band.GetDefaultRAT()
+    colNames = [rat.GetNameOfCol(i) for i in range(rat.GetColumnCount())]
+    assert(newColName in colNames)
 
 def doTests():
     """
@@ -129,6 +149,9 @@ def doTests():
     ds = setupFile()
     testImage(ds)
 
+    ds = setupFile()
+    testBoolColumn(ds)
+    
 if __name__ == '__main__':
     doTests()
     
