@@ -14,7 +14,7 @@ from rios.cuiprogress import GDALProgressBar
 
 # required first so the libs are already loaded into mem. 
 import awkward
-import build.pykealib
+from kea import extrat
 
 from osgeo import gdal
 gdal.UseExceptions()
@@ -76,7 +76,7 @@ def main(cmdargs):
     controls.setProgress(progress)
     
     otherargs = applier.OtherInputs()
-    otherargs.accumulator = build.pykealib.NeighbourAccumulator(histogram, ds, 
+    otherargs.accumulator = extrat.NeighbourAccumulator(histogram, ds, 
                         cmdargs.band, not cmdargs.eightway)
     otherargs.band = cmdargs.band
     

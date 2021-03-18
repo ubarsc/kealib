@@ -18,7 +18,7 @@
 #  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 cmake_minimum_required(VERSION 3.1...3.16)
-project(pykealib LANGUAGES CXX)
+project(extrat LANGUAGES CXX)
 
 # get libawkward info
 execute_process(COMMAND python -m awkward.config --incdir OUTPUT_VARIABLE AWKWARD_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -28,7 +28,7 @@ execute_process(COMMAND kea-config --includes OUTPUT_VARIABLE KEALIB_INCLUDE OUT
 execute_process(COMMAND kea-config --ldflags OUTPUT_VARIABLE KEALIB_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 find_package(GDAL REQUIRED)
-find_package(Python3 COMPONENTS Interpreter NumPy)
+find_package(Python3 COMPONENTS Interpreter Development NumPy)
 
 include_directories(BEFORE "${AWKWARD_INCLUDE}" "${KEALIB_INCLUDE}" "${GDAL_INCLUDE_DIRS}" "${Python3_NumPy_INCLUDE_DIRS}")
 
@@ -39,10 +39,12 @@ find_library(LIBAWKWARD awkward REQUIRED HINTS ${AWKWARD_LIBRARIES})
 find_library(LIBKEA kea REQUIRED HINTS ${KEALIB_LIBRARIES})
 message(STATUS "Libraries: ${CPU-KERNELS} ${LIBAWKWARD} ${LIBKEA} ${GDAL_LIBRARIES}")
 
-pybind11_add_module(pykealib pykealib.cpp)
-target_compile_definitions(pykealib PRIVATE NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
-set_target_properties(pykealib PROPERTIES CXX_VISIBILITY_PRESET hidden)
-target_link_libraries(pykealib PRIVATE ${CPU-KERNELS} ${LIBAWKWARD} ${LIBKEA} ${GDAL_LIBRARIES})
+pybind11_add_module(extrat extrat.cpp)
+target_compile_definitions(extrat PRIVATE NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
+set_target_properties(extrat PROPERTIES CXX_VISIBILITY_PRESET hidden)
+target_link_libraries(extrat PRIVATE ${CPU-KERNELS} ${LIBAWKWARD} ${LIBKEA} ${GDAL_LIBRARIES})
 
 install(FILES kea_build_neighbours.py DESTINATION bin)
-install(TARGETS pykealib DESTINATION ${Python3_SITELIB})
+set(PYKEA_INSTALL_DIR "${Python3_SITELIB}/kea" CACHE PATH "Install Dir for Python Bindings")
+install(TARGETS extrat DESTINATION ${PYKEA_INSTALL_DIR})
+install(FILES __init__.py DESTINATION ${PYKEA_INSTALL_DIR})

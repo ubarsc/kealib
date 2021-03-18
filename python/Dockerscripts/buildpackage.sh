@@ -15,4 +15,4 @@ docker run -it \
     -v "${BUILD_ROOT}":/home/conda/recipe_root:rw \
     awk:latest \
     bash \
-    /home/conda/recipe_root/python/Dockerscripts/dockerbuild.sh
+    /home/conda/recipe_root/python/Dockerscripts/dockerbuildconda.sh

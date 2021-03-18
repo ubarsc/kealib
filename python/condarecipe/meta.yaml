@@ -1,0 +1,27 @@
+package:
+  name: pykealib
+  version: "0.1"
+
+source:
+  path: ..
+
+requirements:
+  build:
+    - cmake
+    - make  # [unix]
+    - {{ compiler('cxx') }}
+  host:
+    - python
+    - gdal 3.2
+    - kealib
+    - awkward
+  run:
+    - gdal 3.2
+    - kealib
+    - awkward
+    
+test:
+  imports:
+    # need to import awkward first
+    - awkward
+    - kea.extrat

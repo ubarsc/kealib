@@ -1,5 +1,5 @@
 /*
- *  pykealib.cpp
+ *  extrat.cpp
  *  LibKEA
  *
  *  Created by Pete Bunting on 02/07/2012.
@@ -572,7 +572,7 @@ void NeighbourAccumulator::addArray(pybind11::array &arr)
 
 // Main mondule initialisation
 
-PYBIND11_MODULE(pykealib, m) {
+PYBIND11_MODULE(extrat, m) {
     // Ensure dependencies are loaded.
     // TODO: currently we need to ensure this is imported in Python
     // otherwise link failures happen...

@@ -27,7 +27,7 @@ import os
 import numpy
 import awkward
 from osgeo import gdal
-import build.pykealib
+from kea import extrat
 
 TESTFILE = 'test.kea'
 N_VALUES = 8
@@ -84,9 +84,9 @@ def testAwkward(ds):
     
     neighbourData = builder.snapshot()
     
-    build.pykealib.setNeighbours(ds, 1, 0, neighbourData.layout)
+    extrat.setNeighbours(ds, 1, 0, neighbourData.layout)
 
-    readData = build.pykealib.getNeighbours(ds, 1, 0, 4)
+    readData = extrat.getNeighbours(ds, 1, 0, 4)
     
     if awkward.any(readData != neighbourData):
         raise SystemExit("Data doesn't match")
@@ -110,10 +110,10 @@ def testImage(ds):
     
     for fourConnected in (True, False):
     
-        accum = build.pykealib.NeighbourAccumulator(hist, ds, 1, fourConnected)
+        accum = extrat.NeighbourAccumulator(hist, ds, 1, fourConnected)
         accum.addArray(data)
 
-        readData = build.pykealib.getNeighbours(ds, 1, 0, 8)
+        readData = extrat.getNeighbours(ds, 1, 0, 8)
         print('fourConnected', fourConnected)
         for i, d in enumerate(readData):
             print(i, list(d))
@@ -124,7 +124,7 @@ def testBoolColumn(ds):
     the dataset.
     """
     newColName = "mybool"
-    build.pykealib.addBoolField(ds, 1, newColName, False, "Generic")
+    extrat.addBoolField(ds, 1, newColName, False, "Generic")
     ds.FlushCache()
     
     # re-open file
