@@ -12,9 +12,7 @@ from rios import rat
 from rios import applier
 from rios.cuiprogress import GDALProgressBar
 
-# required first so the libs are already loaded into mem. 
-import awkward
-from kea import extrat
+from kealib import extrat
 
 from osgeo import gdal
 gdal.UseExceptions()

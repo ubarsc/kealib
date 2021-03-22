@@ -4,6 +4,9 @@ package:
 
 source:
   path: ..
+  
+build:
+  number: 1
 
 requirements:
   build:
@@ -12,16 +15,17 @@ requirements:
     - {{ compiler('cxx') }}
   host:
     - python
-    - gdal 3.2
+    - gdal 3.2.*
+    - numpy 1.20.*
     - kealib
     - awkward
   run:
-    - gdal 3.2
+    - python
+    - gdal 3.2.*
+    - numpy 1.20.*
     - kealib
     - awkward
     
 test:
   imports:
-    # need to import awkward first
-    - awkward
-    - kea.extrat
+    - kealib.extrat

@@ -27,22 +27,20 @@ import os
 import numpy
 import awkward
 from osgeo import gdal
-from kea import extrat
+from kealib import extrat
 
-TESTFILE = 'test.kea'
 N_VALUES = 8
 IGNORE_VAL = 0
 
-def setupFile():
+def setupFile(testfile):
     """
     Sets up a test file we can use and creates a single RAT column.
     Returns a GDAL dataset.
     """
-    if os.path.exists(TESTFILE):
-        os.remove(TESTFILE)
-
     driver = gdal.GetDriverByName('KEA')
-    ds = driver.Create(TESTFILE, 100, 100, 1, gdal.GDT_Byte)
+    if os.path.exists(testfile):
+        driver.Delete(testfile)
+    ds = driver.Create(testfile, 100, 100, 1, gdal.GDT_Byte)
     band = ds.GetRasterBand(1)
     band.SetMetadataItem('LAYER_TYPE', 'thematic')
     band.SetNoDataValue(IGNORE_VAL)
@@ -118,7 +116,7 @@ def testImage(ds):
         for i, d in enumerate(readData):
             print(i, list(d))
     
-def testBoolColumn(ds):
+def testCreateBoolColumn(ds):
     """
     Test the ability to add a boolean column to the RAT of
     the dataset.
@@ -126,13 +124,16 @@ def testBoolColumn(ds):
     newColName = "mybool"
     extrat.addBoolField(ds, 1, newColName, False, "Generic")
     ds.FlushCache()
-    
-    # re-open file
-    del ds
+
+def testBoolColumnExists(testfile):
+    """
+    Open the file again and check the column actually exists
+    """
+    newColName = "mybool"
     # because we can't effectively close the dataset 
     # (owned by caller) workaround is to open it in update mode
     # (not sure why)
-    ds = gdal.Open(TESTFILE, gdal.GA_Update)
+    ds = gdal.Open(testfile, gdal.GA_Update)
 
     band = ds.GetRasterBand(1)
     rat = band.GetDefaultRAT()
@@ -143,14 +144,18 @@ def doTests():
     """
     Main function
     """
-    ds = setupFile()
+    ds = setupFile('test1.kea')
     testAwkward(ds)
+    del ds
     
-    ds = setupFile()
+    ds = setupFile('test2.kea')
     testImage(ds)
+    del ds
 
-    ds = setupFile()
-    testBoolColumn(ds)
+    ds = setupFile('test3.kea')
+    testCreateBoolColumn(ds)
+    del ds
+    testBoolColumnExists('test3.kea')
     
 if __name__ == '__main__':
     doTests()
