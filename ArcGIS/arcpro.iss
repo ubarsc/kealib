@@ -56,6 +56,9 @@ Source: "C:\dev\arckea\dist\arc108_arcpro25\x64\lib\gdalplugins\gdal_KEA.dll"; D
 Source: "C:\dev\arckea\dist\arc1081_arcpro26\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.6'); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc1081_arcpro26\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.6'); Flags: ignoreversion
 
+Source: "C:\dev\arckea\dist\arcpro27\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.7'); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arcpro27\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.7'); Flags: ignoreversion
+
 [code]
 const
   // this is where ArcPro seems to put the install information
@@ -143,6 +146,8 @@ begin
     Result := '2.5'
   else if (CompareVersion(realVersion, '2.6') <> -1) and (CompareVersion(realVersion, '2.7') = -1) then
     Result := '2.6'
+  else if (CompareVersion(realVersion, '2.7') <> -1) and (CompareVersion(realVersion, '2.8') = -1) then
+    Result := '2.7'
   else
     Result := ''
 end;

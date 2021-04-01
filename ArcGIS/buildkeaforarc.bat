@@ -125,6 +125,8 @@ call :build_arc108_arcpro25
 if errorlevel 1 exit /B 1
 call :build_arc1081_arcpro26
 if errorlevel 1 exit /B 1
+call :build_arcpro27
+if errorlevel 1 exit /B 1
 EndLocal
 
 EXIT /B %ERRORLEVEL%
@@ -539,3 +541,32 @@ cd ..
 rmdir /s /q build_arc1081_arcpro26
 EXIT /B 0
 
+:build_arcpro27
+set ARCGDALDIR=%GDALDIR%\gdal233e_3\%VCMACH%
+set ARCHDF5DIR=%HDF5DIR%\VC2019_%VCMACH%
+set ARCHINSTALL=%OUTDIR%\arcpro27\%VCMACH%
+mkdir build_arcpro27
+cd build_arcpro27
+  
+cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
+      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
+	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
+      -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
+      -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
+      -D GDAL_DIR=%ARCGDALDIR% ^
+      -D CMAKE_BUILD_TYPE=Release ^
+      -G "NMake Makefiles" ^
+      ..\..\gdal
+if errorlevel 1 exit /B 1
+nmake install
+if errorlevel 1 exit /B 1 
+
+:: Copy the necessary dlls over so the installer can find them 
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
+  if errorlevel 1 exit /B 1      
+)
+
+cd ..
+rmdir /s /q build_arcpro27
+EXIT /B 0
