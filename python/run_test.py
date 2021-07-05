@@ -25,71 +25,138 @@ Test script for kealib Neighbours python bindings
 from __future__ import print_function
 import os
 import numpy
+import awkward
 from osgeo import gdal
-from kealib import neighbours
+from kealib import extrat
 
-TESTFILE = 'test.kea'
 N_VALUES = 8
+IGNORE_VAL = 0
 
-def setupFile():
+def setupFile(testfile):
     """
     Sets up a test file we can use and creates a single RAT column.
     Returns a GDAL dataset.
     """
-    if os.path.exists(TESTFILE):
-        os.remove(TESTFILE)
-
     driver = gdal.GetDriverByName('KEA')
-    ds = driver.Create(TESTFILE, 100, 100, 1, gdal.GDT_Byte)
+    if os.path.exists(testfile):
+        driver.Delete(testfile)
+    ds = driver.Create(testfile, 100, 100, 1, gdal.GDT_Byte)
     band = ds.GetRasterBand(1)
     band.SetMetadataItem('LAYER_TYPE', 'thematic')
+    band.SetNoDataValue(IGNORE_VAL)
 
     rat = band.GetDefaultRAT()
     rat.CreateColumn('Values', gdal.GFT_Integer, gdal.GFU_Generic)
     rat.SetRowCount(N_VALUES)
-    values = numpy.arange(N_VALUES, dtype=numpy.integer)
+    values = numpy.arange(N_VALUES, dtype=numpy.int32)
     rat.WriteArray(values, 0)
 
     return ds
 
-def testList(ds):
+def testAwkward(ds):
     """
-    Tests the ability to read and write lists of neighbours
+    Tests the ability to read and write awkward array of neighbours
     """
-    neighbourData = [[2, 3, 1], [5], [8, 0, 2], [6, 7,2]]
-    neighbours.setNeighbours(ds, 1, 0, neighbourData)
+    builder = awkward.ArrayBuilder()
+    builder.begin_list()
+    builder.integer(2)
+    builder.integer(3)
+    builder.integer(1)
+    builder.end_list()
+    
+    builder.begin_list()
+    builder.integer(5)
+    builder.end_list()
+    
+    builder.begin_list()
+    builder.integer(8)
+    builder.integer(0)
+    builder.integer(2)
+    builder.end_list()
 
-    readData = neighbours.getNeighbours(ds, 1, 0, 4)
-    if readData != neighbourData:
+    builder.begin_list()
+    builder.integer(6)
+    builder.integer(7)
+    builder.integer(2)
+    builder.end_list()
+    
+    neighbourData = builder.snapshot()
+    
+    extrat.setNeighbours(ds, 1, 0, neighbourData.layout)
+
+    readData = extrat.getNeighbours(ds, 1, 0, 4)
+    
+    if awkward.any(readData != neighbourData):
         raise SystemExit("Data doesn't match")
-
-def testArray(ds):
+        
+def testImage(ds):
     """
-    Tests the ability to read and write numpy masked arrays
+    Tests the ability to write neighbours with the
+    NeighbourAccumulator object
     """
-    # create a masked array to test
-    numpyNeighboursData = numpy.array([[8, 7, 0], [9, 0, 0], [1, 4, 3], 
-                        [7, 0, 0]])
-    numpyNeighboursMask = numpy.array([[False, False, True], [False, True, True], 
-                    [False, False, False], [False, True, True]])
-    numpyNeighbours = numpy.ma.MaskedArray(numpyNeighboursData, 
-                    mask=numpyNeighboursMask)
-    # set it
-    neighbours.setNeighbours(ds, 1, 4, numpyNeighbours)
+    subdata = numpy.array([[1, 2, 3, 0], [1, 4, 3, 0], 
+                [6, 0, 5, 4], [6, 4, 4, 7]])
+    
+    # put the ignore value one pixel wide around the outside
+    ysize, xsize = subdata.shape
+    data = numpy.full((ysize+2, xsize+2), IGNORE_VAL, dtype=subdata.dtype)
+    data[1:ysize+1,1:xsize+1] = subdata
+    print(data)
+    topHistVal = data.max() + 1
+    hist = numpy.histogram(data, bins=(topHistVal), range=(0, topHistVal))[0]
+    #print(hist)
+    
+    for fourConnected in (True, False):
+    
+        accum = extrat.NeighbourAccumulator(hist, ds, 1, fourConnected)
+        accum.addArray(data)
 
-    # get it
-    readData, readMask = neighbours.getNeighbours(ds, 1, 4, 4, 
-                    neighbours.NEIGHBOURS_ARRAY)
+        readData = extrat.getNeighbours(ds, 1, 0, 8)
+        print('fourConnected', fourConnected)
+        for i, d in enumerate(readData):
+            print(i, list(d))
+    
+def testCreateBoolColumn(ds):
+    """
+    Test the ability to add a boolean column to the RAT of
+    the dataset.
+    """
+    newColName = "mybool"
+    extrat.addBoolField(ds, 1, newColName, False, "Generic")
+    ds.FlushCache()
 
-    # turn back into a masked array
-    numpyNeighboursOut = numpy.ma.MaskedArray(readData, mask=readMask)
-    if not (numpyNeighbours == numpyNeighboursOut).all():
-        raise SystemExit("Array Data doesn't match")
+def testBoolColumnExists(testfile):
+    """
+    Open the file again and check the column actually exists
+    """
+    newColName = "mybool"
+    # because we can't effectively close the dataset 
+    # (owned by caller) workaround is to open it in update mode
+    # (not sure why)
+    ds = gdal.Open(testfile, gdal.GA_Update)
+
+    band = ds.GetRasterBand(1)
+    rat = band.GetDefaultRAT()
+    colNames = [rat.GetNameOfCol(i) for i in range(rat.GetColumnCount())]
+    assert(newColName in colNames)
 
 def doTests():
     """
     Main function
     """
-    ds = setupFile()
-    testList(ds)
-    testArray(ds)
+    ds = setupFile('test1.kea')
+    testAwkward(ds)
+    del ds
+    
+    ds = setupFile('test2.kea')
+    testImage(ds)
+    del ds
+
+    ds = setupFile('test3.kea')
+    testCreateBoolColumn(ds)
+    del ds
+    testBoolColumnExists('test3.kea')
+    
+if __name__ == '__main__':
+    doTests()
+    

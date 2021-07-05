@@ -1,0 +1,31 @@
+package:
+  name: pykealib
+  version: "0.1"
+
+source:
+  path: ..
+  
+build:
+  number: 1
+
+requirements:
+  build:
+    - cmake
+    - make  # [unix]
+    - {{ compiler('cxx') }}
+  host:
+    - python
+    - gdal 3.2.*
+    - numpy 1.20.*
+    - kealib
+    - awkward
+  run:
+    - python
+    - gdal 3.2.*
+    - numpy 1.20.*
+    - kealib
+    - awkward
+    
+test:
+  imports:
+    - kealib.extrat
