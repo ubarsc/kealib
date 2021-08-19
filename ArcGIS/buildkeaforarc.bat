@@ -105,7 +105,7 @@ call :build_arc1071_arcpro24
 if errorlevel 1 exit /B 1
 EndLocal
 
-:: Visual Studio 2019 x86 Builds
+REM :: Visual Studio 2019 x86 Builds
 SetLocal
 set VCMACH=x86
 call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
@@ -113,6 +113,8 @@ call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary
 call :build_arc108_arcpro25
 if errorlevel 1 exit /B 1
 call :build_arc1081_arcpro26
+if errorlevel 1 exit /B 1
+call :build_arc109
 if errorlevel 1 exit /B 1
 EndLocal
 
@@ -126,6 +128,10 @@ if errorlevel 1 exit /B 1
 call :build_arc1081_arcpro26
 if errorlevel 1 exit /B 1
 call :build_arcpro27
+if errorlevel 1 exit /B 1
+call :build_arcpro28
+if errorlevel 1 exit /B 1
+call :build_arc109
 if errorlevel 1 exit /B 1
 EndLocal
 
@@ -569,4 +575,64 @@ for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
 
 cd ..
 rmdir /s /q build_arcpro27
+EXIT /B 0
+
+:build_arcpro28
+set ARCGDALDIR=%GDALDIR%\gdal233e_4\%VCMACH%
+set ARCHDF5DIR=%HDF5DIR%\VC2019_%VCMACH%
+set ARCHINSTALL=%OUTDIR%\arcpro28\%VCMACH%
+mkdir build_arcpro28
+cd build_arcpro28
+  
+cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
+      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
+	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
+      -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
+      -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
+      -D GDAL_DIR=%ARCGDALDIR% ^
+      -D CMAKE_BUILD_TYPE=Release ^
+      -G "NMake Makefiles" ^
+      ..\..\gdal
+if errorlevel 1 exit /B 1
+nmake install
+if errorlevel 1 exit /B 1 
+
+:: Copy the necessary dlls over so the installer can find them 
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
+  if errorlevel 1 exit /B 1      
+)
+
+cd ..
+rmdir /s /q build_arcpro28
+EXIT /B 0
+
+:build_arc109
+set ARCGDALDIR=%GDALDIR%\gdal233e_5\%VCMACH%
+set ARCHDF5DIR=%HDF5DIR%\VC2019_%VCMACH%
+set ARCHINSTALL=%OUTDIR%\arc109\%VCMACH%
+mkdir build_arc109
+cd build_arc109
+  
+cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
+      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
+	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
+      -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
+      -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
+      -D GDAL_DIR=%ARCGDALDIR% ^
+      -D CMAKE_BUILD_TYPE=Release ^
+      -G "NMake Makefiles" ^
+      ..\..\gdal
+if errorlevel 1 exit /B 1
+nmake install
+if errorlevel 1 exit /B 1 
+
+:: Copy the necessary dlls over so the installer can find them 
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
+  if errorlevel 1 exit /B 1      
+)
+
+cd ..
+rmdir /s /q build_arc109
 EXIT /B 0

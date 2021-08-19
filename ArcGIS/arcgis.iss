@@ -92,6 +92,12 @@ Source: "C:\dev\arckea\dist\arc1081_arcpro26\x86\lib\gdalplugins\gdal_KEA.dll"; 
 Source: "C:\dev\arckea\dist\arc1081_arcpro26\x64\lib\*.dll"; DestDir: "{app}\bin64"; Check: ArcVersion('10.8.1', 64); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc1081_arcpro26\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.8.1', 64); Flags: ignoreversion
 
+Source: "C:\dev\arckea\dist\arc109\x86\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('10.9', 32); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc109\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('10.9', 32); Flags: ignoreversion
+
+Source: "C:\dev\arckea\dist\arc109\x64\lib\*.dll"; DestDir: "{app}\bin64"; Check: ArcVersion('10.9', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc109\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.9', 64); Flags: ignoreversion
+
 [code]
 const
   // this is where ArcGIS seems to put the install information
@@ -233,6 +239,8 @@ begin
     Result := '10.8'
   else if (CompareVersion(realVersion, '10.8.1') <> -1) and (CompareVersion(realVersion, '10.8.9') = -1) then
     Result := '10.8.1'
+  else if (CompareVersion(realVersion, '10.9') <> -1) and (CompareVersion(realVersion, '10.9.9') = -1) then
+    Result := '10.9'
   else
     Result := ''
 end;
