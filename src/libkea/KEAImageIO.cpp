@@ -3400,7 +3400,7 @@ namespace kealib{
             keaImgH5File->createGroup( bandName+KEA_ATT_GROUPNAME_HEADER );
 
             // SET ATTRIBUTE TABLE CHUNK SIZE
-            int attChunkSize = 0;
+            int attChunkSize = attBlockSize;
             hsize_t dimsAttChunkSize[] = { 1 };
             H5::DataSpace attChunkSizeDataSpace(1, dimsAttChunkSize);
             H5::DataSet attChunkSizeDataset = keaImgH5File->createDataSet((bandName+KEA_ATT_CHUNKSIZE_HEADER), H5::PredType::STD_U64LE, attChunkSizeDataSpace);
