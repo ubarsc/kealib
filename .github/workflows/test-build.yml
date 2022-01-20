@@ -1,0 +1,31 @@
+name: Test Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Prereqs
+      run: apt-get install libhdf5-dev g++ cmake libgdal-dev gdal-bin
+    - name: Cmake
+      run: |
+        mkdir build
+        cd build
+        cmake -D LIBKEA_WITH_GDAL=ON ..
+    - name: make
+      run: make
+    - name: make install
+      run: make install
+    - name: make test
+      run: make test
+    - name: check gdal
+      run: GDAL_DRIVER_PATH=/usr/local/lib/gdalplugins gdal_translate --formats | grep KEA
+      
