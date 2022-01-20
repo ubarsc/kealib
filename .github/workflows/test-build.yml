@@ -21,11 +21,17 @@ jobs:
         cd build
         cmake -D LIBKEA_WITH_GDAL=ON ..
     - name: make
-      run: make
+      run: |
+        cd build
+        make
     - name: make install
-      run: sudo make install
+      run: |
+        cd build
+        sudo make install
     - name: make test
-      run: make test
+      run: |
+        cd build
+        make test
     - name: check gdal
       run: GDAL_DRIVER_PATH=/usr/local/lib/gdalplugins gdal_translate --formats | grep KEA
       
