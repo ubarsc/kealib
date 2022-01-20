@@ -33,5 +33,5 @@ jobs:
         cd build
         make test
     - name: check gdal
-      run: GDAL_DRIVER_PATH=/usr/local/lib/gdalplugins gdal_translate --formats | grep KEA
+      run: LD_LIBRARY_PATH=/usr/local/lib GDAL_DRIVER_PATH=/usr/local/lib/gdalplugins gdal_translate --formats | grep KEA
       
