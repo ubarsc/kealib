@@ -54,6 +54,6 @@ RUN cd /usr/local/src/kealib && \
     make install DESTDIR=$KEALIB_PACKAGE_DIR && \
     echo export GDAL_DRIVER_PATH=/usr/lib/gdalplugins >> $KEALIB_PACKAGE_DIR/etc/profile.d/kealib.sh
    
-COPY ./contrib/ubuntu/focal_ubuntugis_stable/DEBIAN $KEALIB_PACKAGE_DIR/DEBIAN
+COPY ./contrib/ubuntu/focal_ubuntugis_unstable/DEBIAN $KEALIB_PACKAGE_DIR/DEBIAN
 RUN dpkg-deb --build $KEALIB_PACKAGE_DIR
 RUN echo "The package is built and is available in the image in $PACKAGE_DIR"
