@@ -40,6 +40,13 @@
     #pragma message ("HAVE_RFC40 not present")
 #endif
 
+#if (GDAL_VERSION_MAJOR > 3) || ((GDAL_VERSION_MAJOR == 3) && (GDAL_VERSION_MINOR >= 5))
+    #define HAVE_64BITIMAGES
+    #pragma message ("defining HAVE_64BITIMAGES")
+#else
+    #pragma message ("HAVE_64BITIMAGES not present")
+#endif
+
 class KEAOverview;
 class KEAMaskBand;
 
