@@ -52,9 +52,6 @@ set_target_properties(${LIBKEA_LIB_NAME}
     SOVERSION ${LIBKEA_VERSION_MAJOR}.${LIBKEA_VERSION_MINOR}
     VERSION ${LIBKEA_VERSION}
 )
-if(MSVC AND NOT BUILD_SHARED_LIBS)
-  set_target_properties(${LIBKEA_LIB_NAME} PROPERTIES OUTPUT_NAME "libkea")
-endif()
 
 add_library(Kealib INTERFACE)
 target_link_libraries(Kealib INTERFACE "${LIBKEA_LIB_NAME}")
