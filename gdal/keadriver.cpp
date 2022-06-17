@@ -28,6 +28,7 @@
  */
 
 #include "keadataset.h"
+#include "keaband.h" // for HAVE_64BITIMAGES
 
 CPL_C_START
 void CPL_DLL GDALRegister_KEA(void);
@@ -52,7 +53,11 @@ void GDALRegister_KEA()
                                    "KEA Image Format (.kea)" );
         poDriver->SetMetadataItem( GDAL_DMD_EXTENSION, "kea" );
         poDriver->SetMetadataItem( GDAL_DMD_CREATIONDATATYPES, 
-                            "Byte Int16 UInt16 Int32 UInt32 Float32 Float64" );
+                            "Byte Int16 UInt16 Int32 UInt32 "
+#ifdef HAVE_64BITIMAGES
+                            "Int64 UInt64 "
+#endif
+                            "Float32 Float64" );
         poDriver->SetMetadataItem( GDAL_DMD_CREATIONOPTIONLIST, "\
 <CreationOptionList> \
 <Option name='IMAGEBLOCKSIZE' type='int' description='The size of each block for image data'/> \

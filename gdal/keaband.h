@@ -87,8 +87,16 @@ public:
     CPLErr SetMetadata(char **papszMetadata, const char *pszDomain="");
 
     // virtual methods for the no data value
-    double GetNoDataValue(int *pbSuccess=NULL);
+    double GetNoDataValue(int *pbSuccess=nullptr);
+    // the Int64/UInt64 versions are only used in gdal >= 3.5
+    // but we define them in all cases anyway
+    int64_t GetNoDataValueAsInt64(int *pbSuccess=nullptr);
+    uint64_t GetNoDataValueAsUInt64(int *pbSuccess=nullptr);
+
     CPLErr SetNoDataValue(double dfNoData);
+    CPLErr SetNoDataValueAsInt64(int64_t nNoData);
+    CPLErr SetNoDataValueAsUInt64(uint64_t nNoData);
+
     virtual CPLErr DeleteNoDataValue();
 
     // histogram methods
