@@ -1,3 +1,14 @@
+1.4.15
+------
+
+* Fix naming of library kea-config.bat 
+* Support for 64 bit int images and nodata in the GDAL driver for GDAL >= 3.5
+* Print error on file open failure in GDAL driver
+* Set the attribute chunksize as passed in, not zero
+* Add support for ArcGIS 10.9 and ArcPro 2.7 and 2.8
+* New kealib Python bindings using libawkward for accessing neighbours
+* New Docker files for creating ubuntugis packages
+
 1.4.14
 ------
 
