@@ -784,6 +784,20 @@ CPLErr KEADataset::AddBand(GDALDataType eType, char **papszOptions)
     return CE_None;
 }
 
+OGRErr KEADataset::DeleteLayer(int iLayer)
+{
+    try
+    {
+        m_pImageIO->removeImageBand(iLayer);
+    }
+    catch (kealib::KEAIOException &e) 
+    {
+        CPLError( CE_Warning, CPLE_AppDefined,
+                "Unable to delete a layer: %s", e.what() );
+        return OGRERR_FAILURE;
+    }
+    return OGRERR_NONE;
+}
 
 int KEADataset::GetGCPCount()
 {

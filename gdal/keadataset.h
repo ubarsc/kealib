@@ -114,6 +114,8 @@ public:
 
     // virtual method for adding new image bands
     CPLErr AddBand(GDALDataType eType, char **papszOptions = NULL);
+    // removing image bands
+    OGRErr DeleteLayer(int iLayer);
 
     // GCPs
     int GetGCPCount();
