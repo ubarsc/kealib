@@ -14,7 +14,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install Prereqs
-      run: sudo apt-get install libhdf5-dev g++ cmake libgdal-dev gdal-bin
+      run: |
+        sudo apt-get update
+        sudo apt-get install libhdf5-dev g++ cmake libgdal-dev gdal-bin
     - name: Cmake
       run: |
         mkdir build
