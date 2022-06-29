@@ -784,6 +784,7 @@ CPLErr KEADataset::AddBand(GDALDataType eType, char **papszOptions)
     return CE_None;
 }
 
+#ifdef OGRERR_NONE
 OGRErr KEADataset::DeleteLayer(int iLayer)
 {
     try
@@ -798,6 +799,7 @@ OGRErr KEADataset::DeleteLayer(int iLayer)
     }
     return OGRERR_NONE;
 }
+#endif
 
 int KEADataset::GetGCPCount()
 {
