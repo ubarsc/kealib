@@ -122,6 +122,9 @@ namespace kealib{
          * Adds a new image band to the file.
          */
         virtual void addImageBand(const KEADataType dataType, const std::string bandDescrip, const uint32_t imageBlockSize = KEA_IMAGE_CHUNK_SIZE, const uint32_t attBlockSize = KEA_ATT_CHUNK_SIZE, const uint32_t deflate = KEA_DEFLATE);
+        
+        // remove band from file
+        virtual void removeImageBand(const uint32_t bandIndex);
 
         static H5::H5File* createKEAImage(std::string fileName, KEADataType dataType, uint32_t xSize, uint32_t ySize, uint32_t numImgBands, std::vector<std::string> *bandDescrips=NULL, KEAImageSpatialInfo *spatialInfo=NULL, uint32_t imageBlockSize=KEA_IMAGE_CHUNK_SIZE, uint32_t attBlockSize=KEA_ATT_CHUNK_SIZE, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE, uint32_t deflate=KEA_DEFLATE);
         static bool isKEAImage(std::string fileName);
@@ -145,9 +148,14 @@ namespace kealib{
          * Adds an image band to the specified file. Does NOT flush the file
          * buffer.
          *
-         * NOTE: attBlockSize doesn't have any effect at the moment
          */
         static void addImageBandToFile(H5::H5File *keaImgH5File, const KEADataType dataType, const uint32_t xSize, const uint32_t ySize, const uint32_t bandIndex, std::string bandDescrip, const uint32_t imageBlockSize, const uint32_t attBlockSize, const uint32_t deflate);
+        
+        /**
+         * Remove and image band and rename higher bands so everything is contiguous. Does NOT flush the file
+         * buffer.
+         */
+        static void removeImageBandFromFile(H5::H5File *keaImgH5File, const uint32_t bandIndex, const uint32_t numImgBands);
 
         /**
          * Updates the number of image bands in the file metadata. Does NOT

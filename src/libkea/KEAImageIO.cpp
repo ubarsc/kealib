@@ -3234,6 +3234,24 @@ namespace kealib{
 
         this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
     }
+    
+    void KEAImageIO::removeImageBand(const uint32_t bandIndex)
+    {
+
+        if(!this->fileOpen)
+        {
+            throw KEAIOException("Image was not open.");
+        }
+        
+        KEAImageIO::removeImageBandFromFile(this->keaImgFile, bandIndex, this->numImgBands);
+    
+        --this->numImgBands;
+
+        // update the band counter in the file metadata
+        KEAImageIO::setNumImgBandsInFileMetadata(this->keaImgFile, this->numImgBands);
+
+        this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+    }
 
     H5::DataType KEAImageIO::convertDatatypeKeaToH5STD(const KEADataType dataType)
     {
@@ -3439,6 +3457,37 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+    }
+    
+    void KEAImageIO::removeImageBandFromFile(H5::H5File *keaImgH5File, const uint32_t bandIndex, const uint32_t numImgBands)
+    {
+        if( ( bandIndex < 1) || ( bandIndex > numImgBands ) )
+        {
+            throw KEAIOException("Invalid band index");
+        }
+    
+        try
+        {
+            std::string bandName = KEA_DATASETNAME_BAND + uint2Str(bandIndex);
+            keaImgH5File->unlink(bandName);
+            
+            // now rename all the ones with band > bandIndex
+            for( uint32_t sourceIndex = bandIndex + 1; sourceIndex <= numImgBands; sourceIndex++ )
+            {
+                std::string srcName = KEA_DATASETNAME_BAND + uint2Str(sourceIndex);
+                std::string dstName = KEA_DATASETNAME_BAND + uint2Str(sourceIndex - 1);
+                keaImgH5File->move(srcName, dstName);
+            }
+        }
+        catch (H5::Exception &e)
+        {
+            throw KEAIOException("Could not remove the image band.");
+        }
+        catch ( std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
+    
     }
 
     void KEAImageIO::setNumImgBandsInFileMetadata(H5::H5File *keaImgH5File, const uint32_t numImgBands)
