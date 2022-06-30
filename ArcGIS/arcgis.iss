@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "KEA for ArcGIS"
-#define MyAppVersion "1.4.13"
+#define MyAppVersion "1.4.15"
 #define MyAppPublisher "Landcare Research NZ"
 #define MyAppURL "http://kealib.org/"
 #define MyOutputFilename "setup_kea_arcgis_" + GetDateTimeString('yyyymmdd', '', '')
