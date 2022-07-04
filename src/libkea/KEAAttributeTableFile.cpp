@@ -68,7 +68,7 @@ namespace kealib{
             
             value = this->getBoolField(fid, field.idx);
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -89,7 +89,7 @@ namespace kealib{
             
             value = this->getIntField(fid, field.idx);
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -110,7 +110,7 @@ namespace kealib{
             
             value = this->getFloatField(fid, field.idx);
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -131,7 +131,7 @@ namespace kealib{
             
             value = this->getStringField(fid, field.idx);
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -151,7 +151,7 @@ namespace kealib{
             
             this->setBoolField(fid, field.idx, value);
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -170,7 +170,7 @@ namespace kealib{
             
             this->setIntField(fid, field.idx, value);
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -189,7 +189,7 @@ namespace kealib{
             
             this->setFloatField(fid, field.idx, value);
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -208,7 +208,7 @@ namespace kealib{
             
             this->setStringField(fid, field.idx, value);
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -232,7 +232,7 @@ namespace kealib{
         {
             this->getBoolFields(fid, 1, colIdx, &value);
         }
-        catch(KEAATTException &e)
+        catch(const KEAATTException &e)
         {
             throw e;
         }
@@ -257,7 +257,7 @@ namespace kealib{
         {
             this->getIntFields(fid, 1, colIdx, &value);
         }
-        catch(KEAATTException &e)
+        catch(const KEAATTException &e)
         {
             throw e;
         }
@@ -282,7 +282,7 @@ namespace kealib{
         {
             this->getFloatFields(fid, 1, colIdx, &value);
         }
-        catch(KEAATTException &e)
+        catch(const KEAATTException &e)
         {
             throw e;
         }
@@ -308,7 +308,7 @@ namespace kealib{
         {
             this->getStringFields(fid, 1, colIdx, pSBuffer);
         }
-        catch(KEAATTException &e)
+        catch(const KEAATTException &e)
         {
             throw e;
         }
@@ -397,19 +397,19 @@ namespace kealib{
             
             delete[] boolVals;
         }
-        catch(H5::Exception &e)
+        catch(const H5::Exception &e)
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
-        catch (KEAIOException &e)
+        catch (const KEAIOException &e)
         {
             throw KEAATTException(e.what());
         }
-        catch(std::exception &e)
+        catch(const std::exception &e)
         {
             throw KEAATTException(e.what());
         }
@@ -487,19 +487,19 @@ namespace kealib{
             intDataspace.close();
             intFieldsMemspace.close();
         }
-        catch(H5::Exception &e)
+        catch(const H5::Exception &e)
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
-        catch (KEAIOException &e)
+        catch (const KEAIOException &e)
         {
             throw KEAATTException(e.what());
         }
-        catch(std::exception &e)
+        catch(const std::exception &e)
         {
             throw KEAATTException(e.what());
         }
@@ -577,19 +577,19 @@ namespace kealib{
             floatDataspace.close();
             floatFieldsMemspace.close();
         }
-        catch(H5::Exception &e)
+        catch(const H5::Exception &e)
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
-        catch (KEAIOException &e)
+        catch (const KEAIOException &e)
         {
             throw KEAATTException(e.what());
         }
-        catch(std::exception &e)
+        catch(const std::exception &e)
         {
             throw KEAATTException(e.what());
         }
@@ -678,19 +678,19 @@ namespace kealib{
             delete strTypeMem;
             delete[] stringVals;
         }
-        catch(H5::Exception &e)
+        catch(const H5::Exception &e)
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
-        catch (KEAIOException &e)
+        catch (const KEAIOException &e)
         {
             throw KEAATTException(e.what());
         }
-        catch(std::exception &e)
+        catch(const std::exception &e)
         {
             throw KEAATTException(e.what());
         }
@@ -702,7 +702,7 @@ namespace kealib{
         {
             if(!neighbours->empty())
             {
-                for(std::vector<std::vector<size_t>* >::iterator iterNeigh = neighbours->begin(); iterNeigh != neighbours->end(); ++iterNeigh)
+                for(auto iterNeigh = neighbours->begin(); iterNeigh != neighbours->end(); ++iterNeigh)
                 {
                     delete *iterNeigh;
                 }
@@ -762,19 +762,19 @@ namespace kealib{
                 }
             }
         }
-        catch(H5::Exception &e)
+        catch(const H5::Exception &e)
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
-        catch (KEAIOException &e)
+        catch (const KEAIOException &e)
         {
             throw KEAATTException(e.what());
         }
-        catch(std::exception &e)
+        catch(const std::exception &e)
         {
             throw KEAATTException(e.what());
         }
@@ -930,19 +930,19 @@ namespace kealib{
             
             delete[] boolVals;
         }
-        catch(H5::Exception &e)
+        catch(const H5::Exception &e)
         {
             throw KEAIOException(e.getDetailMsg());
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
-        catch (KEAIOException &e)
+        catch (const KEAIOException &e)
         {
             throw e;
         }
-        catch(std::exception &e)
+        catch(const std::exception &e)
         {
             throw KEAIOException(e.what());
         }
@@ -1020,19 +1020,19 @@ namespace kealib{
             intDataspace.close();
             intFieldsMemspace.close();
         }
-        catch(H5::Exception &e)
+        catch(const H5::Exception &e)
         {
             throw KEAIOException(e.getDetailMsg());
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
-        catch (KEAIOException &e)
+        catch (const KEAIOException &e)
         {
             throw e;
         }
-        catch(std::exception &e)
+        catch(const std::exception &e)
         {
             throw KEAIOException(e.what());
         }
@@ -1110,19 +1110,19 @@ namespace kealib{
             floatDataspace.close();
             floatFieldsMemspace.close();
         }
-        catch(H5::Exception &e)
+        catch(const H5::Exception &e)
         {
             throw KEAIOException(e.getDetailMsg());
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
-        catch (KEAIOException &e)
+        catch (const KEAIOException &e)
         {
             throw e;
         }
-        catch(std::exception &e)
+        catch(const std::exception &e)
         {
             throw KEAIOException(e.what());
         }
@@ -1215,19 +1215,19 @@ namespace kealib{
             delete strTypeMem;
             delete[] stringVals;
         }
-        catch(H5::Exception &e)
+        catch(const H5::Exception &e)
         {
             throw KEAIOException(e.getDetailMsg());
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
-        catch (KEAIOException &e)
+        catch (const KEAIOException &e)
         {
             throw e;
         }
-        catch(std::exception &e)
+        catch(const std::exception &e)
         {
             throw KEAIOException(e.what());
         }
@@ -1257,7 +1257,7 @@ namespace kealib{
                 
                 dimsDataSpace.close();
             }
-            catch(H5::Exception &e)
+            catch(const H5::Exception &e)
             {
                 // Create Neighbours dataset
                 hsize_t initDimsNeighboursDS[1];
@@ -1295,7 +1295,7 @@ namespace kealib{
             
             
             unsigned int i = 0;
-            for(std::vector<std::vector<size_t>* >::iterator iterClumps = neighbours->begin(); iterClumps != neighbours->end(); ++iterClumps)
+            for(auto iterClumps = neighbours->begin(); iterClumps != neighbours->end(); ++iterClumps)
             {
                 neighbourVals[i].length = 0;
                 neighbourVals[i].p = NULL;
@@ -1328,19 +1328,19 @@ namespace kealib{
             
             
         }
-        catch(H5::Exception &e)
+        catch(const H5::Exception &e)
         {
             throw KEAIOException(e.getDetailMsg());
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
-        catch (KEAIOException &e)
+        catch (const KEAIOException &e)
         {
             throw e;
         }
-        catch(std::exception &e)
+        catch(const std::exception &e)
         {
             throw KEAIOException(e.what());
         }
@@ -1351,40 +1351,6 @@ namespace kealib{
     KEAATTFeature* KEAAttributeTableFile::getFeature(size_t fid) const
     {
         throw KEAATTException("KEAAttributeTableFile::getFeature(size_t fid) has not been implemented.");
-        if(fid >= numRows)
-        {
-            std::string message = std::string("Requested feature (") + sizet2Str(fid) + std::string(") is not within the table.");
-            throw KEAATTException(message);
-        }
-        /*
-        KEAATTFeature *attFeat = new KEAATTFeature();
-        attFeat->fid = fid;
-        attFeat->boolFields = new std::vector<bool>();
-        attFeat->intFields = new std::vector<int>();
-        attFeat->floatFields = new std::vector<float>();
-        attFeat->strFields = new std::vector<std::string>();
-        attFeat->neighbours = new std::vector<size_t>();
-        
-        
-        if(this->getNumBoolFields() > 0)
-        {
-            attFeat->boolFields->reserve(this->getNumBoolFields())
-        }
-        if(this->getNumIntFields() > 0)
-        {
-            attFeat->intFields->reserve(this->getNumIntFields())
-        }
-        if(this->getNumFloatFields() > 0)
-        {
-            attFeat->floatFields->reserve(this->getNumFloatFields())
-        }
-        if(this->getNumStringFields() > 0)
-        {
-            attFeat->strFields->reserve(this->getNumStringFields())
-        }
-        
-        return attFeat;
-        */
         return NULL;
     }
     
@@ -1435,7 +1401,7 @@ namespace kealib{
             chunkSizeWriteDataSpace.close();
             newChunkSizeDataspace.close();
         }
-        catch(H5::Exception &e)
+        catch(const H5::Exception &e)
         {
             throw KEAATTException(e.getDetailMsg());
         }
@@ -1449,7 +1415,7 @@ namespace kealib{
         // update BOOL_FIELDS
         KEAAttributeIdx *boolFields = new KEAAttributeIdx[this->numBoolFields+1];
         unsigned int boolFieldsIdx = 0;
-        for(std::map<std::string, KEAATTField>::iterator iterField = fields->begin(); iterField != fields->end(); ++iterField)
+        for(auto iterField = fields->begin(); iterField != fields->end(); ++iterField)
         {
             if((*iterField).second.dataType == kea_att_bool)
             {
@@ -1499,7 +1465,7 @@ namespace kealib{
             boolFieldsDataset.close();
             
         }
-        catch (H5::Exception &e)
+        catch (const H5::Exception &e)
         {
             hsize_t initDimsboolFieldsDS[1];
             initDimsboolFieldsDS[0] = this->numBoolFields+1;
@@ -1549,7 +1515,7 @@ namespace kealib{
             // TODO: don't know how to set reset the fill value
             
         }
-        catch(H5::Exception &e)
+        catch(const H5::Exception &e)
         {
             hsize_t initDimsbools[2];
             initDimsbools[0] = numRows;
@@ -1585,7 +1551,7 @@ namespace kealib{
         // update INT_FIELDS
         KEAAttributeIdx *intFields = new KEAAttributeIdx[this->numIntFields+1];
         unsigned int intFieldsIdx = 0;
-        for(std::map<std::string, KEAATTField>::iterator iterField = fields->begin(); iterField != fields->end(); ++iterField)
+        for(auto iterField = fields->begin(); iterField != fields->end(); ++iterField)
         {
             if((*iterField).second.dataType == kea_att_int)
             {
@@ -1635,7 +1601,7 @@ namespace kealib{
             intFieldsDataset.close();
             
         }
-        catch (H5::Exception &e)
+        catch (const H5::Exception &e)
         {
             hsize_t initDimsIntFieldsDS[1];
             initDimsIntFieldsDS[0] = this->numIntFields+1;
@@ -1685,7 +1651,7 @@ namespace kealib{
             // TODO: don't know how to set reset the fill value
             
         }
-        catch(H5::Exception &e)
+        catch(const H5::Exception &e)
         {
             hsize_t initDimsInts[2];
             initDimsInts[0] = numRows;
@@ -1720,7 +1686,7 @@ namespace kealib{
         // update FLOAT_FIELDS
         KEAAttributeIdx *floatFields = new KEAAttributeIdx[this->numFloatFields+1];
         unsigned int floatFieldsIdx = 0;
-        for(std::map<std::string, KEAATTField>::iterator iterField = fields->begin(); iterField != fields->end(); ++iterField)
+        for(auto iterField = fields->begin(); iterField != fields->end(); ++iterField)
         {
             if((*iterField).second.dataType == kea_att_float)
             {
@@ -1770,7 +1736,7 @@ namespace kealib{
             floatFieldsDataset.close();
             
         }
-        catch (H5::Exception &e)
+        catch (const H5::Exception &e)
         {
             hsize_t initDimsfloatFieldsDS[1];
             initDimsfloatFieldsDS[0] = this->numFloatFields+1;
@@ -1820,7 +1786,7 @@ namespace kealib{
             // TODO: don't know how to set reset the fill value
             
         }
-        catch(H5::Exception &e)
+        catch(const H5::Exception &e)
         {
             hsize_t initDimsfloats[2];
             initDimsfloats[0] = numRows;
@@ -1855,7 +1821,7 @@ namespace kealib{
         // update string_FIELDS
         KEAAttributeIdx *stringFields = new KEAAttributeIdx[this->numStringFields+1];
         unsigned int stringFieldsIdx = 0;
-        for(std::map<std::string, KEAATTField>::iterator iterField = fields->begin(); iterField != fields->end(); ++iterField)
+        for(auto iterField = fields->begin(); iterField != fields->end(); ++iterField)
         {
             if((*iterField).second.dataType == kea_att_string)
             {
@@ -1905,7 +1871,7 @@ namespace kealib{
             stringFieldsDataset.close();
             
         }
-        catch (H5::Exception &e)
+        catch (const H5::Exception &e)
         {
             hsize_t initDimsstringFieldsDS[1];
             initDimsstringFieldsDS[0] = this->numStringFields+1;
@@ -1957,7 +1923,7 @@ namespace kealib{
             // TODO: don't know how to set reset the fill value
             
         }
-        catch(H5::Exception &e)
+        catch(const H5::Exception &e)
         {
             hsize_t initDimsstrings[2];
             initDimsstrings[0] = numRows;
@@ -2006,7 +1972,7 @@ namespace kealib{
                 boolDataset->close();
                 delete boolDataset;
             }
-            catch(H5::Exception &e)
+            catch(const H5::Exception &e)
             {
                 // can't exist
             }
@@ -2019,7 +1985,7 @@ namespace kealib{
                 intDataset->close();
                 delete intDataset;
             }
-            catch(H5::Exception &e)
+            catch(const H5::Exception &e)
             {
                 // can't exist
             }
@@ -2032,7 +1998,7 @@ namespace kealib{
                 floatDataset->close();
                 delete floatDataset;
             }
-            catch(H5::Exception &e)
+            catch(const H5::Exception &e)
             {
                 // can't exist
             }
@@ -2045,7 +2011,7 @@ namespace kealib{
                 stringDataset->close();
                 delete stringDataset;
             }
-            catch(H5::Exception &e)
+            catch(const H5::Exception &e)
             {
                 // can't exist
             }
@@ -2072,7 +2038,7 @@ namespace kealib{
                 datasetAttSize.close();
                 valueDataSpace.close();
             }
-            catch (H5::Exception &e)
+            catch (const H5::Exception &e)
             {
                 throw KEAIOException("The attribute table size field is not present.");
             }
@@ -2097,7 +2063,7 @@ namespace kealib{
                     chunkSize = hChunkSize;
                 }
             }
-            catch(H5::Exception &e)
+            catch(const H5::Exception &e)
             {
                 throw KEAIOException("The attribute table size field is not present.");
             }
@@ -2167,7 +2133,7 @@ namespace kealib{
                     
                     delete[] inFields;
                 }
-                catch( H5::Exception &e )
+                catch( const H5::Exception &e )
                 {
                     throw KEAIOException(e.getDetailMsg());
                 }
@@ -2237,7 +2203,7 @@ namespace kealib{
                     
                     delete[] inFields;
                 }
-                catch( H5::Exception &e )
+                catch( const H5::Exception &e )
                 {
                     throw KEAIOException(e.getDetailMsg());
                 }
@@ -2307,7 +2273,7 @@ namespace kealib{
                     
                     delete[] inFields;
                 }
-                catch( H5::Exception &e )
+                catch( const H5::Exception &e )
                 {
                     throw KEAIOException(e.getDetailMsg());
                 }
@@ -2377,7 +2343,7 @@ namespace kealib{
                     
                     delete[] inFields;
                 }
-                catch( H5::Exception &e )
+                catch( const H5::Exception &e )
                 {
                     throw KEAIOException(e.getDetailMsg());
                 }
@@ -2385,19 +2351,19 @@ namespace kealib{
             
             delete fieldCompTypeMem;
         }
-        catch(H5::Exception &e)
+        catch(const H5::Exception &e)
         {
             throw KEAIOException(e.getDetailMsg());
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
-        catch (KEAIOException &e)
+        catch (const KEAIOException &e)
         {
             throw e;
         }
-        catch(std::exception &e)
+        catch(const std::exception &e)
         {
             throw KEAIOException(e.what());
         }
