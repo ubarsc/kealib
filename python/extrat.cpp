@@ -106,7 +106,7 @@ void *getUnderlyingPtrFromSWIGPyObject(pybind11::object &input/*, PyObject *pExc
 void freeNeighbourLists(std::vector<std::vector<size_t>* > *pNeighbours)
 {
     /* frees all the sub vectors of pNeighbours */
-    for( std::vector<std::vector<size_t>* >::iterator itr = pNeighbours->begin();
+    for( auto itr = pNeighbours->begin();
             itr != pNeighbours->end(); itr++)
     {
         delete *itr;
@@ -175,7 +175,7 @@ awkward::ContentPtr getNeighbours(pybind11::object &dataset, int nBand, int &sta
         
         freeNeighbourLists(&neighbours);
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         throw PyKeaLibException(e.what());
     }
@@ -275,7 +275,7 @@ void setNeighbours(pybind11::object &dataset, int nBand,
         
         freeNeighbourLists(&cppneighbours);
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         throw PyKeaLibException(e.what());
     }
@@ -302,7 +302,7 @@ void addBoolField(pybind11::object &dataset, int nBand,
         pRAT->addAttBoolField(name, bInitVal, usage);
 
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         throw PyKeaLibException(e.what());
     }
@@ -400,7 +400,7 @@ private:
                         {
                             m_pRAT->setNeighbours(val, 1, &cppneighbours);
                         }
-                        catch(kealib::KEAException &e)
+                        catch(const kealib::KEAException &e)
                         {
                             throw PyKeaLibException(e.what());
                         }
@@ -504,7 +504,7 @@ NeighbourAccumulator::NeighbourAccumulator(pybind11::array &hist,
             throw PyKeaLibException("No Attribute table in this file");
         }
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         throw PyKeaLibException(e.what());
     }

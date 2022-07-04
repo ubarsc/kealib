@@ -56,7 +56,7 @@ keaLayerOpen(void *fHandle, Etxt_Text lName, unsigned long *pType, unsigned long
 #endif        
     }
     
-    for( std::vector<KEA_Layer*>::iterator itr = pKEAFile->aLayers.begin();
+    for( auto itr = pKEAFile->aLayers.begin();
             (itr != pKEAFile->aLayers.end()) && (pLayer == NULL); itr++ )
     {
         KEA_Layer *pCandidate = (*itr);
@@ -155,7 +155,7 @@ keaLayerCreate(void  *fileHandle,  /* Input */
         {
            pKEAFile->pImageIO->addImageBand((kealib::KEADataType)pType, sName); 
         } 
-        catch (kealib::KEAIOException &e) 
+        catch (const kealib::KEAIOException &e) 
         {
 #ifdef KEADEBUG
             keaDebugOut( "layer creation failed: %s\n", e.what());
@@ -318,7 +318,7 @@ keaLayerRasterRead(void	*lHandle, unsigned long	bRow, unsigned long bCol, unsign
         }
         rCode = 0;
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
 #ifdef KEADEBUG
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
@@ -417,7 +417,7 @@ keaLayerRasterWrite(void *lHandle, unsigned long bRow, unsigned long bCol, unsig
         }
         rCode = 0;
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
 #ifdef KEADEBUG
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
@@ -442,7 +442,7 @@ keaLayerLayerTypeRead(void  *lHandle, unsigned long  *lType)
         *lType = (unsigned long)keaType; // see keaInstanceLayerTypesGet
         rCode = 0;
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
 #ifdef KEADEBUG
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
@@ -466,7 +466,7 @@ keaLayerLayerTypeWrite(void  *lHandle, unsigned long  lType)
         pImageIO->setImageBandLayerType(pLayer->nBand, (kealib::KEALayerType)lType); // see keaInstanceLayerTypesGet
         rCode = 0;
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
 #ifdef KEADEBUG
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
@@ -491,7 +491,7 @@ keaLayerRRDLayerNamesGet(void *lHandle, unsigned long  *count, Etxt_Text **layer
         unsigned long layerCount = 0;
         // get the pointer back to the KEA_File object 
         // and iterate through the list of layers looking for overviews
-        for( std::vector<KEA_Layer*>::iterator itr = pLayer->pKEAFile->aLayers.begin();
+        for( auto itr = pLayer->pKEAFile->aLayers.begin();
             itr != pLayer->pKEAFile->aLayers.end(); itr++ )
         {
             KEA_Layer *pCandidate = (*itr);
@@ -511,7 +511,7 @@ keaLayerRRDLayerNamesGet(void *lHandle, unsigned long  *count, Etxt_Text **layer
             *layerNames = emsc_New(layerCount, Etxt_Text);
             *algorithm = estr_Duplicate(ETXT_LTEXT("Unknown"));
             layerCount = 0;
-            for( std::vector<KEA_Layer*>::iterator itr = pLayer->pKEAFile->aLayers.begin();
+            for( auto itr = pLayer->pKEAFile->aLayers.begin();
             itr != pLayer->pKEAFile->aLayers.end(); itr++ )
             {
                 KEA_Layer *pCandidate = (*itr);
@@ -543,7 +543,7 @@ keaLayerRRDLayerNamesGet(void *lHandle, unsigned long  *count, Etxt_Text **layer
         }
         rCode = 0;
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
         rCode = -1;
@@ -582,7 +582,7 @@ long keaLayerRRDInfoGet(void *lHandle, unsigned long *count,
 	unsigned long layerCount = 0;
 	// get the pointer back to the KEA_File object 
 	// and iterate through the list of layers looking for overviews
-	for( std::vector<KEA_Layer*>::iterator itr = pLayer->pKEAFile->aLayers.begin();
+	for( auto itr = pLayer->pKEAFile->aLayers.begin();
 		itr != pLayer->pKEAFile->aLayers.end(); itr++ )
 	{
 		KEA_Layer *pCandidate = (*itr);
@@ -603,8 +603,8 @@ long keaLayerRRDInfoGet(void *lHandle, unsigned long *count,
 		*algorithm = estr_Duplicate(ETXT_LTEXT("Unknown"));
 		*dims = emsc_New(layerCount * 2, unsigned long);
 		layerCount = 0;
-		for( std::vector<KEA_Layer*>::iterator itr = pLayer->pKEAFile->aLayers.begin();
-		itr != pLayer->pKEAFile->aLayers.end(); itr++ )
+		for( auto itr = pLayer->pKEAFile->aLayers.begin();
+    		itr != pLayer->pKEAFile->aLayers.end(); itr++ )
 		{
 			KEA_Layer *pCandidate = (*itr);
 			if( pCandidate->bIsOverview  && !pCandidate->bIsMask )
@@ -661,7 +661,7 @@ keaLayerScalarStatisticsRead(void *lHandle, double *minimum,  double *maximum, d
         // have to get all the metadata in one go and iterate through
         std::vector< std::pair<std::string, std::string> > data;
         data = pImageIO->getImageBandMetaData(pLayer->nBand);
-        for(std::vector< std::pair<std::string, std::string> >::iterator iterMetaData = data.begin(); iterMetaData != data.end(); ++iterMetaData)
+        for(auto iterMetaData = data.begin(); iterMetaData != data.end(); ++iterMetaData)
         {
             if( iterMetaData->first == METADATA_MIN )
             {
@@ -695,7 +695,7 @@ keaLayerScalarStatisticsRead(void *lHandle, double *minimum,  double *maximum, d
             }
         }
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
 #ifdef KEADEBUG
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
@@ -764,7 +764,7 @@ keaLayerScalarStatisticsWrite(void *lHandle, double *minimum,
         }      
         rCode = 0;
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
 #ifdef KEADEBUG
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
@@ -799,7 +799,7 @@ keaLayerMapInfoRead(void *lHandle, Etxt_Text *projection, double *xULC, double *
         *units = estr_Duplicate((Etxt_Text)pLayer->pKEAFile->sUnits.c_str());
         rCode = 0;
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
 #ifdef KEADEBUG
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
@@ -840,7 +840,7 @@ keaLayerMapInfoWrite(void *lHandle, Etxt_Text projection, double xULC,
         }
         rCode = 0;
     }        
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
 #ifdef KEADEBUG
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
@@ -906,7 +906,7 @@ keaLayerMapProjectionWrite(void  *lHandle, Etxt_Text projTitle,
 
 			rCode = 0;
 		}
-		catch (kealib::KEAIOException &e)
+		catch (const kealib::KEAIOException &e)
 		{
 #ifdef KEADEBUG
 			keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
@@ -945,7 +945,7 @@ keaLayerMapProjectionWrite(void  *lHandle, Etxt_Text projTitle,
 				pImageIO->setSpatialInfo(pSpatialInfo);
 				rCode = 0;
 			}
-			catch (kealib::KEAIOException &e)
+			catch (const kealib::KEAIOException &e)
 			{
 #ifdef KEADEBUG
 				keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
@@ -977,7 +977,7 @@ keaLayerRasterNullValueRead(void  *lHandle, unsigned char  **pixel)
             // I *think* this will work - just treat it as the right type...
             pImageIO->getNoDataValue(pLayer->nBand, (void*)(*pixel), pLayer->eKEAType);
         }
-        catch (kealib::KEAIOException &e)
+        catch (const kealib::KEAIOException &e)
         {
             // throws exception when a no data has not been set so can't tell if an error
             *pixel = NULL;
@@ -1002,7 +1002,7 @@ keaLayerRasterNullValueWrite( void  *lHandle,
         {
             pImageIO->setNoDataValue(pLayer->nBand, (void*)pixel, pLayer->eKEAType);
         }
-        catch (kealib::KEAIOException &e)
+        catch (const kealib::KEAIOException &e)
         {
             return -1;
         }
@@ -1041,11 +1041,11 @@ keaLayerGetHistoBinFunction(KEA_Layer *pLayer)
     {
         data = pImageIO->getImageBandMetaData(pLayer->nBand);
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
         return NULL;
     }
-    for(std::vector< std::pair<std::string, std::string> >::iterator iterMetaData = data.begin(); iterMetaData != data.end(); ++iterMetaData)
+    for(auto iterMetaData = data.begin(); iterMetaData != data.end(); ++iterMetaData)
     {
         if( iterMetaData->first == METADATA_HISTOMIN )
         {
@@ -1114,7 +1114,7 @@ void keaLayerSetHistoBinFunction(KEA_Layer *pLayer, Edsc_BinFunction *pBinFn)
             pImageIO->setImageBandMetaData(pLayer->nBand, METADATA_HISTOBINFN, "exponential");
         }
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
 #ifdef KEADEBUG
         keaDebugOut( "%s setting metadata failed\n", __FUNCTION__ );

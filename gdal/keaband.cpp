@@ -125,7 +125,7 @@ KEARasterBand::~KEARasterBand()
         {
             m_pImageIO->close();
         }
-        catch (kealib::KEAIOException &e)
+        catch (const kealib::KEAIOException &e)
         {
         }
         delete m_pImageIO;
@@ -144,7 +144,7 @@ void KEARasterBand::UpdateMetadataList()
 
     // get all the metadata and iterate through
     data = this->m_pImageIO->getImageBandMetaData(this->nBand);
-    for(std::vector< std::pair<std::string, std::string> >::iterator iterMetaData = data.begin(); iterMetaData != data.end(); ++iterMetaData)
+    for(auto iterMetaData = data.begin(); iterMetaData != data.end(); ++iterMetaData)
     {
         // add to our list
         m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, iterMetaData->first.c_str(), iterMetaData->second.c_str());
@@ -343,7 +343,7 @@ CPLErr KEARasterBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage 
                                             this->m_eKEADataType );
         return CE_None;
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined,
                 "Failed to read file: %s", e.what() );
@@ -377,7 +377,7 @@ CPLErr KEARasterBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage
                                             this->m_eKEADataType );
         return CE_None;
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined,
                 "Failed to write file: %s", e.what() );
@@ -393,7 +393,7 @@ void KEARasterBand::SetDescription(const char *pszDescription)
         this->m_pImageIO->setImageBandDescription(this->nBand, pszDescription);
         this->sDescription = pszDescription;
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
         // ignore?
     }
@@ -458,7 +458,7 @@ CPLErr KEARasterBand::SetMetadataItem(const char *pszName, const char *pszValue,
         m_papszMetadataList = CSLSetNameValue( m_papszMetadataList, pszName, pszValue );
         return CE_None;
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
         return CE_Failure;
     }
@@ -538,7 +538,7 @@ CPLErr KEARasterBand::SetMetadata(char **papszMetadata, const char *pszDomain)
             nIndex++;
         }
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
         return CE_Failure;
     }
@@ -561,7 +561,7 @@ double KEARasterBand::GetNoDataValue(int *pbSuccess)
 
         return dVal;
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
         if( pbSuccess != nullptr )
             *pbSuccess = 0;
@@ -647,7 +647,7 @@ CPLErr KEARasterBand::SetNoDataValue(double dfNoData)
         }
         return CE_None;
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
         return CE_Failure;
     }
@@ -837,7 +837,7 @@ GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
             kealib::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(kealib::kea_att_file, this->nBand);
             this->m_pAttributeTable = new KEARasterAttributeTable(pKEATable, this);
         }
-        catch(kealib::KEAException &e)
+        catch(const kealib::KEAException &e)
         {
             CPLError( CE_Failure, CPLE_AppDefined, "Failed to read attributes: %s", e.what() );
         }
@@ -871,7 +871,7 @@ const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
                     {
                         sKEAField = pKEATable->getField(nColumnIndex);
                     }
-                    catch(kealib::KEAATTException &e)
+                    catch(const kealib::KEAATTException &e)
                     {
                         // pKEATable->getField raised exception because we have a missing column
                         continue;
@@ -931,7 +931,7 @@ const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
 
                     // iterate through the columns - same order as we added columns to GDAL
                     int nGDALColNum = 0;
-                    for( std::vector<kealib::KEAATTField>::iterator itr = vecKEAField.begin(); itr != vecKEAField.end(); itr++ )
+                    for( auto itr = vecKEAField.begin(); itr != vecKEAField.end(); itr++ )
                     {
                         kealib::KEAATTField sKEAField = (*itr);
                         if( sKEAField.dataType == kealib::kea_att_bool )
@@ -962,7 +962,7 @@ const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
                 delete pKEATable;
             }
         }
-        catch(kealib::KEAException &e)
+        catch(const kealib::KEAException &e)
         {
             CPLError( CE_Failure, CPLE_AppDefined, "Failed to read attributes: %s", e.what() );
             delete this->m_pAttributeTable;
@@ -1070,7 +1070,7 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
             }
         }
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined, "Failed to write attributes: %s", e.what() );
         return CE_Failure;
@@ -1108,7 +1108,7 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
                 sKEAField = pKEATable->getField(pszColumnName);
                 // if this works we assume same usage, type etc
             }
-            catch(kealib::KEAATTException &e)
+            catch(const kealib::KEAATTException &e)
             {
                 // doesn't exist on file - create it
                 bExists = false;
@@ -1177,7 +1177,7 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
             kealib::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
 
             // iterate through the map
-            for( std::map<int, kealib::KEAATTField>::iterator itr = mapGDALtoKEA.begin(); itr != mapGDALtoKEA.end(); itr++ )
+            for( auto itr = mapGDALtoKEA.begin(); itr != mapGDALtoKEA.end(); itr++ )
             {
                 // get the KEA field from the map
                 int nGDALColIndex = (*itr).first;
@@ -1215,7 +1215,7 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
         delete this->m_pAttributeTable;
         this->m_pAttributeTable = NULL;
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined, "Failed to write attributes: %s", e.what() );
         return CE_Failure;
@@ -1274,7 +1274,7 @@ GDALColorTable *KEARasterBand::GetColorTable()
                 }
             }
         }
-        catch(kealib::KEAException &e)
+        catch(const kealib::KEAException &e)
         {
             CPLError( CE_Failure, CPLE_AppDefined, "Failed to read color table: %s", e.what() );
             delete this->m_pColorTable;
@@ -1307,7 +1307,7 @@ GDALColorTable *KEARasterBand::GetColorTable()
                     {
                         sKEAField = pKEATable->getField(nColumnIndex);
                     }
-                    catch(kealib::KEAATTException &e)
+                    catch(const kealib::KEAATTException &e)
                     {
                         // pKEATable->getField raised exception because we have a missing column
                         continue;
@@ -1334,7 +1334,7 @@ GDALColorTable *KEARasterBand::GetColorTable()
                 // check that we did get a valid field for each color
                 // the usage field will still be empty if not set above
                 bool bHaveCT = true;
-                for( std::vector<kealib::KEAATTField>::iterator itr = vecKEAField.begin(); (itr != vecKEAField.end()) && bHaveCT; itr++ )
+                for( auto itr = vecKEAField.begin(); (itr != vecKEAField.end()) && bHaveCT; itr++ )
                 {
                     if( (*itr).usage.empty() )
                         bHaveCT = false;
@@ -1364,7 +1364,7 @@ GDALColorTable *KEARasterBand::GetColorTable()
                 delete pKEATable;
             }
         }
-        catch(kealib::KEAException &e)
+        catch(const kealib::KEAException &e)
         {
             CPLError( CE_Failure, CPLE_AppDefined, "Failed to read color table: %s", e.what() );
             delete this->m_pColorTable;
@@ -1467,7 +1467,7 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
         delete this->m_pColorTable;
         this->m_pColorTable = NULL;
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined, "Failed to write color table: %s", e.what() );
         return CE_Failure;
@@ -1503,7 +1503,7 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
             {
                 sKEAField = pKEATable->getField(nColumnIndex);
             }
-            catch(kealib::KEAATTException &e)
+            catch(const kealib::KEAATTException &e)
             {
                 // pKEATable->getField raised exception because we have a missing column
                 continue;
@@ -1576,7 +1576,7 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
         delete this->m_pColorTable;
         this->m_pColorTable = poCT->Clone();
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined, "Failed to write color table: %s", e.what() );
         return CE_Failure;
@@ -1592,7 +1592,7 @@ GDALColorInterp KEARasterBand::GetColorInterpretation()
     {
         ekeainterp = this->m_pImageIO->getImageBandClrInterp(this->nBand);
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         return GCI_GrayIndex;
     }
@@ -1719,7 +1719,7 @@ CPLErr KEARasterBand::SetColorInterpretation(GDALColorInterp egdalinterp)
     {
         this->m_pImageIO->setImageBandClrInterp(this->nBand, ekeainterp);
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         // do nothing? The docs say CE_Failure only if unsupporte by format
     }
@@ -1789,7 +1789,7 @@ CPLErr KEARasterBand::CreateMaskBand(int nFlags)
     {
         this->m_pImageIO->createMask(this->nBand);
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined, "Failed to create mask band: %s", e.what());
         return CE_Failure;
@@ -1820,7 +1820,7 @@ GDALRasterBand* KEARasterBand::GetMaskBand()
 #endif
             }
         }
-        catch(kealib::KEAException &e)
+        catch(const kealib::KEAException &e)
         {
             // do nothing?
         }
@@ -1844,7 +1844,7 @@ int KEARasterBand::GetMaskFlags()
 #endif
         }
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         // do nothing?
     }

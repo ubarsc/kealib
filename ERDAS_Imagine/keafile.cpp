@@ -103,7 +103,7 @@ keaFileTitleIdentifyAndOpen(Etxt_Text fileName, long *fileType, Etxt_Text inFile
         // is this a KEA file?
         isKEA = kealib::KEAImageIO::isKEAImage( ETXT_2A(fileName) );
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
         isKEA = false;
@@ -130,7 +130,7 @@ keaFileTitleIdentifyAndOpen(Etxt_Text fileName, long *fileType, Etxt_Text inFile
 				{
 					pH5File = kealib::KEAImageIO::openKeaH5RW( asciiFileName );
 				}
-				catch (kealib::KEAIOException &e)
+				catch (const kealib::KEAIOException &e)
 				{
 					// open in read-write mode failed. Did they only want readonly?
 					if( ( inFileMode == NULL ) || EFIO_MODE_READONLY(inFileMode) )
@@ -264,7 +264,7 @@ keaFileTitleIdentifyAndOpen(Etxt_Text fileName, long *fileType, Etxt_Text inFile
                     }
                 }
             }
-            catch (kealib::KEAIOException &e)
+            catch (const kealib::KEAIOException &e)
             {
 #ifdef KEADEBUG
                 keaDebugOut( "Error during opening %s: %s\n", fileName, e.what());
@@ -301,13 +301,13 @@ keaFileClose(void *fileHandle)
             pKEAFile->pH5File = NULL;
         }
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
     }
     delete pKEAFile->pImageIO;
     pKEAFile->pImageIO = NULL;
-    for( std::vector<KEA_Layer*>::iterator itr = pKEAFile->aLayers.begin();
+    for( auto itr = pKEAFile->aLayers.begin();
             itr != pKEAFile->aLayers.end(); itr++ )
     {
         KEA_Layer *pLayer = (*itr);
@@ -335,7 +335,7 @@ keaFileLayerNamesGet(void *fileHandle, unsigned long *count, Etxt_Text **layerNa
     unsigned long layerCount = 0;
 
     // work out how many we have
-    for( std::vector<KEA_Layer*>::iterator itr = pKEAFile->aLayers.begin();
+    for( auto itr = pKEAFile->aLayers.begin();
             itr != pKEAFile->aLayers.end(); itr++ )
     {
         KEA_Layer *pCandidate = (*itr);
@@ -351,7 +351,7 @@ keaFileLayerNamesGet(void *fileHandle, unsigned long *count, Etxt_Text **layerNa
         *layerNames = emsc_New(layerCount, Etxt_Text);
         layerCount = 0;
 
-        for( std::vector<KEA_Layer*>::iterator itr = pKEAFile->aLayers.begin();
+        for( auto itr = pKEAFile->aLayers.begin();
             itr != pKEAFile->aLayers.end(); itr++ )
         {
             KEA_Layer *pCandidate = (*itr);
@@ -603,7 +603,7 @@ keaFileLayerNamesSet( void  *fileHandle,  unsigned long  count,
         etxt::tstring sOldName = oldLayerNames[oldN];
         // need to do overviews, masks etc with same base name
         etxt::tstring sOldNameBase = sOldName + ETXT_LTEXT(':');
-        for( std::vector<KEA_Layer*>::iterator itr = pKEAFile->aLayers.begin();
+        for( auto itr = pKEAFile->aLayers.begin();
             itr != pKEAFile->aLayers.end(); itr++ )
         {
             KEA_Layer *pLayer = (*itr);
@@ -619,7 +619,7 @@ keaFileLayerNamesSet( void  *fileHandle,  unsigned long  count,
                     pKEAFile->pImageIO->setImageBandDescription(nBand, ETXT_2A(sNewName.c_str()));
                     pLayer->sName = sNewName;
                 }
-                catch (kealib::KEAIOException &e)
+                catch (const kealib::KEAIOException &e)
                 {
 #ifdef KEADEBUG
                     keaDebugOut( "Error during renaming: %s\n", e.what());

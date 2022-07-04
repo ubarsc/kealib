@@ -87,7 +87,7 @@ keaTableOpen(void *fileHandle, Etxt_Text tableName, unsigned long *numRows, void
                         rCode = 0;
                         //fprintf( stderr, "numrows = %ld\n", *numRows);
                     }
-                    catch(kealib::KEAException &e)
+                    catch(const kealib::KEAException &e)
                     {
 #ifdef KEADEBUG                        
                         keaDebugOut( "Error in %s: %s\n", __FUNCTION__, e.what());
@@ -179,7 +179,7 @@ keaTableCreate(void  *dataSource, Etxt_Text tableName, unsigned long  numRows,
                         pKEATable->addRows(numRows);
                         rCode = 0;
                     }
-                    catch(kealib::KEAException &e)
+                    catch(const kealib::KEAException &e)
                     {
 #ifdef KEADEBUG                        
                         keaDebugOut( "Error in %s: %s\n", __FUNCTION__, e.what());
@@ -206,7 +206,7 @@ keaTableCreate(void  *dataSource, Etxt_Text tableName, unsigned long  numRows,
 
 			// bizarrely, when Imagine asks for creation of Descriptor_Table for one
 			// band, it also expects it to be created for all the others as well...
-			for( std::vector<KEA_Layer*>::iterator itr = pKEAFile->aLayers.begin(); itr != pKEAFile->aLayers.end(); itr++)
+			for( auto itr = pKEAFile->aLayers.begin(); itr != pKEAFile->aLayers.end(); itr++)
 			{
 				KEA_Layer *pCandidate = (*itr);
 				if( !pCandidate->bIsOverview && !pCandidate->bIsMask )
@@ -227,7 +227,7 @@ keaTableCreate(void  *dataSource, Etxt_Text tableName, unsigned long  numRows,
 								pKEATable = pImageIO->getAttributeTable(kealib::kea_att_file, pCandidate->nBand);
 								pKEATable->addRows(numRows);
 							}
-							catch(kealib::KEAException &e)
+							catch(const kealib::KEAException &e)
 							{
 #ifdef KEADEBUG                        
 								keaDebugOut( "Error in %s: %s\n", __FUNCTION__, e.what());
@@ -264,9 +264,8 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, Etxt_Text **colu
 
     // Do it in the Imagine preferred order
     unsigned long nIdx = 0;
-    std::vector<std::string>::iterator itr;
 
-    itr = std::find(colNames.begin(), colNames.end(), COLUMN_HISTOGRAM);
+    auto itr = std::find(colNames.begin(), colNames.end(), COLUMN_HISTOGRAM);
     if( itr != colNames.end() )
     {
         (*columnNames)[nIdx] = estr_Duplicate(ETXT_LTEXT(COLUMN_HISTOGRAM));
@@ -329,7 +328,7 @@ keaTableColumnNamesGet(void *tableHandle, unsigned long *count, Etxt_Text **colu
     }
 
     // do the rest of the attributes
-    for( std::vector<std::string>::iterator itr = colNames.begin(); itr != colNames.end(); itr++)
+    for( auto itr = colNames.begin(); itr != colNames.end(); itr++)
     {
         std::string sVal = (*itr);
         (*columnNames)[nIdx] = estr_Duplicate(ETXT_2U(sVal.c_str()));
@@ -468,7 +467,7 @@ keaColumnOpen(void *tableHandle, Etxt_Text columnName, unsigned long *dataType,
         keaDebugOut( "%s returning %p\n", __FUNCTION__, pKEAColumn);
 #endif            
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
 #ifdef KEADEBUG        
         keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
@@ -523,7 +522,7 @@ keaColumnCreate(void  *tableHandle, Etxt_Text columnName,
             rCode = 0;
             ktype = kealib::kea_att_int;
         }
-        catch(kealib::KEAException &e)
+        catch(const kealib::KEAException &e)
         {
 #ifdef KEADEBUG            
             keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
@@ -550,7 +549,7 @@ keaColumnCreate(void  *tableHandle, Etxt_Text columnName,
                 nColIdx = pKEATable->getFieldIndex(sColumnName);
                 rCode = 0;  
             }
-            catch(kealib::KEAException &e)
+            catch(const kealib::KEAException &e)
             {
 #ifdef KEADEBUG                
                 keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
@@ -565,7 +564,7 @@ keaColumnCreate(void  *tableHandle, Etxt_Text columnName,
                 nColIdx = pKEATable->getFieldIndex(sColumnName);
                 rCode = 0; 
             }
-            catch(kealib::KEAException &e)
+            catch(const kealib::KEAException &e)
             {
     #ifdef KEADEBUG            
                 keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
@@ -587,7 +586,7 @@ keaColumnCreate(void  *tableHandle, Etxt_Text columnName,
             nColIdx = pKEATable->getFieldIndex(sColumnName);
             rCode = 0; 
         }
-        catch(kealib::KEAException &e)
+        catch(const kealib::KEAException &e)
         {
 #ifdef KEADEBUG            
             keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
@@ -707,7 +706,7 @@ keaColumnDataRead(void *columnHandle, unsigned long startRow, unsigned long numR
 
         rCode = 0;
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
 #ifdef KEADEBUG        
         keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
@@ -811,7 +810,7 @@ keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long num
 
         rCode = 0;
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
 #ifdef KEADEBUG        
         keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());

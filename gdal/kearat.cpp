@@ -43,7 +43,7 @@ KEARasterAttributeTable::KEARasterAttributeTable(kealib::KEAAttributeTable *poKE
         {
             sKEAField = poKEATable->getField(nColumnIndex);
         }
-        catch(kealib::KEAATTException &e)
+        catch(const kealib::KEAATTException &e)
         {
             // pKEATable->getField raised exception because we have a missing column
             continue;
@@ -437,7 +437,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
                 else
                     m_poKEATable->setFloatFields(iStartRow, iLength, m_aoFields[iField].idx, pdfData);
             }
-            catch(kealib::KEAException &e)
+            catch(const kealib::KEAException &e)
             {
                 CPLError( CE_Failure, CPLE_AppDefined, "Failed to read/write attribute table: %s", e.what() );
                 return CE_Failure;
@@ -554,7 +554,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
                 else
                     m_poKEATable->setBoolFields(iStartRow, iLength, m_aoFields[iField].idx, panColData);
             }
-            catch(kealib::KEAException &e)
+            catch(const kealib::KEAException &e)
             {
                 CPLError( CE_Failure, CPLE_AppDefined, "Failed to read/write attribute table: %s", e.what() );
                 return CE_Failure;
@@ -594,7 +594,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
                 else
                     m_poKEATable->setIntFields(iStartRow, iLength, m_aoFields[iField].idx, panColData);
             }
-            catch(kealib::KEAException &e)
+            catch(const kealib::KEAException &e)
             {
                 fprintf(stderr,"Failed to read/write attribute table: %s %d %d %ld\n", e.what(), iStartRow, iLength, m_poKEATable->getSize() );
                 CPLError( CE_Failure, CPLE_AppDefined, "Failed to read/write attribute table: %s", e.what() );
@@ -831,7 +831,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
                     m_poKEATable->setStringFields(iStartRow, iLength, m_aoFields[iField].idx, &aStrings);
                 }
             }
-            catch(kealib::KEAException &e)
+            catch(const kealib::KEAException &e)
             {
                 CPLError( CE_Failure, CPLE_AppDefined, "Failed to read/write attribute table: %s", e.what() );
                 return CE_Failure;
@@ -928,7 +928,7 @@ CPLErr KEARasterAttributeTable::CreateColumn( const char *pszFieldName,
         kealib::KEAATTField sKEAField = m_poKEATable->getField(pszFieldName);
         m_aoFields.push_back(sKEAField);
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined, "Failed to add column: %s", e.what() );
         return CE_Failure;

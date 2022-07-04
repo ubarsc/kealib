@@ -354,7 +354,7 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
 #endif        
 
         delete keaAtt;
-        for(std::vector<kealib::KEAATTField*>::iterator iterField = fields->begin(); iterField != fields->end(); ++iterField)
+        for(auto iterField = fields->begin(); iterField != fields->end(); ++iterField)
         {
             delete *iterField;
         }
@@ -508,11 +508,11 @@ void CopyGCPs(GDALDataset *pDataset, kealib::KEAImageIO *pImageIO)
         {
             pImageIO->setGCPs(&KEAGCPs, pszGCPProj);
         }
-        catch(kealib::KEAException &e)
+        catch(const kealib::KEAException &e)
         {
         }
 
-        for( std::vector<kealib::KEAImageGCP*>::iterator itr = KEAGCPs.begin(); itr != KEAGCPs.end(); itr++)
+        for( auto itr = KEAGCPs.begin(); itr != KEAGCPs.end(); itr++)
         {
             delete (*itr);
         }
