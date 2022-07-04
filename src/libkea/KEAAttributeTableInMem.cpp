@@ -563,7 +563,7 @@ namespace kealib{
     
     void KEAAttributeTableInMem::addRows(size_t numRows)
     {        
-        KEAATTFeature *feat = NULL;
+        KEAATTFeature *feat = nullptr;
         
         for(size_t i = 0; i < numRows; ++i)
         {
@@ -601,22 +601,22 @@ namespace kealib{
                 throw KEAIOException("The attribute table size field is not present.");
             }
                         
-            KEAAttributeIdx *boolFields = NULL;
+            KEAAttributeIdx *boolFields = nullptr;
             if(this->numBoolFields > 0)
             {
                 boolFields = new KEAAttributeIdx[this->numBoolFields];
             }
-            KEAAttributeIdx *intFields = NULL;
+            KEAAttributeIdx *intFields = nullptr;
             if(this->numIntFields > 0)
             {
                 intFields = new KEAAttributeIdx[this->numIntFields];
             }
-            KEAAttributeIdx *floatFields = NULL;
+            KEAAttributeIdx *floatFields = nullptr;
             if(this->numFloatFields > 0)
             {
                 floatFields = new KEAAttributeIdx[this->numFloatFields];
             }
-            KEAAttributeIdx *stringFields = NULL;
+            KEAAttributeIdx *stringFields = nullptr;
             if(this->numStringFields > 0)
             {
                 stringFields = new KEAAttributeIdx[this->numStringFields];
@@ -666,11 +666,11 @@ namespace kealib{
                 }
             }
             
-            H5::DataSet *boolDataset = NULL;
-            H5::DataSet *intDataset = NULL;
-            H5::DataSet *floatDataset = NULL;
-            H5::DataSet *strDataset = NULL;
-            H5::DataSet *neighboursDataset = NULL;
+            H5::DataSet *boolDataset = nullptr;
+            H5::DataSet *intDataset = nullptr;
+            H5::DataSet *floatDataset = nullptr;
+            H5::DataSet *strDataset = nullptr;
+            H5::DataSet *neighboursDataset = nullptr;
             
             H5::CompType *strTypeDisk = this->createKeaStringCompTypeDisk();
             H5::CompType *strTypeMem = this->createKeaStringCompTypeMem();
@@ -1526,7 +1526,7 @@ namespace kealib{
                 H5::DataType intVarLenDiskDT = H5::VarLenType(&H5::PredType::STD_U64LE);
                 H5::DataType intVarLenMemDT = H5::VarLenType(&H5::PredType::NATIVE_HSIZE);
                 VarLenFieldHDF neighboursDataFillVal[1];
-                neighboursDataFillVal[0].p = NULL;
+                neighboursDataFillVal[0].p = nullptr;
                 neighboursDataFillVal[0].length = 0;
                 H5::DSetCreatPropList creationNeighboursDSPList;
                 creationNeighboursDSPList.setChunk(1, dimsNeighboursChunk);
@@ -1543,22 +1543,22 @@ namespace kealib{
             numOfBlocks = floor(((double)attRows->size()/chunkSize));
             size_t remainRows = attRows->size() - (numOfBlocks * chunkSize);
                         
-            int *boolData = NULL;
+            int *boolData = nullptr;
             if(this->numBoolFields > 0)
             {
                 boolData = new int[this->numBoolFields*chunkSize];
             }
-            int64_t *intData = NULL;
+            int64_t *intData = nullptr;
             if(this->numIntFields > 0)
             {
                 intData = new int64_t[this->numIntFields*chunkSize];
             }
-            double *floatData = NULL;
+            double *floatData = nullptr;
             if(this->numFloatFields > 0)
             {
                 floatData = new double[this->numFloatFields*chunkSize];
             }
-            KEAString *stringData = NULL;
+            KEAString *stringData = nullptr;
             if(this->numStringFields > 0)
             {
                 stringData = new KEAString[this->numStringFields*chunkSize];
@@ -1604,7 +1604,7 @@ namespace kealib{
                 H5::DataSpace memNeighboursDataspace = H5::DataSpace(1, neighboursDataDims);
                 
                 size_t rowOff = 0;
-                KEAATTFeature *keaFeat = NULL;
+                KEAATTFeature *keaFeat = nullptr;
                 for(size_t n = 0; n < numOfBlocks; ++n)
                 {
                     rowOff = n * chunkSize;
@@ -1630,7 +1630,7 @@ namespace kealib{
                         }
                         
                         neighbourVals[i].length = 0;
-                        neighbourVals[i].p = NULL;
+                        neighbourVals[i].p = nullptr;
                         if(keaFeat->neighbours->size() > 0)
                         {
                             neighbourVals[i].length = keaFeat->neighbours->size();
@@ -1752,7 +1752,7 @@ namespace kealib{
                 neighboursDataDims[0] = remainRows;
                 H5::DataType intVarLenMemDT = H5::VarLenType(&H5::PredType::NATIVE_HSIZE);
                 
-                KEAATTFeature *keaFeat = NULL;
+                KEAATTFeature *keaFeat = nullptr;
                 for(size_t i = 0; i < remainRows; ++i)
                 {
                     keaFeat = attRows->at(rowOff+i);
@@ -1773,7 +1773,7 @@ namespace kealib{
                         stringData[(i*this->numStringFields)+j].str = const_cast<char*>(keaFeat->strFields->at(j).c_str());
                     }
                     neighbourVals[i].length = 0;
-                    neighbourVals[i].p = NULL;
+                    neighbourVals[i].p = nullptr;
                     if(keaFeat->neighbours->size() > 0)
                     {
                         neighbourVals[i].length = keaFeat->neighbours->size();
@@ -2252,14 +2252,14 @@ namespace kealib{
                 numOfBlocks = floor(((double)attSize[0]/chunkSize));
                 size_t remainRows = attSize[0] - (numOfBlocks * chunkSize);
                 
-                KEAATTFeature *feat = NULL;
+                KEAATTFeature *feat = nullptr;
                 size_t cFid = 0;
                 size_t rowOff = 0;
                 
                 H5::DataSet boolDataset;
                 H5::DataSpace boolDataspace;
                 H5::DataSpace boolFieldsMemspace;
-                int *boolVals = NULL;
+                int *boolVals = nullptr;
                 hsize_t boolFieldsOffset[2];
                 hsize_t boolFieldsCount[2];
                 hsize_t boolFieldsDimsRead[2];
@@ -2317,7 +2317,7 @@ namespace kealib{
                 H5::DataSet intDataset;
                 H5::DataSpace intDataspace;
                 H5::DataSpace intFieldsMemspace;
-                int64_t *intVals = NULL;
+                int64_t *intVals = nullptr;
                 hsize_t intFieldsOffset[2];
                 hsize_t intFieldsCount[2];
                 hsize_t intFieldsDimsRead[2];
@@ -2375,7 +2375,7 @@ namespace kealib{
                 H5::DataSet floatDataset;
                 H5::DataSpace floatDataspace;
                 H5::DataSpace floatFieldsMemspace;
-                double *floatVals = NULL;
+                double *floatVals = nullptr;
                 hsize_t floatFieldsOffset[2];
                 hsize_t floatFieldsCount[2];
                 hsize_t floatFieldsDimsRead[2];
@@ -2436,7 +2436,7 @@ namespace kealib{
                 H5::DataSpace strDataspace;
                 H5::DataSpace strFieldsMemspace;
                 H5::CompType *strTypeMem = KEAAttributeTable::createKeaStringCompTypeMem();
-                KEAString *stringVals = NULL;
+                KEAString *stringVals = nullptr;
                 hsize_t strFieldsOffset[2];
                 hsize_t strFieldsCount[2];
                 hsize_t strFieldsDimsRead[2];

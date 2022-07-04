@@ -72,31 +72,31 @@ void *
 keaFileTitleIdentifyAndOpen(Etxt_Text fileName, long *fileType, Etxt_Text inFileMode)
 {
 #ifdef KEADEBUG
-    if( inFileMode == NULL )
+    if( inFileMode == nullptr )
     {
-        keaDebugOut( "%s %s %ld NULL\n", __FUNCTION__, fileName, *fileType, inFileMode);
+        keaDebugOut( "%s %s %ld nullptr\n", __FUNCTION__, fileName, *fileType, inFileMode);
     }
     else
     {
         keaDebugOut( "%s %s %ld %s\n", __FUNCTION__, fileName, *fileType, inFileMode);
     }
 #endif
-    Eerr_ErrorReport* err = NULL;
+    Eerr_ErrorReport* err = nullptr;
 	ETXT_CONVERSION;
     // check if writing
-    if( ( inFileMode != NULL ) && ( EFIO_MODE_CREATE( inFileMode ) == EMSC_TRUE ) )
+    if( ( inFileMode != nullptr ) && ( EFIO_MODE_CREATE( inFileMode ) == EMSC_TRUE ) )
     {
         KEA_File *pKEAFile = new KEA_File();
-        pKEAFile->pH5File = NULL;
-        pKEAFile->pImageIO = NULL; // will set this on LayerCreate
+        pKEAFile->pH5File = nullptr;
+        pKEAFile->pImageIO = nullptr; // will set this on LayerCreate
         pKEAFile->sFilePath = fileName;
-        pKEAFile->pProj = NULL;
+        pKEAFile->pProj = nullptr;
         pKEAFile->modTime = 0;
         pKEAFile->bUpdate = true;
         return pKEAFile;
     }
 
-    KEA_File  *pKEAFile = NULL;
+    KEA_File  *pKEAFile = nullptr;
     bool isKEA = false;
     try
     {
@@ -112,11 +112,11 @@ keaFileTitleIdentifyAndOpen(Etxt_Text fileName, long *fileType, Etxt_Text inFile
     if( isKEA )
     {
         *fileType = 0;
-        // I *think* they only want us to open when inFileMode != NULL....
-        if( inFileMode != NULL ) 
+        // I *think* they only want us to open when inFileMode != nullptr....
+        if( inFileMode != nullptr ) 
         {
-            H5::H5File *pH5File = NULL;
-            kealib::KEAImageIO *pImageIO = NULL;
+            H5::H5File *pH5File = nullptr;
+            kealib::KEAImageIO *pImageIO = nullptr;
             try
             {
 				// Imagine 2015 seems to have a perculiar bug where it opens a file
@@ -133,7 +133,7 @@ keaFileTitleIdentifyAndOpen(Etxt_Text fileName, long *fileType, Etxt_Text inFile
 				catch (const kealib::KEAIOException &e)
 				{
 					// open in read-write mode failed. Did they only want readonly?
-					if( ( inFileMode == NULL ) || EFIO_MODE_READONLY(inFileMode) )
+					if( ( inFileMode == nullptr ) || EFIO_MODE_READONLY(inFileMode) )
 					{
 						// exception (if any) should be caught in the enclosing try
 						pH5File = kealib::KEAImageIO::openKeaH5RDOnly( asciiFileName );
@@ -176,8 +176,8 @@ keaFileTitleIdentifyAndOpen(Etxt_Text fileName, long *fileType, Etxt_Text inFile
 					if( sName.empty() )
 					{
 						// Imagine doesn't like empty names so make one up
-						Etxt_Text madeupname = estr_Sprintf( NULL, ETXT_LTEXT("Band_%d"), &err, 
-                                nBand, NULL );
+						Etxt_Text madeupname = estr_Sprintf( nullptr, ETXT_LTEXT("Band_%d"), &err, 
+                                nBand, nullptr );
 						sName = madeupname;
 						emsc_Free(madeupname);
 					}
@@ -201,9 +201,9 @@ keaFileTitleIdentifyAndOpen(Etxt_Text fileName, long *fileType, Etxt_Text inFile
                     // mask - Imagine 2015 requires us to have one for each band
                     KEA_Layer *pMask = new KEA_Layer();
                     pMask->pKEAFile = pKEAFile;
-                    Etxt_Text name = estr_Sprintf( NULL, ETXT_LTEXT("%s:Mask"), &err, 
-                                sName.c_str(), NULL );
-                    HANDLE_ERR(err, NULL);
+                    Etxt_Text name = estr_Sprintf( nullptr, ETXT_LTEXT("%s:Mask"), &err, 
+                                sName.c_str(), nullptr );
+                    HANDLE_ERR(err, nullptr);
                     pMask->sName = name;
                     emsc_Free(name);
                     pMask->nBand = nBand;
@@ -224,9 +224,9 @@ keaFileTitleIdentifyAndOpen(Etxt_Text fileName, long *fileType, Etxt_Text inFile
                         unsigned int nOverview = o + 1;
                         KEA_Layer *pOverview = new KEA_Layer();
                         pOverview->pKEAFile = pKEAFile;
-                        Etxt_Text name = estr_Sprintf( NULL, ETXT_LTEXT("%s:Overview_%d"), &err, 
-                                sName.c_str(), nOverview, NULL );
-                        HANDLE_ERR(err, NULL);
+                        Etxt_Text name = estr_Sprintf( nullptr, ETXT_LTEXT("%s:Overview_%d"), &err, 
+                                sName.c_str(), nOverview, nullptr );
+                        HANDLE_ERR(err, nullptr);
                         pOverview->sName = name;
                         emsc_Free(name);
                         pOverview->nBand = nBand;
@@ -245,9 +245,9 @@ keaFileTitleIdentifyAndOpen(Etxt_Text fileName, long *fileType, Etxt_Text inFile
                         // mask for the overview
                         KEA_Layer *pOverviewMask = new KEA_Layer();
                         pOverviewMask->pKEAFile = pKEAFile;
-                        name = estr_Sprintf( NULL, ETXT_LTEXT("%s:Overview_%d:Mask"), &err, 
-                                sName.c_str(), nOverview, NULL );
-                        HANDLE_ERR(err, NULL);
+                        name = estr_Sprintf( nullptr, ETXT_LTEXT("%s:Overview_%d:Mask"), &err, 
+                                sName.c_str(), nOverview, nullptr );
+                        HANDLE_ERR(err, nullptr);
                         pOverviewMask->sName = name;
                         emsc_Free(name);
                         pOverviewMask->nBand = nBand;
@@ -272,8 +272,8 @@ keaFileTitleIdentifyAndOpen(Etxt_Text fileName, long *fileType, Etxt_Text inFile
                 // was a problem - can't be a valid file
                 delete pImageIO;
                 delete pKEAFile;
-                pKEAFile = NULL;
-                pImageIO = NULL;
+                pKEAFile = nullptr;
+                pImageIO = nullptr;
             }
         }
     }
@@ -294,11 +294,11 @@ keaFileClose(void *fileHandle)
 
     try
     {
-        if( pKEAFile->pImageIO != NULL )
+        if( pKEAFile->pImageIO != nullptr )
         {
             // closes the pKEAFile->pH5File also
             pKEAFile->pImageIO->close();
-            pKEAFile->pH5File = NULL;
+            pKEAFile->pH5File = nullptr;
         }
     }
     catch (const kealib::KEAIOException &e)
@@ -306,7 +306,7 @@ keaFileClose(void *fileHandle)
         keaDebugOut( "Exception in %s: %s\n", __FUNCTION__, e.what());
     }
     delete pKEAFile->pImageIO;
-    pKEAFile->pImageIO = NULL;
+    pKEAFile->pImageIO = nullptr;
     for( auto itr = pKEAFile->aLayers.begin();
             itr != pKEAFile->aLayers.end(); itr++ )
     {
@@ -314,12 +314,12 @@ keaFileClose(void *fileHandle)
         delete pLayer;
     }
 
-    if( pKEAFile->pProj != NULL )
+    if( pKEAFile->pProj != nullptr )
     {
         eprj_ProjectionFree(&pKEAFile->pProj);
     }
     delete pKEAFile;
-    pKEAFile = NULL;
+    pKEAFile = nullptr;
 	return 0;
 }
 
@@ -365,7 +365,7 @@ keaFileLayerNamesGet(void *fileHandle, unsigned long *count, Etxt_Text **layerNa
     else
     {
         *count = 0;
-        *layerNames = NULL;
+        *layerNames = nullptr;
     }
     rCode = 0;
 
@@ -393,11 +393,11 @@ keaFileDataRead(void *fileHandle, Etxt_Text dataName, unsigned char **MIFDataObj
 #ifdef KEADEBUG
     keaDebugOut( "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
 #endif
-    Eerr_ErrorReport *err = NULL;
+    Eerr_ErrorReport *err = nullptr;
     long rCode = 0; // always need to succeed or Imagine will not display
-    *MIFDataObject = NULL;
-    *MIFDataDictionary = NULL;
-    *MIFDataType = NULL;
+    *MIFDataObject = nullptr;
+    *MIFDataDictionary = nullptr;
+    *MIFDataType = nullptr;
     *MIFDataSize = 0;
 
     // currently we only support getting the histogram bin function in this manner
@@ -406,19 +406,19 @@ keaFileDataRead(void *fileHandle, Etxt_Text dataName, unsigned char **MIFDataObj
     Etxt_Text pszNameCopy = estr_Duplicate(dataName);
     Etxt_Text pszLastColon = etxt_Text_strrchr(pszNameCopy, ':');
     // is it looking for the bin function?
-    if( ( pszLastColon != NULL ) &&  ( etxt_Text_strcmp(pszLastColon+1, ETXT_LTEXT("#Bin_Function#")) == 0 ) )
+    if( ( pszLastColon != nullptr ) &&  ( etxt_Text_strcmp(pszLastColon+1, ETXT_LTEXT("#Bin_Function#")) == 0 ) )
     {
 #ifdef KEADEBUG        
         keaDebugOut( "Found #Bin_Function# %s\n", pszNameCopy );
 #endif        
         *pszLastColon = '\0'; // put a null there and look at the next one back
         pszLastColon = etxt_Text_strrchr(pszNameCopy, ETXT_LTEXT(':'));
-        if( ( pszLastColon != NULL ) && (etxt_Text_strcmp(pszLastColon+1, ETXT_LTEXT("Descriptor_Table") ) == 0 ) )
+        if( ( pszLastColon != nullptr ) && (etxt_Text_strcmp(pszLastColon+1, ETXT_LTEXT("Descriptor_Table") ) == 0 ) )
         {
             //fprintf( stderr, "Found Descriptor_Table\n" );
             // now find the second colon
             Etxt_Text pszSecondColon = etxt_Text_strchr(&pszNameCopy[1], ':');
-            if( pszSecondColon != NULL )
+            if( pszSecondColon != nullptr )
             {
                 *pszSecondColon = ETXT_LTEXT('\0');
                 Etxt_Text pszLayerName = &pszNameCopy[1];
@@ -434,7 +434,7 @@ keaFileDataRead(void *fileHandle, Etxt_Text dataName, unsigned char **MIFDataObj
                     keaDebugOut( "Found layer\n" );
 #endif
                     Edsc_BinFunction *pBinFn = keaLayerGetHistoBinFunction(pKEALayer);
-                    if( pBinFn != NULL )
+                    if( pBinFn != nullptr )
                     {
 #ifdef KEADEBUG
                         keaDebugOut( "Found bin function\n" );
@@ -483,7 +483,7 @@ keaFileDataWrite( void  *fileHandle, Etxt_Text dataName,  unsigned char  *MIFDat
 #ifdef KEADEBUG
     keaDebugOut( "%s %p %s\n", __FUNCTION__, fileHandle, dataName );
 #endif
-    Eerr_ErrorReport *err = NULL;
+    Eerr_ErrorReport *err = nullptr;
     long rCode = -1;
     // currently we only support getting the histogram bin function in this manner
     // will be in the form:
@@ -491,19 +491,19 @@ keaFileDataWrite( void  *fileHandle, Etxt_Text dataName,  unsigned char  *MIFDat
     Etxt_Text pszNameCopy = estr_Duplicate(dataName);
     Etxt_Text pszLastColon = etxt_Text_strrchr(pszNameCopy, ':');
     // is it looking for the bin function?
-    if( ( pszLastColon != NULL ) &&  ( etxt_Text_strcmp(pszLastColon+1, ETXT_LTEXT("#Bin_Function#")) == 0 ) )
+    if( ( pszLastColon != nullptr ) &&  ( etxt_Text_strcmp(pszLastColon+1, ETXT_LTEXT("#Bin_Function#")) == 0 ) )
     {
 #ifdef KEADEBUG        
         keaDebugOut( "Found #Bin_Function# %s\n", pszNameCopy );
 #endif        
         *pszLastColon = ETXT_LTEXT('\0'); // put a null there and look at the next one back
         pszLastColon =  etxt_Text_strrchr(pszNameCopy, ':');
-        if( ( pszLastColon != NULL ) && (etxt_Text_strcmp(pszLastColon+1, ETXT_LTEXT("Descriptor_Table") ) == 0 ) )
+        if( ( pszLastColon != nullptr ) && (etxt_Text_strcmp(pszLastColon+1, ETXT_LTEXT("Descriptor_Table") ) == 0 ) )
         {
             //fprintf( stderr, "Found Descriptor_Table\n" );
             // now find the second colon
             Etxt_Text pszSecondColon = etxt_Text_strchr(&pszNameCopy[1], ':');
-            if( pszSecondColon != NULL )
+            if( pszSecondColon != nullptr )
             {
                 *pszSecondColon = ETXT_LTEXT('\0');
                 Etxt_Text pszLayerName = &pszNameCopy[1];
@@ -566,7 +566,7 @@ keaFileFlush( void *fileHandle )
     keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
     KEA_File *pKEAFile = (KEA_File*)fileHandle;
-    if( pKEAFile->pH5File != NULL )
+    if( pKEAFile->pH5File != nullptr )
     {
         pKEAFile->pH5File->flush(H5F_SCOPE_LOCAL);
     }
@@ -676,10 +676,10 @@ long keaFileAuxiliaryFileNamesGet(void *fileHandle, unsigned long *fileCount,
 
 	// according to the doco:
 	// If the dataset represented by fileHandle has no existing auxiliary files associated with it, 
-	// 0 should be returned in *fileCount and NULL should be returned in *fileList. 
+	// 0 should be returned in *fileCount and nullptr should be returned in *fileList. 
 	//This should not be considered an error.
 	*fileCount = 0;
-	*fileList = NULL;
+	*fileList = nullptr;
 	return 0;
 }
  

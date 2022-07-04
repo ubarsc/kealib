@@ -124,7 +124,7 @@ const GDALRasterAttributeTable *KEAOverview::GetDefaultRAT()
 #endif
 {
     // KEARasterBand implements this, but we don't want to
-    return NULL;
+    return nullptr;
 }
 
 CPLErr KEAOverview::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)

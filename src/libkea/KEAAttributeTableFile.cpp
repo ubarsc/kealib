@@ -1239,7 +1239,7 @@ namespace kealib{
         
         try
         {
-            H5::DataSet *neighboursDataset = NULL;
+            H5::DataSet *neighboursDataset = nullptr;
             try
             {
                 neighboursDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_NEIGHBOURS_DATA));
@@ -1272,7 +1272,7 @@ namespace kealib{
                 H5::DataType intVarLenDiskDT = H5::VarLenType(&H5::PredType::STD_U64LE);
                 H5::DataType intVarLenMemDT = H5::VarLenType(&H5::PredType::NATIVE_HSIZE);
                 VarLenFieldHDF neighboursDataFillVal[1];
-                neighboursDataFillVal[0].p = NULL;
+                neighboursDataFillVal[0].p = nullptr;
                 neighboursDataFillVal[0].length = 0;
                 H5::DSetCreatPropList creationNeighboursDSPList;
                 creationNeighboursDSPList.setChunk(1, dimsNeighboursChunk);
@@ -1298,7 +1298,7 @@ namespace kealib{
             for(auto iterClumps = neighbours->begin(); iterClumps != neighbours->end(); ++iterClumps)
             {
                 neighbourVals[i].length = 0;
-                neighbourVals[i].p = NULL;
+                neighbourVals[i].p = nullptr;
                 if((*iterClumps)->size() > 0)
                 {
                     neighbourVals[i].length = (*iterClumps)->size();
@@ -1351,7 +1351,7 @@ namespace kealib{
     KEAATTFeature* KEAAttributeTableFile::getFeature(size_t fid) const
     {
         throw KEAATTException("KEAAttributeTableFile::getFeature(size_t fid) has not been implemented.");
-        return NULL;
+        return nullptr;
     }
     
     size_t KEAAttributeTableFile::getSize() const
@@ -1503,7 +1503,7 @@ namespace kealib{
         delete fieldDtMem;
         
         // expand or create bool_DATA
-        H5::DataSet *boolDataset = NULL;
+        H5::DataSet *boolDataset = nullptr;
         try
         {
             boolDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_BOOL_DATA));
@@ -1639,7 +1639,7 @@ namespace kealib{
         delete fieldDtMem;
         
         // expand or create INT_DATA
-        H5::DataSet *intDataset = NULL;
+        H5::DataSet *intDataset = nullptr;
         try
         {
             intDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_INT_DATA));
@@ -1774,7 +1774,7 @@ namespace kealib{
         delete fieldDtMem;
         
         // expand or create float_DATA
-        H5::DataSet *floatDataset = NULL;
+        H5::DataSet *floatDataset = nullptr;
         try
         {
             floatDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_FLOAT_DATA));
@@ -1911,7 +1911,7 @@ namespace kealib{
         H5::CompType *strTypeMem = this->createKeaStringCompTypeMem();
         
         // expand or create string_DATA
-        H5::DataSet *stringDataset = NULL;
+        H5::DataSet *stringDataset = nullptr;
         try
         {
             stringDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_STRING_DATA));
@@ -2022,7 +2022,7 @@ namespace kealib{
     {
         // Create instance of class to populate and return.
         std::string bandPathBase = KEA_DATASETNAME_BAND + uint2Str(band);
-        KEAAttributeTableFile *att = NULL;
+        KEAAttributeTableFile *att = nullptr;
         
         try
         {
@@ -2161,7 +2161,7 @@ namespace kealib{
                     
                     H5::DSetMemXferPropList xfer;
                     /* Ensures that malloc()/free() are from the same C runtime */
-                    xfer.setVlenMemManager(kealibmalloc, NULL, kealibfree, NULL);
+                    xfer.setVlenMemManager(kealibmalloc, nullptr, kealibfree, nullptr);
                     intFieldsDataset.read(inFields, *fieldCompTypeMem, intFieldsMemspace, intFieldsDataspace, xfer);
                     
                     KEAATTField field;
@@ -2231,7 +2231,7 @@ namespace kealib{
                     
                     H5::DSetMemXferPropList xfer;
                     /* Ensures that malloc()/free() are from the same C runtime */
-                    xfer.setVlenMemManager(kealibmalloc, NULL, kealibfree, NULL);
+                    xfer.setVlenMemManager(kealibmalloc, nullptr, kealibfree, nullptr);
                     floatFieldsDataset.read(inFields, *fieldCompTypeMem, floatFieldsMemspace, floatFieldsDataspace, xfer);
                     
                     KEAATTField field;
@@ -2301,7 +2301,7 @@ namespace kealib{
                     
                     H5::DSetMemXferPropList xfer;
                     /* Ensures that malloc()/free() are from the same C runtime */
-                    xfer.setVlenMemManager(kealibmalloc, NULL, kealibfree, NULL);
+                    xfer.setVlenMemManager(kealibmalloc, nullptr, kealibfree, nullptr);
                     strFieldsDataset.read(inFields, *fieldCompTypeMem, strFieldsMemspace, strFieldsDataspace, xfer);
                     
                     KEAATTField field;

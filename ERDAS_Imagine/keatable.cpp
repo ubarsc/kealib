@@ -57,9 +57,9 @@ keaTableOpen(void *fileHandle, Etxt_Text tableName, unsigned long *numRows, void
 
     // we will assume fileHandle is always a KEA_File - seems to be the case
     KEA_File *pKEAFile = (KEA_File*)fileHandle;
-    kealib::KEAAttributeTable *pKEATable = NULL;
+    kealib::KEAAttributeTable *pKEATable = nullptr;
     Etxt_Text pszLastColon = etxt_Text_strrchr(tableName, ETXT_LTEXT(':'));
-    if( pszLastColon != NULL )
+    if( pszLastColon != nullptr )
     {
 #ifdef KEADEBUG
         keaDebugOut( "Table name: %s\n", pszLastColon+1);
@@ -93,7 +93,7 @@ keaTableOpen(void *fileHandle, Etxt_Text tableName, unsigned long *numRows, void
                         keaDebugOut( "Error in %s: %s\n", __FUNCTION__, e.what());
 #endif                        
                         delete pKEATable;
-                        pKEATable = NULL;
+                        pKEATable = nullptr;
                         rCode = -1;
                     }
                 }
@@ -152,9 +152,9 @@ keaTableCreate(void  *dataSource, Etxt_Text tableName, unsigned long  numRows,
 	
     // we will assume dataSource is always a KEA_File - seems to be the case
     KEA_File *pKEAFile = (KEA_File*)dataSource;
-    kealib::KEAAttributeTable *pKEATable = NULL;
+    kealib::KEAAttributeTable *pKEATable = nullptr;
     Etxt_Text pszLastColon = etxt_Text_strrchr(tableName, ETXT_LTEXT(':'));
-    if( pszLastColon != NULL )
+    if( pszLastColon != nullptr )
     {
         //fprintf( stderr, "Table name: %s\n", pszLastColon+1);
         // Imagine always asks for this one, so perhaps don't need to check
@@ -473,8 +473,8 @@ keaColumnOpen(void *tableHandle, Etxt_Text columnName, unsigned long *dataType,
         keaDebugOut( "Exception raised in %s: %s\n", __FUNCTION__, e.what());
 #endif       
 		// despite what the documentation says we need to return success but
-		// set the columnHandle to NULL when column doesn't exist
-		*columnHandle = NULL;
+		// set the columnHandle to nullptr when column doesn't exist
+		*columnHandle = nullptr;
         rCode = 0;
     }
 
@@ -646,7 +646,7 @@ keaColumnDataRead(void *columnHandle, unsigned long startRow, unsigned long numR
             {
                 // need to read in as bools - alloc mem
                 bool *pBoolData = (bool*)malloc(numRows * sizeof(bool));
-                if( pBoolData == NULL )
+                if( pBoolData == nullptr )
                     return -1;
 
                 pKEATable->getBoolFields(startRow, numRows, pKEAColumn->nColIdx, pBoolData);
@@ -660,7 +660,7 @@ keaColumnDataRead(void *columnHandle, unsigned long startRow, unsigned long numR
             {
                 // read as int64_t so we need buffer
                 int64_t *pInt64Data = (int64_t*)malloc(numRows * sizeof(int64_t));
-                if( pInt64Data == NULL )
+                if( pInt64Data == nullptr )
                     return -1;
 
                 pKEATable->getIntFields(startRow, numRows, pKEAColumn->nColIdx, pInt64Data);
@@ -739,7 +739,7 @@ keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long num
             {
                 // need to write as bools - alloc mem
                 bool *pBoolData = (bool*)malloc(numRows * sizeof(bool));
-                if( pBoolData == NULL )
+                if( pBoolData == nullptr )
                     return -1;
 
                 for( unsigned long n = 0; n < numRows; n++ )
@@ -754,7 +754,7 @@ keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long num
             {
                 // write as int64_t so we need buffer
                 int64_t *pInt64Data = (int64_t*)malloc(numRows * sizeof(int64_t));
-                if( pInt64Data == NULL )
+                if( pInt64Data == nullptr )
                     return -1;
 
                 for( unsigned long n = 0; n < numRows; n++ )
@@ -770,7 +770,7 @@ keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long num
                 {
                     // write as int64_t so we need buffer
                     int64_t *pInt64Data = (int64_t*)malloc(numRows * sizeof(int64_t));
-                    if( pInt64Data == NULL )
+                    if( pInt64Data == nullptr )
                         return -1;
 
                     for( unsigned long n = 0; n < numRows; n++ )
@@ -791,7 +791,7 @@ keaColumnDataWrite(void *columnHandle, unsigned long startRow, unsigned long num
 					std::vector<std::string> aStrings;
                     for( unsigned long i = 0; i < numRows; i++ )
 					{
-						if( ppszStringData[i] != NULL )
+						if( ppszStringData[i] != nullptr )
 							aStrings.push_back(ETXT_2A(ppszStringData[i]));
 						else
 							aStrings.push_back("");

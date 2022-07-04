@@ -59,13 +59,13 @@ KEARasterAttributeTable::~KEARasterAttributeTable()
     // can't just delete thanks to Windows
     kealib::KEAAttributeTable::destroyAttributeTable(m_poKEATable);
     CPLDestroyMutex( m_hMutex );
-    m_hMutex = NULL;
+    m_hMutex = nullptr;
 }
 
 GDALDefaultRasterAttributeTable *KEARasterAttributeTable::Clone() const
 {
     if( ( GetRowCount() * GetColumnCount() ) > RAT_MAX_ELEM_FOR_CLONE )
-        return NULL;
+        return nullptr;
 
     GDALDefaultRasterAttributeTable *poRAT = new GDALDefaultRasterAttributeTable();
 
@@ -114,12 +114,12 @@ GDALDefaultRasterAttributeTable *KEARasterAttributeTable::Clone() const
         if( eGDALType == GFT_Integer )
         {
             int *panColData = (int*)VSIMalloc2(sizeof(int), m_poKEATable->getSize());
-            if( panColData == NULL )
+            if( panColData == nullptr )
             {
                 CPLError( CE_Failure, CPLE_OutOfMemory,
                     "Memory Allocation failed in KEARasterAttributeTable::Clone");
                 delete poRAT;
-                return NULL;
+                return nullptr;
             }
 
             if( (const_cast<KEARasterAttributeTable*>(this))->
@@ -127,7 +127,7 @@ GDALDefaultRasterAttributeTable *KEARasterAttributeTable::Clone() const
             {
                 CPLFree(panColData);
                 delete poRAT;
-                return NULL;
+                return nullptr;
             }           
 
             for( int iRow = 0; iRow < (int)m_poKEATable->getSize(); iRow++ )
@@ -139,19 +139,19 @@ GDALDefaultRasterAttributeTable *KEARasterAttributeTable::Clone() const
         if( eGDALType == GFT_Real )
         {
             double *padfColData = (double*)VSIMalloc2(sizeof(double), m_poKEATable->getSize());
-            if( padfColData == NULL )
+            if( padfColData == nullptr )
             {
                 CPLError( CE_Failure, CPLE_OutOfMemory,
                     "Memory Allocation failed in KEARasterAttributeTable::Clone");
                 delete poRAT;
-                return NULL;
+                return nullptr;
             }
             if( (const_cast<KEARasterAttributeTable*>(this))->
                         ValuesIO(GF_Read, iCol, 0, m_poKEATable->getSize(), padfColData ) != CE_None )
             {
                 CPLFree(padfColData);
                 delete poRAT;
-                return NULL;
+                return nullptr;
             }           
 
             for( int iRow = 0; iRow < (int)m_poKEATable->getSize(); iRow++ )
@@ -163,12 +163,12 @@ GDALDefaultRasterAttributeTable *KEARasterAttributeTable::Clone() const
         if( eGDALType == GFT_String )
         {
             char **papszColData = (char**)VSIMalloc2(sizeof(char*), m_poKEATable->getSize());
-            if( papszColData == NULL )
+            if( papszColData == nullptr )
             {
                 CPLError( CE_Failure, CPLE_OutOfMemory,
                     "Memory Allocation failed in KEARasterAttributeTable::Clone");
                 delete poRAT;
-                return NULL;
+                return nullptr;
             }
 
             if( (const_cast<KEARasterAttributeTable*>(this))->
@@ -176,7 +176,7 @@ GDALDefaultRasterAttributeTable *KEARasterAttributeTable::Clone() const
             {
                 CPLFree(papszColData);
                 delete poRAT;
-                return NULL;
+                return nullptr;
             }           
 
             for( int iRow = 0; iRow < (int)m_poKEATable->getSize(); iRow++ )
@@ -200,7 +200,7 @@ int KEARasterAttributeTable::GetColumnCount() const
 const char *KEARasterAttributeTable::GetNameOfCol(int nCol) const
 {
      if( ( nCol < 0 ) || ( nCol >= (int)m_aoFields.size() ) )
-        return NULL;
+        return nullptr;
 
     return m_aoFields[nCol].name.c_str();
 }
@@ -396,7 +396,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
         {
             // allocate space for ints
             int *panColData = (int*)VSIMalloc2(iLength, sizeof(int) );
-            if( panColData == NULL )
+            if( panColData == nullptr )
             {
                 CPLError( CE_Failure, CPLE_OutOfMemory,
                     "Memory Allocation failed in KEARasterAttributeTable::ValuesIO");
@@ -448,7 +448,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
         {
             // allocate space for string pointers
             char **papszColData = (char**)VSIMalloc2(iLength, sizeof(char*));
-            if( papszColData == NULL )
+            if( papszColData == nullptr )
             {
                 CPLError( CE_Failure, CPLE_OutOfMemory,
                     "Memory Allocation failed in KEARasterAttributeTable::ValuesIO");
@@ -531,7 +531,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
         {
             // need to convert to/from bools
             bool *panColData = (bool*)VSIMalloc2(iLength, sizeof(bool) );
-            if( panColData == NULL )
+            if( panColData == nullptr )
             {
                 CPLError( CE_Failure, CPLE_OutOfMemory,
                     "Memory Allocation failed in KEARasterAttributeTable::ValuesIO");
@@ -573,7 +573,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
         {
             // need to convert to/from int64_t
             int64_t *panColData = (int64_t*)VSIMalloc2(iLength, sizeof(int64_t) );
-            if( panColData == NULL )
+            if( panColData == nullptr )
             {
                 CPLError( CE_Failure, CPLE_OutOfMemory,
                     "Memory Allocation failed in KEARasterAttributeTable::ValuesIO");
@@ -614,7 +614,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
         {
             // allocate space for doubles
             double *padfColData = (double*)VSIMalloc2(iLength, sizeof(double) );
-            if( padfColData == NULL )
+            if( padfColData == nullptr )
             {
                 CPLError( CE_Failure, CPLE_OutOfMemory,
                     "Memory Allocation failed in KEARasterAttributeTable::ValuesIO");
@@ -650,7 +650,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
         {
             // allocate space for string pointers
             char **papszColData = (char**)VSIMalloc2(iLength, sizeof(char*));
-            if( papszColData == NULL )
+            if( papszColData == nullptr )
             {
                 CPLError( CE_Failure, CPLE_OutOfMemory,
                     "Memory Allocation failed in KEARasterAttributeTable::ValuesIO");
@@ -733,7 +733,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
         {
             // allocate space for ints
             int *panColData = (int*)VSIMalloc2(iLength, sizeof(int) );
-            if( panColData == NULL )
+            if( panColData == nullptr )
             {
                 CPLError( CE_Failure, CPLE_OutOfMemory,
                     "Memory Allocation failed in KEARasterAttributeTable::ValuesIO");
@@ -771,7 +771,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iSt
         {
             // allocate space for doubles
             double *padfColData = (double*)VSIMalloc2(iLength, sizeof(double) );
-            if( padfColData == NULL )
+            if( padfColData == nullptr )
             {
                 CPLError( CE_Failure, CPLE_OutOfMemory,
                     "Memory Allocation failed in KEARasterAttributeTable::ValuesIO");
@@ -960,7 +960,7 @@ int KEARasterAttributeTable::GetLinearBinning( double *pdfRow0Min,
 {
     const char *pszMin = m_poBand->GetMetadataItem("STATISTICS_HISTOMIN");
     const char *pszMax = m_poBand->GetMetadataItem("STATISTICS_HISTOMAX");
-    if( ( pszMin == NULL ) || ( pszMax == NULL ) )
+    if( ( pszMin == nullptr ) || ( pszMax == nullptr ) )
     {
         return FALSE;
     } 
@@ -973,7 +973,7 @@ int KEARasterAttributeTable::GetLinearBinning( double *pdfRow0Min,
 CPLXMLNode *KEARasterAttributeTable::Serialize() const
 {
     if( ( GetRowCount() * GetColumnCount() ) > RAT_MAX_ELEM_FOR_CLONE )
-        return NULL;
+        return nullptr;
 
     return GDALRasterAttributeTable::Serialize();
 }

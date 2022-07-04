@@ -59,7 +59,7 @@ namespace kealib{
         }
         H5::DSetMemXferPropList xfer;
         /* Ensures that malloc()/free() are from the same C runtime */
-        xfer.setVlenMemManager(kealibmalloc, NULL, kealibfree, NULL);
+        xfer.setVlenMemManager(kealibmalloc, nullptr, kealibfree, nullptr);
         char* strData[1];
         dataset.read((void*)strData, strDataType, H5::DataSpace::ALL, H5::DataSpace::ALL, xfer);
         std::string ret = strData[0];
@@ -1506,7 +1506,7 @@ namespace kealib{
                 gcpsDataspace.selectHyperslab( H5S_SELECT_SET, boolFieldsDims, boolFieldOff );
                 H5::DSetMemXferPropList xfer;
                 /* Ensures that malloc()/free() are from the same C runtime */
-                xfer.setVlenMemManager(kealibmalloc, NULL, kealibfree, NULL);
+                xfer.setVlenMemManager(kealibmalloc, nullptr, kealibfree, nullptr);
                 gcpsDataset.read(gcpsHDF, *fieldDtMem, gcpsMemspace, gcpsDataspace, xfer);
                 
                 gcpsDataset.close();
@@ -1520,7 +1520,7 @@ namespace kealib{
                 throw KEAIOException(e.getDetailMsg());
             }
             
-            KEAImageGCP *tmpGCP = NULL;
+            KEAImageGCP *tmpGCP = nullptr;
             for(uint32_t i = 0; i < numGCPs; ++i)
             {
                 tmpGCP = new KEAImageGCP();
@@ -2741,7 +2741,7 @@ namespace kealib{
     
     KEAAttributeTable* KEAImageIO::getAttributeTable(KEAATTType type, uint32_t band)
     {
-        KEAAttributeTable *att = NULL;
+        KEAAttributeTable *att = nullptr;
         try 
         {
             if(type == kea_att_mem)
@@ -2857,7 +2857,7 @@ namespace kealib{
             delete this->spatialInfoFile;
             this->keaImgFile->close();
             delete this->keaImgFile;
-            this->keaImgFile = NULL;
+            this->keaImgFile = nullptr;
             this->fileOpen = false;
         }
         catch(const KEAIOException &e)
@@ -2878,7 +2878,7 @@ namespace kealib{
     {
         H5::Exception::dontPrint();
         
-        H5::H5File *keaImgH5File = NULL;
+        H5::H5File *keaImgH5File = nullptr;
         
         try 
         {
@@ -2895,7 +2895,7 @@ namespace kealib{
             keaImgH5File->createGroup( KEA_DATASETNAME_HEADER );
             
             bool deleteSpatialInfo = false;
-            if(spatialInfo == NULL)
+            if(spatialInfo == nullptr)
             {
                 spatialInfo = new KEAImageSpatialInfo();
                 spatialInfo->tlX = 0.0;
@@ -3010,7 +3010,7 @@ namespace kealib{
             //////////// CREATE IMAGE BANDS ////////////////
             for(uint32_t i = 0; i < numImgBands; ++i) {
                 std::string bandDescription = "";
-                if (bandDescrips != NULL && i < bandDescrips->size()) {
+                if (bandDescrips != nullptr && i < bandDescrips->size()) {
                     bandDescription = bandDescrips->at(i);
                 }
 
@@ -3055,7 +3055,7 @@ namespace kealib{
     {
         H5::Exception::dontPrint();
         
-        H5::H5File *keaImgH5File = NULL;
+        H5::H5File *keaImgH5File = nullptr;
         try 
         {
             H5::FileAccPropList keaAccessPlist = H5::FileAccPropList(H5::FileAccPropList::DEFAULT);
@@ -3099,7 +3099,7 @@ namespace kealib{
     {
         H5::Exception::dontPrint();
         
-        H5::H5File *keaImgH5File = NULL;
+        H5::H5File *keaImgH5File = nullptr;
         try 
         {
             H5::FileAccPropList keaAccessPlist = H5::FileAccPropList(H5::FileAccPropList::DEFAULT);
@@ -3146,7 +3146,7 @@ namespace kealib{
         
         try 
         {
-            H5::H5File *keaImgH5File = NULL;
+            H5::H5File *keaImgH5File = nullptr;
             const H5std_string keaImgFilePath(fileName);
             keaImgH5File = new H5::H5File(keaImgFilePath, H5F_ACC_RDONLY);
             

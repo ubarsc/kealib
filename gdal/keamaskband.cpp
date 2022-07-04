@@ -34,7 +34,7 @@ KEAMaskBand::KEAMaskBand(GDALRasterBand *pParent,
                 kealib::KEAImageIO *pImageIO, LockedRefCount *pRefCount)
 {
     m_nSrcBand = pParent->GetBand();
-    poDS = NULL;
+    poDS = nullptr;
     nBand = 0;
 
     nRasterXSize = pParent->GetXSize();

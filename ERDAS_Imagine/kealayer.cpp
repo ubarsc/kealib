@@ -42,8 +42,8 @@ keaLayerOpen(void *fHandle, Etxt_Text lName, unsigned long *pType, unsigned long
 #endif
     KEA_File *pKEAFile = (KEA_File*)fHandle;
     long rCode = -1;
-    *lHandle = NULL;
-    KEA_Layer *pLayer = NULL;
+    *lHandle = nullptr;
+    KEA_Layer *pLayer = nullptr;
     etxt::tstring sName = lName;
     etxt::tstring sSearch = ETXT_LTEXT(":Mask:Mask");
     size_t pos = sName.find(sSearch, 0);
@@ -57,7 +57,7 @@ keaLayerOpen(void *fHandle, Etxt_Text lName, unsigned long *pType, unsigned long
     }
     
     for( auto itr = pKEAFile->aLayers.begin();
-            (itr != pKEAFile->aLayers.end()) && (pLayer == NULL); itr++ )
+            (itr != pKEAFile->aLayers.end()) && (pLayer == nullptr); itr++ )
     {
         KEA_Layer *pCandidate = (*itr);
         if( pCandidate->sName == sName )
@@ -76,7 +76,7 @@ keaLayerOpen(void *fHandle, Etxt_Text lName, unsigned long *pType, unsigned long
 #endif
         }
     }
-    if( pLayer == NULL )
+    if( pLayer == nullptr )
     {
 #ifdef KEADEBUG
         keaDebugOut( "Can't find layer %s\n", sName.c_str() );
@@ -115,7 +115,7 @@ keaLayerCreate(void  *fileHandle,  /* Input */
 #endif
     long rCode = -1;    
     KEA_File *pKEAFile = (KEA_File*)fileHandle;
-    Eerr_ErrorReport* err = NULL;
+    Eerr_ErrorReport* err = nullptr;
 	ETXT_CONVERSION;
     
     if( !pKEAFile->bUpdate )
@@ -124,14 +124,14 @@ keaLayerCreate(void  *fileHandle,  /* Input */
     }
     
     uint32_t nBand = 1;
-    if( pKEAFile->pImageIO == NULL )
+    if( pKEAFile->pImageIO == nullptr )
     {
         // first layer - create it. Guess 1 band.
         // default other options
 		std::string aFilePath = ETXT_2A(pKEAFile->sFilePath.c_str());
         H5::H5File *keaImgH5File = kealib::KEAImageIO::createKEAImage(aFilePath,
                                 (kealib::KEADataType)pType, width, height, 1);
-        if( keaImgH5File != NULL )
+        if( keaImgH5File != nullptr )
         {
             // create the KEA_Layer etc
             pKEAFile->pH5File = keaImgH5File;
@@ -146,9 +146,9 @@ keaLayerCreate(void  *fileHandle,  /* Input */
         // add a band
         // Work out a name - should probably check it doesn't already exist too
         nBand = pKEAFile->pImageIO->getNumOfImageBands() + 1;
-        Etxt_Text name = estr_Sprintf( NULL, ETXT_LTEXT("Layer_%d"), &err, 
-                                nBand, NULL );
-        HANDLE_ERR(err, NULL);
+        Etxt_Text name = estr_Sprintf( nullptr, ETXT_LTEXT("Layer_%d"), &err, 
+                                nBand, nullptr );
+        HANDLE_ERR(err, nullptr);
         std::string sName = ETXT_2A(name);
         emsc_Free(name);
         try
@@ -165,9 +165,9 @@ keaLayerCreate(void  *fileHandle,  /* Input */
     }
     
     // all ok
-    if( pKEAFile->pImageIO != NULL )
+    if( pKEAFile->pImageIO != nullptr )
     {
-        pKEAFile->modTime = time(NULL);
+        pKEAFile->modTime = time(nullptr);
         kealib::KEAImageIO *pImageIO = pKEAFile->pImageIO;
         kealib::KEAImageSpatialInfo *pSpatialInfo = pImageIO->getSpatialInfo();
         
@@ -199,8 +199,8 @@ keaLayerCreate(void  *fileHandle,  /* Input */
         // mask - Imagine 2015 requires us to have one for each band
         KEA_Layer *pMask = new KEA_Layer();
         pMask->pKEAFile = pKEAFile;
-        Etxt_Text name = estr_Sprintf( NULL, ETXT_LTEXT("%s:Mask"), &err, 
-                    sName.c_str(), NULL );
+        Etxt_Text name = estr_Sprintf( nullptr, ETXT_LTEXT("%s:Mask"), &err, 
+                    sName.c_str(), nullptr );
         HANDLE_ERR(err, -1);
         pMask->sName = name;
         emsc_Free(name);
@@ -385,7 +385,7 @@ keaLayerRasterWrite(void *lHandle, unsigned long bRow, unsigned long bCol, unsig
                 // According to Haiyan Qu: "IMAGINE mask layer is a binary layer, 1 is data,
 				// but he is wrong - 255 is data
                 unsigned char *pGDALMask = (unsigned char*)malloc(pLayer->nBlockSize*pLayer->nBlockSize * sizeof(unsigned char));
-                if( pGDALMask == NULL )
+                if( pGDALMask == nullptr )
                     return -1;
                 for( uint64_t i = 0; i < (pLayer->nBlockSize*pLayer->nBlockSize); i++ )
                 {
@@ -482,7 +482,7 @@ keaLayerRRDLayerNamesGet(void *lHandle, unsigned long  *count, Etxt_Text **layer
 #ifdef KEADEBUG
     keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
-    Eerr_ErrorReport* err = NULL;
+    Eerr_ErrorReport* err = nullptr;
     long rCode = -1;
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
     
@@ -522,8 +522,8 @@ keaLayerRRDLayerNamesGet(void *lHandle, unsigned long  *count, Etxt_Text **layer
                     {
                         // couldn't work out efnp_FileNodeCreate...
                         etxt::tstring sFilePath = pLayer->getFilePath();
-                        Etxt_Text name = estr_Sprintf( NULL, ETXT_LTEXT("%s(:%s)"), &err, 
-                            sFilePath.c_str(), pCandidate->sName.c_str(), NULL );
+                        Etxt_Text name = estr_Sprintf( nullptr, ETXT_LTEXT("%s(:%s)"), &err, 
+                            sFilePath.c_str(), pCandidate->sName.c_str(), nullptr );
                         HANDLE_ERR(err, -1);
                         (*layerNames)[layerCount] = name;
 #ifdef KEADEBUG                        
@@ -537,9 +537,9 @@ keaLayerRRDLayerNamesGet(void *lHandle, unsigned long  *count, Etxt_Text **layer
         else
         {
             // no overviews
-            *layerNames = NULL;
+            *layerNames = nullptr;
             *count = 0;
-            *algorithm = NULL;
+            *algorithm = nullptr;
         }
         rCode = 0;
     }
@@ -577,7 +577,7 @@ long keaLayerRRDInfoGet(void *lHandle, unsigned long *count,
     keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
-	Eerr_ErrorReport* err = NULL;
+	Eerr_ErrorReport* err = nullptr;
 													 
 	unsigned long layerCount = 0;
 	// get the pointer back to the KEA_File object 
@@ -614,8 +614,8 @@ long keaLayerRRDInfoGet(void *lHandle, unsigned long *count,
 				{
 					// couldn't work out efnp_FileNodeCreate...
 					etxt::tstring sFilePath = pLayer->getFilePath();
-					Etxt_Text name = estr_Sprintf( NULL, ETXT_LTEXT("%s(:%s)"), &err, 
-						sFilePath.c_str(), pCandidate->sName.c_str(), NULL );
+					Etxt_Text name = estr_Sprintf( nullptr, ETXT_LTEXT("%s(:%s)"), &err, 
+						sFilePath.c_str(), pCandidate->sName.c_str(), nullptr );
 					HANDLE_ERR(err, -1);
 					(*layerNames)[layerCount] = name;
 					(*dims)[layerCount * 2] = pCandidate->nXSize;
@@ -631,10 +631,10 @@ long keaLayerRRDInfoGet(void *lHandle, unsigned long *count,
 	else
 	{
 		// no overviews
-		*layerNames = NULL;
+		*layerNames = nullptr;
 		*count = 0;
-		*algorithm = NULL;
-		*dims = NULL;
+		*algorithm = nullptr;
+		*dims = nullptr;
 	}
 	return 0;
 }
@@ -714,51 +714,51 @@ keaLayerScalarStatisticsWrite(void *lHandle, double *minimum,
     keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     long rCode = -1;
-    Eerr_ErrorReport* err = NULL;
+    Eerr_ErrorReport* err = nullptr;
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
     kealib::KEAImageIO *pImageIO = pLayer->getImageIO();
 	ETXT_CONVERSION;
     try
     {
-        if( minimum != NULL )
+        if( minimum != nullptr )
         {
-            Etxt_Text value = estr_Sprintf( NULL, ETXT_LTEXT("%f"), &err, 
-                    *minimum, NULL );
+            Etxt_Text value = estr_Sprintf( nullptr, ETXT_LTEXT("%f"), &err, 
+                    *minimum, nullptr );
             pImageIO->setImageMetaData(METADATA_MIN, ETXT_2A(value));
             emsc_Free(value);
         }
-        if( maximum != NULL )
+        if( maximum != nullptr )
         {
-            Etxt_Text value = estr_Sprintf( NULL, ETXT_LTEXT("%f"), &err, 
-                    *maximum, NULL );
+            Etxt_Text value = estr_Sprintf( nullptr, ETXT_LTEXT("%f"), &err, 
+                    *maximum, nullptr );
             pImageIO->setImageMetaData(METADATA_MAX, ETXT_2A(value));
             emsc_Free(value);
         }
-        if( mean != NULL )
+        if( mean != nullptr )
         {
-            Etxt_Text value = estr_Sprintf( NULL, ETXT_LTEXT("%f"), &err, 
-                    *mean, NULL );
+            Etxt_Text value = estr_Sprintf( nullptr, ETXT_LTEXT("%f"), &err, 
+                    *mean, nullptr );
             pImageIO->setImageMetaData(METADATA_MEAN, ETXT_2A(value));
             emsc_Free(value);
         }
-        if( median != NULL )
+        if( median != nullptr )
         {
-            Etxt_Text value = estr_Sprintf( NULL, ETXT_LTEXT("%f"), &err, 
-                    *median, NULL );
+            Etxt_Text value = estr_Sprintf( nullptr, ETXT_LTEXT("%f"), &err, 
+                    *median, nullptr );
             pImageIO->setImageMetaData(METADATA_MEDIAN, ETXT_2A(value));
             emsc_Free(value);
         }
-        if( mode != NULL )
+        if( mode != nullptr )
         {
-            Etxt_Text value = estr_Sprintf( NULL, ETXT_LTEXT("%f"), &err, 
-                    *mode, NULL );
+            Etxt_Text value = estr_Sprintf( nullptr, ETXT_LTEXT("%f"), &err, 
+                    *mode, nullptr );
             pImageIO->setImageMetaData(METADATA_MODE, ETXT_2A(value));
             emsc_Free(value);
         }
-        if( stddev != NULL )
+        if( stddev != nullptr )
         {
-            Etxt_Text value = estr_Sprintf( NULL, ETXT_LTEXT("%f"), &err, 
-                    *stddev, NULL );
+            Etxt_Text value = estr_Sprintf( nullptr, ETXT_LTEXT("%f"), &err, 
+                    *stddev, nullptr );
             pImageIO->setImageMetaData(METADATA_STDDEV, ETXT_2A(value));
             emsc_Free(value);
         }      
@@ -830,11 +830,11 @@ keaLayerMapInfoWrite(void *lHandle, Etxt_Text projection, double xULC,
         pImageIO->setSpatialInfo(pSpatialInfo);
         
         // TODO: save this properly into the file
-        if( projection != NULL )
+        if( projection != nullptr )
         {
             pLayer->pKEAFile->sProjName = projection;
         }
-        if( units != NULL )
+        if( units != nullptr )
         {
             pLayer->pKEAFile->sUnits = units;
         }
@@ -860,9 +860,9 @@ keaLayerMapProjectionRead(void *lHandle, Etxt_Text *projTitle, unsigned char **M
     keaDebugOut( "%s %p\n", __FUNCTION__, lHandle );
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
-    Eerr_ErrorReport* err = NULL;
+    Eerr_ErrorReport* err = nullptr;
     Eprj_MapProjection* pProj = pLayer->pKEAFile->pProj;
-    if( pProj == NULL ) // it's not failure - just don't have any info
+    if( pProj == nullptr ) // it's not failure - just don't have any info
         return 0;
 
     eprj_ProjectionConvertToMIF(pProj, projTitle, MIFproj,
@@ -886,10 +886,10 @@ keaLayerMapProjectionWrite(void  *lHandle, Etxt_Text projTitle,
 #endif
     KEA_Layer *pLayer = (KEA_Layer*)lHandle;
 	kealib::KEAImageIO *pImageIO = pLayer->getImageIO();
-    Eerr_ErrorReport* err = NULL;
+    Eerr_ErrorReport* err = nullptr;
     long rCode = -1;
 
-	if( projTitle == NULL )
+	if( projTitle == nullptr )
 	{
 		// docs say to destory geocoding info
 		try
@@ -898,10 +898,10 @@ keaLayerMapProjectionWrite(void  *lHandle, Etxt_Text projTitle,
 			pSpatialInfo->wktString = "";
 			pImageIO->setSpatialInfo(pSpatialInfo);
 			// if we have one, free it
-			if( pLayer->pKEAFile->pProj != NULL )
+			if( pLayer->pKEAFile->pProj != nullptr )
 			{
 				eprj_ProjectionFree(&pLayer->pKEAFile->pProj);
-				pLayer->pKEAFile->pProj = NULL;
+				pLayer->pKEAFile->pProj = nullptr;
 			}
 
 			rCode = 0;
@@ -924,11 +924,11 @@ keaLayerMapProjectionWrite(void  *lHandle, Etxt_Text projTitle,
                     MIFearthModelDictionary, MIFearthModelName, &err);
         HANDLE_ERR(err, -1)
 		
-		if( pProj != NULL )
+		if( pProj != nullptr )
 		{
 
 			// if we have one, free it
-			if( pLayer->pKEAFile->pProj != NULL )
+			if( pLayer->pKEAFile->pProj != nullptr )
 			{
 				eprj_ProjectionFree(&pLayer->pKEAFile->pProj);
 			}
@@ -980,7 +980,7 @@ keaLayerRasterNullValueRead(void  *lHandle, unsigned char  **pixel)
         catch (const kealib::KEAIOException &e)
         {
             // throws exception when a no data has not been set so can't tell if an error
-            *pixel = NULL;
+            *pixel = nullptr;
         }
     }
     return 0;
@@ -1021,9 +1021,9 @@ Edsc_BinFunction*
 keaLayerGetHistoBinFunction(KEA_Layer *pLayer)
 {
     Edsc_BinFunction *pBinFn = emsc_New(1, Edsc_BinFunction);
-    if( pBinFn == NULL )
+    if( pBinFn == nullptr )
     {
-        return NULL;
+        return nullptr;
     }
     kealib::KEAImageIO *pImageIO = pLayer->getImageIO();
     
@@ -1032,7 +1032,7 @@ keaLayerGetHistoBinFunction(KEA_Layer *pLayer)
     pBinFn->binFunctionType = EDSC_DIRECT_BINS;
     pBinFn->minLimit = 0;
     pBinFn->maxLimit = 255;
-    pBinFn->binLimits = NULL;
+    pBinFn->binLimits = nullptr;
     pBinFn->binFunctionLimitsType = EDSC_LIMITS_GIVEN;
 
     // now read through the metadata to get this info if present
@@ -1043,7 +1043,7 @@ keaLayerGetHistoBinFunction(KEA_Layer *pLayer)
     }
     catch (const kealib::KEAIOException &e)
     {
-        return NULL;
+        return nullptr;
     }
     for(auto iterMetaData = data.begin(); iterMetaData != data.end(); ++iterMetaData)
     {

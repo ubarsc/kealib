@@ -43,7 +43,7 @@
 
 Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, etxt::tstring &sUnits)
 {
-    Eerr_ErrorReport* err = NULL;
+    Eerr_ErrorReport* err = nullptr;
 	ETXT_CONVERSION;
 	
 	OGRSpatialReference sr;
@@ -51,13 +51,13 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, 
 	sr.importFromWkt(&pszP);
 	sr.morphToESRI();
 
-	char *pszPEString = NULL;
+	char *pszPEString = nullptr;
 	sr.exportToWkt(&pszPEString);
 	
-	Eprj_MapProjection *proj = NULL;
+	Eprj_MapProjection *proj = nullptr;
 	Etxt_Text unitName;
 	eprj_MapProjectionFromPEString(ETXT_2U(pszPEString), &proj, &unitName, &err);
-	HANDLE_ERR(err, NULL)
+	HANDLE_ERR(err, nullptr)
 	
 	CPLFree(pszPEString);
 	
@@ -69,20 +69,20 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, 
 		// Imagine doesn't seem to have this right...
 		eprj_ProjectionFree(&proj);
 		Eprj_ProParameters *proParams = eprj_ProParametersCreate(&err);
-		HANDLE_ERR(err, NULL)
+		HANDLE_ERR(err, nullptr)
 		
 		// below taken from GDAL's hfadataset.cpp
 		proParams->proType = EPRJ_EXTERNAL;
 		proParams->proNumber = 0;
         eprj_CharStrCreate(ETXT_LTEXT("nzmg"), &proParams->proExeName, &err);
-        HANDLE_ERR(err, NULL)
+        HANDLE_ERR(err, nullptr)
         eprj_CharStrCreate(ETXT_LTEXT("New Zealand Map Grid"), &proParams->proName, &err);
-        HANDLE_ERR(err, NULL)
+        HANDLE_ERR(err, nullptr)
         proParams->proZone = 0;
 		// note: hfadataset code originally had 8 params, but I now get a 
 		// relative/absolute error coming up. Creating 9 params seems to fix it.
 		eprj_DblArrayCreate(9, &proParams->proParams, &err);
-		HANDLE_ERR(err, NULL)
+		HANDLE_ERR(err, nullptr)
         proParams->proParams.data[0] = 0;  // False easting etc not stored in ->img it seems
         proParams->proParams.data[1] = 0;  // always fixed by definition->
         proParams->proParams.data[2] = 0;
@@ -97,13 +97,13 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, 
 		Eint_InitToolkitData* init = eint_GetInit();
 		
 		eprj_SpheroidByName(init, ETXT_LTEXT("International 1909"), proParams->proSpheroid, &err);
-        HANDLE_ERR(err, NULL)
+        HANDLE_ERR(err, nullptr)
 
 		eprj_DatumByName(init, ETXT_LTEXT("International 1909"), ETXT_LTEXT("Geodetic Datum 1949"), proParams->proSpheroid->datum, &err);
-        HANDLE_ERR(err, NULL)
+        HANDLE_ERR(err, nullptr)
 					
         proj = eprj_ProjectionInit(init, proParams, &err);
-        HANDLE_ERR(err, NULL)
+        HANDLE_ERR(err, nullptr)
 		
 		// seems eprj_ProjectionInit takes a copy
         eprj_ProParametersFree(&proParams);
@@ -115,15 +115,15 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, 
 		// this one doesn't seem to be right either
 		eprj_ProjectionFree(&proj);
 		Eprj_ProParameters *proParams = eprj_ProParametersCreate(&err);
-		HANDLE_ERR(err, NULL)
+		HANDLE_ERR(err, nullptr)
 		
 		proParams->proType = EPRJ_INTERNAL;
 		proParams->proNumber = 9;
         eprj_CharStrCreate(ETXT_LTEXT("Transverse Mercator"), &proParams->proName, &err);
-        HANDLE_ERR(err, NULL)
+        HANDLE_ERR(err, nullptr)
         proParams->proZone = 0;
 		eprj_DblArrayCreate(8, &proParams->proParams, &err);
-		HANDLE_ERR(err, NULL)
+		HANDLE_ERR(err, nullptr)
         proParams->proParams.data[0] = 0;  
         proParams->proParams.data[1] = 0;  
         proParams->proParams.data[2] = 0.99960;
@@ -137,13 +137,13 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, 
 		Eint_InitToolkitData* init = eint_GetInit();
 		
 		eprj_SpheroidByName(init, ETXT_LTEXT("GRS 1980"), proParams->proSpheroid, &err);
-        HANDLE_ERR(err, NULL)
+        HANDLE_ERR(err, nullptr)
 
 		eprj_DatumByName(init, ETXT_LTEXT("GRS 1980"), ETXT_LTEXT("NZGD2000 (NTv2)"), proParams->proSpheroid->datum, &err);
-        HANDLE_ERR(err, NULL)
+        HANDLE_ERR(err, nullptr)
 
         proj = eprj_ProjectionInit(init, proParams, &err);
-        HANDLE_ERR(err, NULL)
+        HANDLE_ERR(err, nullptr)
 
 		// seems eprj_ProjectionInit takes a copy
         eprj_ProParametersFree(&proParams);
@@ -158,10 +158,10 @@ Eprj_MapProjection* WKTToMapProj(const char *pszProj, etxt::tstring &sProjName, 
 std::string MapProjToWKT( Eprj_MapProjection *proj,
                    etxt::tstring &sUnits, etxt::tstring &sProjName )
 {
-    Eerr_ErrorReport* err = NULL;
+    Eerr_ErrorReport* err = nullptr;
 	ETXT_CONVERSION;
 
-	Etxt_Text pszPEString = NULL;
+	Etxt_Text pszPEString = nullptr;
 	eprj_MapProjectionToPEString(&pszPEString, proj, const_cast<Etxt_Text>(sUnits.c_str()), &err);
 	HANDLE_ERR(err, "")
 	
@@ -169,7 +169,7 @@ std::string MapProjToWKT( Eprj_MapProjection *proj,
 	char *pszP = ETXT_2A(pszPEString);
 	sr.importFromESRI(&pszP);
 	
-	char *pszWKT = NULL;
+	char *pszWKT = nullptr;
 	sr.exportToWkt(&pszWKT);
 	std::string sWKT = pszWKT;
 	
