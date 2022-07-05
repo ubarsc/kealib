@@ -72,7 +72,7 @@ namespace kealib{
         void setBoolField(size_t fid, size_t colIdx, bool value);
         void setIntField(size_t fid, size_t colIdx, int64_t value);
         void setFloatField(size_t fid, size_t colIdx, double value);
-        void setStringField(size_t fid, size_t colIdx, std::string value);
+        void setStringField(size_t fid, size_t colIdx, const std::string &value);
 
         void setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer);
         void setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer);

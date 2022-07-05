@@ -830,7 +830,7 @@ namespace kealib{
         this->setFloatFields(fid, 1, colIdx, &value);
     }
     
-    void KEAAttributeTableFile::setStringField(size_t fid, size_t colIdx, std::string value)
+    void KEAAttributeTableFile::setStringField(size_t fid, size_t colIdx, const std::string &value)
     {
         if(fid >= numRows)
         {

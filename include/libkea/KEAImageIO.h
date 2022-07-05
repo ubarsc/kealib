@@ -60,19 +60,19 @@ namespace kealib{
         void readImageBlock2BandMask(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType);
         bool maskCreated(uint32_t band);
         
-        void setImageMetaData(std::string name, std::string value);
-        std::string getImageMetaData(std::string name);
+        void setImageMetaData(const std::string &name, const std::string &value);
+        std::string getImageMetaData(const std::string &name);
         std::vector<std::string> getImageMetaDataNames();
         std::vector< std::pair<std::string, std::string> > getImageMetaData();
-        void setImageMetaData(std::vector< std::pair<std::string, std::string> > data);
+        void setImageMetaData(const std::vector< std::pair<std::string, std::string> > &data);
         
-        void setImageBandMetaData(uint32_t band, std::string name, std::string value);
-        std::string getImageBandMetaData(uint32_t band, std::string name);
+        void setImageBandMetaData(uint32_t band, const std::string &name, const std::string &value);
+        std::string getImageBandMetaData(uint32_t band, const std::string &name);
         std::vector<std::string> getImageBandMetaDataNames(uint32_t band);
         std::vector< std::pair<std::string, std::string> > getImageBandMetaData(uint32_t band);
-        void setImageBandMetaData(uint32_t band, std::vector< std::pair<std::string, std::string> > data);
+        void setImageBandMetaData(uint32_t band, const std::vector< std::pair<std::string, std::string> > &data);
         
-        void setImageBandDescription(uint32_t band, std::string description);
+        void setImageBandDescription(uint32_t band, const std::string &description);
         std::string getImageBandDescription(uint32_t band);
         
         void setNoDataValue(uint32_t band, const void *data, KEADataType inDataType);
@@ -81,10 +81,10 @@ namespace kealib{
         
         
         std::vector<KEAImageGCP*>* getGCPs();
-        void setGCPs(std::vector<KEAImageGCP*> *gcps, std::string projWKT);
+        void setGCPs(std::vector<KEAImageGCP*> *gcps, const std::string &projWKT);
         uint32_t getGCPCount();
         std::string getGCPProjection();
-        void setGCPProjection(std::string projWKT);
+        void setGCPProjection(const std::string &projWKT);
         
         void setSpatialInfo(KEAImageSpatialInfo *spatialInfo);
         KEAImageSpatialInfo* getSpatialInfo();
@@ -121,15 +121,15 @@ namespace kealib{
         /**
          * Adds a new image band to the file.
          */
-        virtual void addImageBand(const KEADataType dataType, const std::string bandDescrip, const uint32_t imageBlockSize = KEA_IMAGE_CHUNK_SIZE, const uint32_t attBlockSize = KEA_ATT_CHUNK_SIZE, const uint32_t deflate = KEA_DEFLATE);
+        virtual void addImageBand(const KEADataType dataType, const std::string &bandDescrip, const uint32_t imageBlockSize = KEA_IMAGE_CHUNK_SIZE, const uint32_t attBlockSize = KEA_ATT_CHUNK_SIZE, const uint32_t deflate = KEA_DEFLATE);
         
         // remove band from file
         virtual void removeImageBand(const uint32_t bandIndex);
 
-        static H5::H5File* createKEAImage(std::string fileName, KEADataType dataType, uint32_t xSize, uint32_t ySize, uint32_t numImgBands, std::vector<std::string> *bandDescrips=NULL, KEAImageSpatialInfo *spatialInfo=NULL, uint32_t imageBlockSize=KEA_IMAGE_CHUNK_SIZE, uint32_t attBlockSize=KEA_ATT_CHUNK_SIZE, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE, uint32_t deflate=KEA_DEFLATE);
-        static bool isKEAImage(std::string fileName);
-        static H5::H5File* openKeaH5RW(std::string fileName, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE);
-        static H5::H5File* openKeaH5RDOnly(std::string fileName, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE);
+        static H5::H5File* createKEAImage(const std::string &fileName, KEADataType dataType, uint32_t xSize, uint32_t ySize, uint32_t numImgBands, std::vector<std::string> *bandDescrips=NULL, KEAImageSpatialInfo *spatialInfo=NULL, uint32_t imageBlockSize=KEA_IMAGE_CHUNK_SIZE, uint32_t attBlockSize=KEA_ATT_CHUNK_SIZE, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE, uint32_t deflate=KEA_DEFLATE);
+        static bool isKEAImage(const std::string &fileName);
+        static H5::H5File* openKeaH5RW(const std::string &fileName, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE);
+        static H5::H5File* openKeaH5RDOnly(const std::string &fileName, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE);
         virtual ~KEAImageIO();
 
     protected:
@@ -149,7 +149,7 @@ namespace kealib{
          * buffer.
          *
          */
-        static void addImageBandToFile(H5::H5File *keaImgH5File, const KEADataType dataType, const uint32_t xSize, const uint32_t ySize, const uint32_t bandIndex, std::string bandDescrip, const uint32_t imageBlockSize, const uint32_t attBlockSize, const uint32_t deflate);
+        static void addImageBandToFile(H5::H5File *keaImgH5File, const KEADataType dataType, const uint32_t xSize, const uint32_t ySize, const uint32_t bandIndex, const std::string &bandDescrip, const uint32_t imageBlockSize, const uint32_t attBlockSize, const uint32_t deflate);
         
         /**
          * Remove and image band and rename higher bands so everything is contiguous. Does NOT flush the file

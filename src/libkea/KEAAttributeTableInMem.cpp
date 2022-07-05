@@ -405,7 +405,7 @@ namespace kealib{
         attRows->at(fid)->floatFields->at(colIdx) = value;
     }
     
-    void KEAAttributeTableInMem::setStringField(size_t fid, size_t colIdx, std::string value)
+    void KEAAttributeTableInMem::setStringField(size_t fid, size_t colIdx, const std::string &value)
     {
         if(fid >= attRows->size())
         {

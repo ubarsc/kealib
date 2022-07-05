@@ -833,7 +833,7 @@ namespace kealib{
     }
     
     
-    void KEAImageIO::setImageMetaData(std::string name, std::string value)
+    void KEAImageIO::setImageMetaData(const std::string &name, const std::string &value)
     {
         if(!this->fileOpen)
         {
@@ -883,7 +883,7 @@ namespace kealib{
         }
     }
     
-    std::string KEAImageIO::getImageMetaData(std::string name)
+    std::string KEAImageIO::getImageMetaData(const std::string &name)
     {
         if(!this->fileOpen)
         {
@@ -992,7 +992,7 @@ namespace kealib{
         return metaData;
     }
     
-    void KEAImageIO::setImageMetaData(std::vector< std::pair<std::string, std::string> > data)
+    void KEAImageIO::setImageMetaData(const std::vector< std::pair<std::string, std::string> > &data)
     {
         if(!this->fileOpen)
         {
@@ -1022,7 +1022,7 @@ namespace kealib{
         }
     }
     
-    void KEAImageIO::setImageBandMetaData(uint32_t band, std::string name, std::string value)
+    void KEAImageIO::setImageBandMetaData(uint32_t band, const std::string &name, const std::string &value)
     {
         if(!this->fileOpen)
         {
@@ -1072,7 +1072,7 @@ namespace kealib{
         }
     }
     
-    std::string KEAImageIO::getImageBandMetaData(uint32_t band, std::string name)
+    std::string KEAImageIO::getImageBandMetaData(uint32_t band, const std::string &name)
     {
         if(!this->fileOpen)
         {
@@ -1183,7 +1183,7 @@ namespace kealib{
         return metaData;
     }
     
-    void KEAImageIO::setImageBandMetaData(uint32_t band, std::vector< std::pair<std::string, std::string> > data)
+    void KEAImageIO::setImageBandMetaData(uint32_t band, const std::vector< std::pair<std::string, std::string> > &data)
     {
         if(!this->fileOpen)
         {
@@ -1213,7 +1213,7 @@ namespace kealib{
         }
     }
     
-    void KEAImageIO::setImageBandDescription(uint32_t band, std::string description)
+    void KEAImageIO::setImageBandDescription(uint32_t band, const std::string &description)
     {
         if(!this->fileOpen)
         {
@@ -1554,7 +1554,7 @@ namespace kealib{
         return gcps;
     }
     
-    void KEAImageIO::setGCPs(std::vector<KEAImageGCP*> *gcps, std::string projWKT)
+    void KEAImageIO::setGCPs(std::vector<KEAImageGCP*> *gcps, const std::string &projWKT)
     {
         if(!this->fileOpen)
         {
@@ -1791,7 +1791,7 @@ namespace kealib{
         return gcpProj;
     }
     
-    void KEAImageIO::setGCPProjection(std::string projWKT)
+    void KEAImageIO::setGCPProjection(const std::string &projWKT)
     {
         if(!this->fileOpen)
         {
@@ -2874,7 +2874,7 @@ namespace kealib{
         }
     }
         
-    H5::H5File* KEAImageIO::createKEAImage(std::string fileName, KEADataType dataType, uint32_t xSize, uint32_t ySize, uint32_t numImgBands, std::vector<std::string> *bandDescrips, KEAImageSpatialInfo * spatialInfo, uint32_t imageBlockSize, uint32_t attBlockSize, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize, uint32_t deflate)
+    H5::H5File* KEAImageIO::createKEAImage(const std::string &fileName, KEADataType dataType, uint32_t xSize, uint32_t ySize, uint32_t numImgBands, std::vector<std::string> *bandDescrips, KEAImageSpatialInfo * spatialInfo, uint32_t imageBlockSize, uint32_t attBlockSize, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize, uint32_t deflate)
     {
         H5::Exception::dontPrint();
         
@@ -3051,7 +3051,7 @@ namespace kealib{
         return keaImgH5File;
     }
     
-    H5::H5File* KEAImageIO::openKeaH5RW(std::string fileName, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize)
+    H5::H5File* KEAImageIO::openKeaH5RW(const std::string &fileName, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize)
     {
         H5::Exception::dontPrint();
         
@@ -3095,7 +3095,7 @@ namespace kealib{
         return keaImgH5File;
     }
     
-    H5::H5File* KEAImageIO::openKeaH5RDOnly(std::string fileName, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize)
+    H5::H5File* KEAImageIO::openKeaH5RDOnly(const std::string &fileName, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize)
     {
         H5::Exception::dontPrint();
         
@@ -3139,7 +3139,7 @@ namespace kealib{
         return keaImgH5File;
     }
         
-    bool KEAImageIO::isKEAImage(std::string fileName)
+    bool KEAImageIO::isKEAImage(const std::string &fileName)
     {
         bool keaImageFound = false;
         H5::Exception::dontPrint();
@@ -3215,7 +3215,7 @@ namespace kealib{
         
     }
 
-    void KEAImageIO::addImageBand(const KEADataType dataType, const std::string bandDescrip, const uint32_t imageBlockSize, const uint32_t attBlockSize, const uint32_t deflate)
+    void KEAImageIO::addImageBand(const KEADataType dataType, const std::string &bandDescrip, const uint32_t imageBlockSize, const uint32_t attBlockSize, const uint32_t deflate)
     {
         if(!this->fileOpen)
         {
@@ -3315,9 +3315,10 @@ namespace kealib{
         return h5Datatype;
     }
 
-    void KEAImageIO::addImageBandToFile(H5::H5File *keaImgH5File, const KEADataType dataType, const uint32_t xSize,   const uint32_t ySize, const uint32_t bandIndex, std::string bandDescrip, const uint32_t imageBlockSize, const uint32_t attBlockSize,  const uint32_t deflate)
+    void KEAImageIO::addImageBandToFile(H5::H5File *keaImgH5File, const KEADataType dataType, const uint32_t xSize,   const uint32_t ySize, const uint32_t bandIndex, const std::string &bandDescripIn, const uint32_t imageBlockSize, const uint32_t attBlockSize,  const uint32_t deflate)
     {
         int initFillVal = 0;
+        std::string bandDescrip = bandDescripIn; // may be updated below
 
         // Find the smallest axis of the image.
         uint64_t minImgDim = xSize < ySize ? xSize : ySize; 
