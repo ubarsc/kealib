@@ -35,15 +35,6 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Files]
 ; The support libs (hdf5 etc) are duplicated between releases as some will be done with the same compiler
 ; but I'm hopeful that the compression will work this out.
-;Source: "C:\dev\arckea\dist\arcpro14\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('1.4'); Flags: ignoreversion
-;Source: "C:\dev\arckea\dist\arcpro14\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('1.4'); Flags: ignoreversion
-
-;Source: "C:\dev\arckea\dist\arcpro20\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.0'); Flags: ignoreversion
-;Source: "C:\dev\arckea\dist\arcpro20\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.0'); Flags: ignoreversion
-
-;Source: "C:\dev\arckea\dist\arc106_arcpro21\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.1'); Flags: ignoreversion
-;Source: "C:\dev\arckea\dist\arc106_arcpro21\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.1'); Flags: ignoreversion
-
 Source: "C:\dev\arckea\dist\arc1061_arcpro22\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.2'); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc1061_arcpro22\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.2'); Flags: ignoreversion
 
@@ -61,6 +52,9 @@ Source: "C:\dev\arckea\dist\arcpro27\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir:
 
 Source: "C:\dev\arckea\dist\arcpro28\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.8'); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arcpro28\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.8'); Flags: ignoreversion
+
+Source: "C:\dev\arckea\dist\arc11_arcpro30\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('3.0'); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc11_arcpro30\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('3.0'); Flags: ignoreversion
 
 [code]
 const
@@ -135,12 +129,6 @@ end;
 // convert from the arc version string to one of the version classes we recognise
 function GetArcVersionClass(realVersion: string): string;
 begin
-  //if (CompareVersion(realVersion, '1.4') <> -1) and (CompareVersion(realVersion, '2.0') = -1) then
-  //  Result := '1.4'
-  //else if (CompareVersion(realVersion, '2.0') <> -1) and (CompareVersion(realVersion, '2.1') = -1) then
-  //  Result := '2.0'
-  //else if (CompareVersion(realVersion, '2.1') <> -1) and (CompareVersion(realVersion, '2.2') = -1) then
-  //  Result := '2.1'
   if (CompareVersion(realVersion, '2.2') <> -1) and (CompareVersion(realVersion, '2.3') = -1) then
     Result := '2.2'
   else if (CompareVersion(realVersion, '2.4') <> -1) and (CompareVersion(realVersion, '2.5') = -1) then
@@ -153,6 +141,8 @@ begin
     Result := '2.7'
   else if (CompareVersion(realVersion, '2.8') <> -1) and (CompareVersion(realVersion, '2.9') = -1) then
     Result := '2.8'
+  else if (CompareVersion(realVersion, '3.0') <> -1) and (CompareVersion(realVersion, '3.1') = -1) then
+    Result := '3.0'
   else
     Result := ''
 end;

@@ -98,6 +98,9 @@ Source: "C:\dev\arckea\dist\arc109\x86\lib\gdalplugins\gdal_KEA.dll"; DestDir: "
 Source: "C:\dev\arckea\dist\arc109\x64\lib\*.dll"; DestDir: "{app}\bin64"; Check: ArcVersion('10.9', 64); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc109\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('10.9', 64); Flags: ignoreversion
 
+Source: "C:\dev\arckea\dist\arc11_arcpro30\x64\lib\*.dll"; DestDir: "{app}\bin64"; Check: ArcVersion('11.0', 64); Flags: ignoreversion
+Source: "C:\dev\arckea\dist\arc11_arcpro30\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin64\gdalplugins"; Check: ArcVersion('11.0', 64); Flags: ignoreversion
+
 [code]
 const
   // this is where ArcGIS seems to put the install information
@@ -217,12 +220,6 @@ end;
 // convert from the arc version string to one of the version classes we recognise
 function GetArcVersionClass(realVersion: string): string;
 begin
-  //if (CompareVersion(realVersion, '9.3') <> -1) and (CompareVersion(realVersion, '9.4') = -1) then
-  //  Result := '9.3'
-  //else if (CompareVersion(realVersion, '10.0') <> -1) and (CompareVersion(realVersion, '10.1') = -1) then
-  //  Result := '10.0'
-  //else if (CompareVersion(realVersion, '10.1') <> -1) and (CompareVersion(realVersion, '10.4') = -1) then
-  //  Result := '10.1'
   if (CompareVersion(realVersion, '10.4') <> -1) and (CompareVersion(realVersion, '10.5') = -1) then
     Result := '10.4'
   else if (CompareVersion(realVersion, '10.5') <> -1) and (CompareVersion(realVersion, '10.5.1') = -1) then
@@ -241,6 +238,8 @@ begin
     Result := '10.8.1'
   else if (CompareVersion(realVersion, '10.9') <> -1) and (CompareVersion(realVersion, '10.9.9') = -1) then
     Result := '10.9'
+  else if (CompareVersion(realVersion, '11.0') <> -1) and (CompareVersion(realVersion, '11.1') = -1) then
+    Result := '11.0'
   else
     Result := ''
 end;
