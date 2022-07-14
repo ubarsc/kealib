@@ -34,7 +34,7 @@ KEAMaskBand::KEAMaskBand(GDALRasterBand *pParent,
                 kealib::KEAImageIO *pImageIO, LockedRefCount *pRefCount)
 {
     m_nSrcBand = pParent->GetBand();
-    poDS = NULL;
+    poDS = nullptr;
     nBand = 0;
 
     nRasterXSize = pParent->GetXSize();
@@ -63,7 +63,7 @@ KEAMaskBand::~KEAMaskBand()
         {
             m_pImageIO->close();
         }
-        catch (kealib::KEAIOException &e)
+        catch (const kealib::KEAIOException &e)
         {
         }
         delete m_pImageIO;
@@ -96,7 +96,7 @@ CPLErr KEAMaskBand::IReadBlock( int nBlockXOff, int nBlockYOff, void * pImage )
                                             nxsize, nysize, this->nBlockXSize, this->nBlockYSize, 
                                             kealib::kea_8uint );
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined,
                 "Failed to read file: %s", e.what() );
@@ -131,7 +131,7 @@ CPLErr KEAMaskBand::IWriteBlock( int nBlockXOff, int nBlockYOff, void * pImage )
                                             nxsize, nysize, this->nBlockXSize, this->nBlockYSize,
                                             kealib::kea_8uint );
     }
-    catch (kealib::KEAIOException &e)
+    catch (const kealib::KEAIOException &e)
     {
         CPLError( CE_Failure, CPLE_AppDefined,
                 "Failed to write file: %s", e.what() );

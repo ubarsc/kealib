@@ -44,7 +44,7 @@ void GDALRegister_KEA()
         return;
 #endif
 
-    if( GDALGetDriverByName( "KEA" ) == NULL )
+    if( GDALGetDriverByName( "KEA" ) == nullptr )
     {
         poDriver = new GDALDriver();
         

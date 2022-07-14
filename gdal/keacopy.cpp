@@ -56,7 +56,7 @@ bool CopyRasterData( GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nB
     // allocate some space
     int nPixelSize = GDALGetDataTypeSize( eGDALType ) / 8;
     void *pData = CPLMalloc( nPixelSize * nBlockSize * nBlockSize);
-    if( pData == NULL )
+    if( pData == nullptr )
     {
         CPLError( CE_Failure, CPLE_AppDefined, "Unable to allocate memory" );        
         return false;
@@ -100,7 +100,7 @@ bool CopyRasterData( GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nB
                 double dFraction = (((double)nBlocksComplete / (double)nTotalBlocks) / (double)nTotalBands) + ((double)(nBand-1) * (1.0 / (double)nTotalBands));
                 if( dFraction != dLastFraction )
                 {
-                    if( !pfnProgress( dFraction, NULL, pProgressData ) )
+                    if( !pfnProgress( dFraction, nullptr, pProgressData ) )
                     {
                         CPLFree( pData );
                         return false;
@@ -120,7 +120,7 @@ const int RAT_CHUNKSIZE = 1000;
 void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
 {
     const GDALRasterAttributeTable *gdalAtt = pBand->GetDefaultRAT();
-    if((gdalAtt != NULL) && (gdalAtt->GetRowCount() > 0))
+    if((gdalAtt != nullptr) && (gdalAtt->GetRowCount() > 0))
     {
         // some operations depend on whether the input dataset is HFA
         int bInputHFA = EQUAL(pBand->GetDataset()->GetDriver()->GetDescription(), "HFA");
@@ -305,7 +305,7 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
         delete[] pnInt64Buffer;
         delete[] pfDoubleBuffer;
 #else
-        kealib::KEAATTFeature *keaFeat = NULL;
+        kealib::KEAATTFeature *keaFeat = nullptr;
         for(int ni = 0; ni < numRows; ++ni)
         {
             keaFeat = keaAtt->getFeature(ni);
@@ -354,7 +354,7 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
 #endif        
 
         delete keaAtt;
-        for(std::vector<kealib::KEAATTField*>::iterator iterField = fields->begin(); iterField != fields->end(); ++iterField)
+        for(auto iterField = fields->begin(); iterField != fields->end(); ++iterField)
         {
             delete *iterField;
         }
@@ -368,12 +368,12 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
 void CopyMetadata( GDALMajorObject *pObject, kealib::KEAImageIO *pImageIO, int nBand)
 {
     char **ppszMetadata = pObject->GetMetadata();
-    if( ppszMetadata != NULL )
+    if( ppszMetadata != nullptr )
     {
         char *pszName;
         const char *pszValue;
         int nCount = 0;
-        while( ppszMetadata[nCount] != NULL )
+        while( ppszMetadata[nCount] != nullptr )
         {
             pszValue = CPLParseNameValue( ppszMetadata[nCount], &pszName );
 
@@ -508,11 +508,11 @@ void CopyGCPs(GDALDataset *pDataset, kealib::KEAImageIO *pImageIO)
         {
             pImageIO->setGCPs(&KEAGCPs, pszGCPProj);
         }
-        catch(kealib::KEAException &e)
+        catch(const kealib::KEAException &e)
         {
         }
 
-        for( std::vector<kealib::KEAImageGCP*>::iterator itr = KEAGCPs.begin(); itr != KEAGCPs.end(); itr++)
+        for( auto itr = KEAGCPs.begin(); itr != KEAGCPs.end(); itr++)
         {
             delete (*itr);
         }
@@ -543,6 +543,6 @@ bool CopyFile( GDALDataset *pDataset, kealib::KEAImageIO *pImageIO, GDALProgress
             return false;
     }
 
-    pfnProgress( 1.0, NULL, pProgressData );
+    pfnProgress( 1.0, nullptr, pProgressData );
     return true;
 }

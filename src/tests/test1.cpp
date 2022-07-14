@@ -73,7 +73,7 @@ int main()
         free(pRATData);
         io.close();
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         fprintf(stderr, "Exception raised: %s\n", e.what());
         return 1;

@@ -70,7 +70,7 @@ keaInstanceTemplateListGet(Etxt_Text **templateList, Etxt_Text *templateListPseu
 	** None of these extensions are pseudo extensions, so we do not
 	** need to set any flags
 	*/
-	*templateListPseudoFlags = (Etxt_Text)NULL;
+	*templateListPseudoFlags = (Etxt_Text)nullptr;
 
 	return 0;
 }
@@ -218,7 +218,7 @@ keaInstanceRasterDataOrderTypesGet(unsigned long  *count, Etxt_Text  **rdoTypes,
     *count = 1;
     *rdoTypes = emsc_New(1, Etxt_Text);
     (*rdoTypes)[0] = estr_Duplicate(ETXT_LTEXT("BSQ"));
-    *rdoWriteFlags = NULL;
+    *rdoWriteFlags = nullptr;
     
     return 0;
 }
@@ -229,9 +229,9 @@ keaInstanceDescriptionGet(Etxt_Text *description)
 #ifdef KEADEBUG
     keaDebugOut( "%s\n", __FUNCTION__ );
 #endif
-    Eerr_ErrorReport* err = NULL;
-    *description = estr_Sprintf(NULL, ETXT_LTEXT("KEA Raster Support Library Version %s"), &err,
-            ETXT_LTEXT(LIBKEA_VERSION), NULL);
+    Eerr_ErrorReport* err = nullptr;
+    *description = estr_Sprintf(nullptr, ETXT_LTEXT("KEA Raster Support Library Version %s"), &err,
+            ETXT_LTEXT(LIBKEA_VERSION), nullptr);
     HANDLE_ERR(err, -1);
     return 0;
 }
@@ -300,7 +300,7 @@ void keaDebugOut(char *fmt, ...)
     int nSize, nPid;
     
     tmpDir = getenv("TMP");
-    if( tmpDir == NULL )
+    if( tmpDir == nullptr )
     {
 #ifdef WIN32
         tmpDir = "C:";
@@ -315,11 +315,11 @@ void keaDebugOut(char *fmt, ...)
     nPid = getpid();
 #endif    
     
-    nSize = snprintf(NULL, 0, "%s/kea_%d.log", tmpDir, nPid);
+    nSize = snprintf(nullptr, 0, "%s/kea_%d.log", tmpDir, nPid);
     fName = (char*)malloc(nSize+1);
     snprintf(fName, nSize+1, "%s/kea_%d.log", tmpDir, nPid);
     fh = fopen(fName, "a");
-    if( fh == NULL )
+    if( fh == nullptr )
     {
         fprintf(stderr, "Failed to open %s for writing\n", fName);
     }

@@ -62,7 +62,7 @@ namespace kealib{
             
             this->setBoolValue(field.idx, value);
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -81,7 +81,7 @@ namespace kealib{
             
             this->setIntValue(field.idx, value);
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -100,7 +100,7 @@ namespace kealib{
             
             this->setFloatValue(field.idx, value);
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -119,7 +119,7 @@ namespace kealib{
             
             this->setStringValue(field.idx, value);
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -171,7 +171,7 @@ namespace kealib{
     
     KEAFieldDataType KEAAttributeTable::getDataFieldType(const std::string &name) const
     {
-        std::map<std::string, KEAATTField>::iterator iterField = fields->find(name);
+        auto iterField = fields->find(name);
         if(iterField == fields->end())
         {
             std::string message = std::string("Field \'") + name + std::string("\' is not within the attribute table.");
@@ -183,7 +183,7 @@ namespace kealib{
     
     size_t KEAAttributeTable::getFieldIndex(const std::string &name) const
     {
-        std::map<std::string, KEAATTField>::iterator iterField = fields->find(name);
+        auto iterField = fields->find(name);
         if(iterField == fields->end())
         {
             std::string message = std::string("Field \'") + name + std::string("\' is not within the attribute table.");
@@ -195,7 +195,7 @@ namespace kealib{
     
     KEAATTField KEAAttributeTable::getField(const std::string &name) const
     {
-        std::map<std::string, KEAATTField>::iterator iterField = fields->find(name);
+        auto iterField = fields->find(name);
         if(iterField == fields->end())
         {
             std::string message = std::string("Field \'") + name + std::string("\' is not within the attribute table.");
@@ -209,7 +209,7 @@ namespace kealib{
     {
         KEAATTField field;
         bool found = false;
-        for(std::map<std::string, KEAATTField>::iterator iterField = fields->begin(); iterField != fields->end(); ++iterField)
+        for(auto iterField = fields->begin(); iterField != fields->end(); ++iterField)
         {
             if((*iterField).second.colNum == globalColIdx)
             {
@@ -230,7 +230,7 @@ namespace kealib{
     std::vector<std::string> KEAAttributeTable::getFieldNames() const
     {
         std::vector<std::string> names;
-        for(std::map<std::string, KEAATTField>::iterator iterField = fields->begin(); iterField != fields->end(); ++iterField)
+        for(auto iterField = fields->begin(); iterField != fields->end(); ++iterField)
         {
             names.push_back((*iterField).first);
         }
@@ -304,7 +304,7 @@ namespace kealib{
             ++numBoolFields;
             ++numOfCols;
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -337,7 +337,7 @@ namespace kealib{
             ++numIntFields;
             ++numOfCols;
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -370,7 +370,7 @@ namespace kealib{
             ++numFloatFields;
             ++numOfCols;
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -403,7 +403,7 @@ namespace kealib{
             ++numStringFields;
             ++numOfCols;
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -414,7 +414,7 @@ namespace kealib{
         try 
         {
             KEAATTField field;
-            for(std::vector<KEAATTField*>::iterator iterFields = inFields->begin(); iterFields != inFields->end(); ++iterFields)
+            for(auto iterFields = inFields->begin(); iterFields != inFields->end(); ++iterFields)
             {
                 if((*iterFields)->dataType == kea_att_bool)
                 {
@@ -442,7 +442,7 @@ namespace kealib{
                 (*iterFields)->colNum = field.colNum;
             }
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -452,7 +452,7 @@ namespace kealib{
     {
         try 
         {
-            for(std::vector<KEAATTField>::iterator iterFields = inFields.begin(); iterFields != inFields.end(); ++iterFields)
+            for(auto iterFields = inFields.begin(); iterFields != inFields.end(); ++iterFields)
             {
                 if((*iterFields).dataType == kea_att_bool)
                 {
@@ -476,7 +476,7 @@ namespace kealib{
                 }
             }
         }
-        catch (KEAATTException &e)
+        catch (const KEAATTException &e)
         {
             throw e;
         }
@@ -542,7 +542,7 @@ namespace kealib{
         std::cout << "Number of String Fields: " << this->numStringFields << std::endl;
         
         std::cout << "Fields:\n";
-        for(std::map<std::string, KEAATTField>::iterator iterField = fields->begin(); iterField != fields->end(); ++iterField)
+        for(auto iterField = fields->begin(); iterField != fields->end(); ++iterField)
         {
             std::cout << "Field: " << (*iterField).second.name << " DATA TYPE:";
             if((*iterField).second.dataType == kea_att_bool)
@@ -585,19 +585,19 @@ namespace kealib{
             attIdxDataType->insertMember(KEA_ATT_COLNUM_FIELD, HOFFSET(KEAAttributeIdx, colNum), H5::PredType::STD_U32LE);
             return attIdxDataType;
         }
-        catch( H5::FileIException &e )
+        catch( const H5::FileIException &e )
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch( H5::DataSetIException &e )
+        catch( const H5::DataSetIException &e )
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch( H5::DataSpaceIException &e )
+        catch( const H5::DataSpaceIException &e )
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch( H5::DataTypeIException &e )
+        catch( const H5::DataTypeIException &e )
         {
             throw KEAATTException(e.getDetailMsg());
         }
@@ -616,19 +616,19 @@ namespace kealib{
             attIdxDataType->insertMember(KEA_ATT_COLNUM_FIELD, HOFFSET(KEAAttributeIdx, colNum), H5::PredType::NATIVE_UINT);
             return attIdxDataType;
         }
-        catch( H5::FileIException &e )
+        catch( const H5::FileIException &e )
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch( H5::DataSetIException &e )
+        catch( const H5::DataSetIException &e )
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch( H5::DataSpaceIException &e )
+        catch( const H5::DataSpaceIException &e )
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch( H5::DataTypeIException &e )
+        catch( const H5::DataTypeIException &e )
         {
             throw KEAATTException(e.getDetailMsg());
         }
@@ -644,19 +644,19 @@ namespace kealib{
             keaStrDataType->insertMember(KEA_ATT_STRING_FIELD, HOFFSET(KEAString, str), strTypeDisk);
             return keaStrDataType;
         }
-        catch( H5::FileIException &e )
+        catch( const H5::FileIException &e )
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch( H5::DataSetIException &e )
+        catch( const H5::DataSetIException &e )
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch( H5::DataSpaceIException &e )
+        catch( const H5::DataSpaceIException &e )
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch( H5::DataTypeIException &e )
+        catch( const H5::DataTypeIException &e )
         {
             throw KEAATTException(e.getDetailMsg());
         }
@@ -672,19 +672,19 @@ namespace kealib{
             keaStrDataType->insertMember(KEA_ATT_STRING_FIELD, HOFFSET(KEAString, str), strTypeMem);
             return keaStrDataType;
         }
-        catch( H5::FileIException &e )
+        catch( const H5::FileIException &e )
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch( H5::DataSetIException &e )
+        catch( const H5::DataSetIException &e )
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch( H5::DataSpaceIException &e )
+        catch( const H5::DataSpaceIException &e )
         {
             throw KEAATTException(e.getDetailMsg());
         }
-        catch( H5::DataTypeIException &e )
+        catch( const H5::DataTypeIException &e )
         {
             throw KEAATTException(e.getDetailMsg());
         }

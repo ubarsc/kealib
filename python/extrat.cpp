@@ -81,7 +81,7 @@ typedef struct {
  to a SwigPyObject whose ptr field is a pointer to a
  GDALDataset. Phew. 
  given a python object this function returns the underlying
- pointer. Returns NULL on failure (exception string already set)*/
+ pointer. Returns nullptr on failure (exception string already set)*/
 void *getUnderlyingPtrFromSWIGPyObject(pybind11::object &input/*, PyObject *pException*/)
 {
     // get the "this" attribute
@@ -93,9 +93,9 @@ void *getUnderlyingPtrFromSWIGPyObject(pybind11::object &input/*, PyObject *pExc
 
     /* get the ptr field*/
     void *pUnderlying = pSwigThisAttr->ptr;
-    if( pUnderlying == NULL )
+    if( pUnderlying == nullptr )
     {
-        throw PyKeaLibException("Underlying Pointer is NULL");
+        throw PyKeaLibException("Underlying Pointer is nullptr");
     }
 
     return pUnderlying;
@@ -106,7 +106,7 @@ void *getUnderlyingPtrFromSWIGPyObject(pybind11::object &input/*, PyObject *pExc
 void freeNeighbourLists(std::vector<std::vector<size_t>* > *pNeighbours)
 {
     /* frees all the sub vectors of pNeighbours */
-    for( std::vector<std::vector<size_t>* >::iterator itr = pNeighbours->begin();
+    for( auto itr = pNeighbours->begin();
             itr != pNeighbours->end(); itr++)
     {
         delete *itr;
@@ -129,10 +129,10 @@ kealib::KEAImageIO *getImageIOFromDataset(pybind11::object &dataset, int nBand)
         throw PyKeaLibException("This function only works on KEA files");
     }
 
-    kealib::KEAImageIO *pImageIO = (kealib::KEAImageIO*)pDataset->GetInternalHandle(NULL);
-    if( pImageIO == NULL )
+    kealib::KEAImageIO *pImageIO = (kealib::KEAImageIO*)pDataset->GetInternalHandle(nullptr);
+    if( pImageIO == nullptr )
     {
-        throw PyKeaLibException("GetInternalHandle returned NULL");
+        throw PyKeaLibException("GetInternalHandle returned nullptr");
     }
 
     return pImageIO;
@@ -151,7 +151,7 @@ awkward::ContentPtr getNeighbours(pybind11::object &dataset, int nBand, int &sta
     try
     {
         kealib::KEAAttributeTable *pRAT = pImageIO->getAttributeTable(kealib::kea_att_file, nBand);
-        if( pRAT == NULL )
+        if( pRAT == nullptr )
         {
             throw PyKeaLibException("No Attribute table in this file");
         }
@@ -175,7 +175,7 @@ awkward::ContentPtr getNeighbours(pybind11::object &dataset, int nBand, int &sta
         
         freeNeighbourLists(&neighbours);
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         throw PyKeaLibException(e.what());
     }
@@ -194,7 +194,7 @@ void setNeighbours(pybind11::object &dataset, int nBand,
     try
     {
         kealib::KEAAttributeTable *pRAT = pImageIO->getAttributeTable(kealib::kea_att_file, nBand);
-        if( pRAT == NULL )
+        if( pRAT == nullptr )
         {
             throw PyKeaLibException("No Attribute table in this file");
         }
@@ -275,7 +275,7 @@ void setNeighbours(pybind11::object &dataset, int nBand,
         
         freeNeighbourLists(&cppneighbours);
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         throw PyKeaLibException(e.what());
     }
@@ -294,7 +294,7 @@ void addBoolField(pybind11::object &dataset, int nBand,
     try
     {
         kealib::KEAAttributeTable *pRAT = pImageIO->getAttributeTable(kealib::kea_att_file, nBand);
-        if( pRAT == NULL )
+        if( pRAT == nullptr )
         {
             throw PyKeaLibException("No Attribute table in this file");
         }
@@ -302,7 +302,7 @@ void addBoolField(pybind11::object &dataset, int nBand,
         pRAT->addAttBoolField(name, bInitVal, usage);
 
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         throw PyKeaLibException(e.what());
     }
@@ -340,7 +340,7 @@ private:
                 T val = *(T*)PyArray_GETPTR2(pInput, y, x);
                 if( val != nTypeIgnore )
                 {
-                    std::vector<size_t> *pVec = NULL;
+                    std::vector<size_t> *pVec = nullptr;
                     auto found = m_neighbourMap.find(val);
                     if( found != m_neighbourMap.end() )
                     {
@@ -400,7 +400,7 @@ private:
                         {
                             m_pRAT->setNeighbours(val, 1, &cppneighbours);
                         }
-                        catch(kealib::KEAException &e)
+                        catch(const kealib::KEAException &e)
                         {
                             throw PyKeaLibException(e.what());
                         }
@@ -499,12 +499,12 @@ NeighbourAccumulator::NeighbourAccumulator(pybind11::array &hist,
         pImageIO->getNoDataValue(nBand, &m_ignore, kealib::kea_64float);
     
         m_pRAT = pImageIO->getAttributeTable(kealib::kea_att_file, nBand);
-        if( m_pRAT == NULL )
+        if( m_pRAT == nullptr )
         {
             throw PyKeaLibException("No Attribute table in this file");
         }
     }
-    catch(kealib::KEAException &e)
+    catch(const kealib::KEAException &e)
     {
         throw PyKeaLibException(e.what());
     }

@@ -134,7 +134,7 @@ namespace kealib{
         virtual void setBoolField(size_t fid, size_t colIdx, bool value)=0;
         virtual void setIntField(size_t fid, size_t colIdx, int64_t value)=0;
         virtual void setFloatField(size_t fid, size_t colIdx, double value)=0;
-        virtual void setStringField(size_t fid, size_t colIdx, std::string value)=0;
+        virtual void setStringField(size_t fid, size_t colIdx, const std::string &value)=0;
 
         // RFC40 methods
         virtual void setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer)=0;
