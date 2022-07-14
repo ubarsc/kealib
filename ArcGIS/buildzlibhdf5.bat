@@ -18,16 +18,6 @@ set HDF5DIR_VS2008=C:\dev\arc\hdf5-1.10.5
 set HDF5DIR_LATEST=C:\dev\arc\hdf5-1.10.6
 set INSTALLDIR=c:\dev\arckea
 
-:: Visual Studio 2008 x86
-SetLocal
-set VCYEAR=VC2008
-set VCMACH=x86
-call "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\vcvarsall.bat" %VCMACH%
-@echo on
-set HDF5DIR=%HDF5DIR_VS2008%
-call :build
-EndLocal
-
 :: Visual Studio 2013 x86 and x64
 SetLocal
 set VCYEAR=VC2013
@@ -43,16 +33,6 @@ set VCYEAR=VC2013
 set VCMACH=x64
 :: Note VS2013 doesn't understand 'x64'...
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64
-@echo on
-set HDF5DIR=%HDF5DIR_LATEST%
-call :build
-EndLocal
-
-:: Visual Studio 2015 for ArcPro <= 2.0
-SetLocal
-set VCYEAR=VC2015
-set VCMACH=x64
-call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH% 8.1
 @echo on
 set HDF5DIR=%HDF5DIR_LATEST%
 call :build
@@ -91,6 +71,16 @@ SetLocal
 set VCYEAR=VC2019
 set VCMACH=x64
 call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
+@echo on
+set HDF5DIR=%HDF5DIR_LATEST%
+call :build
+EndLocal
+
+:: Visual Studio 2022 for Arc Pro 3.0 and ArcGIS 11
+SetLocal
+set VCYEAR=VC2022
+set VCMACH=x64
+call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
 @echo on
 set HDF5DIR=%HDF5DIR_LATEST%
 call :build

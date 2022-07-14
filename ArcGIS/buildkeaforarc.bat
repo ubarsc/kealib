@@ -9,19 +9,6 @@ SET GDALDIR=C:\dev\arcgdalforcompilation
 :: HDF5DIR is the same as INSTALLDIR in buildzlibhdf5.bat
 SET HDF5DIR=c:\dev\arckea
 
-:: NOTE: DEPRECATED
-:: SetLocal
-:: set VCMACH=x86
-:: call "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\vcvarsall.bat" %VCMACH%
-:: @echo on
-:: call :build_arc93
-:: if errorlevel 1 exit /B 1
-:: call :build_arc100
-:: if errorlevel 1 exit /B 1
-:: call :build_arc101
-:: if errorlevel 1 exit /B 1
-:: EndLocal
-
 :: Now the vs2013 builds x86
 SetLocal
 set VCMACH=x86
@@ -48,19 +35,6 @@ if errorlevel 1 exit /B 1
 call :build_arc1051
 if errorlevel 1 exit /B 1
 EndLocal
-
-:: Visual Studio 2015 x64 builds - note 8.1 on the end of vcvarsall.bat - selects Windows SDK 8.1
-:: which has a working rc.exe - removed in 10.1
-:: NOTE: DEPRECATED
-:: SetLocal
-:: set VCMACH=x64
-:: call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %VCMACH% 8.1
-:: @echo on
-:: call :build_arcpro14
-:: if errorlevel 1 exit /B 1
-:: call :build_arcpro20
-:: if errorlevel 1 exit /B 1
-:: EndLocal
 
 :: Visual Studio 2017 x86 Builds
 :: ESRI Says "Visual Studio 2017 Update 2" which is 14.09(?) but this is the earliest 
@@ -135,103 +109,16 @@ call :build_arc109
 if errorlevel 1 exit /B 1
 EndLocal
 
+:: Visual Studio 2022 for Arc Pro 3.0 and ArcGIS 11
+SetLocal
+set VCMACH=x64
+call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
+@echo on
+call :build_arc11_arcpro30
+if errorlevel 1 exit /B 1
+EndLocal
+
 EXIT /B %ERRORLEVEL%
-
-:build_arc93
-
-set ARCGDALDIR=%GDALDIR%\gdal14
-set ARCHDF5DIR=%HDF5DIR%\VC2008_x86
-set ARCHINSTALL=%OUTDIR%\arc93
-mkdir build_arc93
-cd build_arc93
-
-cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
-      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
-	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
-	  -D GDAL_DIR=%ARCGDALDIR% ^
-      -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
-      -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
-      -D CMAKE_BUILD_TYPE=Release ^
-      -G "NMake Makefiles" ^
-      ..\..\gdal
-if errorlevel 1 exit /B 1
-nmake install
-if errorlevel 1 exit /B 1 
-
-:: Copy the necessary dlls over so the installer can find them 
-for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
-  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
-  if errorlevel 1 exit /B 1      
-)
-
-cd ..
-rmdir /s /q build_arc93
-
-EXIT /B 0
-
-:build_arc100
-
-set ARCGDALDIR=%GDALDIR%\gdal16
-set ARCHDF5DIR=%HDF5DIR%\VC2008_x86
-set ARCHINSTALL=%OUTDIR%\arc100
-mkdir build_arc100
-cd build_arc100
-
-cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
-      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
-	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
-      -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
-      -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
-	  -D GDAL_DIR=%ARCGDALDIR% ^
-      -D CMAKE_BUILD_TYPE=Release ^
-      -G "NMake Makefiles" ^
-      ..\..\gdal
-if errorlevel 1 exit /B 1
-nmake install
-if errorlevel 1 exit /B 1 
-
-:: Copy the necessary dlls over so the installer can find them 
-for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
-  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
-  if errorlevel 1 exit /B 1      
-)
-
-cd ..
-rmdir /s /q build_arc100
-
-EXIT /B 0
-
-:build_arc101
-
-set ARCGDALDIR=%GDALDIR%\gdal18
-set ARCHDF5DIR=%HDF5DIR%\VC2008_x86
-set ARCHINSTALL=%OUTDIR%\arc101
-mkdir build_arc101
-cd build_arc101
-
-cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
-      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
-	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
-      -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
-      -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
-	  -D GDAL_DIR=%ARCGDALDIR% ^
-      -D CMAKE_BUILD_TYPE=Release ^
-      -G "NMake Makefiles" ^
-      ..\..\gdal
-if errorlevel 1 exit /B 1
-nmake install
-if errorlevel 1 exit /B 1 
-
-:: Copy the necessary dlls over so the installer can find them 
-for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
-  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
-  if errorlevel 1 exit /B 1      
-)
-
-cd ..
-rmdir /s /q build_arc101
-
-EXIT /B 0
 
 :build_arc104
 
@@ -635,4 +522,34 @@ for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
 
 cd ..
 rmdir /s /q build_arc109
+EXIT /B 0
+
+:build_arc11_arcpro30
+set ARCGDALDIR=%GDALDIR%\gdal34\%VCMACH%
+set ARCHDF5DIR=%HDF5DIR%\VC2022_%VCMACH%
+set ARCHINSTALL=%OUTDIR%\arc11_arcpro30\%VCMACH%
+mkdir build_arc11_arcpro30
+cd build_arc11_arcpro30
+  
+cmake -D KEA_PLUGIN_OUTOFTREE=ON ^
+      -D CMAKE_INSTALL_PREFIX=%ARCHINSTALL% ^
+	  -D CMAKE_PREFIX_PATH=%ARCGDALDIR% ^
+      -D LIBKEA_HEADERS_DIR=%ARCHDF5DIR%\include ^
+      -D LIBKEA_LIB_PATH=%ARCHDF5DIR%\lib ^
+      -D GDAL_DIR=%ARCGDALDIR% ^
+      -D CMAKE_BUILD_TYPE=Release ^
+      -G "NMake Makefiles" ^
+      ..\..\gdal
+if errorlevel 1 exit /B 1
+nmake install
+if errorlevel 1 exit /B 1 
+
+:: Copy the necessary dlls over so the installer can find them 
+for %%L IN (keahdf5.dll,keahdf5_cpp.dll,libkea.dll,zlibkea.dll) DO (
+  COPY "%ARCHDF5DIR%\bin\%%L" "%ARCHINSTALL%\lib\%%L"
+  if errorlevel 1 exit /B 1      
+)
+
+cd ..
+rmdir /s /q build_arc11_arcpro30
 EXIT /B 0
