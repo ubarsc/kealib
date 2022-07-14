@@ -5,6 +5,7 @@ How to create a distribution of kealib.
 2.  Update the LIBKEA_VERSION_MAJOR, LIBKEA_VERSION_MINOR, LIBKEA_VERSION_PATCH
     fields in CMakeLists.txt. Version number is of the form MAJOR.MINOR.PATCH, 
     as discussed below. 
+    Also update the KEA versions in the *.iss files.
    
 3.  Close any inactive branches.
 
