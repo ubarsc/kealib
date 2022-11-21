@@ -35,23 +35,6 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Files]
 ; The support libs (hdf5 etc) are duplicated between releases as some will be done with the same compiler
 ; but I'm hopeful that the compression will work this out.
-Source: "C:\dev\arckea\dist\arc1061_arcpro22\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.2'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc1061_arcpro22\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.2'); Flags: ignoreversion
-
-Source: "C:\dev\arckea\dist\arc1071_arcpro24\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.4'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc1071_arcpro24\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.4'); Flags: ignoreversion
-
-Source: "C:\dev\arckea\dist\arc108_arcpro25\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.5'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc108_arcpro25\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.5'); Flags: ignoreversion
-
-Source: "C:\dev\arckea\dist\arc1081_arcpro26\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.6'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arc1081_arcpro26\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.6'); Flags: ignoreversion
-
-Source: "C:\dev\arckea\dist\arcpro27\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.7'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arcpro27\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.7'); Flags: ignoreversion
-
-Source: "C:\dev\arckea\dist\arcpro28\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('2.8'); Flags: ignoreversion
-Source: "C:\dev\arckea\dist\arcpro28\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('2.8'); Flags: ignoreversion
 
 Source: "C:\dev\arckea\dist\arc11_arcpro30\x64\lib\*.dll"; DestDir: "{app}\bin"; Check: ArcVersion('3.0'); Flags: ignoreversion
 Source: "C:\dev\arckea\dist\arc11_arcpro30\x64\lib\gdalplugins\gdal_KEA.dll"; DestDir: "{app}\bin\gdalplugins"; Check: ArcVersion('3.0'); Flags: ignoreversion
