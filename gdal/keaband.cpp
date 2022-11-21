@@ -194,7 +194,6 @@ CPLErr KEARasterBand::SetHistogramFromString(const char *pszString)
         i++;
     }
 
-#ifdef HAVE_RFC40
     GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
     if( pTable == nullptr )
     {
@@ -212,14 +211,6 @@ CPLErr KEARasterBand::SetHistogramFromString(const char *pszString)
     }
     if( nRows > pTable->GetRowCount() )
         pTable->SetRowCount(nRows);
-#else
-    // just create a blank rat then populate it
-    GDALRasterAttributeTable *pTable = new GDALRasterAttributeTable();
-    if( pTable->CreateColumn("Histogram", GFT_Real, GFU_PixelCount) != CE_None )
-        return CE_Failure;
-    int nCol = 0;
-    pTable->SetRowCount(nRows);
-#endif
 
     char * pszWork = pszBinValues;
     for( int nBin = 0; nBin < nRows; ++nBin )
@@ -234,13 +225,6 @@ CPLErr KEARasterBand::SetHistogramFromString(const char *pszString)
         }
     }
     CPLFree(pszBinValues);
-
-    // note: #ifndef
-#ifndef HAVE_RFC40
-    // need to set it back if we don't have RFC40
-    this->SetDefaultRAT(pTable);
-    delete pTable;
-#endif
 
     return CE_None;
 }
@@ -266,11 +250,7 @@ char *KEARasterBand::GetHistogramAsString()
     {
         char szBuf[32];
         // RAT's don't handle GUIntBig - use double instead. Cast back
-#ifndef CPL_FRMT_GUIB
-        snprintf( szBuf, 31, "%ull", (GUIntBig)pTable->GetValueAsDouble(nBin, nCol) );
-#else        
         snprintf( szBuf, 31, CPL_FRMT_GUIB, (GUIntBig)pTable->GetValueAsDouble(nBin, nCol) );
-#endif
         if ( ( nBinValuesLen + strlen( szBuf ) + 2 ) > nBufSize )
         {
             nBufSize *= 2;
@@ -290,7 +270,11 @@ char *KEARasterBand::GetHistogramAsString()
 }
 
 // internal method to create the overviews
+#ifdef HAVE_OVERVIEWOPTIONS
+void KEARasterBand::CreateOverviews(int nOverviews, const int *panOverviewList)
+#else
 void KEARasterBand::CreateOverviews(int nOverviews, int *panOverviewList)
+#endif
 {
     CPLMutexHolderD( &m_hMutex );
     // delete any existing overview bands
@@ -440,13 +424,9 @@ CPLErr KEARasterBand::SetMetadataItem(const char *pszName, const char *pszValue,
         }
         else if( EQUAL( pszName, "STATISTICS_HISTONUMBINS" ) )
         {
-#ifdef HAVE_RFC40
             GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
             if( pTable != nullptr )
                 pTable->SetRowCount(atol(pszValue));
-#else
-            // this is quite hard so I'm leaving it
-#endif
             // leave to update m_papszMetadataList below
         }
         else
@@ -699,25 +679,15 @@ CPLErr KEARasterBand::GetDefaultHistogram( double *pdfMin, double *pdfMax,
 {
     if( bForce )
     {
-#ifdef HAVE_RFC40
         return GDALPamRasterBand::GetDefaultHistogram(pdfMin, pdfMax, pnBuckets, 
                         ppanHistogram, bForce, fn, pProgressData);
-#else
-        // GetDefaultHistogram actually only introduced in more recent GDAL so shouldn't 
-        // be being used. Just fail.
-        return CE_Failure;
-#endif
     }
     else
     {
         // returned cached if avail
         // I've used the RAT interface here as it deals with data type
         // conversions. Would be nice to have GUIntBig support in RAT though...
-#ifdef HAVE_RFC40
         GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
-#else
-        const GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
-#endif
         if( pTable == nullptr )
             return CE_Failure;
         int nRows = pTable->GetRowCount();
@@ -730,7 +700,6 @@ CPLErr KEARasterBand::GetDefaultHistogram( double *pdfMin, double *pdfMax,
         if( !pTable->GetLinearBinning(&dfRow0Min, &dfBinSize) )
             return CE_Warning;
 
-#ifdef HAVE_RFC40
         *ppanHistogram = (GUIntBig*)VSIMalloc2(nRows, sizeof(GUIntBig));
         if( *ppanHistogram == nullptr )
         {
@@ -755,10 +724,6 @@ CPLErr KEARasterBand::GetDefaultHistogram( double *pdfMin, double *pdfMax,
             (*ppanHistogram)[n] = pDoubleHisto[n];
 
         CPLFree(pDoubleHisto);
-#else
-        for( int n = 0; n < nRows; n++ )
-            (*ppanHistogram)[n] = (GUIntBig)pTable->GetValueAsDouble(n, nCol);
-#endif
         *pnBuckets = nRows;
         *pdfMin = dfRow0Min;
         *pdfMax = dfRow0Min + ((nRows + 1) * dfBinSize);
@@ -769,7 +734,6 @@ CPLErr KEARasterBand::GetDefaultHistogram( double *pdfMin, double *pdfMax,
 CPLErr KEARasterBand::SetDefaultHistogram( double dfMin, double dfMax,
                                         int nBuckets, GUIntBig *panHistogram )
 {
-#ifdef HAVE_RFC40
     GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
     if( pTable == nullptr )
         return CE_Failure;
@@ -805,26 +769,9 @@ CPLErr KEARasterBand::SetDefaultHistogram( double dfMin, double dfMax,
 
     CPLFree(pDoubleHist);
 
-#else
-    // just create a blank rat then populate it
-    GDALRasterAttributeTable *pTable = new GDALRasterAttributeTable();
-    if( pTable->CreateColumn("Histogram", GFT_Real, GFU_PixelCount) != CE_None )
-        return CE_Failure;
-    int nCol = 0;
-    pTable->SetRowCount(nBuckets);
-
-    for( int n = 0; n < nBuckets; n++ )
-        pTable->SetValue(n, nCol, (double)panHistogram[n]);
-
-    // need to set it back if we don't have RFC40
-    this->SetDefaultRAT(pTable);
-    delete pTable;
-#endif
-
     return CE_None;
 }
 
-#ifdef HAVE_RFC40
 GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
 {
     CPLMutexHolderD( &m_hMutex );
@@ -845,135 +792,7 @@ GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
     return this->m_pAttributeTable;
 }
 
-#else
-// read the attributes into a GDALAttributeTable
-const GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
-{
-    CPLMutexHolderD( &m_hMutex );
-    if( this->m_pAttributeTable == nullptr )
-    {
-        try
-        {
-            if( this->m_pImageIO->attributeTablePresent(this->nBand) )
-            {
-                // we need to create one
-                this->m_pAttributeTable = new GDALRasterAttributeTable();
 
-                // we assume this is never nullptr - creates a new one if none exists
-                kealib::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(kealib::kea_att_mem, this->nBand);
-    
-                // create a mapping between GDAL column number and the field info
-                std::vector<kealib::KEAATTField> vecKEAField;
-                for( size_t nColumnIndex = 0; nColumnIndex < pKEATable->getMaxGlobalColIdx(); nColumnIndex++ )
-                {
-                    kealib::KEAATTField sKEAField;
-                    try
-                    {
-                        sKEAField = pKEATable->getField(nColumnIndex);
-                    }
-                    catch(const kealib::KEAATTException &e)
-                    {
-                        // pKEATable->getField raised exception because we have a missing column
-                        continue;
-                    }
-
-                    GDALRATFieldType eGDALType;
-                    switch( sKEAField.dataType )
-                    {
-                        case kealib::kea_att_bool:
-                        case kealib::kea_att_int:
-                            eGDALType = GFT_Integer;
-                            break;
-                        case kealib::kea_att_float:
-                            eGDALType = GFT_Real;
-                            break;
-                        case kealib::kea_att_string:
-                            eGDALType = GFT_String;
-                            break;
-                        default:
-                            continue;
-                            break;
-                    }
-
-                    GDALRATFieldUsage eGDALUsage;
-                    if( sKEAField.usage == "PixelCount" )
-                        eGDALUsage = GFU_PixelCount;
-                    else if( sKEAField.usage == "Name" )
-                        eGDALUsage = GFU_Name;
-                    else if( sKEAField.usage == "Red" )
-                        eGDALUsage = GFU_Red;
-                    else if( sKEAField.usage == "Green" )
-                        eGDALUsage = GFU_Green;
-                    else if( sKEAField.usage == "Blue" )
-                        eGDALUsage = GFU_Blue;
-                    else if( sKEAField.usage == "Alpha" )
-                        eGDALUsage = GFU_Alpha;
-                    else
-                    {
-                        // don't recognise any other special names - generic column
-                        eGDALUsage = GFU_Generic;
-                    }
-
-                    if( this->m_pAttributeTable->CreateColumn(sKEAField.name.c_str(), eGDALType, eGDALUsage) != CE_None )
-                    {
-                        CPLError( CE_Warning, CPLE_AppDefined, "Unable to create column %s", sKEAField.name.c_str() );
-                        continue;
-                    }
-
-                    vecKEAField.push_back(sKEAField);
-                }
-
-                // OK now we have filled in vecKEAField we can go through each row and fill in the fields
-                for( size_t nRowIndex = 0; nRowIndex < pKEATable->getSize(); nRowIndex++ )
-                {
-                    // get the feature
-                    kealib::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
-
-                    // iterate through the columns - same order as we added columns to GDAL
-                    int nGDALColNum = 0;
-                    for( auto itr = vecKEAField.begin(); itr != vecKEAField.end(); itr++ )
-                    {
-                        kealib::KEAATTField sKEAField = (*itr);
-                        if( sKEAField.dataType == kealib::kea_att_bool )
-                        {
-                            bool bVal = pKEAFeature->boolFields->at(sKEAField.idx);
-                            int nVal = bVal? 1 : 0; // convert to int - GDAL doesn't do bool
-                            this->m_pAttributeTable->SetValue(nRowIndex, nGDALColNum, nVal);
-                        }
-                        else if( sKEAField.dataType == kealib::kea_att_int )
-                        {
-                            int nVal = pKEAFeature->intFields->at(sKEAField.idx);
-                            this->m_pAttributeTable->SetValue(nRowIndex, nGDALColNum, nVal);
-                        }
-                        else if( sKEAField.dataType == kealib::kea_att_float )
-                        {
-                            double dVal = pKEAFeature->floatFields->at(sKEAField.idx);
-                            this->m_pAttributeTable->SetValue(nRowIndex, nGDALColNum, dVal);
-                        }
-                        else
-                        {
-                            std::string sVal = pKEAFeature->strFields->at(sKEAField.idx);
-                            this->m_pAttributeTable->SetValue(nRowIndex, nGDALColNum, sVal.c_str());
-                        }
-                        nGDALColNum++;
-                    }
-                }
-
-                delete pKEATable;
-            }
-        }
-        catch(const kealib::KEAException &e)
-        {
-            CPLError( CE_Failure, CPLE_AppDefined, "Failed to read attributes: %s", e.what() );
-            delete this->m_pAttributeTable;
-            this->m_pAttributeTable = nullptr;
-        }
-    }
-    return this->m_pAttributeTable;
-}
-#endif // HAVE_RFC40
-
-#ifdef HAVE_RFC40
 CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
 {
     if( poRAT == nullptr )
@@ -1077,154 +896,7 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
     }
     return CE_None;
 }
-#else
-CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
-{
-    if( poRAT == nullptr )
-        return CE_Failure;
 
-    CPLMutexHolderD( &m_hMutex );
-    try
-    {
-        // we assume this is never nullptr - creates a new one if none exists
-        kealib::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(kealib::kea_att_mem, this->nBand);
-
-        // add rows to the table if needed
-        if( pKEATable->getSize() < (size_t)poRAT->GetRowCount() )
-        {
-            pKEATable->addRows( poRAT->GetRowCount() - pKEATable->getSize() );
-        }
-
-        // mapping between GDAL column indices and kealib::KEAATTField
-        std::map<int, kealib::KEAATTField> mapGDALtoKEA;
-
-        for( int nGDALColumnIndex = 0; nGDALColumnIndex < poRAT->GetColumnCount(); nGDALColumnIndex++ )
-        {
-            const char *pszColumnName = poRAT->GetNameOfCol(nGDALColumnIndex);
-            bool bExists = true;
-            kealib::KEAATTField sKEAField;
-            try
-            {
-                sKEAField = pKEATable->getField(pszColumnName);
-                // if this works we assume same usage, type etc
-            }
-            catch(const kealib::KEAATTException &e)
-            {
-                // doesn't exist on file - create it
-                bExists = false;
-            }
-
-            if( ! bExists )
-            {
-                std::string strUsage = "Generic";
-                GDALRATFieldType eType = poRAT->GetTypeOfCol(nGDALColumnIndex); // may need to update
-                switch(poRAT->GetUsageOfCol(nGDALColumnIndex))
-                {
-                    case GFU_PixelCount:
-                        strUsage = "PixelCount";
-                        eType = GFT_Real;
-                        break;
-                    case GFU_Name:
-                        strUsage = "Name";
-                        eType = GFT_String;
-                        break;
-                    case GFU_Red:
-                        strUsage = "Red";
-                        eType = GFT_Integer;
-                        break;
-                    case GFU_Green:
-                        strUsage = "Green";
-                        eType = GFT_Integer;
-                        break;
-                    case GFU_Blue:
-                        strUsage = "Blue";
-                        eType = GFT_Integer;
-                        break;
-                    case GFU_Alpha:
-                        strUsage = "Alpha";
-                        eType = GFT_Integer;
-                        break;
-                    default:
-                        // leave as "Generic"
-                        break;
-                }
-
-                if(eType == GFT_Integer)
-                {
-                    pKEATable->addAttIntField(pszColumnName, 0, strUsage);
-                }
-                else if(eType == GFT_Real)
-                {
-                    pKEATable->addAttFloatField(pszColumnName, 0, strUsage);
-                }
-                else
-                {
-                    pKEATable->addAttStringField(pszColumnName, "", strUsage);
-                }
-
-                // assume we can just grab this now
-                sKEAField = pKEATable->getField(pszColumnName);
-            }
-            // insert into map
-            mapGDALtoKEA[nGDALColumnIndex] = sKEAField;
-        }
-
-        // go through each row to be added
-        for( int nRowIndex = 0; nRowIndex < poRAT->GetRowCount(); nRowIndex++ )
-        {
-            // get the feature - don't need to set this back since it is a pointer to 
-            // internal datastruct
-            kealib::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
-
-            // iterate through the map
-            for( auto itr = mapGDALtoKEA.begin(); itr != mapGDALtoKEA.end(); itr++ )
-            {
-                // get the KEA field from the map
-                int nGDALColIndex = (*itr).first;
-                kealib::KEAATTField sKEAField = (*itr).second;
-
-                if( sKEAField.dataType == kealib::kea_att_bool )
-                {
-                    // write it as a bool even tho GDAL stores as int
-                    bool bVal = poRAT->GetValueAsInt(nRowIndex, nGDALColIndex) != 0;
-                    pKEAFeature->boolFields->at(sKEAField.idx) = bVal;
-                }
-                else if( sKEAField.dataType == kealib::kea_att_int )
-                {
-                    int nVal = poRAT->GetValueAsInt(nRowIndex, nGDALColIndex);
-                    pKEAFeature->intFields->at(sKEAField.idx) = nVal;
-                }
-                else if( sKEAField.dataType == kealib::kea_att_float )
-                {
-                    double dVal = poRAT->GetValueAsDouble(nRowIndex, nGDALColIndex);
-                    pKEAFeature->floatFields->at(sKEAField.idx) = dVal;
-                }
-                else
-                {
-                    const char *pszValue = poRAT->GetValueAsString(nRowIndex, nGDALColIndex);
-                    pKEAFeature->strFields->at(sKEAField.idx) = pszValue;
-                }
-            }
-        }
-
-        this->m_pImageIO->setAttributeTable(pKEATable, this->nBand);
-        delete pKEATable;
-
-        // our cached attribute table object is now out of date
-        // delete it and next call to GetDefaultRAT() will re-read it
-        delete this->m_pAttributeTable;
-        this->m_pAttributeTable = nullptr;
-    }
-    catch(const kealib::KEAException &e)
-    {
-        CPLError( CE_Failure, CPLE_AppDefined, "Failed to write attributes: %s", e.what() );
-        return CE_Failure;
-    }
-    return CE_None;
-}
-#endif // HAVE_RFC40
-
-#ifdef HAVE_RFC40
 GDALColorTable *KEARasterBand::GetColorTable()
 {
     CPLMutexHolderD( &m_hMutex );
@@ -1283,99 +955,7 @@ GDALColorTable *KEARasterBand::GetColorTable()
     }
     return this->m_pColorTable;
 }
-#else
 
-GDALColorTable *KEARasterBand::GetColorTable()
-{
-    CPLMutexHolderD( &m_hMutex );
-    if( this->m_pColorTable == nullptr )
-    {
-        try
-        {
-            // see if there is a suitable attribute table with color columns
-            if( this->m_pImageIO->attributeTablePresent(this->nBand) )
-            {
-                // we assume this is never nullptr - creates a new one if none exists
-                kealib::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(kealib::kea_att_mem, this->nBand);
-    
-                // create a mapping between color entry number and the field info
-                std::vector<kealib::KEAATTField> vecKEAField(4);
-                for( size_t nColumnIndex = 0; nColumnIndex < pKEATable->getMaxGlobalColIdx(); nColumnIndex++ )
-                {
-                    kealib::KEAATTField sKEAField;
-                    try
-                    {
-                        sKEAField = pKEATable->getField(nColumnIndex);
-                    }
-                    catch(const kealib::KEAATTException &e)
-                    {
-                        // pKEATable->getField raised exception because we have a missing column
-                        continue;
-                    }
-
-                    // color tables are only int as far as I am aware
-                    if( sKEAField.dataType == kealib::kea_att_int )
-                    {
-                        // check the 'usage' column
-                        // we don't check the name also (maybe we should?)
-                        // store in the right place in our vector
-                        if( sKEAField.usage == "Red" )
-                            vecKEAField[0] = sKEAField;
-                        if( sKEAField.usage == "Green" )
-                            vecKEAField[1] = sKEAField;
-                        if( sKEAField.usage == "Blue" )
-                            vecKEAField[2] = sKEAField;
-                        if( sKEAField.usage == "Alpha" )
-                            vecKEAField[3] = sKEAField;
-                    }
-
-                }
-
-                // check that we did get a valid field for each color
-                // the usage field will still be empty if not set above
-                bool bHaveCT = true;
-                for( auto itr = vecKEAField.begin(); (itr != vecKEAField.end()) && bHaveCT; itr++ )
-                {
-                    if( (*itr).usage.empty() )
-                        bHaveCT = false;
-                }
-
-                if( bHaveCT )
-                {
-                    // we need to create one - only do RGB palettes
-                    this->m_pColorTable = new GDALColorTable(GPI_RGB);
-
-                    // OK go through each row and fill in the fields
-                    for( size_t nRowIndex = 0; nRowIndex < pKEATable->getSize(); nRowIndex++ )
-                    {
-                        // get the feature
-                        kealib::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
-
-                        GDALColorEntry colorEntry;
-                        colorEntry.c1 = pKEAFeature->intFields->at(vecKEAField[0].idx);
-                        colorEntry.c2 = pKEAFeature->intFields->at(vecKEAField[1].idx);
-                        colorEntry.c3 = pKEAFeature->intFields->at(vecKEAField[2].idx);
-                        colorEntry.c4 = pKEAFeature->intFields->at(vecKEAField[3].idx);
-
-                        this->m_pColorTable->SetColorEntry(nRowIndex, &colorEntry);
-                    }
-                }
-
-                delete pKEATable;
-            }
-        }
-        catch(const kealib::KEAException &e)
-        {
-            CPLError( CE_Failure, CPLE_AppDefined, "Failed to read color table: %s", e.what() );
-            delete this->m_pColorTable;
-            this->m_pColorTable = nullptr;
-        }
-    }
-    return this->m_pColorTable;
-}
-#endif // HAVE_RFC40
-
-#ifdef HAVE_RFC40
 CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
 {
     if( poCT == nullptr )
@@ -1475,115 +1055,6 @@ CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
     return CE_None;
 }
 
-#else
-
-CPLErr KEARasterBand::SetColorTable(GDALColorTable *poCT)
-{
-    if( poCT == nullptr )
-        return CE_Failure;
-
-    CPLMutexHolderD( &m_hMutex );
-    try
-    {
-        // we assume this is never nullptr - creates a new one if none exists
-        kealib::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(kealib::kea_att_mem, this->nBand);
-
-        // add rows to the table if needed
-        if( pKEATable->getSize() < (size_t)poCT->GetColorEntryCount() )
-        {
-            pKEATable->addRows( poCT->GetColorEntryCount() - pKEATable->getSize() );
-        }
-
-        // create a mapping between color entry number and the field info
-        std::vector<kealib::KEAATTField> vecKEAField(4);
-        for( size_t nColumnIndex = 0; nColumnIndex < pKEATable->getMaxGlobalColIdx(); nColumnIndex++ )
-        {
-            kealib::KEAATTField sKEAField;
-            try
-            {
-                sKEAField = pKEATable->getField(nColumnIndex);
-            }
-            catch(const kealib::KEAATTException &e)
-            {
-                // pKEATable->getField raised exception because we have a missing column
-                continue;
-            }
-
-            // color tables are only int as far as I am aware
-            if( sKEAField.dataType == kealib::kea_att_int )
-            {
-                // check the 'usage' column
-                // we don't check the name also (maybe we should?)
-                // store in the right place in our vector
-                if( sKEAField.usage == "Red" )
-                    vecKEAField[0] = sKEAField;
-                else if( sKEAField.usage == "Green" )
-                    vecKEAField[1] = sKEAField;
-                else if( sKEAField.usage == "Blue" )
-                    vecKEAField[2] = sKEAField;
-                else if( sKEAField.usage == "Alpha" )
-                    vecKEAField[3] = sKEAField;
-            }
-        }
-
-        // create any missing fields
-        if( vecKEAField[0].usage.empty() )
-        {
-            pKEATable->addAttIntField("Red", 0, "Red");
-            vecKEAField[0] = pKEATable->getField("Red");
-        }
-        if( vecKEAField[1].usage.empty() )
-        {
-            pKEATable->addAttIntField("Green", 0, "Green");
-            vecKEAField[1] = pKEATable->getField("Green");
-        }
-        if( vecKEAField[2].usage.empty() )
-        {
-            pKEATable->addAttIntField("Blue", 0, "Blue");
-            vecKEAField[2] = pKEATable->getField("Blue");
-        }
-        if( vecKEAField[3].usage.empty() )
-        {
-            pKEATable->addAttIntField("Alpha", 0, "Alpha");
-            vecKEAField[3] = pKEATable->getField("Alpha");
-        }
-
-        // go through each row to be added
-        for( int nRowIndex = 0; nRowIndex < poCT->GetColorEntryCount(); nRowIndex++ )
-        {
-            // get the feature - don't need to set this back since it is a pointer to 
-            // internal datastruct
-            kealib::KEAATTFeature *pKEAFeature = pKEATable->getFeature(nRowIndex);
-
-            // get the GDAL entry - as RGB to be sure
-            GDALColorEntry colorEntry;
-            if( poCT->GetColorEntryAsRGB(nRowIndex, &colorEntry) )
-            {
-                // set the value
-                pKEAFeature->intFields->at(vecKEAField[0].idx) = colorEntry.c1;
-                pKEAFeature->intFields->at(vecKEAField[1].idx) = colorEntry.c2;
-                pKEAFeature->intFields->at(vecKEAField[2].idx) = colorEntry.c3;
-                pKEAFeature->intFields->at(vecKEAField[3].idx) = colorEntry.c4;
-            }
-        }
-
-        this->m_pImageIO->setAttributeTable(pKEATable, this->nBand);
-        delete pKEATable;
-
-        // replace our color table with the one passed in
-        // unlike attributes there are no extra fields present in the file etc
-        // so should be safe to do this
-        delete this->m_pColorTable;
-        this->m_pColorTable = poCT->Clone();
-    }
-    catch(const kealib::KEAException &e)
-    {
-        CPLError( CE_Failure, CPLE_AppDefined, "Failed to write color table: %s", e.what() );
-        return CE_Failure;
-    }
-    return CE_None;
-}
-#endif // HAVE_RFC40
 
 GDALColorInterp KEARasterBand::GetColorInterpretation()
 {
@@ -1813,11 +1284,7 @@ GDALRasterBand* KEARasterBand::GetMaskBand()
             {
                 // use the base class implementation - GDAL will delete
                 //fprintf( stderr, "returning base GetMaskBand()\n" );
-#ifdef HAVE_RFC40                
                 m_pMaskBand = GDALPamRasterBand::GetMaskBand();
-#else
-                m_pMaskBand = nullptr;
-#endif
             }
         }
         catch(const kealib::KEAException &e)
@@ -1837,11 +1304,7 @@ int KEARasterBand::GetMaskFlags()
             // need to return the base class one since we are using
             // the base class implementation of GetMaskBand()
             //fprintf( stderr, "returning base GetMaskFlags()\n" );
-#ifdef HAVE_RFC40            
             return GDALPamRasterBand::GetMaskFlags();
-#else
-            return 0;
-#endif
         }
     }
     catch(const kealib::KEAException &e)

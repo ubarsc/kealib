@@ -7,60 +7,6 @@ set INSTALLDIR=c:\dev\arckea
 :: GDALDIR is where arcgdalforcompilation_XXX.zip (from the gitbub downloads) as been unzipped to
 SET GDALDIR=C:\dev\arcgdalforcompilation
 
-:: Visual Studio 2013 x86 and x64
-SetLocal
-set VCYEAR=VC2013
-set VCMACH=x86
-call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" %VCMACH%
-@echo on
-call :build
-EndLocal
-
-SetLocal
-set VCYEAR=VC2013
-set VCMACH=x64
-:: Note VS2013 doesn't understand 'x64'...
-call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64
-@echo on
-call :build
-EndLocal
-
-:: Visual Studio 2017 for ArcPro 2.1 and ArcGIS 10.6
-SetLocal
-set VCYEAR=VC2017
-set VCMACH=x86
-call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
-@echo on
-call :build
-EndLocal
-
-SetLocal
-set VCYEAR=VC2017
-set VCMACH=x64
-call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" -vcvars_ver=14.12 %VCMACH%
-@echo on
-call :build
-EndLocal
-
-:: Visual Studio 2019 for ArcPro >= 2.5, ArcGIS 10.8
-SetLocal
-set VCYEAR=VC2019
-set VCMACH=x86
-call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
-@echo on
-set HDF5DIR=%HDF5DIR_LATEST%
-call :build
-EndLocal
-
-SetLocal
-set VCYEAR=VC2019
-set VCMACH=x64
-call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %VCMACH%
-@echo on
-set HDF5DIR=%HDF5DIR_LATEST%
-call :build
-EndLocal
-
 :: Visual Studio 2022 for Arc Pro 3.0 and ArcGIS 11
 SetLocal
 set VCYEAR=VC2022

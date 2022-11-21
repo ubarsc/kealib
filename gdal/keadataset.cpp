@@ -27,8 +27,8 @@
  *
  */
 
-#include "keadataset.h"
 #include "keaband.h"
+#include "keadataset.h"
 #include "keacopy.h"
 
 #include "libkea/KEACommon.h"
@@ -194,11 +194,6 @@ int KEADataset::Identify( GDALOpenInfo * poOpenInfo )
     else
         return 0;
 }
-
-#ifndef HAVE_RFC40
-    // added about the same time
-    #define GDALValidateCreationOptions(a, b) TRUE
-#endif
 
 // static function- pointer set in driver
 GDALDataset *KEADataset::Create( const char * pszFilename,
@@ -476,7 +471,6 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File, GDALAccess eAccess )
 
         // nullptr until we read them in 
         m_pGCPs = nullptr;
-        m_pszGCPProjection = nullptr;
     }
     catch (const kealib::KEAIOException &e)
     {
@@ -493,7 +487,6 @@ KEADataset::~KEADataset()
         // destroy the metadata
         CSLDestroy(m_papszMetadataList);
         this->DestroyGCPs();
-        free( m_pszGCPProjection );
     }
     // decrement the refcount and delete if needed
     if( m_pRefcount->DecRef() )
@@ -550,18 +543,17 @@ CPLErr KEADataset::GetGeoTransform( double * padfTransform )
     }
 }
 
-// read in the projection ref
-#ifdef HAVE_SPATIALREF
-const char *KEADataset::_GetProjectionRef()
-#else
-const char *KEADataset::GetProjectionRef()
-#endif
+const OGRSpatialReference* KEADataset::GetSpatialRef() const
 {
+    if( !m_oSRS.IsEmpty() )
+        return &m_oSRS;
+
     try
     {
         kealib::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
-        // should be safe since pSpatialInfo should be around a while...
-        return pSpatialInfo->wktString.c_str();
+        m_oSRS.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER);
+        m_oSRS.importFromWkt(pSpatialInfo->wktString.c_str());
+        return m_oSRS.IsEmpty() ? nullptr: &m_oSRS;
     }
     catch (const kealib::KEAIOException &e)
     {
@@ -596,18 +588,25 @@ CPLErr KEADataset::SetGeoTransform (double *padfTransform )
 }
 
 // set the projection
-#ifdef HAVE_SPATIALREF
-CPLErr KEADataset::_SetProjection( const char *pszWKT )
-#else
-CPLErr KEADataset::SetProjection( const char *pszWKT )
-#endif
+CPLErr KEADataset::SetSpatialRef(const OGRSpatialReference* poSRS)
 {
     try
     {
         // get the spatial info and update it
         kealib::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
-
-        pSpatialInfo->wktString = pszWKT;
+        m_oSRS.Clear();
+        if( poSRS )
+        {
+            m_oSRS = *poSRS;
+            char* pszWKT = nullptr;
+            m_oSRS.exportToWkt(&pszWKT);
+            pSpatialInfo->wktString = pszWKT ? pszWKT: "";
+            CPLFree(pszWKT);
+        }
+        else
+        {
+            pSpatialInfo->wktString.clear();
+        }
 
         m_pImageIO->setSpatialInfo( pSpatialInfo );
         return CE_None;
@@ -628,9 +627,15 @@ void * KEADataset::GetInternalHandle(const char *)
 
 // this is called by GDALDataset::BuildOverviews. we implement this function to support
 // building of overviews
+#ifdef HAVE_OVERVIEWOPTIONS
+CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, const int *panOverviewList, 
+                                    int nListBands, const int *panBandList, GDALProgressFunc pfnProgress, 
+                                    void *pProgressData, CSLConstList papszOptions)
+#else
 CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, int *panOverviewList, 
                                     int nListBands, int *panBandList, GDALProgressFunc pfnProgress, 
                                     void *pProgressData)
+#endif
 {
     // go through the list of bands that have been passed in
     int nCurrentBand, nOK = 1;
@@ -645,10 +650,10 @@ CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, in
 
         // get GDAL to do the hard work. It will calculate the overviews and write them
         // back into the objects
-#if (GDAL_VERSION_MAJOR == 1) && (GDAL_VERSION_MINOR < 6)
-        if( GDALRegenerateOverviews( pBand, nOverviews, (GDALRasterBand**)pBand->GetOverviewList(),
-                                    pszResampling, pfnProgress, pProgressData ) != CE_None )
-#else         
+#ifdef HAVE_OVERVIEWOPTIONS
+        if( GDALRegenerateOverviewsEx( (GDALRasterBandH)pBand, nOverviews, (GDALRasterBandH*)pBand->GetOverviewList(),
+                                    pszResampling, pfnProgress, pProgressData, papszOptions) != CE_None )
+#else
         if( GDALRegenerateOverviews( (GDALRasterBandH)pBand, nOverviews, (GDALRasterBandH*)pBand->GetOverviewList(),
                                     pszResampling, pfnProgress, pProgressData ) != CE_None )
 #endif
@@ -784,7 +789,6 @@ CPLErr KEADataset::AddBand(GDALDataType eType, char **papszOptions)
     return CE_None;
 }
 
-#ifdef OGRERR_NONE
 OGRErr KEADataset::DeleteLayer(int iLayer)
 {
     try
@@ -799,7 +803,6 @@ OGRErr KEADataset::DeleteLayer(int iLayer)
     }
     return OGRERR_NONE;
 }
-#endif
 
 int KEADataset::GetGCPCount()
 {
@@ -814,26 +817,25 @@ int KEADataset::GetGCPCount()
 
 }
 
-#ifdef HAVE_SPATIALREF
-const char* KEADataset::_GetGCPProjection()
-#else
-const char* KEADataset::GetGCPProjection()
-#endif
+const OGRSpatialReference* KEADataset::GetGCPSpatialRef() const
 {
     CPLMutexHolderD( &m_hMutex );
-    if( m_pszGCPProjection == nullptr )
+    if( m_oGCPSRS.IsEmpty() )
     {
         try
         {
             std::string sProj = m_pImageIO->getGCPProjection();
-            m_pszGCPProjection = strdup( sProj.c_str() );
+            m_oGCPSRS.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER);
+            m_oGCPSRS.Clear();
+            if( !sProj.empty() )
+                m_oGCPSRS.importFromWkt( sProj.c_str() );
         }
         catch (const kealib::KEAIOException &e) 
         {
             return nullptr;
         }
     }
-    return m_pszGCPProjection;
+    return m_oGCPSRS.IsEmpty() ? nullptr : &m_oGCPSRS;
 }
 
 const GDAL_GCP* KEADataset::GetGCPs()
@@ -869,16 +871,11 @@ const GDAL_GCP* KEADataset::GetGCPs()
     return m_pGCPs;
 }
 
-#ifdef HAVE_SPATIALREF
-CPLErr KEADataset::_SetGCPs(int nGCPCount, const GDAL_GCP *pasGCPList, const char *pszGCPProjection)
-#else
-CPLErr KEADataset::SetGCPs(int nGCPCount, const GDAL_GCP *pasGCPList, const char *pszGCPProjection)
-#endif
+CPLErr KEADataset::SetGCPs(int nGCPCount, const GDAL_GCP *pasGCPList, const OGRSpatialReference* poSRS)
 {
     CPLMutexHolderD( &m_hMutex );
     this->DestroyGCPs();
-    free( m_pszGCPProjection );
-    m_pszGCPProjection = nullptr;
+    m_oGCPSRS.Clear();
     CPLErr result = CE_None;
 
     std::vector<kealib::KEAImageGCP*> *pKEAGCPs = new std::vector<kealib::KEAImageGCP*>(nGCPCount);
@@ -897,7 +894,18 @@ CPLErr KEADataset::SetGCPs(int nGCPCount, const GDAL_GCP *pasGCPList, const char
     }
     try
     {
-        m_pImageIO->setGCPs(pKEAGCPs, pszGCPProjection);
+        char* pszGCPProjection = nullptr;
+        if( poSRS )
+        {
+            m_oGCPSRS = *poSRS;
+            poSRS->exportToWkt(&pszGCPProjection);
+            m_pImageIO->setGCPs(pKEAGCPs, pszGCPProjection ? pszGCPProjection : "");
+            CPLFree(pszGCPProjection);
+        }
+        else
+        {
+            m_pImageIO->setGCPs(pKEAGCPs, "");
+        }
     }
     catch (const kealib::KEAIOException &e) 
     {

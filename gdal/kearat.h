@@ -32,9 +32,7 @@
 
 #include "gdal_priv.h"
 #include "gdal_rat.h"
-#include "keaband.h" // to get HAVE_RFC40
-
-#ifdef HAVE_RFC40
+#include "keaband.h"
 
 class KEARasterAttributeTable : public GDALRasterAttributeTable
 {
@@ -87,14 +85,9 @@ public:
 
     virtual CPLXMLNode   *Serialize() const;
 
-    // see https://github.com/OSGeo/gdal/pull/743
-#if (GDAL_VERSION_MAJOR >= 3) || ((GDAL_VERSION_MAJOR == 2) && (GDAL_VERSION_MINOR >= 4))
     virtual CPLErr        SetTableType(const GDALRATTableType eInTableType);
     virtual GDALRATTableType GetTableType() const;
     virtual void          RemoveStatistics();
-#endif
 };
-
-#endif //HAVE_RFC40
 
 #endif //KEARAT_H

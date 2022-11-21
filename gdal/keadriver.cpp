@@ -27,7 +27,6 @@
  *
  */
 
-#include "keadataset.h"
 #include "keaband.h" // for HAVE_64BITIMAGES
 
 CPL_C_START
@@ -39,10 +38,8 @@ void GDALRegister_KEA()
 {
     GDALDriver  *poDriver;
 
-#ifdef GDAL_CHECK_VERSION
     if (! GDAL_CHECK_VERSION("KEA"))
         return;
-#endif
 
     if( GDALGetDriverByName( "KEA" ) == nullptr )
     {
@@ -74,10 +71,8 @@ void GDALRegister_KEA()
 
         // pointer to open function
         poDriver->pfnOpen = KEADataset::Open;
-#ifdef GDAL_CHECK_VERSION
-        // pointer to identify function - seems to be added about the same time as GDAL_CHECK_VERSION
+        // pointer to identify function
         poDriver->pfnIdentify = KEADataset::Identify;
-#endif
         // pointer to create function
         poDriver->pfnCreate = KEADataset::Create;
         // pointer to create copy function

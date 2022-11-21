@@ -33,7 +33,6 @@
 #include "libkea/KEAImageIO.h"
 #include "libkea/KEAAttributeTable.h"
 #include "libkea/KEAAttributeTableInMem.h"
-#include "keaband.h" // for HAVE_RFC40
 
 // Support functions for CreateCopy()
 
@@ -125,20 +124,7 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
         // some operations depend on whether the input dataset is HFA
         int bInputHFA = EQUAL(pBand->GetDataset()->GetDriver()->GetDescription(), "HFA");
 
-#ifdef HAVE_RFC40
         kealib::KEAAttributeTable *keaAtt = pImageIO->getAttributeTable(kealib::kea_att_file, nBand);
-#else
-        kealib::KEAAttributeTable *keaAtt = new kealib::KEAAttributeTableInMem();
-        
-        bool redDef = false;
-        int redIdx = -1;
-        bool greenDef = false;
-        int greenIdx = -1;
-        bool blueDef = false;
-        int blueIdx = -1;
-        bool alphaDef = false;
-        int alphaIdx = -1;
-#endif
         
         int numCols = gdalAtt->GetColumnCount();
         std::vector<kealib::KEAATTField*> *fields = new std::vector<kealib::KEAATTField*>();
@@ -175,10 +161,6 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
                 field->name = "Alpha";
                 field->usage = "Alpha";
                 field->dataType = kealib::kea_att_int;
-#ifndef HAVE_RFC40
-                alphaDef = true;
-                alphaIdx = ni;
-#endif                
             }
             else
             {
@@ -196,10 +178,6 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
                         if( bInputHFA )
                         {
                             field->dataType = kealib::kea_att_int;
-#ifndef HAVE_RFC40
-                            redDef = true;
-                            redIdx = ni;
-#endif
                         }
                         break;
                     case GFU_Green:
@@ -207,10 +185,6 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
                         if( bInputHFA )
                         {
                             field->dataType = kealib::kea_att_int;
-#ifndef HAVE_RFC40
-                            greenDef = true;
-                            greenIdx = ni;
-#endif
                         }
                         break;
                     case GFU_Blue:
@@ -218,10 +192,6 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
                         if( bInputHFA )
                         {
                             field->dataType = kealib::kea_att_int;
-#ifndef HAVE_RFC40
-                            blueDef = true;
-                            blueIdx = ni;
-#endif
                         }
                         break;
                     case GFU_Alpha:
@@ -242,7 +212,6 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
         keaAtt->addRows(numRows);
         
 
-#ifdef HAVE_RFC40
 // We assume that if RFC40 present that #5362 (ensures HFA reads colours as 0-255 rather that 0-1 which 
 // was the old behaviour) has been applied which I think is reasonable since it was done between 
 // GDAL 1.10.1 and 1.11.0 (as was RFC40) and it is hard to test for this specifically
@@ -304,54 +273,6 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
         delete[] pnIntBuffer;
         delete[] pnInt64Buffer;
         delete[] pfDoubleBuffer;
-#else
-        kealib::KEAATTFeature *keaFeat = nullptr;
-        for(int ni = 0; ni < numRows; ++ni)
-        {
-            keaFeat = keaAtt->getFeature(ni);
-            for(int nj = 0; nj < numCols; ++nj)
-            {
-                field = fields->at(nj);
-                
-                if(redDef && (redIdx == nj))
-                {
-                    keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(ni, nj)*255);
-                }
-                else if(greenDef && (greenIdx == nj))
-                {
-                    keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(ni, nj)*255);
-                }
-                else if(blueDef && (blueIdx == nj))
-                {
-                    keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(ni, nj)*255);
-                }
-                else if(alphaDef && (alphaIdx == nj))
-                {
-                    keaFeat->intFields->at(field->idx) = (int)(gdalAtt->GetValueAsDouble(ni, nj)*255);
-                }
-                else
-                {
-                    switch(field->dataType)
-                    {
-                        case kealib::kea_att_int:
-                            keaFeat->intFields->at(field->idx) = gdalAtt->GetValueAsInt(ni, nj);
-                            break;
-                        case kealib::kea_att_float:
-                            keaFeat->floatFields->at(field->idx) = gdalAtt->GetValueAsDouble(ni, nj);
-                            break;
-                        case kealib::kea_att_string:
-                            keaFeat->strFields->at(field->idx) = std::string(gdalAtt->GetValueAsString(ni, nj));
-                            break;
-                        default:
-                            // Ignore as data type is not known or available from a HFA/GDAL RAT."
-                            break;
-                    }
-                }
-            }
-        }
-        
-        pImageIO->setAttributeTable(keaAtt, nBand);
-#endif        
 
         delete keaAtt;
         for(auto iterField = fields->begin(); iterField != fields->end(); ++iterField)

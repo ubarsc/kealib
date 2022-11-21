@@ -32,6 +32,7 @@
 
 #include "gdal_priv.h"
 #include "libkea/KEAImageIO.h"
+#include "keaband.h"
 #include "keadataset.h"
 
 class KEAMaskBand : public GDALRasterBand

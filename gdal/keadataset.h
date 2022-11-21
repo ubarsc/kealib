@@ -34,19 +34,7 @@
 #include "cpl_multiproc.h"
 #include "libkea/KEAImageIO.h"
 
-#if (GDAL_VERSION_MAJOR >= 3)
-    #define HAVE_SPATIALREF
-    #pragma message ("defining HAVE_SPATIALREF")
-#else
-    #pragma message ("HAVE_SPATIALREF not present")
-#endif
-
 class LockedRefCount;
-
-// old versions of GDAL
-#ifndef CPLMutex
-    #define CPLMutex void
-#endif
 
 // class that implements a GDAL dataset
 class KEADataset : public GDALPamDataset
@@ -70,37 +58,10 @@ public:
 
     // virtual methods for dealing with transform and projection
     CPLErr      GetGeoTransform( double * padfTransform );
-    
-#ifdef HAVE_SPATIALREF
-    const char* _GetProjectionRef() override;
-    const OGRSpatialReference* GetSpatialRef() const override {
-        return GetSpatialRefFromOldGetProjectionRef();
-    }
-    
-    CPLErr _SetProjection( const char *pszWKT ) override;
-    CPLErr SetSpatialRef(const OGRSpatialReference* poSRS) override {
-        return OldSetProjectionFromSetSpatialRef(poSRS);
-    } 
-
-    const char* _GetGCPProjection() override;
-    const OGRSpatialReference* GetGCPSpatialRef() const override {
-        return GetGCPSpatialRefFromOldGetGCPProjection();
-    }
-
-    CPLErr _SetGCPs( int nGCPCount, const GDAL_GCP *pasGCPList,
-                    const char *pszGCPProjection ) override;
-    CPLErr SetGCPs( int nGCPCountIn, const GDAL_GCP *pasGCPListIn,
-                    const OGRSpatialReference* poSRS ) override {
-        return OldSetGCPsFromNew(nGCPCountIn, pasGCPListIn, poSRS);
-    }
-#else
-    const char *GetProjectionRef();
-    CPLErr SetProjection( const char *pszWKT );
-    const char* GetGCPProjection();
-    CPLErr SetGCPs(int nGCPCount, const GDAL_GCP *pasGCPList, const char *pszGCPProjection);
-#endif
-
     CPLErr  SetGeoTransform (double *padfTransform );
+
+    const OGRSpatialReference* GetSpatialRef() const override;
+    CPLErr SetSpatialRef(const OGRSpatialReference* poSRS) override;
 
     // method to get a pointer to the imageio class
     void *GetInternalHandle (const char *);
@@ -115,19 +76,26 @@ public:
     // virtual method for adding new image bands
     CPLErr AddBand(GDALDataType eType, char **papszOptions = NULL);
     // removing image bands (only after GDAL 2.0)
-#ifdef OGRERR_NONE
     OGRErr DeleteLayer(int iLayer);
-#endif
 
     // GCPs
     int GetGCPCount();
     const GDAL_GCP* GetGCPs();
+    const OGRSpatialReference* GetGCPSpatialRef() const override;
+    CPLErr SetGCPs( int nGCPCount, const GDAL_GCP *pasGCPList,
+            const OGRSpatialReference* poSRS ) override;
 
 protected:
     // this method builds overviews for the specified bands. 
+#ifdef HAVE_OVERVIEWOPTIONS
+    virtual CPLErr IBuildOverviews(const char *pszResampling, int nOverviews, const int *panOverviewList, 
+                                    int nListBands, const int *panBandList, GDALProgressFunc pfnProgress, 
+                                    void *pProgressData, CSLConstList papszOptions) override;
+#else
     virtual CPLErr IBuildOverviews(const char *pszResampling, int nOverviews, int *panOverviewList, 
                                     int nListBands, int *panBandList, GDALProgressFunc pfnProgress, 
-                                    void *pProgressData);
+                                    void *pProgressData) override;
+#endif
 
     // internal method to update m_papszMetadataList
     void UpdateMetadataList();
@@ -140,8 +108,9 @@ private:
     LockedRefCount      *m_pRefcount;
     char               **m_papszMetadataList; // CSLStringList for metadata
     GDAL_GCP            *m_pGCPs;
-    char                *m_pszGCPProjection;
-    CPLMutex            *m_hMutex;
+    mutable OGRSpatialReference  m_oGCPSRS{};
+    mutable CPLMutex            *m_hMutex;
+    mutable OGRSpatialReference  m_oSRS{};
 };
 
 // conversion functions
@@ -156,9 +125,7 @@ private:
     int m_nRefCount;
     CPLMutex *m_hMutex;
 
-#ifdef CPL_DISALLOW_COPY_ASSIGN  
     CPL_DISALLOW_COPY_ASSIGN(LockedRefCount)
-#endif
     
 public:
     LockedRefCount(int initCount=1)
