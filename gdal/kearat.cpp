@@ -29,7 +29,6 @@
 
 #include "kearat.h"
 
-#ifdef HAVE_RFC40
 
 KEARasterAttributeTable::KEARasterAttributeTable(kealib::KEAAttributeTable *poKEATable, 
                         KEARasterBand *poBand)
@@ -978,9 +977,6 @@ CPLXMLNode *KEARasterAttributeTable::Serialize() const
     return GDALRasterAttributeTable::Serialize();
 }
 
-// see https://github.com/OSGeo/gdal/pull/743
-#if (GDAL_VERSION_MAJOR >= 3) || ((GDAL_VERSION_MAJOR == 2) && (GDAL_VERSION_MINOR >= 4))
-
 CPLErr KEARasterAttributeTable::SetTableType(const GDALRATTableType eInTableType)
 {
     kealib::KEALayerType keaType = (eInTableType == GRTT_ATHEMATIC) ? kealib::kea_continuous : kealib::kea_thematic;
@@ -1013,6 +1009,3 @@ void KEARasterAttributeTable::RemoveStatistics()
     // KEA doesn't support deleting columns...
 }
 
-#endif // https://github.com/OSGeo/gdal/pull/743
-
-#endif //HAVE_RFC40
