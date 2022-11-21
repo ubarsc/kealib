@@ -27,8 +27,8 @@
  *
  */
 
-#include "keadataset.h"
 #include "keaband.h"
+#include "keadataset.h"
 #include "keacopy.h"
 
 #include "libkea/KEACommon.h"
@@ -627,9 +627,15 @@ void * KEADataset::GetInternalHandle(const char *)
 
 // this is called by GDALDataset::BuildOverviews. we implement this function to support
 // building of overviews
+#ifdef HAVE_OVERVIEWOPTIONS
+CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, const int *panOverviewList, 
+                                    int nListBands, const int *panBandList, GDALProgressFunc pfnProgress, 
+                                    void *pProgressData, CSLConstList papszOptions)
+#else
 CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, int *panOverviewList, 
                                     int nListBands, int *panBandList, GDALProgressFunc pfnProgress, 
                                     void *pProgressData)
+#endif
 {
     // go through the list of bands that have been passed in
     int nCurrentBand, nOK = 1;
@@ -644,8 +650,13 @@ CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, in
 
         // get GDAL to do the hard work. It will calculate the overviews and write them
         // back into the objects
+#ifdef HAVE_OVERVIEWOPTIONS
+        if( GDALRegenerateOverviewsEx( (GDALRasterBandH)pBand, nOverviews, (GDALRasterBandH*)pBand->GetOverviewList(),
+                                    pszResampling, pfnProgress, pProgressData, papszOptions) != CE_None )
+#else
         if( GDALRegenerateOverviews( (GDALRasterBandH)pBand, nOverviews, (GDALRasterBandH*)pBand->GetOverviewList(),
                                     pszResampling, pfnProgress, pProgressData ) != CE_None )
+#endif
         {
             nOK = 0;
         }

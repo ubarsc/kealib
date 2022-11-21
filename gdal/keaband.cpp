@@ -270,7 +270,11 @@ char *KEARasterBand::GetHistogramAsString()
 }
 
 // internal method to create the overviews
+#ifdef HAVE_OVERVIEWOPTIONS
+void KEARasterBand::CreateOverviews(int nOverviews, const int *panOverviewList)
+#else
 void KEARasterBand::CreateOverviews(int nOverviews, int *panOverviewList)
+#endif
 {
     CPLMutexHolderD( &m_hMutex );
     // delete any existing overview bands

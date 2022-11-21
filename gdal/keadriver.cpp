@@ -27,7 +27,6 @@
  *
  */
 
-#include "keadataset.h"
 #include "keaband.h" // for HAVE_64BITIMAGES
 
 CPL_C_START
