@@ -28,6 +28,7 @@
  *
  */
  
+#include <stdlib.h>
 #include <string>
 #include <exception>
 #include <algorithm>
@@ -41,9 +42,26 @@
 #include "awkward/kernels.h"
 #include "awkward/array/NumpyArray.h"
 
-#include "gdal_priv.h"
 #include "libkea/KEAImageIO.h"
 #include "numpy/arrayobject.h"
+
+#ifdef WIN32
+    #include <Windows.h>
+    #define DEFAULT_GDAL "gdal.dll"
+#else
+    #include <dlfcn.h>
+    #ifdef __APPLE__
+        #define DEFAULT_GDAL "libgdal.dylib"
+    #else
+        #define DEFAULT_GDAL "libgdal.so"
+    #endif
+#endif
+
+// GLOBAL function pointers we use
+// set to values in SetFunctionPointers() (called from the init function)
+void* (*pGetDriver)(void*) = nullptr;
+const char * (*pGetDescription)(void*) = nullptr;
+void *(*pGetInternalHandle)(void *, const char*) = nullptr;
 
 // Exception class. Wrapped by Python.
 class PyKeaLibException : public std::exception
@@ -118,21 +136,27 @@ void freeNeighbourLists(std::vector<std::vector<size_t>* > *pNeighbours)
 kealib::KEAImageIO *getImageIOFromDataset(pybind11::object &dataset, int nBand)
 {
     void *pPtr = getUnderlyingPtrFromSWIGPyObject(dataset);
-
-    // cast - and hope!
-    GDALDataset *pDataset = (GDALDataset*)pPtr;
-
-    GDALDriver *pDriver = pDataset->GetDriver();
-    const char *pszName = pDriver->GetDescription();
+    
+    // now do the actual calls with our function pointers (set on import) 
+    void *pDriver = (*pGetDriver)(pPtr);
+    if( !pDriver )
+    {
+        throw PyKeaLibException("GDALGetDatasetDriver returned nullptr");
+    }
+    const char *pszName = (*pGetDescription)(pDriver);
+    if( !pszName )
+    {
+        throw PyKeaLibException("GDALGetDescription returned nullptr");
+    }
     if( (strlen(pszName) != 3) || (pszName[0] != 'K') || (pszName[1] != 'E') || (pszName[2] != 'A'))
     {
         throw PyKeaLibException("This function only works on KEA files");
     }
 
-    kealib::KEAImageIO *pImageIO = (kealib::KEAImageIO*)pDataset->GetInternalHandle(nullptr);
+    kealib::KEAImageIO *pImageIO = (kealib::KEAImageIO*)(*pGetInternalHandle)(pPtr, nullptr);
     if( pImageIO == nullptr )
     {
-        throw PyKeaLibException("GetInternalHandle returned nullptr");
+        throw PyKeaLibException("GDALGetInternalHandle returned nullptr");
     }
 
     return pImageIO;
@@ -570,6 +594,73 @@ void NeighbourAccumulator::addArray(pybind11::array &arr)
     }
 }
 
+// sets global function pointers to GDAL functions we use
+// - looked up at runtime to avoid compile time dependency on GDAL 
+void SetFunctionPointers()
+{
+    char *pszLibName = getenv("KEALIB_LIBGDAL");
+    if( !pszLibName )
+    {
+        pszLibName = DEFAULT_GDAL;
+    }
+    
+#ifdef WIN32
+    HMODULE hModule = LoadLibraryA(pszLibName);
+    if( hModule == NULL )
+    {
+        throw pybind11::import_error("Unable to open " + pszLibName + " set the KEALIB_LIBGDAL env var to override");
+    }
+    
+    pGetDriver = (void* (*)(void*))GetProcAddress(hModule, "GDALGetDatasetDriver");
+    if( !pGetDriver )
+    {
+        throw pybind11::import_error("Unable fo find function GDALGetDatasetDriver");
+    }
+    
+    pGetDescription = (const char*(*)(void*))GetProcAddress(hModule, "GDALGetDescription");
+    if( !pGetDriver )
+    {
+        throw pybind11::import_error("Unable fo find function GDALGetDescription");
+    }
+
+    pGetInternalHandle = (void *(*)(void *, const char*))GetProcAddress(hModule, "GDALGetInternalHandle");
+    if( ! pGetInternalHandle)
+    {
+        throw pybind11::import_error("Unable fo find function GDALGetInternalHandle");
+    }
+
+#else
+    char *error;
+    void *libHandle = dlopen(pszLibName, RTLD_LAZY);
+    if( !libHandle )
+    {
+        throw pybind11::import_error("Unable to open " + pszLibName + " set the KEALIB_LIBGDAL env var to override");
+    }
+    dlerror();  // clear any existing error
+    
+    pGetDriver = (void* (*)(void*)) dlsym(libHandle, "GDALGetDatasetDriver");
+    error = dlerror();
+    if( error != NULL )
+    {
+        throw pybind11::import_error(error);
+    }
+    
+    pGetDescription = (const char*(*)(void*)) dlsym(libHandle, "GDALGetDescription");
+    error = dlerror();
+    if( error != NULL )
+    {
+        throw pybind11::import_error(error);
+    }
+    
+    pGetInternalHandle = (void *(*)(void *, const char*)) dlsym(libHandle, "GDALGetInternalHandle");
+    error = dlerror();
+    if( error != NULL )
+    {
+        throw pybind11::import_error(error);
+    }
+#endif
+}
+
 // Main mondule initialisation
 
 PYBIND11_MODULE(extrat, m) {
@@ -577,6 +668,8 @@ PYBIND11_MODULE(extrat, m) {
     // TODO: currently we need to ensure this is imported in Python
     // otherwise link failures happen...
     pybind11::module::import("awkward");
+    
+    m.doc() = "Module that contains helpers for accessing kealib features not available from GDAL";
 
     m.def("getNeighbours", &getNeighbours,
         "Return all the neighbours for the given dataset and band from startfid "
@@ -617,5 +710,7 @@ PYBIND11_MODULE(extrat, m) {
             pybind11::arg("array"));
 
     pybind11::register_exception<PyKeaLibException>(m, "KeaLibException");
+    
+    SetFunctionPointers();
 }
 

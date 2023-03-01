@@ -35,23 +35,23 @@ execute_process(COMMAND python -m awkward.config --libdir OUTPUT_VARIABLE AWKWAR
 execute_process(COMMAND ${LIBKEA_CONFIG} --includes OUTPUT_VARIABLE KEALIB_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ${LIBKEA_CONFIG} --ldflags OUTPUT_VARIABLE KEALIB_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-find_package(GDAL REQUIRED)
+# No GDAL since we only depend on it at run time
 find_package(Python3 COMPONENTS Interpreter Development NumPy)
 
-message(STATUS "Includes: ${AWKWARD_INCLUDE} ${KEALIB_INCLUDE} ${GDAL_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS}")
-include_directories(BEFORE "${AWKWARD_INCLUDE}" "${KEALIB_INCLUDE}" "${GDAL_INCLUDE_DIRS}" "${Python3_NumPy_INCLUDE_DIRS}")
+message(STATUS "Includes: ${AWKWARD_INCLUDE} ${KEALIB_INCLUDE} ${Python3_NumPy_INCLUDE_DIRS}")
+include_directories(BEFORE "${AWKWARD_INCLUDE}" "${KEALIB_INCLUDE}" "${Python3_NumPy_INCLUDE_DIRS}")
 
 add_subdirectory(pybind11)
 
 find_library(CPU-KERNELS awkward-cpu-kernels REQUIRED HINTS ${AWKWARD_LIBRARIES})
 find_library(LIBAWKWARD awkward REQUIRED HINTS ${AWKWARD_LIBRARIES})
 find_library(LIBKEA ${LIBKEA_NAME} REQUIRED HINTS ${KEALIB_LIBRARIES})
-message(STATUS "Libraries: ${CPU-KERNELS} ${LIBAWKWARD} ${LIBKEA} ${GDAL_LIBRARIES}")
+message(STATUS "Libraries: ${CPU-KERNELS} ${LIBAWKWARD} ${LIBKEA}")
 
 pybind11_add_module(extrat extrat.cpp)
 target_compile_definitions(extrat PRIVATE NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
 set_target_properties(extrat PROPERTIES CXX_VISIBILITY_PRESET hidden)
-target_link_libraries(extrat PRIVATE ${CPU-KERNELS} ${LIBAWKWARD} ${LIBKEA} ${GDAL_LIBRARIES})
+target_link_libraries(extrat PRIVATE ${CPU-KERNELS} ${LIBAWKWARD} ${LIBKEA})
 
 install(FILES kea_build_neighbours.py DESTINATION bin)
 set(PYKEA_INSTALL_DIR "${Python3_SITELIB}/kealib" CACHE PATH "Install Dir for Python Bindings")
