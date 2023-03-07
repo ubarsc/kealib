@@ -37,10 +37,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 
-#include "awkward/builder/ArrayBuilder.h"
-#include "awkward/builder/ArrayBuilderOptions.h"
-#include "awkward/kernels.h"
-#include "awkward/array/NumpyArray.h"
+#include "awkward/LayoutBuilder.h"
 
 #include "libkea/KEAImageIO.h"
 #include "numpy/arrayobject.h"
@@ -56,6 +53,12 @@
         #define DEFAULT_GDAL "libgdal.so"
     #endif
 #endif
+
+template<class PRIMITIVE, class BUILDER>
+using ListOffsetBuilder = awkward::LayoutBuilder::ListOffset<PRIMITIVE, BUILDER>;
+template<class PRIMITIVE>
+using NumpyBuilder = awkward::LayoutBuilder::Numpy<PRIMITIVE>;
+
 
 // GLOBAL function pointers we use
 // set to values in SetFunctionPointers() (called from the init function)
@@ -162,15 +165,56 @@ kealib::KEAImageIO *getImageIOFromDataset(pybind11::object &dataset, int nBand)
     return pImageIO;
 }
 
+template <typename T>
+pybind11::object snapshot_builder(const T& builder)
+{
+    // How much memory to allocate?
+    std::map<std::string, size_t> names_nbytes = {};
+    builder.buffer_nbytes(names_nbytes);
+
+    // Allocate memory
+    std::map<std::string, void*> buffers = {};
+    for(auto it : names_nbytes) {
+        uint8_t* ptr = new uint8_t[it.second];
+        buffers[it.first] = (void*)ptr;
+    }
+
+    // Write non-contiguous contents to memory
+    builder.to_buffers(buffers);
+    auto from_buffers = pybind11::module::import("awkward").attr("from_buffers");
+
+    // Build Python dictionary containing arrays
+    // dtypes not important here as long as they match the underlying buffer
+    // as Awkward Array calls `frombuffer` to convert to the correct type
+    pybind11::dict container;
+    for (auto it: buffers) {
+        
+        pybind11::capsule free_when_done(it.second, [](void *data) {
+            uint8_t* dataPtr = reinterpret_cast<uint8_t*>(data);
+            delete[] dataPtr;
+        });
+
+        uint8_t* data = reinterpret_cast<uint8_t*>(it.second);
+        container[pybind11::str(it.first)] = pybind11::array_t<uint8_t>(
+            {names_nbytes[it.first]},
+            {sizeof(uint8_t)},
+            data,
+            free_when_done
+        );
+    }
+    return from_buffers(builder.form(), builder.length(), container);
+    
+}
+
 // Get the neighbours for the given dataset and band. The
 // neighbours are returned as an awkward array. The reading
 // of neighbours starts at the startfid row in the RAT and
 // stops after 'length' rows.
-awkward::ContentPtr getNeighbours(pybind11::object &dataset, int nBand, int &startfid, int &length)
+pybind11::object getNeighbours(pybind11::object &dataset, int nBand, int &startfid, int &length)
 {
     kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset, nBand);
     
-    awkward::ArrayBuilder builder(awkward::ArrayBuilderOptions(1024, 2.0));
+    ListOffsetBuilder<size_t, NumpyBuilder<size_t>> builder;
 
     try
     {
@@ -186,15 +230,15 @@ awkward::ContentPtr getNeighbours(pybind11::object &dataset, int nBand, int &sta
 
         for( size_t n = 0; n < neighbours.size(); n++ )
         {
-            builder.beginlist();
+            auto& subbuilder = builder.begin_list();
             
             std::vector<size_t>* pSubVect = neighbours.at(n);
-            for( size_t i = 0; i < pSubVect->size(); i++ )
+            if( pSubVect->size() > 0 )
             {
-                builder.integer(pSubVect->at(i));
+                subbuilder.extend(pSubVect->data(), pSubVect->size());
             }
             
-            builder.endlist();
+            builder.end_list();
         }
         
         freeNeighbourLists(&neighbours);
@@ -204,7 +248,7 @@ awkward::ContentPtr getNeighbours(pybind11::object &dataset, int nBand, int &sta
         throw PyKeaLibException(e.what());
     }
 
-    return builder.snapshot();
+    return snapshot_builder(builder);
 }
 
 // Set the neighbours for the given dataset and band. The
