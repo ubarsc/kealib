@@ -49,14 +49,15 @@ execute_process(COMMAND ${LIBKEA_CONFIG} --includes OUTPUT_VARIABLE KEALIB_INCLU
 execute_process(COMMAND ${LIBKEA_CONFIG} --ldflags OUTPUT_VARIABLE KEALIB_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 message(STATUS "Includes: ${AWKWARD_INCLUDE} ${KEALIB_INCLUDE} ${Python3_NumPy_INCLUDE_DIRS}")
-include_directories(BEFORE "${AWKWARD_INCLUDE}" "${KEALIB_INCLUDE}" "${Python3_NumPy_INCLUDE_DIRS}")
 
 find_package(pybind11 CONFIG REQUIRED)
 
 find_library(LIBKEA ${LIBKEA_NAME} REQUIRED HINTS ${KEALIB_LIBRARIES})
-message(STATUS "Libraries: ${LIBKEA}")
+
+find_package(HDF5 COMPONENTS CXX HL REQUIRED)
 
 pybind11_add_module(extrat extrat.cpp)
+target_include_directories(extrat BEFORE PRIVATE "${AWKWARD_INCLUDE}" PRIVATE "${KEALIB_INCLUDE}" PRIVATE "${Python3_NumPy_INCLUDE_DIRS}")
 target_compile_definitions(extrat PRIVATE NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
 set_target_properties(extrat PROPERTIES CXX_VISIBILITY_PRESET hidden)
 target_link_libraries(extrat PRIVATE ${LIBKEA})
@@ -65,3 +66,12 @@ install(FILES kea_build_neighbours.py DESTINATION bin)
 set(PYKEA_INSTALL_DIR "${Python3_SITELIB}/kealib" CACHE PATH "Install Dir for Python Bindings")
 install(TARGETS extrat DESTINATION ${PYKEA_INSTALL_DIR})
 install(FILES __init__.py DESTINATION ${PYKEA_INSTALL_DIR})
+
+add_library(fakegdal SHARED fakegdal.cpp)
+set_target_properties(fakegdal
+    PROPERTIES
+        PREFIX ""
+        OUTPUT_NAME "fakegdal"
+    )
+target_include_directories(fakegdal BEFORE PRIVATE "${Python3_INCLUDE_DIRS}" PRIVATE "${HDF5_INCLUDE_DIRS}")
+target_link_libraries(fakegdal PRIVATE ${Python3_LIBRARIES} PRIVATE ${LIBKEA})

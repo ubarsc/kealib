@@ -2,7 +2,7 @@
  *  extrat.cpp
  *  LibKEA
  *
- *  Created by Pete Bunting on 02/07/2012.
+ *  Created by Sam Gillingham on 09/02/2023.
  *  Copyright 2012 LibKEA. All rights reserved.
  *
  *  This file is part of LibKEA.
@@ -255,7 +255,7 @@ pybind11::object getNeighbours(pybind11::object &dataset, int nBand, int &startf
 // neighbours are to be given as an awkward array and the writing
 // starts at the startfid row in the table.
 void setNeighbours(pybind11::object &dataset, int nBand, 
-        int startfid, awkward::ContentPtr &neighbours)
+        int startfid, pybind11::object &neighbours)
 {
     kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset, nBand);
 
@@ -267,6 +267,17 @@ void setNeighbours(pybind11::object &dataset, int nBand,
             throw PyKeaLibException("No Attribute table in this file");
         }
 
+
+        auto to_buffers = pybind11::module::import("awkward").attr("to_buffers");
+        pybind11::tuple result_tuple = pybind11::reinterpret_borrow<pybind11::tuple>(to_buffers(neighbours));
+        
+        pybind11::dict container = result_tuple[2];
+        for(auto item: container)
+        {
+            fprintf(stderr, "key = %s\n", item.first.cast<std::string>().data());            
+        }
+        
+        /*
         int64_t length = neighbours.get()->length();
         std::vector<std::vector<size_t>* > cppneighbours(length);
         for( int64_t n = 0; n < length; n++ )
@@ -342,6 +353,7 @@ void setNeighbours(pybind11::object &dataset, int nBand,
         pRAT->setNeighbours(startfid, cppneighbours.size(), &cppneighbours);
         
         freeNeighbourLists(&cppneighbours);
+        */
     }
     catch(const kealib::KEAException &e)
     {
@@ -642,7 +654,7 @@ void NeighbourAccumulator::addArray(pybind11::array &arr)
 // - looked up at runtime to avoid compile time dependency on GDAL 
 void SetFunctionPointers()
 {
-    char *pszLibName = getenv("KEALIB_LIBGDAL");
+    const char *pszLibName = getenv("KEALIB_LIBGDAL");
     if( !pszLibName )
     {
         pszLibName = DEFAULT_GDAL;
@@ -652,7 +664,11 @@ void SetFunctionPointers()
     HMODULE hModule = LoadLibraryA(pszLibName);
     if( hModule == NULL )
     {
-        throw pybind11::import_error("Unable to open " + pszLibName + " set the KEALIB_LIBGDAL env var to override");
+        std::ostringstream stringStream;
+        stringStream << "Unable to open ";
+        stringStream << pszLibName;
+        stringStream << " set the KEALIB_LIBGDAL env var to override";
+        throw pybind11::import_error(stringStream.str());
     }
     
     pGetDriver = (void* (*)(void*))GetProcAddress(hModule, "GDALGetDatasetDriver");
@@ -678,7 +694,11 @@ void SetFunctionPointers()
     void *libHandle = dlopen(pszLibName, RTLD_LAZY);
     if( !libHandle )
     {
-        throw pybind11::import_error("Unable to open " + pszLibName + " set the KEALIB_LIBGDAL env var to override");
+        std::ostringstream stringStream;
+        stringStream << "Unable to open ";
+        stringStream << pszLibName;
+        stringStream << " set the KEALIB_LIBGDAL env var to override";
+        throw pybind11::import_error(stringStream.str());
     }
     dlerror();  // clear any existing error
     
