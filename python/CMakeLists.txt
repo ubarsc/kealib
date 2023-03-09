@@ -73,5 +73,9 @@ set_target_properties(fakegdal
         PREFIX ""
         OUTPUT_NAME "fakegdal"
     )
-target_include_directories(fakegdal BEFORE PRIVATE "${Python3_INCLUDE_DIRS}" PRIVATE "${HDF5_INCLUDE_DIRS}")
+target_include_directories(fakegdal BEFORE PRIVATE "${Python3_INCLUDE_DIRS}" PRIVATE "${HDF5_INCLUDE_DIRS}" PRIVATE "${KEALIB_INCLUDE}")
 target_link_libraries(fakegdal PRIVATE ${Python3_LIBRARIES} PRIVATE ${LIBKEA})
+
+add_executable(testseg testseg.cpp)
+target_include_directories(testseg BEFORE PRIVATE "${KEALIB_INCLUDE}")
+target_link_libraries(testseg PRIVATE ${LIBKEA})

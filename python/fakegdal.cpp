@@ -61,6 +61,8 @@ static int fakeGDAL_init(FakeGDALObject *self, PyObject *args, PyObject *kwds)
     }
     catch (const kealib::KEAIOException &e)
     {
+        delete self->pImageIO;
+        self->pImageIO = nullptr;
         PyErr_SetString(PyExc_RuntimeError, "Unable to open file");
         return -1;
     }
@@ -82,6 +84,7 @@ static PyTypeObject FakeGDALDataset_Type = {
     .tp_name = "fakegdal.Dataset",
     .tp_basicsize = sizeof(FakeGDALObject),
     .tp_dealloc = (destructor)fakeGDAL_dealloc,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_doc = PyDoc_STR("Fake GDAL Dataset Object"),
     .tp_init = (initproc)fakeGDAL_init
 };
@@ -103,6 +106,10 @@ PyInit_fakegdal(void)
     if (m == NULL)
         return NULL;
         
+    FakeGDALDataset_Type.tp_new = PyType_GenericNew;
+    if( PyType_Ready(&FakeGDALDataset_Type) < 0)
+        return NULL;
+    
     Py_INCREF(&FakeGDALDataset_Type);
     PyModule_AddObject(m, "Dataset", (PyObject*)&FakeGDALDataset_Type);
         
