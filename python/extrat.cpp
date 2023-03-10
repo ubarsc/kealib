@@ -214,7 +214,8 @@ pybind11::object getNeighbours(pybind11::object &dataset, int nBand, int &startf
 {
     kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset, nBand);
     
-    ListOffsetBuilder<size_t, NumpyBuilder<size_t>> builder;
+    // Note: ListOffsetBuilder doesn't work with size_t/uint64_t
+    ListOffsetBuilder<int64_t, NumpyBuilder<size_t>> builder;
 
     try
     {
@@ -233,10 +234,7 @@ pybind11::object getNeighbours(pybind11::object &dataset, int nBand, int &startf
             auto& subbuilder = builder.begin_list();
             
             std::vector<size_t>* pSubVect = neighbours.at(n);
-            if( pSubVect->size() > 0 )
-            {
-                subbuilder.extend(pSubVect->data(), pSubVect->size());
-            }
+            subbuilder.extend(pSubVect->data(), pSubVect->size());
             
             builder.end_list();
         }
@@ -249,6 +247,26 @@ pybind11::object getNeighbours(pybind11::object &dataset, int nBand, int &startf
     }
 
     return snapshot_builder(builder);
+}
+
+template<typename T>
+void copyToNeighbours(std::vector<std::vector<size_t>* > &cppneighbours,
+    pybind11::object &offsets, pybind11::object &data)
+{
+    auto offsetsArray = offsets.cast<pybind11::array_t<T>>();
+    auto dataArray = data.cast<pybind11::array_t<T>>();
+    for( size_t n = 0; n < cppneighbours.size(); n++ )
+    {
+        auto startIdx = offsetsArray.at(n);
+        auto endIdx = offsetsArray.at(n + 1);
+        auto thisLength = endIdx - startIdx;
+        auto *pVec = new std::vector<size_t>(thisLength);
+        for( auto Idx = 0; Idx < thisLength; Idx++ )
+        {
+            pVec->at(Idx) = dataArray.at(startIdx + Idx);
+        }
+        cppneighbours.at(n) = pVec;
+    }
 }
 
 // Set the neighbours for the given dataset and band. The
@@ -269,91 +287,83 @@ void setNeighbours(pybind11::object &dataset, int nBand,
 
 
         auto to_buffers = pybind11::module::import("awkward").attr("to_buffers");
-        pybind11::tuple result_tuple = pybind11::reinterpret_borrow<pybind11::tuple>(to_buffers(neighbours));
+        auto result_tuple = to_buffers(neighbours).cast<pybind11::tuple>();
         
+        auto form = result_tuple[0];
+        auto formDict = form.attr("to_dict")().cast<pybind11::dict>();
+        auto classType = formDict[pybind11::str("class")].cast<std::string>();
+        if( classType != "ListOffsetArray")
+        {
+            throw PyKeaLibException("Only accept ListOffsetArrays");
+        }
+        auto offsetsType = formDict[pybind11::str("offsets")].cast<std::string>();
+        if( offsetsType != "i64")
+        {
+            throw PyKeaLibException("Only accept i64 ListOffsetArrays");
+        }
+        auto offsetsKey = formDict[pybind11::str("form_key")].cast<std::string>();
+        
+        auto content = formDict[pybind11::str("content")].cast<pybind11::dict>();
+        auto contentClass = content[pybind11::str("class")].cast<std::string>();
+        if( contentClass != "NumpyArray" )
+        {
+            throw PyKeaLibException("Only accept NumpyArray for Content");
+        }
+        auto contentPrimitive = content[pybind11::str("primitive")].cast<std::string>();
+        auto contentKey = content[pybind11::str("form_key")].cast<std::string>();
+
+        auto length = result_tuple[1].cast<int64_t>();
+
         pybind11::dict container = result_tuple[2];
+        pybind11::object offsetsArray = pybind11::none();
+        pybind11::object dataArray = pybind11::none();
         for(auto item: container)
         {
-            fprintf(stderr, "key = %s\n", item.first.cast<std::string>().data());            
+            auto key = item.first.cast<std::string>();
+            if( key.rfind(offsetsKey, 0) != std::string::npos )
+            {
+                offsetsArray = item.second.cast<pybind11::object>();
+            }
+            else if( key.rfind(contentKey, 0) != std::string::npos )
+            {
+                dataArray = item.second.cast<pybind11::object>();
+            }
         }
         
-        /*
-        int64_t length = neighbours.get()->length();
-        std::vector<std::vector<size_t>* > cppneighbours(length);
-        for( int64_t n = 0; n < length; n++ )
+        if( offsetsArray.is_none() || dataArray.is_none() )
         {
-            awkward::ContentPtr row = neighbours.get()->getitem_at_nowrap(n);
-            if( row.get()->classname() != "NumpyArray" ) 
-            {
-                // this always *seems* to be a NumpyArray class (which is unrelated
-                // to an actual numpy array - don't ask), but it appears
-                // to be other options. Just do a check for now, and extend this
-                // if required.
-                throw PyKeaLibException("Currently only handle NumpyArray for rows");
-            }
-            
-            int64_t rowLength = row.get()->length();
-            
-            std::vector<size_t> *pVec = new std::vector<size_t>(rowLength);
-            
-            for( int64_t i = 0; i < rowLength; i++ ) 
-            {
-                awkward::ContentPtr el = row.get()->getitem_at_nowrap(i);
-                // if the 'row' was a NumpyArray an element should is a scalar
-                // NumpyArray (don't ask).
-                awkward::NumpyArray *elnp = dynamic_cast<awkward::NumpyArray*>(el.get());
-                if( !elnp->isscalar() )
-                {
-                    // they must have given us more than a 2d awkward array. Bail.
-                    throw PyKeaLibException("Only support 2D awkward arrays");
-                }
-                    
-                // this is all very strange but seems to work...
-                size_t val = 0;    
-                switch(elnp->dtype())
-                {
-                    case awkward::util::dtype::int8:
-                        val = awkward_NumpyArray8_getitem_at0(static_cast<int8_t*>(elnp->data()));
-                        break;
-                    case awkward::util::dtype::uint8:
-                        val = awkward_NumpyArrayU8_getitem_at0(static_cast<uint8_t*>(elnp->data()));
-                        break;
-                    case awkward::util::dtype::int16:
-                        val = awkward_NumpyArray16_getitem_at0(static_cast<int16_t*>(elnp->data()));
-                        break;
-                    case awkward::util::dtype::uint16:
-                        val = awkward_NumpyArrayU16_getitem_at0(static_cast<uint16_t*>(elnp->data()));
-                        break;
-                    case awkward::util::dtype::int32:
-                        val = awkward_NumpyArray32_getitem_at0(static_cast<int32_t*>(elnp->data()));
-                        break;
-                    case awkward::util::dtype::uint32:
-                        val = awkward_NumpyArrayU32_getitem_at0(static_cast<uint32_t*>(elnp->data()));
-                        break;
-                    case awkward::util::dtype::int64:
-                        val = awkward_NumpyArray64_getitem_at0(static_cast<int64_t*>(elnp->data()));
-                        break;
-                    case awkward::util::dtype::uint64:
-                        val = awkward_NumpyArrayU64_getitem_at0(static_cast<uint64_t*>(elnp->data()));
-                        break;
-                    case awkward::util::dtype::float32:
-                        val = awkward_NumpyArrayfloat32_getitem_at0(static_cast<float*>(elnp->data()));
-                        break;
-                    case awkward::util::dtype::float64:
-                        val = awkward_NumpyArrayfloat64_getitem_at0(static_cast<double*>(elnp->data()));
-                        break;
-                }
-                
-                pVec->at(i) = val;
-            }
-            
-            cppneighbours.at(n) = pVec;
+            throw PyKeaLibException("Couldn't find offsets or data");
         }
+        
+        std::vector<std::vector<size_t>* > cppneighbours(length);
+        
+        if(contentPrimitive == "uint8")
+            copyToNeighbours<uint8_t>(cppneighbours, offsetsArray, dataArray);
+        else if( contentPrimitive == "int8")
+            copyToNeighbours<int8_t>(cppneighbours, offsetsArray, dataArray);
+        else if( contentPrimitive == "uint16")
+            copyToNeighbours<uint16_t>(cppneighbours, offsetsArray, dataArray);
+        else if( contentPrimitive == "int16" )
+            copyToNeighbours<int16_t>(cppneighbours, offsetsArray, dataArray);
+        else if( contentPrimitive ==  "uint32" )
+            copyToNeighbours<uint32_t>(cppneighbours, offsetsArray, dataArray);
+        else if( contentPrimitive == "int32" )
+            copyToNeighbours<int32_t>(cppneighbours, offsetsArray, dataArray);
+        else if( contentPrimitive == "uint64" )
+            copyToNeighbours<uint64_t>(cppneighbours, offsetsArray, dataArray);
+        else if( contentPrimitive == "int64" )
+            copyToNeighbours<int64_t>(cppneighbours, offsetsArray, dataArray);
+        else if( contentPrimitive == "float32" )
+            copyToNeighbours<float>(cppneighbours, offsetsArray, dataArray);
+        else if( contentPrimitive == "float64" )
+            copyToNeighbours<double>(cppneighbours, offsetsArray, dataArray);
+        else
+            throw PyKeaLibException("Unknown data type");
+        
         
         pRAT->setNeighbours(startfid, cppneighbours.size(), &cppneighbours);
         
         freeNeighbourLists(&cppneighbours);
-        */
     }
     catch(const kealib::KEAException &e)
     {

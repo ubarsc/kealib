@@ -73,8 +73,8 @@ int main()
 
         free(pHist);
         
-        int64_t nodata = 00;
-        io.setNoDataValue(1, &nodata, kealib::kea_64int);
+        uint8_t nodata = 90;
+        io.setNoDataValue(1, &nodata, kealib::kea_8uint);
         
         io.close();
     }
