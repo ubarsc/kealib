@@ -375,7 +375,8 @@ void setNeighbours(pybind11::object &dataset, int nBand,
 // The user will need to close the dataset and open again to see the
 // new column
 void addField(pybind11::object &dataset, int nBand, 
-        const std::string& name, int nType, pybind11::object &initVal, const std::string &usage)
+        const std::string& name, kealib::KEAFieldDataType nType, 
+        pybind11::object &initVal, const std::string &usage)
 {
     kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset, nBand);
 
@@ -1081,13 +1082,38 @@ PYBIND11_MODULE(extrat, m) {
             "should be used to fill in. ",
             pybind11::arg("array"));
             
-    pybind11::class_<kealib::KEAATTField>(m, "KEAATTField")
+    auto attField = pybind11::class_<kealib::KEAATTField>(m, "KEAATTField")
         .def(pybind11::init<>())
+        .def("__repr__", 
+            [](const kealib::KEAATTField &f)
+            {
+                std::ostringstream stringStream;
+                stringStream << "<extrat.KEAATTField name=\"";
+                stringStream << f.name;
+                stringStream << "\" dataType=";
+                stringStream << f.dataType;
+                stringStream << " idx=";
+                stringStream << f.idx;
+                stringStream << " usage=\"";
+                stringStream << f.usage;
+                stringStream << "\" colNum=";
+                stringStream << f.colNum;
+                stringStream << ">";
+                return stringStream.str();
+            })
         .def_readwrite("name", &kealib::KEAATTField::name)
         .def_readwrite("dataType", &kealib::KEAATTField::dataType)
         .def_readwrite("idx", &kealib::KEAATTField::idx)
         .def_readwrite("usage", &kealib::KEAATTField::usage)
         .def_readwrite("colNum", &kealib::KEAATTField::colNum);
+        
+    pybind11::enum_<kealib::KEAFieldDataType>(attField, "KEAFieldDataType")
+        .value("N/A", kealib::KEAFieldDataType::kea_att_na)
+        .value("Bool", kealib::KEAFieldDataType::kea_att_bool)
+        .value("Int", kealib::KEAFieldDataType::kea_att_int)
+        .value("Flow", kealib::KEAFieldDataType::kea_att_float)
+        .value("String", kealib::KEAFieldDataType::kea_att_string)
+        .export_values();
 
     pybind11::register_exception<PyKeaLibException>(m, "KeaLibException");
     
