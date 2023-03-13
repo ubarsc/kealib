@@ -1117,12 +1117,6 @@ PYBIND11_MODULE(extrat, m) {
 
     pybind11::register_exception<PyKeaLibException>(m, "KeaLibException");
     
-    // constants
-    m.attr("ATT_BOOL") = pybind11::int_(static_cast<int>(kealib::kea_att_bool));
-    m.attr("ATT_INT") = pybind11::int_(static_cast<int>(kealib::kea_att_int));
-    m.attr("ATT_FLOAT") = pybind11::int_(static_cast<int>(kealib::kea_att_float));
-    m.attr("ATT_STRING") = pybind11::int_(static_cast<int>(kealib::kea_att_string));
-    
     SetFunctionPointers();
 }
 
