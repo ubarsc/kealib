@@ -40,8 +40,10 @@ extern "C"
     kealib::KEAImageIO *GDALGetDatasetDriver(kealib::KEAImageIO *);
     const char *GDALGetDescription(kealib::KEAImageIO *);
     kealib::KEAImageIO *GDALGetInternalHandle(kealib::KEAImageIO *, void*);
+    int IsFakeGDAL();
 }
 
+// matches layout of SWIG structure.
 typedef struct {
     PyObject_HEAD
     kealib::KEAImageIO* pImageIO;
@@ -56,7 +58,7 @@ static int fakeGDAL_init(FakeGDALObject *self, PyObject *args, PyObject *kwds)
     self->pImageIO = new kealib::KEAImageIO();
     try
     {
-        H5::H5File *pH5File = kealib::KEAImageIO::openKeaH5RDOnly( pszFilename );
+        H5::H5File *pH5File = kealib::KEAImageIO::openKeaH5RW( pszFilename );
         self->pImageIO->openKEAImageHeader(pH5File);
     }
     catch (const kealib::KEAIOException &e)
@@ -79,6 +81,27 @@ static void fakeGDAL_dealloc(FakeGDALObject *self)
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
+// fake the presence of a 'this' attribute which just returns
+// self (to match GDAL)
+static PyObject *fakeGDAL_this(PyObject *self, void *closure)
+{
+    Py_INCREF(self);
+    return self;
+}
+
+// just so we can check we are getting a "fake" one
+static PyObject *fakeGDAL_Is_fake(PyObject *self, void *closure)
+{
+    Py_RETURN_TRUE;
+}
+
+/* get/set */
+static PyGetSetDef fakeGDAL_getseters[] = {
+    {(char*)"this", (getter)fakeGDAL_this, NULL, NULL, NULL},
+    {(char*)"is_fake", (getter)fakeGDAL_Is_fake, NULL, NULL, NULL},
+    {NULL}  /* Sentinel */
+};
+
 static PyTypeObject FakeGDALDataset_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "fakegdal.Dataset",
@@ -86,6 +109,7 @@ static PyTypeObject FakeGDALDataset_Type = {
     .tp_dealloc = (destructor)fakeGDAL_dealloc,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_doc = PyDoc_STR("Fake GDAL Dataset Object"),
+    .tp_getset = fakeGDAL_getseters,
     .tp_init = (initproc)fakeGDAL_init
 };
 
@@ -129,4 +153,9 @@ const char *GDALGetDescription(kealib::KEAImageIO *)
 kealib::KEAImageIO *GDALGetInternalHandle(kealib::KEAImageIO *pImageIO, void *p)
 {
     return pImageIO;
+}
+
+int IsFakeGDAL()
+{
+    return 1;
 }

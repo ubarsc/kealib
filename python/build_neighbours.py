@@ -1,21 +1,38 @@
-#!/usr/bin/env python
-
 """
-Main script for building neighbours 
+ *  build_neighbours.py
+ *  LibKEA
+ *
+ *  Created by Sam Gillingham on 09/02/2023.
+ *  Copyright 2012 LibKEA. All rights reserved.
+ *
+ *  This file is part of LibKEA.
+ *
+ *  Permission is hereby granted, free of charge, to any person 
+ *  obtaining a copy of this software and associated documentation 
+ *  files (the "Software"), to deal in the Software without restriction, 
+ *  including without limitation the rights to use, copy, modify, 
+ *  merge, publish, distribute, sublicense, and/or sell copies of the 
+ *  Software, and to permit persons to whom the Software is furnished 
+ *  to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be 
+ *  included in all copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+ *  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+ *  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+ *  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
+ *  ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+ *  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+ *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
 """
 
-from __future__ import print_function, division
-
-import sys
+import os
 import argparse
-from rios import rat
-from rios import applier
-from rios.cuiprogress import GDALProgressBar
-
 from kealib import extrat
 
-from osgeo import gdal
-gdal.UseExceptions()
+
 
 DFLT_TILESIZE = 2048
 
@@ -26,7 +43,7 @@ def getCmdargs():
     p = argparse.ArgumentParser()
     p.add_argument("-i", "--infile", help=("Input Raster file. Neighbours will "
                 + "be written back to this file. This file should have a Raster"
-                + "Attribute Table"))
+                + "Attribute Table"), required=True)
     p.add_argument("-t", "--tilesize", default=DFLT_TILESIZE,
         help="Size (in pixels) of tiles to chop input image into for processing."+
                 " (default=%(default)s)", type=int)
@@ -36,11 +53,6 @@ def getCmdargs():
                 "input dataset (1-based) (default=%(default)s)")
     cmdargs = p.parse_args()
     
-    if cmdargs.infile is None:
-        print('Must supply input file name')
-        p.print_help()
-        sys.exit()
-
     return cmdargs
     
 def riosAccumulate(info, inputs, outputs, otherargs):
@@ -51,10 +63,15 @@ def riosAccumulate(info, inputs, outputs, otherargs):
     data = inputs.input[otherargs.band - 1]
     otherargs.accumulator.addArray(data)
 
-def main(cmdargs):
+def main():
     """
-    Main routine. Calls RIOS to do the processing. 
+    Main routine. For calling from the command line 
     """
+    cmdargs = getCmdargs()
+    
+def buildNeighbours():
+    
+    
     # we need the dataset for NeighbourAccumulator
     ds = gdal.Open(cmdargs.infile, gdal.GA_Update)
     
@@ -83,8 +100,3 @@ def main(cmdargs):
     
     applier.apply(riosAccumulate, inputs, outputs, otherargs, controls=controls)
     
-if __name__ == '__main__':
-    cmdargs = getCmdargs()
-
-    main(cmdargs)
-

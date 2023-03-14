@@ -62,10 +62,10 @@ target_compile_definitions(extrat PRIVATE NPY_NO_DEPRECATED_API=NPY_1_7_API_VERS
 set_target_properties(extrat PROPERTIES CXX_VISIBILITY_PRESET hidden)
 target_link_libraries(extrat PRIVATE ${LIBKEA})
 
-install(FILES kea_build_neighbours.py DESTINATION bin)
+install(FILES kea_build_neighbours DESTINATION bin)
 set(PYKEA_INSTALL_DIR "${Python3_SITELIB}/kealib" CACHE PATH "Install Dir for Python Bindings")
 install(TARGETS extrat DESTINATION ${PYKEA_INSTALL_DIR})
-install(FILES __init__.py DESTINATION ${PYKEA_INSTALL_DIR})
+install(FILES __init__.py build_neighbours.py DESTINATION ${PYKEA_INSTALL_DIR})
 
 add_library(fakegdal SHARED fakegdal.cpp)
 set_target_properties(fakegdal
@@ -79,3 +79,6 @@ target_link_libraries(fakegdal PRIVATE ${Python3_LIBRARIES} PRIVATE ${LIBKEA})
 add_executable(testseg testseg.cpp)
 target_include_directories(testseg BEFORE PRIVATE "${KEALIB_INCLUDE}")
 target_link_libraries(testseg PRIVATE ${LIBKEA})
+
+# custom install step to create .pyc files
+install(CODE "execute_process(COMMAND ${Python3_EXECUTABLE} -m compileall ${PYKEA_INSTALL_DIR})")
