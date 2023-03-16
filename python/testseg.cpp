@@ -65,7 +65,7 @@ int main()
 
         io.setImageBandLayerType(1, kealib::kea_thematic);
         kealib::KEAAttributeTable *pRat = io.getAttributeTable(kealib::kea_att_file, 1);
-        pRat->addAttIntField("Histogram", 0);
+        pRat->addAttIntField("Histogram", 0, "Histogram");
         size_t colIdx = pRat->getFieldIndex("Histogram");
 
         pRat->addRows(HIST_SIZE);

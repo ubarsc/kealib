@@ -65,7 +65,7 @@ using NumpyBuilder = awkward::LayoutBuilder::Numpy<PRIMITIVE>;
 void* (*pGetDriver)(void*) = nullptr;
 const char * (*pGetDescription)(void*) = nullptr;
 void *(*pGetInternalHandle)(void *, const char*) = nullptr;
-int IsFakeGDAL = 0;
+bool IsFakeGDAL = false;
 
 // Exception class. Wrapped by Python.
 class PyKeaLibException : public std::exception
@@ -522,7 +522,7 @@ void addRows(pybind11::object &dataset, uint32_t nBand, size_t numRows)
     }
 }
 
-pybind11::object getField(pybind11::object &dataset, uint32_t nBand, size_t colIdx,
+pybind11::object getField(pybind11::object &dataset, uint32_t nBand, kealib::KEAATTField field,
     size_t startfid, size_t len)
 {
     kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset);
@@ -535,33 +535,32 @@ pybind11::object getField(pybind11::object &dataset, uint32_t nBand, size_t colI
             throw PyKeaLibException("No Attribute table in this file");
         }
         
-        auto attField = pRAT->getField(colIdx);
-        if(attField.dataType == kealib::kea_att_bool)
+        if(field.dataType == kealib::kea_att_bool)
         {
             auto result = pybind11::array_t<bool>(len);
             pybind11::buffer_info buf = result.request();
-            pRAT->getBoolFields(startfid, len, colIdx, static_cast<bool*>(buf.ptr));
+            pRAT->getBoolFields(startfid, len, field.idx, static_cast<bool*>(buf.ptr));
             return result;
         }
-        else if(attField.dataType == kealib::kea_att_int)
+        else if(field.dataType == kealib::kea_att_int)
         {
             auto result = pybind11::array_t<int64_t>(len);
             pybind11::buffer_info buf = result.request();
-            pRAT->getIntFields(startfid, len, colIdx, static_cast<int64_t*>(buf.ptr));
+            pRAT->getIntFields(startfid, len, field.idx, static_cast<int64_t*>(buf.ptr));
             return result;
         }
-        else if(attField.dataType == kealib::kea_att_float)
+        else if(field.dataType == kealib::kea_att_float)
         {
             auto result = pybind11::array_t<double>(len);
             pybind11::buffer_info buf = result.request();
-            pRAT->getFloatFields(startfid, len, colIdx, static_cast<double*>(buf.ptr));
+            pRAT->getFloatFields(startfid, len, field.idx, static_cast<double*>(buf.ptr));
             return result;
         }
-        else if(attField.dataType == kealib::kea_att_string)
+        else if(field.dataType == kealib::kea_att_string)
         {
             ListOffsetBuilder<int64_t, NumpyBuilder<char>> builder;
             std::vector<std::string> buffer;
-            pRAT->getStringFields(startfid, len, colIdx, &buffer);
+            pRAT->getStringFields(startfid, len, field.idx, &buffer);
             for( auto itr = buffer.begin(); itr != buffer.end(); itr++)
             {
                 auto& subbuilder = builder.begin_list();
@@ -582,7 +581,7 @@ pybind11::object getField(pybind11::object &dataset, uint32_t nBand, size_t colI
     }
 }
 
-void setField(pybind11::object &dataset, uint32_t nBand, size_t colIdx,
+void setField(pybind11::object &dataset, uint32_t nBand, kealib::KEAATTField field,
     size_t startfid, pybind11::object &data)
 {
     kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset);
@@ -595,26 +594,25 @@ void setField(pybind11::object &dataset, uint32_t nBand, size_t colIdx,
             throw PyKeaLibException("No Attribute table in this file");
         }
         
-        auto attField = pRAT->getField(colIdx);
-        if(attField.dataType == kealib::kea_att_bool)
+        if(field.dataType == kealib::kea_att_bool)
         {
             auto dataArray = data.cast<pybind11::array_t<bool>>();
             pybind11::buffer_info buf = dataArray.request();
-            pRAT->setBoolFields(startfid, dataArray.size(), colIdx, static_cast<bool*>(buf.ptr));
+            pRAT->setBoolFields(startfid, dataArray.size(), field.idx, static_cast<bool*>(buf.ptr));
         }
-        else if(attField.dataType == kealib::kea_att_int)
+        else if(field.dataType == kealib::kea_att_int)
         {
             auto dataArray = data.cast<pybind11::array_t<int64_t>>();
             pybind11::buffer_info buf = dataArray.request();
-            pRAT->setIntFields(startfid, dataArray.size(), colIdx, static_cast<int64_t*>(buf.ptr));
+            pRAT->setIntFields(startfid, dataArray.size(), field.idx, static_cast<int64_t*>(buf.ptr));
         }
-        else if(attField.dataType == kealib::kea_att_float)
+        else if(field.dataType == kealib::kea_att_float)
         {
             auto dataArray = data.cast<pybind11::array_t<double>>();
             pybind11::buffer_info buf = dataArray.request();
-            pRAT->setFloatFields(startfid, dataArray.size(), colIdx, static_cast<double*>(buf.ptr));
+            pRAT->setFloatFields(startfid, dataArray.size(), field.idx, static_cast<double*>(buf.ptr));
         }
-        else if(attField.dataType == kealib::kea_att_string)
+        else if(field.dataType == kealib::kea_att_string)
         {
             auto to_buffers = pybind11::module_::import("awkward").attr("to_buffers");
             auto result_tuple = to_buffers(data).cast<pybind11::tuple>();
@@ -676,7 +674,7 @@ void setField(pybind11::object &dataset, uint32_t nBand, size_t colIdx,
                 auto str = std::string(dataArrayNumpy.data(startIdx), thisLength);
                 stringList.at(n) = str;
             }
-            pRAT->setStringFields(startfid, length, colIdx, &stringList);
+            pRAT->setStringFields(startfid, length, field.idx, &stringList);
         }
         else
         {
@@ -709,6 +707,34 @@ kealib::KEADataType getImageBandDataType(pybind11::object &dataset, uint32_t nBa
     try
     {
         return pImageIO->getImageBandDataType(nBand);
+    }
+    catch(const kealib::KEAException &e)
+    {
+        throw PyKeaLibException(e.what());
+    }
+}
+
+uint32_t getNumOfImageBands(pybind11::object &dataset)
+{
+    kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset);
+    try
+    {
+        return pImageIO->getNumOfImageBands();
+    }
+    catch(const kealib::KEAException &e)
+    {
+        throw PyKeaLibException(e.what());
+    }
+}
+
+double getNoDataValue(pybind11::object &dataset, uint32_t nBand)
+{
+    kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset);
+    try
+    {
+        double dNoData;
+        pImageIO->getNoDataValue(nBand, &dNoData, kealib::kea_64float);
+        return dNoData;
     }
     catch(const kealib::KEAException &e)
     {
@@ -1101,14 +1127,7 @@ void SetFunctionPointers()
     }
     
     // just test for the symbol existing
-    if( GetProcAddress(hModule, "IsFakeGDAL") == NULL)
-    {
-        IsFakeGDAL = 0;
-    }
-    else
-    {
-        IsFakeGDAL = 1;
-    }
+    IsFakeGDAL = (GetProcAddress(hModule, "IsFakeGDAL") != NULL);
 
 #else
     char *error;
@@ -1148,16 +1167,14 @@ void SetFunctionPointers()
     // just test for the symbol existing
     // Note: other sense from Windows
     dlsym(libHandle, "IsFakeGDAL");
-    if( dlerror() == NULL)
-    {
-        IsFakeGDAL = 1;
-    }
-    else
-    {
-        IsFakeGDAL = 0;
-    }
+    IsFakeGDAL = (dlerror() == NULL);  // there was no error
 
 #endif
+}
+
+bool IsFakeGDALFunction()
+{
+    return IsFakeGDAL;
 }
 
 // Main mondule initialisation
@@ -1165,6 +1182,7 @@ void SetFunctionPointers()
 PYBIND11_MODULE(extrat, m) {
     m.doc() = "Module that contains helpers for accessing kealib features not available from GDAL";
 
+    m.def("IsFakeGDAL", &IsFakeGDALFunction);
     m.def("getNeighbours", &getNeighbours,
         "Return all the neighbours for the given dataset and band from startfid "
         "returing length features. Returned value is an awkward array",
@@ -1201,7 +1219,7 @@ PYBIND11_MODULE(extrat, m) {
         pybind11::arg("dataset"), pybind11::arg("band"), pybind11::arg("nrows"));
     m.def("getField", &getField, 
         "Read rows of a column",
-        pybind11::arg("dataset"), pybind11::arg("band"), pybind11::arg("colidx"),
+        pybind11::arg("dataset"), pybind11::arg("band"), pybind11::arg("field"),
         pybind11::arg("startfid"), pybind11::arg("len"));
     m.def("setField", &setField, 
         "Write rows of a column",
@@ -1212,6 +1230,9 @@ PYBIND11_MODULE(extrat, m) {
     m.def("getImageBandDataType", &getImageBandDataType,
         "Get the datatype of the band",
         pybind11::arg("dataset"), pybind11::arg("band"));
+    m.def("getNumOfImageBands", &getNumOfImageBands, pybind11::arg("dataset"));
+    m.def("getNoDataValue", &getNoDataValue, pybind11::arg("dataset"),
+        pybind11::arg("band"));
     m.def("getImageBlock", &getImageBlock, "Get a block of data from the band",
         pybind11::arg("dataset"), pybind11::arg("band"), pybind11::arg("col"),
         pybind11::arg("row"), pybind11::arg("xsize"), pybind11::arg("ysize"));
@@ -1261,7 +1282,7 @@ PYBIND11_MODULE(extrat, m) {
         .def_readwrite("colNum", &kealib::KEAATTField::colNum);
         
     pybind11::enum_<kealib::KEAFieldDataType>(m, "KEAFieldDataType")
-        .value("N/A", kealib::KEAFieldDataType::kea_att_na)
+        .value("NA", kealib::KEAFieldDataType::kea_att_na)
         .value("Bool", kealib::KEAFieldDataType::kea_att_bool)
         .value("Int", kealib::KEAFieldDataType::kea_att_int)
         .value("Float", kealib::KEAFieldDataType::kea_att_float)
@@ -1270,16 +1291,16 @@ PYBIND11_MODULE(extrat, m) {
 
     pybind11::enum_<kealib::KEADataType>(m, "KEADataType")
         .value("undefined", kealib::kea_undefined)
-        .value("8int", kealib::kea_8int)
-        .value("16int", kealib::kea_16int)
-        .value("32int", kealib::kea_32int)
-        .value("64int", kealib::kea_64int)
-        .value("8uint", kealib::kea_8uint)
-        .value("16uint", kealib::kea_16uint)
-        .value("32uint", kealib::kea_32uint)
-        .value("64uint", kealib::kea_64uint)
-        .value("32float", kealib::kea_32float)
-        .value("64float", kealib::kea_64float)
+        .value("t8int", kealib::kea_8int)
+        .value("t16int", kealib::kea_16int)
+        .value("t32int", kealib::kea_32int)
+        .value("t64int", kealib::kea_64int)
+        .value("t8uint", kealib::kea_8uint)
+        .value("t16uint", kealib::kea_16uint)
+        .value("t32uint", kealib::kea_32uint)
+        .value("t64uint", kealib::kea_64uint)
+        .value("t32float", kealib::kea_32float)
+        .value("t64float", kealib::kea_64float)
         .export_values();
         
     pybind11::class_<kealib::KEAImageSpatialInfo>(m, "KEAImageSpatialInfo")
