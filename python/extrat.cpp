@@ -558,14 +558,15 @@ pybind11::object getField(pybind11::object &dataset, uint32_t nBand, kealib::KEA
         }
         else if(field.dataType == kealib::kea_att_string)
         {
-            ListOffsetBuilder<int64_t, NumpyBuilder<char>> builder;
+            ListOffsetBuilder<int64_t, NumpyBuilder<uint8_t>> builder;
+            builder.content().set_parameters("\"__array__\": \"char\"");
             std::vector<std::string> buffer;
             pRAT->getStringFields(startfid, len, field.idx, &buffer);
             for( auto itr = buffer.begin(); itr != buffer.end(); itr++)
             {
                 auto& subbuilder = builder.begin_list();
                 const auto& str = *itr; 
-                subbuilder.extend(const_cast<char*>(str.c_str()), str.size());
+                subbuilder.extend(reinterpret_cast<uint8_t*>(const_cast<char*>(str.c_str())), str.size());
                 builder.end_list();
             }
             return snapshot_builder(builder);
@@ -625,9 +626,9 @@ void setField(pybind11::object &dataset, uint32_t nBand, kealib::KEAATTField fie
                 throw PyKeaLibException("Only accept ListOffsetArrays");
             }
             auto offsetsType = formDict[pybind11::str("offsets")].cast<std::string>();
-            if( offsetsType != "S")
+            if( offsetsType != "i64")
             {
-                throw PyKeaLibException("Only accept S ListOffsetArrays");
+                throw PyKeaLibException("Only accept i64 ListOffsetArrays");
             }
             auto offsetsKey = formDict[pybind11::str("form_key")].cast<std::string>();
             
@@ -638,6 +639,10 @@ void setField(pybind11::object &dataset, uint32_t nBand, kealib::KEAATTField fie
                 throw PyKeaLibException("Only accept NumpyArray for Content");
             }
             auto contentPrimitive = content[pybind11::str("primitive")].cast<std::string>();
+            if( contentPrimitive != "uint8" )
+            {
+                throw PyKeaLibException("Only accept NumpyArray of uint8 for Content");
+            }
             auto contentKey = content[pybind11::str("form_key")].cast<std::string>();
     
             auto length = result_tuple[1].cast<int64_t>();
@@ -1223,7 +1228,7 @@ PYBIND11_MODULE(extrat, m) {
         pybind11::arg("startfid"), pybind11::arg("len"));
     m.def("setField", &setField, 
         "Write rows of a column",
-        pybind11::arg("dataset"), pybind11::arg("band"), pybind11::arg("colidx"),
+        pybind11::arg("dataset"), pybind11::arg("band"), pybind11::arg("field"),
         pybind11::arg("startfid"), pybind11::arg("data"));
     m.def("getSpatialInfo", &getSpatialInfo,
         "Get the KEAImageSpatialInfo object for the image", pybind11::arg("dataset"));
@@ -1332,7 +1337,7 @@ PYBIND11_MODULE(extrat, m) {
             })
         .def_readwrite("wktString", &kealib::KEAImageSpatialInfo::wktString)
         .def_readwrite("tlX", &kealib::KEAImageSpatialInfo::tlX)
-        .def_readwrite("tlX", &kealib::KEAImageSpatialInfo::tlY)
+        .def_readwrite("tlY", &kealib::KEAImageSpatialInfo::tlY)
         .def_readwrite("xRes", &kealib::KEAImageSpatialInfo::xRes)
         .def_readwrite("yRes", &kealib::KEAImageSpatialInfo::yRes)
         .def_readwrite("xRot", &kealib::KEAImageSpatialInfo::xRot)
