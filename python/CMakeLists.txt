@@ -17,7 +17,7 @@
 #  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 #  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.22)
 project(extrat LANGUAGES CXX)
 
 if(MSVC)
@@ -32,23 +32,25 @@ endif()
 find_package(Python3 COMPONENTS Interpreter Development NumPy)
 
 # Find version of awkward we have installed
-#EXECUTE_PROCESS(COMMAND ${Python3_EXECUTABLE} -c "import awkward; print(awkward.__version__)" OUTPUT_VARIABLE AWKWARD_VERSION)
-SET(AWKWARD_VERSION "2.0.9")
+EXECUTE_PROCESS(COMMAND ${Python3_EXECUTABLE} -c "import awkward; print(awkward.__version__)" OUTPUT_VARIABLE AWKWARD_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+message(STATUS "Using awkward version ${AWKWARD_VERSION}")
 
 # get awkward headers
 include(FetchContent)
 FetchContent_Declare(
   awkward
-  URL      https://github.com/scikit-hep/awkward/releases/download/v${AWKWARD_VERSION}/header-only.tar.gz
+  URL      https://github.com/scikit-hep/awkward/releases/download/v${AWKWARD_VERSION}/header-only.zip
 )
 FetchContent_MakeAvailable(awkward)
-set(AWKWARD_INCLUDE "${awkward_SOURCE_DIR}/include")
+set(AWKWARD_INCLUDE1 "${awkward_SOURCE_DIR}/layout-builder")
+set(AWKWARD_INCLUDE2 "${awkward_SOURCE_DIR}/builder-options")
+set(AWKWARD_INCLUDE3 "${awkward_SOURCE_DIR}/growable-buffer")
 
 # get kealib info
 execute_process(COMMAND ${LIBKEA_CONFIG} --includes OUTPUT_VARIABLE KEALIB_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ${LIBKEA_CONFIG} --ldflags OUTPUT_VARIABLE KEALIB_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-message(STATUS "Includes: ${AWKWARD_INCLUDE} ${KEALIB_INCLUDE} ${Python3_NumPy_INCLUDE_DIRS}")
+message(STATUS "Includes: ${AWKWARD_INCLUDE1} ${AWKWARD_INCLUDE2} ${AWKWARD_INCLUDE3} ${KEALIB_INCLUDE} ${Python3_NumPy_INCLUDE_DIRS}")
 
 find_package(pybind11 CONFIG REQUIRED)
 
@@ -57,7 +59,7 @@ find_library(LIBKEA ${LIBKEA_NAME} REQUIRED HINTS ${KEALIB_LIBRARIES})
 find_package(HDF5 COMPONENTS CXX HL REQUIRED)
 
 pybind11_add_module(extrat extrat.cpp)
-target_include_directories(extrat BEFORE PRIVATE "${AWKWARD_INCLUDE}" PRIVATE "${KEALIB_INCLUDE}" PRIVATE "${Python3_NumPy_INCLUDE_DIRS}")
+target_include_directories(extrat BEFORE PRIVATE "${AWKWARD_INCLUDE1}" PRIVATE "${AWKWARD_INCLUDE2}" PRIVATE "${AWKWARD_INCLUDE3}" PRIVATE "${KEALIB_INCLUDE}" PRIVATE "${Python3_NumPy_INCLUDE_DIRS}")
 target_compile_definitions(extrat PRIVATE NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
 set_target_properties(extrat PROPERTIES CXX_VISIBILITY_PRESET hidden)
 target_link_libraries(extrat PRIVATE ${LIBKEA})
@@ -67,6 +69,7 @@ set(PYKEA_INSTALL_DIR "${Python3_SITELIB}/kealib" CACHE PATH "Install Dir for Py
 install(TARGETS extrat DESTINATION ${PYKEA_INSTALL_DIR})
 install(FILES __init__.py build_neighbours.py DESTINATION ${PYKEA_INSTALL_DIR})
 
+# TODO: should we install this to help people writing scripts not dependent on GDAL??
 add_library(fakegdal SHARED fakegdal.cpp)
 set_target_properties(fakegdal
     PROPERTIES
@@ -82,3 +85,7 @@ target_link_libraries(testseg PRIVATE ${LIBKEA})
 
 # custom install step to create .pyc files
 install(CODE "execute_process(COMMAND ${Python3_EXECUTABLE} -m compileall ${PYKEA_INSTALL_DIR})")
+
+enable_testing()
+add_test(NAME testpython COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testpython.py)
+set_property(TEST testpython PROPERTY ENVIRONMENT_MODIFICATION "PYTHONPATH=path_list_prepend:${CMAKE_CURRENT_BINARY_DIR};KEALIB_LIBGDAL=set:${CMAKE_CURRENT_BINARY_DIR}/fakegdal.so")
