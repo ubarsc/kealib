@@ -4,6 +4,6 @@
 Main script for building neighbours 
 """
 
-from kealib import kea_neighbours
+from kealib import build_neighbours
 
-kea_neighbours.main()
+build_neighbours.main()
