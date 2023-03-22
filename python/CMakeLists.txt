@@ -18,7 +18,7 @@
 #  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 cmake_minimum_required(VERSION 3.22)
-cmake_policy(SET CMP0135 NEW)
+cmake_policy(VERSION 3.22)
 project(extrat LANGUAGES CXX)
 
 if(MSVC)
@@ -77,8 +77,6 @@ install(FILES __init__.py build_neighbours.py DESTINATION ${PYKEA_INSTALL_DIR})
 
 # Our 'fake' GDAL - don't install
 Python_add_library(fakegdal MODULE WITH_SOABI fakegdal.cpp)
-# c++20 required for MSVC
-set_property(TARGET fakegdal PROPERTY CXX_STANDARD 20)
 get_target_property(FAKEGDAL_SUFFIX fakegdal SUFFIX)
 set(FAKEGDAL_NAME "fakegdal${FAKEGDAL_SUFFIX}")
 target_include_directories(fakegdal BEFORE PRIVATE "${HDF5_INCLUDE_DIRS}" PRIVATE "${KEALIB_INCLUDE}")
