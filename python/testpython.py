@@ -138,7 +138,7 @@ def testWriteRead(ds):
     Test we can write to all column types and read the same data back
     """
     data = {'BoolField': numpy.array([True, False, False, True]),
-        'IntField': numpy.array([11, 43, 101, -67, -3, 91]),
+        'IntField': numpy.array([11, 43, 101, -67, -3, 91]).astype(numpy.int64), # ensure int64 on eg Windows and 32 bit platforms
         'FloatField': numpy.array([3.22, 90.0, -45.3, 322.8, 0.56]),
         'StringField': awkward.from_iter(["Hello1", "Hello2", "Hello3", "d982nn"])}
 
