@@ -42,6 +42,7 @@ jobs:
       run: |
         cd build
         make test
+    # slightly redundant since conda packages KEA, but I guess this checks we haven't broken anything
     - name: check gdal
       shell: bash -l {0}
       run: gdal_translate --formats | grep KEA
@@ -51,7 +52,7 @@ jobs:
         cd python
         mkdir build
         cd build
-        cmake -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -D CMAKE_PREFIX_PATH=$CONDA_PREFIX ..
+        cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -D CMAKE_PREFIX_PATH=$CONDA_PREFIX ..
     - name: Make_Python
       shell: bash -l {0}
       run: |
@@ -106,6 +107,7 @@ jobs:
       run: |
         cd build
         nmake test
+    # slightly redundant since conda packages KEA, but I guess this checks we haven't broken anything
     - name: check gdal
       shell: bash -el {0}
       run: gdal_translate --formats | grep KEA

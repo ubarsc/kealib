@@ -85,11 +85,13 @@ install (TARGETS ${LIBKEA_GDAL_DRIVER} DESTINATION lib/gdalplugins)
 # Then look for existing plugins directories
 set(GDAL_PLUGIN_DIRS)
 find_program(GDAL_CONFIG_EXECUTABLE "gdal-config" HINTS ${GDAL_CONFIG})
+# (note: using sh so works on Windows - assuming sh.exe available of course)
+find_program(SH_EXECUTABLE "sh")
 if(EXISTS "${GDAL_CONFIG_EXECUTABLE}")
-    # find gdal prefix and version
-    execute_process(COMMAND ${GDAL_CONFIG_EXECUTABLE} --prefix OUTPUT_VARIABLE GDAL_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
+    # find gdal prefix and version 
+    execute_process(COMMAND ${SH_EXECUTABLE} ${GDAL_CONFIG_EXECUTABLE} --prefix OUTPUT_VARIABLE GDAL_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
     string(STRIP ${GDAL_PREFIX} GDAL_PREFIX)
-    execute_process(COMMAND ${GDAL_CONFIG_EXECUTABLE} --version OUTPUT_VARIABLE GDAL_VERSION_STRING)
+    execute_process(COMMAND ${SH_EXECUTABLE} ${GDAL_CONFIG_EXECUTABLE} --version OUTPUT_VARIABLE GDAL_VERSION_STRING)
     include(TransformVersion)
     transform_version(GDAL_VERSION_NUM GDAL_VERSION_MAJOR GDAL_VERSION_MINOR GDAL_VERSION_PATCH ${GDAL_VERSION_STRING})
     if(OSX_FRAMEWORK)
