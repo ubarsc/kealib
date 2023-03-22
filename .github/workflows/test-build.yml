@@ -67,7 +67,7 @@ jobs:
       shell: bash -l {0}
       run: |
         cd python/build
-        make test
+        ctest --output-on-failure
     
   build-windows:
     name: Test Windows
@@ -132,4 +132,4 @@ jobs:
       shell: bash -el {0}
       run: |
         cd python/build
-        nmake test
+        ctest --output-on-failure
