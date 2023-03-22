@@ -40,7 +40,7 @@ import awkward
 
 from kealib import extrat
 from kealib import build_neighbours
-from kealib import fakegdal
+import fakegdal
 
 INIT_RAT_SIZE = 100 # set in testseg.cpp
 CORRECT_NEIGHBOURS = {0: [1, 10], 1: [0, 11], 10: [0, 11], 11: [10, 1]}

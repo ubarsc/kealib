@@ -27,6 +27,40 @@
  *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+ 
+// This file is a horrible hack so I apologise in advance
+
+// The idea is to make building and testing of the kealib.extrat Python
+// module completely independent of GDAL. We want to do this so we don't
+// have a circular dependency when rebuilding KEA and GDAL. ie we wouldn't
+// be able to build the Python bindings at the same time as KEA lib as we'd 
+// need a new GDAL (rebuilt against the new KEA) which wouldn't yet be available.
+//
+// This would be less of a problem when building KEA as a GDAL plugin but
+// that's not (at least) what conda-forge does and eventually I'd be keen
+// to deprecate the plugin as tracking upstream GDAL changes is quite a lot
+// of work.
+//
+// Because this functionality doesn't require much of GDAL, this shared library
+// fakes what we need. It exports GDALGetDatasetDriver()/GDALGetDescription()/
+// GDALGetInternalHandle() functions (to match GDAL) plus IsFakeGDAL() for 
+// double checking if we are the real GDAL or not.
+//
+// extrap.cpp finds these functions at runtime using either the standard
+// naming (libgdal.so/libgdal.dylib/gdal.dll) or (if supplied) the value of
+// the KEALIB_LIBGDAL environment variable (which should be set to the path
+// to this library in the testing environment)
+//
+// The file can also be imported by Python and provides a drop in replacement
+// for the GDAL Dataset object (well enough to be passed to the functions in
+// extrat.cpp to extract the underlying KEA ImageIO object via the fake GDAL 
+// functions above). Checks exist in extrat.cpp to ensure the fake Dataset
+// is only used with the fake libgdal and real GDAL datasets are only used with
+// the real libgdal.
+//
+// This approach is only to be used when testing extrat. Any end user should be
+// using real GDAL datasets and libraries.
+//
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
@@ -37,10 +71,10 @@ const char szKEA[] = "KEA";
 
 extern "C"
 {
-    kealib::KEAImageIO *GDALGetDatasetDriver(kealib::KEAImageIO *);
-    const char *GDALGetDescription(kealib::KEAImageIO *);
-    kealib::KEAImageIO *GDALGetInternalHandle(kealib::KEAImageIO *, void*);
-    int IsFakeGDAL();
+    KEA_EXPORT kealib::KEAImageIO *GDALGetDatasetDriver(kealib::KEAImageIO *);
+    KEA_EXPORT const char *GDALGetDescription(kealib::KEAImageIO *);
+    KEA_EXPORT kealib::KEAImageIO *GDALGetInternalHandle(kealib::KEAImageIO *, void*);
+    KEA_EXPORT int IsFakeGDAL();
 }
 
 // matches layout of SWIG structure.

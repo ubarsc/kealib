@@ -74,12 +74,12 @@ set(PYKEA_INSTALL_DIR "${Python_SITELIB}/kealib" CACHE PATH "Install Dir for Pyt
 install(TARGETS extrat DESTINATION ${PYKEA_INSTALL_DIR})
 install(FILES __init__.py build_neighbours.py DESTINATION ${PYKEA_INSTALL_DIR})
 
+# Our 'fake' GDAL - don't install
 Python_add_library(fakegdal MODULE WITH_SOABI fakegdal.cpp)
 get_target_property(FAKEGDAL_SUFFIX fakegdal SUFFIX)
 set(FAKEGDAL_NAME "fakegdal${FAKEGDAL_SUFFIX}")
 target_include_directories(fakegdal BEFORE PRIVATE "${HDF5_INCLUDE_DIRS}" PRIVATE "${KEALIB_INCLUDE}")
-target_link_libraries(fakegdal PRIVATE PRIVATE ${LIBKEA})
-install(TARGETS fakegdal DESTINATION ${PYKEA_INSTALL_DIR})
+target_link_libraries(fakegdal PRIVATE ${LIBKEA})
 
 add_executable(testseg testseg.cpp)
 target_include_directories(testseg BEFORE PRIVATE "${KEALIB_INCLUDE}")
@@ -90,4 +90,5 @@ install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} -m compileall ${PYKEA
 
 enable_testing()
 add_test(NAME testpython COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testpython.py)
-set_property(TEST testpython PROPERTY ENVIRONMENT "KEALIB_LIBGDAL=${PYKEA_INSTALL_DIR}/${FAKEGDAL_NAME}")
+# ensure we can import fakegdal and the load the same lib as GDAL from the build location
+set_property(TEST testpython PROPERTY ENVIRONMENT_MODIFICATION "PYTHONPATH=path_list_prepend:${CMAKE_CURRENT_BINARY_DIR};KEALIB_LIBGDAL=set:${CMAKE_CURRENT_BINARY_DIR}/${FAKEGDAL_NAME}")
