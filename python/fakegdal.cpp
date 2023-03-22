@@ -69,6 +69,12 @@
 
 const char szKEA[] = "KEA";
 
+// change this because we'll be using the installed version of KEA which has this as dllimport
+#ifdef _MSC_VER
+    #undef KEA_EXPORT
+    #define KEA_EXPORT __declspec(dllexport)
+#endif
+
 extern "C"
 {
     KEA_EXPORT kealib::KEAImageIO *GDALGetDatasetDriver(kealib::KEAImageIO *);
