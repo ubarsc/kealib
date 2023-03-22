@@ -129,6 +129,7 @@ def checkDataElWise(d1, d2):
     assert len(d1) == len(d2)
     assert isinstance(d1, type(d2))
     for el1, el2 in zip(d1, d2):
+        print(type(el1), type(el2))
         assert isinstance(el1, type(el2))
         assert el1 == el2
     
@@ -149,6 +150,7 @@ def testWriteRead(ds):
         
     # now check
     for fld in data:
+        print(fld)
         field = extrat.getFieldByName(ds, 1, fld)
         tocheck = data[fld]
         dataOut = extrat.getField(ds, 1, field, 80, len(tocheck))
