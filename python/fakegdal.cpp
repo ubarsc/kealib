@@ -174,22 +174,22 @@ PyInit_fakegdal(void)
     return m;
 }
 
-kealib::KEAImageIO *GDALGetDatasetDriver(kealib::KEAImageIO *pImageIO)
+KEA_EXPORT kealib::KEAImageIO *GDALGetDatasetDriver(kealib::KEAImageIO *pImageIO)
 {
     return pImageIO;
 }
 
-const char *GDALGetDescription(kealib::KEAImageIO *)
+KEA_EXPORT const char *GDALGetDescription(kealib::KEAImageIO *)
 {
     return szKEA;
 }
 
-kealib::KEAImageIO *GDALGetInternalHandle(kealib::KEAImageIO *pImageIO, void *p)
+KEA_EXPORT kealib::KEAImageIO *GDALGetInternalHandle(kealib::KEAImageIO *pImageIO, void *p)
 {
     return pImageIO;
 }
 
-int IsFakeGDAL()
+KEA_EXPORT int IsFakeGDAL()
 {
     return 1;
 }
