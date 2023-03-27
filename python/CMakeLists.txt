@@ -30,7 +30,7 @@ else()
 endif()
 
 # No GDAL since we only depend on it at run time
-find_package(Python 3.7 COMPONENTS Interpreter Development NumPy)
+find_package(Python 3.7 COMPONENTS Interpreter Development)
 
 # Find version of awkward we have installed
 EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -c "import awkward; print(awkward.__version__)" OUTPUT_VARIABLE AWKWARD_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -48,15 +48,10 @@ if(NOT awkward_POPULATED)
   FetchContent_Populate(awkward)
   add_subdirectory(${awkward_SOURCE_DIR} ${awkward_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
-set(AWKWARD_INCLUDE1 "${awkward_SOURCE_DIR}/layout-builder")
-set(AWKWARD_INCLUDE2 "${awkward_SOURCE_DIR}/builder-options")
-set(AWKWARD_INCLUDE3 "${awkward_SOURCE_DIR}/growable-buffer")
 
 # get kealib info
 execute_process(COMMAND ${LIBKEA_CONFIG} --includes OUTPUT_VARIABLE KEALIB_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ${LIBKEA_CONFIG} --ldflags OUTPUT_VARIABLE KEALIB_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-message(STATUS "Includes: ${AWKWARD_INCLUDE1} ${AWKWARD_INCLUDE2} ${AWKWARD_INCLUDE3} ${KEALIB_INCLUDE} ${Python_NumPy_INCLUDE_DIRS}")
 
 find_package(pybind11 CONFIG REQUIRED)
 
@@ -65,10 +60,9 @@ find_library(LIBKEA ${LIBKEA_NAME} REQUIRED HINTS ${KEALIB_LIBRARIES})
 find_package(HDF5 COMPONENTS CXX HL REQUIRED)
 
 pybind11_add_module(extrat extrat.cpp)
-target_include_directories(extrat BEFORE PRIVATE "${AWKWARD_INCLUDE1}" PRIVATE "${AWKWARD_INCLUDE2}" PRIVATE "${AWKWARD_INCLUDE3}" PRIVATE "${KEALIB_INCLUDE}" PRIVATE "${Python_NumPy_INCLUDE_DIRS}")
-target_compile_definitions(extrat PRIVATE NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
+target_include_directories(extrat BEFORE PRIVATE "${KEALIB_INCLUDE}")
 set_target_properties(extrat PROPERTIES CXX_VISIBILITY_PRESET hidden)
-target_link_libraries(extrat PRIVATE ${LIBKEA})
+target_link_libraries(extrat PRIVATE ${LIBKEA} awkward::layout-builder)
 
 install(FILES kea_build_neighbours DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 set(PYKEA_INSTALL_DIR "${Python_SITELIB}/kealib" CACHE PATH "Install Dir for Python Bindings")

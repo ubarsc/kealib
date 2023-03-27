@@ -40,7 +40,6 @@
 #include "awkward/LayoutBuilder.h"
 
 #include "libkea/KEAImageIO.h"
-#include "numpy/arrayobject.h"
 
 #ifdef WIN32
     #include <Windows.h>
@@ -845,21 +844,21 @@ private:
     // templated member function to find all neighbours from given 
     // 2d numby array. Type should match that of the numpy array.
     template<typename T>
-    void addNeighbours(PyArrayObject *pInput)
+    void addNeighbours(pybind11::array_t<T> input)
     {
         T nTypeIgnore = (T)m_ignore;
-        npy_intp nYSize = PyArray_DIM(pInput, 0);
-        npy_intp nXSize = PyArray_DIM(pInput, 1);
+        ssize_t nYSize = input.shape(0);
+        ssize_t nXSize = input.shape(1);
         
         // note: starting/ending one pixel in
         // so overlap of one must be selected
         // otherwise everything will be out of sync with the
         // histogram.
-        for( npy_intp y = 1; y < (nYSize-1); y++ )
+        for( ssize_t y = 1; y < (nYSize-1); y++ )
         {
-            for( npy_intp x = 1; x < (nXSize-1); x++ )
+            for( ssize_t x = 1; x < (nXSize-1); x++ )
             {
-                T val = *(T*)PyArray_GETPTR2(pInput, y, x);
+                T val = input.at(y, x);
                 if( val != nTypeIgnore )
                 {
                     std::vector<size_t> *pVec = nullptr;
@@ -877,9 +876,9 @@ private:
                     }
                 
                     // check neighbouring pixels - left/right and up/down
-                    for( npy_intp x_off = -1; x_off < 2; x_off++ )
+                    for( ssize_t x_off = -1; x_off < 2; x_off++ )
                     {
-                        for( npy_intp y_off = -1; y_off < 2; y_off++ )
+                        for( ssize_t y_off = -1; y_off < 2; y_off++ )
                         {
                             // don't worry about the middle pixel 
                             // - is the one we are trying to find neighbours for.
@@ -891,9 +890,9 @@ private:
                                 {
                                     // don't need to check within the image here as we are 
                                     // starting/ending one pixel in from the edge (see above)
-                                    npy_intp x_idx = x + x_off;
-                                    npy_intp y_idx = y + y_off;
-                                    T other_val = *(T*)PyArray_GETPTR2(pInput, y_idx, x_idx);
+                                    ssize_t x_idx = x + x_off;
+                                    ssize_t y_idx = y + y_off;
+                                    T other_val = input.at(y_idx, x_idx);
                                     if( (val != other_val) && (other_val != nTypeIgnore ) )
                                     {
                                         // check we don't already have this pixel
@@ -939,13 +938,13 @@ private:
     // templated member function to create and copy
     // the user supplied histogram into a known type.
     template<typename T>
-    void copyHistogram(PyArrayObject *pInput)
+    void copyHistogram(pybind11::array_t<T> input)
     {
-        npy_intp nSize = PyArray_DIM(pInput, 0);
-        m_pHistogram = new npy_uintp[nSize];
-        for( npy_intp i = 0; i < nSize; i++ )
+        ssize_t nSize = input.size();
+        m_pHistogram = new uint64_t[nSize];
+        for( ssize_t i = 0; i < nSize; i++ )
         {
-            T val = *(T*)PyArray_GETPTR1(pInput, i);
+            T val = input.at(i);
             m_pHistogram[i] = val;
         }
     }
@@ -955,7 +954,7 @@ private:
     // refernce to the RAT 
     kealib::KEAAttributeTable *m_pRAT;
     // our copy of the user supplied histogram
-    npy_uintp *m_pHistogram;
+    uint64_t *m_pHistogram;
     // the ignore value obtained from the file
     double m_ignore;
     // whether to consider just 4 neighbours or 8.
@@ -969,49 +968,54 @@ NeighbourAccumulator::NeighbourAccumulator(pybind11::array &hist,
                     uint32_t nBand, bool fourConnected/*=true*/)
     : m_fourConnected(fourConnected)
 {
-    PyArrayObject *pInput = reinterpret_cast<PyArrayObject*>(hist.ptr());
-    int arrayType = PyArray_TYPE(pInput);
-    
-    // TODO: is it wise to always copy the histogram, or is there
-    // a better way?
-    switch(arrayType)
+    if( hist.ndim() != 1 )
     {
-        case NPY_INT8:
-            copyHistogram <npy_int8> (pInput);
-            break;
-        case NPY_UINT8:
-            copyHistogram <npy_uint8> (pInput);
-            break;
-        case NPY_INT16:
-            copyHistogram <npy_int16> (pInput);
-            break;
-        case NPY_UINT16:
-            copyHistogram <npy_uint16> (pInput);
-            break;
-        case NPY_INT32:
-            copyHistogram <npy_int32> (pInput);
-            break;
-        case NPY_UINT32:
-            copyHistogram <npy_uint32> (pInput);
-            break;
-        case NPY_INT64:
-            copyHistogram <npy_int64> (pInput);
-            break;
-        case NPY_UINT64:
-            copyHistogram <npy_uint64> (pInput);
-            break;
-        case NPY_FLOAT16:
-            copyHistogram <npy_float16> (pInput);
-            break;
-        case NPY_FLOAT32:
-            copyHistogram <npy_float32> (pInput);
-            break;
-        case NPY_FLOAT64:
-            copyHistogram <npy_float64> (pInput);
-            break;
-        default:
-            throw PyKeaLibException("Unsupported data type");
-            break;
+        throw PyKeaLibException("Only support 1D arrays");
+    }
+
+    if(pybind11::isinstance<pybind11::array_t<int8_t>>(hist))
+    {
+        copyHistogram(hist.cast<pybind11::array_t<int8_t>>());
+    }
+    else if(pybind11::isinstance<pybind11::array_t<uint8_t>>(hist))
+    {
+        copyHistogram(hist.cast<pybind11::array_t<uint8_t>>());
+    }
+    else if(pybind11::isinstance<pybind11::array_t<int16_t>>(hist))
+    {
+        copyHistogram(hist.cast<pybind11::array_t<int16_t>>());
+    }
+    else if(pybind11::isinstance<pybind11::array_t<uint16_t>>(hist))
+    {
+        copyHistogram(hist.cast<pybind11::array_t<uint16_t>>());
+    }
+    else if(pybind11::isinstance<pybind11::array_t<int32_t>>(hist))
+    {
+        copyHistogram(hist.cast<pybind11::array_t<int32_t>>());
+    }
+    else if(pybind11::isinstance<pybind11::array_t<uint32_t>>(hist))
+    {
+        copyHistogram(hist.cast<pybind11::array_t<uint32_t>>());
+    }
+    else if(pybind11::isinstance<pybind11::array_t<int64_t>>(hist))
+    {
+        copyHistogram(hist.cast<pybind11::array_t<int64_t>>());
+    }
+    else if(pybind11::isinstance<pybind11::array_t<uint64_t>>(hist))
+    {
+        copyHistogram(hist.cast<pybind11::array_t<uint64_t>>());
+    }
+    else if(pybind11::isinstance<pybind11::array_t<float>>(hist))
+    {
+        copyHistogram(hist.cast<pybind11::array_t<float>>());
+    }
+    else if(pybind11::isinstance<pybind11::array_t<double>>(hist))
+    {
+        copyHistogram(hist.cast<pybind11::array_t<double>>());
+    }
+    else
+    {
+        throw PyKeaLibException("Unsupported data type");
     }    
 
     kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset);
@@ -1054,42 +1058,42 @@ void NeighbourAccumulator::addArray(pybind11::array &arr)
         throw PyKeaLibException("Only support 2D arrays");
     }
 
-    PyArrayObject *pInput = reinterpret_cast<PyArrayObject*>(arr.ptr());
-    
-    int arrayType = PyArray_TYPE(pInput);
-    
-    switch(arrayType)
+    if(pybind11::isinstance<pybind11::array_t<int8_t>>(arr))
     {
-        case NPY_INT8:
-            addNeighbours <npy_int8> (pInput);
-            break;
-        case NPY_UINT8:
-            addNeighbours <npy_uint8> (pInput);
-            break;
-        case NPY_INT16:
-            addNeighbours <npy_int16> (pInput);
-            break;
-        case NPY_UINT16:
-            addNeighbours <npy_uint16> (pInput);
-            break;
-        case NPY_INT32:
-            addNeighbours <npy_int32> (pInput);
-            break;
-        case NPY_UINT32:
-            addNeighbours <npy_uint32> (pInput);
-            break;
-        case NPY_INT64:
-            addNeighbours <npy_int64> (pInput);
-            break;
-        case NPY_UINT64:
-            addNeighbours <npy_uint64> (pInput);
-            break;
-            
-        // note: don't support float types
-        default:
-            throw PyKeaLibException("Unsupported data type");
-            break;
+        addNeighbours(arr.cast<pybind11::array_t<int8_t>>());
     }
+    else if(pybind11::isinstance<pybind11::array_t<uint8_t>>(arr))
+    {
+        addNeighbours(arr.cast<pybind11::array_t<uint8_t>>());
+    }
+    else if(pybind11::isinstance<pybind11::array_t<int16_t>>(arr))
+    {
+        addNeighbours(arr.cast<pybind11::array_t<int16_t>>());
+    }
+    else if(pybind11::isinstance<pybind11::array_t<uint16_t>>(arr))
+    {
+        addNeighbours(arr.cast<pybind11::array_t<uint16_t>>());
+    }
+    else if(pybind11::isinstance<pybind11::array_t<int32_t>>(arr))
+    {
+        addNeighbours(arr.cast<pybind11::array_t<int32_t>>());
+    }
+    else if(pybind11::isinstance<pybind11::array_t<uint32_t>>(arr))
+    {
+        addNeighbours(arr.cast<pybind11::array_t<uint32_t>>());
+    }
+    else if(pybind11::isinstance<pybind11::array_t<int64_t>>(arr))
+    {
+        addNeighbours(arr.cast<pybind11::array_t<int64_t>>());
+    }
+    else if(pybind11::isinstance<pybind11::array_t<uint64_t>>(arr))
+    {
+        addNeighbours(arr.cast<pybind11::array_t<uint64_t>>());
+    }
+    else
+    {
+        throw PyKeaLibException("Unsupported data type");
+    }    
 }
 
 // sets global function pointers to GDAL functions we use
