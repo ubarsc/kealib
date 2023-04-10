@@ -17,7 +17,8 @@
 #  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 #  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-cmake_minimum_required(VERSION 3.1...3.16)
+cmake_minimum_required(VERSION 3.22)
+cmake_policy(VERSION 3.22)
 project(extrat LANGUAGES CXX)
 
 if(MSVC)
@@ -28,32 +29,61 @@ else()
   set(LIBKEA_CONFIG "kea-config")
 endif()
 
-# get libawkward info
-execute_process(COMMAND python -m awkward.config --incdir OUTPUT_VARIABLE AWKWARD_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND python -m awkward.config --libdir OUTPUT_VARIABLE AWKWARD_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
+# No GDAL since we only depend on it at run time
+find_package(Python 3.7 COMPONENTS Interpreter Development)
+
+# Find version of awkward we have installed
+EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -c "import awkward; print(awkward.__version__)" OUTPUT_VARIABLE AWKWARD_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+message(STATUS "Using awkward version ${AWKWARD_VERSION}")
+
+# get awkward headers
+include(FetchContent)
+FetchContent_Declare(
+  awkward
+  URL      https://github.com/scikit-hep/awkward/releases/download/v${AWKWARD_VERSION}/header-only.zip
+)
+# don't use FetchContent_MakeAvailable(awkward) - it will install - see https://stackoverflow.com/questions/65527126/disable-install-for-fetchcontent
+FetchContent_GetProperties(awkward)
+if(NOT awkward_POPULATED)
+  FetchContent_Populate(awkward)
+  add_subdirectory(${awkward_SOURCE_DIR} ${awkward_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
 # get kealib info
 execute_process(COMMAND ${LIBKEA_CONFIG} --includes OUTPUT_VARIABLE KEALIB_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ${LIBKEA_CONFIG} --ldflags OUTPUT_VARIABLE KEALIB_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-find_package(GDAL REQUIRED)
-find_package(Python3 COMPONENTS Interpreter Development NumPy)
+find_package(pybind11 CONFIG REQUIRED)
 
-message(STATUS "Includes: ${AWKWARD_INCLUDE} ${KEALIB_INCLUDE} ${GDAL_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS}")
-include_directories(BEFORE "${AWKWARD_INCLUDE}" "${KEALIB_INCLUDE}" "${GDAL_INCLUDE_DIRS}" "${Python3_NumPy_INCLUDE_DIRS}")
-
-add_subdirectory(pybind11)
-
-find_library(CPU-KERNELS awkward-cpu-kernels REQUIRED HINTS ${AWKWARD_LIBRARIES})
-find_library(LIBAWKWARD awkward REQUIRED HINTS ${AWKWARD_LIBRARIES})
 find_library(LIBKEA ${LIBKEA_NAME} REQUIRED HINTS ${KEALIB_LIBRARIES})
-message(STATUS "Libraries: ${CPU-KERNELS} ${LIBAWKWARD} ${LIBKEA} ${GDAL_LIBRARIES}")
+
+find_package(HDF5 COMPONENTS CXX HL REQUIRED)
 
 pybind11_add_module(extrat extrat.cpp)
-target_compile_definitions(extrat PRIVATE NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
+target_include_directories(extrat BEFORE PRIVATE "${KEALIB_INCLUDE}")
 set_target_properties(extrat PROPERTIES CXX_VISIBILITY_PRESET hidden)
-target_link_libraries(extrat PRIVATE ${CPU-KERNELS} ${LIBAWKWARD} ${LIBKEA} ${GDAL_LIBRARIES})
+target_link_libraries(extrat PRIVATE ${LIBKEA} awkward::layout-builder)
 
-install(FILES kea_build_neighbours.py DESTINATION bin)
-set(PYKEA_INSTALL_DIR "${Python3_SITELIB}/kealib" CACHE PATH "Install Dir for Python Bindings")
+install(FILES kea_build_neighbours DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+set(PYKEA_INSTALL_DIR "${Python_SITELIB}/kealib" CACHE PATH "Install Dir for Python Bindings")
 install(TARGETS extrat DESTINATION ${PYKEA_INSTALL_DIR})
-install(FILES __init__.py DESTINATION ${PYKEA_INSTALL_DIR})
+install(FILES __init__.py build_neighbours.py DESTINATION ${PYKEA_INSTALL_DIR})
+
+# Our 'fake' GDAL - don't install
+Python_add_library(fakegdal MODULE WITH_SOABI fakegdal.cpp)
+get_target_property(FAKEGDAL_SUFFIX fakegdal SUFFIX)
+set(FAKEGDAL_NAME "fakegdal${FAKEGDAL_SUFFIX}")
+target_include_directories(fakegdal BEFORE PRIVATE "${HDF5_INCLUDE_DIRS}" PRIVATE "${KEALIB_INCLUDE}")
+target_link_libraries(fakegdal PRIVATE ${LIBKEA})
+
+add_executable(testseg testseg.cpp)
+target_include_directories(testseg BEFORE PRIVATE "${KEALIB_INCLUDE}")
+target_link_libraries(testseg PRIVATE ${LIBKEA})
+
+# custom install step to create .pyc files
+install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} -m compileall ${PYKEA_INSTALL_DIR})")
+
+enable_testing()
+add_test(NAME testpython COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testpython.py)
+# ensure we can import fakegdal and the load the same lib as GDAL from the build location
+set_property(TEST testpython PROPERTY ENVIRONMENT_MODIFICATION "PYTHONPATH=path_list_prepend:${CMAKE_CURRENT_BINARY_DIR};KEALIB_LIBGDAL=set:${CMAKE_CURRENT_BINARY_DIR}/${FAKEGDAL_NAME}")

@@ -82,10 +82,10 @@ include_directories(${LIBKEA_HEADERS_DIR})
 # to keep compatibility with previous versions
 install (TARGETS ${LIBKEA_GDAL_DRIVER} DESTINATION lib/gdalplugins)
 
-# Then look for existing plugins directories
+# Then look for existing plugins directories (only possible on Unix - gdal-config not really runable on Windows)
 set(GDAL_PLUGIN_DIRS)
 find_program(GDAL_CONFIG_EXECUTABLE "gdal-config" HINTS ${GDAL_CONFIG})
-if(EXISTS "${GDAL_CONFIG_EXECUTABLE}")
+if(NOT MSVC AND EXISTS "${GDAL_CONFIG_EXECUTABLE}")
     # find gdal prefix and version
     execute_process(COMMAND ${GDAL_CONFIG_EXECUTABLE} --prefix OUTPUT_VARIABLE GDAL_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
     string(STRIP ${GDAL_PREFIX} GDAL_PREFIX)
