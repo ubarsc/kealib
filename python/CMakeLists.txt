@@ -21,14 +21,6 @@ cmake_minimum_required(VERSION 3.22)
 cmake_policy(VERSION 3.22)
 project(extrat LANGUAGES CXX)
 
-if(MSVC)
-  set(LIBKEA_NAME "libkea")
-  set(LIBKEA_CONFIG "kea-config.bat")
-else()
-  set(LIBKEA_NAME "kea")
-  set(LIBKEA_CONFIG "kea-config")
-endif()
-
 # No GDAL since we only depend on it at run time
 find_package(Python 3.7 COMPONENTS Interpreter Development)
 
@@ -40,6 +32,7 @@ message(STATUS "Using awkward version ${AWKWARD_VERSION}")
 include(FetchContent)
 FetchContent_Declare(
   awkward
+  DOWNLOAD_EXTRACT_TIMESTAMP true
   URL      https://github.com/scikit-hep/awkward/releases/download/v${AWKWARD_VERSION}/header-only.zip
 )
 # don't use FetchContent_MakeAvailable(awkward) - it will install - see https://stackoverflow.com/questions/65527126/disable-install-for-fetchcontent
@@ -49,20 +42,13 @@ if(NOT awkward_POPULATED)
   add_subdirectory(${awkward_SOURCE_DIR} ${awkward_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
-# get kealib info
-execute_process(COMMAND ${LIBKEA_CONFIG} --includes OUTPUT_VARIABLE KEALIB_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND ${LIBKEA_CONFIG} --ldflags OUTPUT_VARIABLE KEALIB_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
-
 find_package(pybind11 CONFIG REQUIRED)
-
-find_library(LIBKEA ${LIBKEA_NAME} REQUIRED HINTS ${KEALIB_LIBRARIES})
-
-find_package(HDF5 COMPONENTS CXX HL REQUIRED)
+find_package(libkea CONFIG REQUIRED)
 
 pybind11_add_module(extrat extrat.cpp)
 target_include_directories(extrat BEFORE PRIVATE "${KEALIB_INCLUDE}")
 set_target_properties(extrat PROPERTIES CXX_VISIBILITY_PRESET hidden)
-target_link_libraries(extrat PRIVATE ${LIBKEA} awkward::layout-builder)
+target_link_libraries(extrat PRIVATE libkea::Kealib awkward::layout-builder)
 
 install(FILES kea_build_neighbours DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 set(PYKEA_INSTALL_DIR "${Python_SITELIB}/kealib" CACHE PATH "Install Dir for Python Bindings")
@@ -73,12 +59,10 @@ install(FILES __init__.py build_neighbours.py DESTINATION ${PYKEA_INSTALL_DIR})
 Python_add_library(fakegdal MODULE WITH_SOABI fakegdal.cpp)
 get_target_property(FAKEGDAL_SUFFIX fakegdal SUFFIX)
 set(FAKEGDAL_NAME "fakegdal${FAKEGDAL_SUFFIX}")
-target_include_directories(fakegdal BEFORE PRIVATE "${HDF5_INCLUDE_DIRS}" PRIVATE "${KEALIB_INCLUDE}")
-target_link_libraries(fakegdal PRIVATE ${LIBKEA})
+target_link_libraries(fakegdal PRIVATE libkea::Kealib)
 
 add_executable(testseg testseg.cpp)
-target_include_directories(testseg BEFORE PRIVATE "${KEALIB_INCLUDE}")
-target_link_libraries(testseg PRIVATE ${LIBKEA})
+target_link_libraries(testseg PRIVATE libkea::Kealib)
 
 # custom install step to create .pyc files
 install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} -m compileall ${PYKEA_INSTALL_DIR})")
