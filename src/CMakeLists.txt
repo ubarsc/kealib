@@ -61,9 +61,13 @@ target_include_directories(Kealib INTERFACE
 )
 # TODO: a better way??
 if(MSVC)
-    target_link_libraries(Kealib INTERFACE "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/lib/libkea${CMAKE_IMPORT_LIBRARY_SUFFIX}>")
+    target_link_libraries(Kealib INTERFACE 
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/libkea${CMAKE_IMPORT_LIBRARY_SUFFIX}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/lib/libkea${CMAKE_IMPORT_LIBRARY_SUFFIX}>)
 else()
-    target_link_libraries(Kealib INTERFACE "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/lib/libkea${CMAKE_SHARED_LIBRARY_SUFFIX}>")
+    target_link_libraries(Kealib INTERFACE 
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/libkea${CMAKE_SHARED_LIBRARY_SUFFIX}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/lib/libkea${CMAKE_SHARED_LIBRARY_SUFFIX}>)
 endif(MSVC)
 ###############################################################################
 
