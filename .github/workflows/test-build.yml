@@ -91,7 +91,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -G "NMake Makefiles" -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=%CONDA_PREFIX%/Library -D CMAKE_PREFIX_PATH=%CONDA_PREFIX%/Library -D LIBKEA_WITH_GDAL=ON ..
+        cmake -G "NMake Makefiles" -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX/Library -D CMAKE_PREFIX_PATH=$CONDA_PREFIX/Library -D LIBKEA_WITH_GDAL=ON ..
     - name: nmake
       shell: bash -el {0}
       run: |
@@ -117,7 +117,7 @@ jobs:
         cd python
         mkdir build
         cd build
-        cmake -G "NMake Makefiles" -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=%CONDA_PREFIX%/Library -D CMAKE_PREFIX_PATH=%CONDA_PREFIX%/Library ..
+        cmake -G "NMake Makefiles" -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX/Library -D CMAKE_PREFIX_PATH=$CONDA_PREFIX/Library ..
     - name: Make_Python
       shell: bash -el {0}
       run: |

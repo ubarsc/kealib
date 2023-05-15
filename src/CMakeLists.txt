@@ -54,7 +54,21 @@ set_target_properties(${LIBKEA_LIB_NAME}
 )
 
 add_library(Kealib INTERFACE)
-target_link_libraries(Kealib INTERFACE "${LIBKEA_LIB_NAME}")
+target_include_directories(Kealib INTERFACE
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+# TODO: a better way??
+if(MSVC)
+    target_link_libraries(Kealib INTERFACE 
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/libkea${CMAKE_IMPORT_LIBRARY_SUFFIX}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/lib/libkea${CMAKE_IMPORT_LIBRARY_SUFFIX}>)
+else()
+    target_link_libraries(Kealib INTERFACE 
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/libkea${CMAKE_SHARED_LIBRARY_SUFFIX}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/lib/libkea${CMAKE_SHARED_LIBRARY_SUFFIX}>)
+endif(MSVC)
 ###############################################################################
 
 ###############################################################################
@@ -65,11 +79,32 @@ target_link_libraries (test1 ${LIBKEA_LIB_NAME})
 ###############################################################################
 
 ###############################################################################
+# Package
+include(CMakePackageConfigHelpers)
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/libkeaConfig.cmake"
+  INSTALL_DESTINATION lib/cmake/libkea
+)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/libkeaConfigVersion.cmake"
+  VERSION "${LIBKEA_VERSION}"
+  COMPATIBILITY AnyNewerVersion
+)
+###############################################################################
 # Install
-install (TARGETS ${LIBKEA_LIB_NAME}
+install (TARGETS ${LIBKEA_LIB_NAME} Kealib
+          EXPORT libkeaTargets
           RUNTIME DESTINATION bin
           LIBRARY DESTINATION lib
           ARCHIVE DESTINATION lib)
 install(FILES ${LIBKEA_H} ${CMAKE_CURRENT_BINARY_DIR}/include/libkea/kea_export.h
         DESTINATION include/libkea)
+install(EXPORT libkeaTargets
+        FILE libkeaTargets.cmake
+        NAMESPACE libkea::
+        DESTINATION lib/cmake/libkea)
+install(FILES
+          "${CMAKE_CURRENT_BINARY_DIR}/libkeaConfig.cmake"
+          "${CMAKE_CURRENT_BINARY_DIR}/libkeaConfigVersion.cmake"
+        DESTINATION lib/cmake/libkea)
 ###############################################################################
