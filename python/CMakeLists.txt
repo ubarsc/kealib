@@ -24,12 +24,15 @@ project(extrat LANGUAGES CXX)
 # No GDAL since we only depend on it at run time
 find_package(Python 3.7 COMPONENTS Interpreter Development)
 
-# Find version of awkward we have installed
-message(STATUS "Finding awkward version via Python")
-# don't import all of awkward - has some C libraries that won't work for cross compilation
-EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -c "from awkward._version import __version__;print(__version__)" OUTPUT_VARIABLE AWKWARD_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(AWKWARD_VERSION "" CACHE STRING "Set version of awkward being used. Determined via Python if not set")
 if(AWKWARD_VERSION STREQUAL "")
-    message(FATAL_ERROR "Unable to import awkward")
+    # Find version of awkward we have installed
+    message(STATUS "Finding awkward version via Python")
+    # don't import all of awkward - has some C libraries that won't work for cross compilation
+    EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -c "import awkward; print(awkward.__version__)" OUTPUT_VARIABLE AWKWARD_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(AWKWARD_VERSION STREQUAL "")
+        message(FATAL_ERROR "Unable to import awkward")
+    endif()
 endif()
 message(STATUS "Using awkward version ${AWKWARD_VERSION}")
 
