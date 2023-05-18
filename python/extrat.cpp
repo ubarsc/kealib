@@ -775,6 +775,13 @@ pybind11::object getImageBlock(pybind11::object &dataset, uint32_t nBand,
             pImageIO->readImageBlock2Band(nBand, buf.ptr, col, row, xsize, ysize, xsize, ysize, dtype);
             return result;
         }
+        else if( dtype == kealib::kea_16uint)
+        {
+            auto result = pybind11::array_t<uint16_t>({ysize, xsize});
+            pybind11::buffer_info buf = result.request();
+            pImageIO->readImageBlock2Band(nBand, buf.ptr, col, row, xsize, ysize, xsize, ysize, dtype);
+            return result;
+        }
         else if( dtype == kealib::kea_32int)
         {
             auto result = pybind11::array_t<int32_t>({ysize, xsize});

@@ -82,6 +82,9 @@ def main():
     # we need the dataset for NeighbourAccumulator
     # Open using GDAL here, test routines can supply a fake
     # GDAL dataset.
+    # only import here so we don't need GDAL for testing
+    from osgeo import gdal
+    gdal.UseExceptions()
     ds = gdal.Open(cmdargs.infile, gdal.GA_Update)
     
     buildNeighbours(ds, cmdargs.band, cmdargs.tilesize, cmdargs.eightway)
