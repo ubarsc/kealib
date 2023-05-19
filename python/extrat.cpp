@@ -60,11 +60,12 @@ using NumpyBuilder = awkward::LayoutBuilder::Numpy<PRIMITIVE>;
 
 
 // GLOBAL function pointers we use
-// set to values in SetFunctionPointers() (called from the init function)
+// set to values in SetFunctionPointers() (set on first use)
 void* (*pGetDriver)(void*) = nullptr;
 const char * (*pGetDescription)(void*) = nullptr;
 void *(*pGetInternalHandle)(void *, const char*) = nullptr;
 bool IsFakeGDAL = false;
+void SetFunctionPointers();
 
 // Exception class. Wrapped by Python.
 class PyKeaLibException : public std::exception
@@ -148,9 +149,18 @@ void freeNeighbourLists(std::vector<std::vector<size_t>* > *pNeighbours)
 // given a dataset.
 kealib::KEAImageIO *getImageIOFromDataset(pybind11::object &dataset)
 {
+    // load libgdal if it hasn't already been done
+    // (doing this here rather than on import so testing package
+    // import can happen without gdal)
+    // probably should do some sort of thread safe thing here.
+    if( pGetDriver == nullptr )
+    {
+        SetFunctionPointers();
+    }
+
     void *pPtr = getUnderlyingPtrFromSWIGPyObject(dataset);
     
-    // now do the actual calls with our function pointers (set on import) 
+    // now do the actual calls with our function pointers 
     void *pDriver = (*pGetDriver)(pPtr);
     if( !pDriver )
     {
@@ -1357,7 +1367,5 @@ PYBIND11_MODULE(extrat, m) {
         .def_readwrite("ySize", &kealib::KEAImageSpatialInfo::ySize);
 
     pybind11::register_exception<PyKeaLibException>(m, "KeaLibException");
-    
-    SetFunctionPointers();
 }
 
