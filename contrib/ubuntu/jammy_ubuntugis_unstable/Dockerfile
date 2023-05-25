@@ -19,8 +19,9 @@ WORKDIR $ROOTDIR/
 
 # Install basic dependencies
 RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends software-properties-common && \
+    apt-get install -y --no-install-recommends software-properties-common gnupg && \
     add-apt-repository universe && \
+    add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable && \
     apt-get update -y && apt-get install --no-install-recommends -y \
     build-essential \
     libgdal-dev \
@@ -58,6 +59,6 @@ RUN cd /usr/local/src/kealib && \
     make install DESTDIR=$KEALIB_PACKAGE_DIR && \
     echo export GDAL_DRIVER_PATH=/usr/lib/gdalplugins >> $KEALIB_PACKAGE_DIR/etc/profile.d/kealib.sh
 
-COPY ./contrib/ubuntu/jammy_none/DEBIAN $KEALIB_PACKAGE_DIR/DEBIAN
+COPY ./contrib/ubuntu/jammy_ubuntugis_unstable/DEBIAN $KEALIB_PACKAGE_DIR/DEBIAN
 RUN dpkg-deb --build $KEALIB_PACKAGE_DIR
-RUN echo "The package is built and is available in the image in $PACKAGE_DIR"
+RUN echo "The package is built and is available in the image in $PACKAGE_DIR" && ls $PACKAGE_DIR

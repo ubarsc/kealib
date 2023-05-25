@@ -3,7 +3,7 @@ Version: 1.5.1-1
 Section: science
 Priority: optional
 Architecture: amd64
-Depends: libgdal30, libhdf5-cpp-103-1, libproj22
+Depends: libgdal32, libhdf5-cpp-103-1, libproj25
 Maintainer: Environment Systems Ltd. (developers@envsys.co.uk)
 Description: An HDF5 Based Raster File Format
   KEALib provides an implementation of the GDAL data model. The format supports raster attribute tables, image pyramids, meta-data and in-built statistics while also handling very large files and compression throughout.
