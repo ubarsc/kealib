@@ -56,7 +56,7 @@ find_package(GDAL REQUIRED)
 if(KEAHDF5_STATIC_LIBS)
     set(HDF5_USE_STATIC_LIBRARIES ON)
 	# Need to link to HDF5 also
-    find_package(HDF5 COMPONENTS CXX HL REQUIRED)
+    find_package(HDF5 COMPONENTS C CXX REQUIRED)
 
 	target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC GDAL::GDAL hdf5::hdf5 ${LIBKEA_LIB_PATH}/liblibkea.lib)
     
