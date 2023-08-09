@@ -72,7 +72,6 @@ elseif(KEA_PLUGIN_OUTOFTREE)
 else()
     target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC GDAL::GDAL PRIVATE Kealib)
 endif()
-include_directories(${GDAL_INCLUDE_DIR})
 include_directories(${LIBKEA_HEADERS_DIR})
 ###############################################################################
 
