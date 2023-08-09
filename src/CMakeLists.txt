@@ -30,7 +30,7 @@ source_group("include_kea" FILES ${LIBKEA_H})
 ###############################################################################
 # Build, link and install library
 add_library(${LIBKEA_LIB_NAME} ${LIBKEA_CPP} ${LIBKEA_H} )
-target_link_libraries(${LIBKEA_LIB_NAME} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+target_link_libraries(${LIBKEA_LIB_NAME} PRIVATE hdf5::hdf5 hdf5::hdf5_cpp)
 
 include(GenerateExportHeader)
 generate_export_header(${LIBKEA_LIB_NAME}

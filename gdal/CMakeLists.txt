@@ -58,19 +58,19 @@ if(KEAHDF5_STATIC_LIBS)
 	# Need to link to HDF5 also
     find_package(HDF5 COMPONENTS CXX HL REQUIRED)
 
-	target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} ${HDF5_LIBRARIES} ${LIBKEA_LIB_PATH}/liblibkea.lib)
+	target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC GDAL::GDAL hdf5::hdf5 ${LIBKEA_LIB_PATH}/liblibkea.lib)
     
     # Bizarelly, something about this combination forces the MSVC Non-DLL flags
     # which then causes linking to fail (as everything else is build to be a DLL). Reset.
     set_target_properties(${LIBKEA_GDAL_DRIVER} PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 elseif(KEA_PLUGIN_OUTOFTREE)
     if(MSVC)
-        target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} ${HDF5_LIBRARIES} ${LIBKEA_LIB_PATH}/libkea.lib)
+        target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC GDAL::GDAL hdf5::hdf5 ${LIBKEA_LIB_PATH}/libkea.lib)
     else()
-        target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} ${HDF5_LIBRARIES} -L${LIBKEA_LIB_PATH} -lkea)
+        target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC GDAL::GDAL hdf5::hdf5 -L${LIBKEA_LIB_PATH} -lkea)
     endif()
 else()
-    target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} PRIVATE Kealib)
+    target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC GDAL::GDAL PRIVATE Kealib)
 endif()
 include_directories(${GDAL_INCLUDE_DIR})
 include_directories(${LIBKEA_HEADERS_DIR})

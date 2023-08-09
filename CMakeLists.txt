@@ -78,7 +78,7 @@ option(HDF5_PREFER_PARALLEL "Prefer HDF5 parallel wrapper instead of serial one.
 if(NOT "x$ENV{HDF5_ROOT}" STREQUAL "x")
     message(STATUS "HDF5_ROOT environment variable specified: $ENV{HDF5_ROOT}")
 endif()
-find_package(HDF5 COMPONENTS CXX HL REQUIRED)
+find_package(HDF5 COMPONENTS C CXX REQUIRED)
 
 # https://support.hdfgroup.org/HDF5/doc/TechNotes/ThreadSafeLibrary.html
 include(CheckSymbolExists)
@@ -206,7 +206,6 @@ endif(MSVC)
 
 include_directories ("${PROJECT_HEADER_DIR}")
 include_directories ("${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_HEADER_DIR}")
-include_directories(${HDF5_INCLUDE_DIRS})
 add_subdirectory (src)
 if (LIBKEA_WITH_GDAL)
 	add_subdirectory ("${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_GDAL_DIR}")
