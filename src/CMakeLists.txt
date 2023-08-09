@@ -75,7 +75,7 @@ endif(MSVC)
 # Testing
 # exe needs to be in 'src' otherwise it doesn't work
 add_executable (test1 ${PROJECT_SOURCE_DIR}/src/tests/test1.cpp)
-target_link_libraries (test1 ${LIBKEA_LIB_NAME})
+target_link_libraries (test1 PUBLIC ${LIBKEA_LIB_NAME} PRIVATE hdf5::hdf5 hdf5::hdf5_cpp)
 ###############################################################################
 
 ###############################################################################
