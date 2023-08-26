@@ -52,11 +52,16 @@ add_library(${LIBKEA_GDAL_DRIVER} ${KEA_GDAL_CPP} ${KEA_GDAL_H} ${KEA_GDAL_RC})
 # remove the leading "lib" as GDAL won't look for files with this prefix
 set_target_properties(${LIBKEA_GDAL_DRIVER} PROPERTIES PREFIX "")
 
+# if building in-tree ensure kealib is built first
+if(NOT KEA_PLUGIN_OUTOFTREE)
+    add_dependencies(${LIBKEA_GDAL_DRIVER} ${LIBKEA_LIB_NAME})
+endif()
+
 find_package(GDAL REQUIRED)
 if(KEAHDF5_STATIC_LIBS)
     set(HDF5_USE_STATIC_LIBRARIES ON)
 	# Need to link to HDF5 also
-    find_package(HDF5 COMPONENTS CXX HL REQUIRED)
+    find_package(HDF5 COMPONENTS C CXX REQUIRED)
 
 	target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} ${HDF5_LIBRARIES} ${LIBKEA_LIB_PATH}/liblibkea.lib)
     

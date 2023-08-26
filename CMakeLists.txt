@@ -78,7 +78,7 @@ option(HDF5_PREFER_PARALLEL "Prefer HDF5 parallel wrapper instead of serial one.
 if(NOT "x$ENV{HDF5_ROOT}" STREQUAL "x")
     message(STATUS "HDF5_ROOT environment variable specified: $ENV{HDF5_ROOT}")
 endif()
-find_package(HDF5 COMPONENTS CXX HL REQUIRED)
+find_package(HDF5 COMPONENTS C CXX REQUIRED)
 
 # https://support.hdfgroup.org/HDF5/doc/TechNotes/ThreadSafeLibrary.html
 include(CheckSymbolExists)
