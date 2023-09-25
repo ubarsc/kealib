@@ -1,3 +1,11 @@
+1.5.2
+-----
+
+* Fix parallel builds and remove requirement for HDF5 HL
+* Update recipe for .deb files
+* Load libgdal on-demand in Python bindings
+* Fix reading unsigned 16bit images in Python bindings
+
 1.5.1
 -----
 

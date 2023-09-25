@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "KEA for ERDAS Imagine"
-#define MyAppVersion "1.5.1"
+#define MyAppVersion "1.5.2"
 #define MyAppPublisher "Landcare Research NZ"
 #define MyAppURL "http://kealib.org/"
 #define MyOutputFilename "setup_kea_erdas2011_" + GetDateTimeString('yyyymmdd', '', '')
