@@ -18,7 +18,7 @@ How to create a distribution of kealib.
 6.  Export an environment variable with the version to make the following commands
     easier UPDATE AS NEEDED:
     
-        export KEAVER=1.5.1
+        export KEAVER=1.5.2
     
 7.  Use "git tag" to add a version number tag, e.g.
 
