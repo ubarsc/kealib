@@ -32,6 +32,7 @@
 #include "keacopy.h"
 
 #include "libkea/KEACommon.h"
+#include "cpl_vsi_virtual.h"
 
 // Function for converting a libkea type into a GDAL type
 GDALDataType KEA_to_GDAL_Type( kealib::KEADataType ekeaType )
@@ -166,6 +167,14 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
                   poOpenInfo->pszFilename, e.what() );
             return nullptr;
         }
+        catch (...)
+        {
+            // was a problem - can't be a valid file
+            CPLError(CE_Failure, CPLE_OpenFailed,
+                     "Attempt to open file `%s' failed. Error: unknown\n",
+                     poOpenInfo->pszFilename);
+            return nullptr;
+        }
     }
     else
     {
@@ -208,6 +217,20 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
                   "Attempt to create file `%s' failed. Invalid creation option(s)\n", pszFilename);
         return nullptr;
     }
+    
+    // This helps avoiding issues with H5File handles in a bad state, that
+    // may cause crashes at process termination
+    // Cf https://github.com/OSGeo/gdal/issues/8743
+    if (VSIFileManager::GetHandler(pszFilename) !=
+        VSIFileManager::GetHandler(""))
+    {
+        CPLError(CE_Failure, CPLE_OpenFailed,
+                 "Attempt to create file `%s' failed. /vsi file systems not "
+                 "supported\n",
+                 pszFilename);
+        return nullptr;
+    }
+        
     // process any creation options in papszParmList
     // default value
     unsigned int nimageblockSize = kealib::KEA_IMAGE_CHUNK_SIZE;
@@ -294,6 +317,13 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
         CPLError( CE_Failure, CPLE_OpenFailed,
                   "Attempt to create file `%s' failed. Error: %s\n",
                   pszFilename, e.what() );
+        return nullptr;
+    }
+    catch (...)
+    {
+        CPLError(CE_Failure, CPLE_OpenFailed,
+                 "Attempt to create file `%s' failed. Error: unknown\n",
+                 pszFilename);
         return nullptr;
     }
 }
