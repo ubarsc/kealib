@@ -6,7 +6,7 @@ set(LIBKEA_HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../include CACHE PATH "Path t
 option(KEAHDF5_STATIC_LIBS "Build against static KEA and HDF5" OFF)
 option(KEA_PLUGIN_OUTOFTREE "GDAL plugin is being build separately from kealib (must set LIBKEA_LIB_PATH,LIBKEA_HEADERS_DIR)" OFF)
 
-set(KEA_GDAL_H keadataset.h keaband.h keaoverview.h keacopy.h keamaskband.h kearat.h)
+set(KEA_GDAL_H keadataset.h keaband.h keaoverview.h keacopy.h keamaskband.h kearat.h hdf5vfl.h)
 
 set(KEA_GDAL_CPP keadriver.cpp keadataset.cpp keaband.cpp keaoverview.cpp keacopy.cpp keamaskband.cpp kearat.cpp)
 if(MSVC)
