@@ -3,7 +3,6 @@ cmake_minimum_required (VERSION 3.5)
 # set file locations
 set(LIBKEA_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../src CACHE PATH "Path to KEA library")
 set(LIBKEA_HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../include CACHE PATH "Path to KEA Headers")
-option(KEAHDF5_STATIC_LIBS "Build against static KEA and HDF5" OFF)
 option(KEA_PLUGIN_OUTOFTREE "GDAL plugin is being build separately from kealib (must set LIBKEA_LIB_PATH,LIBKEA_HEADERS_DIR)" OFF)
 
 set(KEA_GDAL_H keadataset.h keaband.h keaoverview.h keacopy.h keamaskband.h kearat.h hdf5vfl.h)
@@ -60,22 +59,14 @@ endif()
 find_package(GDAL REQUIRED)
 # Need to link to HDF5 also
 find_package(HDF5 COMPONENTS C CXX REQUIRED)
-if(KEAHDF5_STATIC_LIBS)
-    set(HDF5_USE_STATIC_LIBRARIES ON)
-
-	target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} ${HDF5_LIBRARIES} ${LIBKEA_LIB_PATH}/liblibkea.lib)
-    
-    # Bizarelly, something about this combination forces the MSVC Non-DLL flags
-    # which then causes linking to fail (as everything else is build to be a DLL). Reset.
-    set_target_properties(${LIBKEA_GDAL_DRIVER} PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
-elseif(KEA_PLUGIN_OUTOFTREE)
+if(KEA_PLUGIN_OUTOFTREE)
     if(MSVC)
         target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} ${HDF5_LIBRARIES} ${LIBKEA_LIB_PATH}/libkea.lib)
     else()
         target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} ${HDF5_LIBRARIES} -L${LIBKEA_LIB_PATH} -lkea)
     endif()
 else()
-    target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} PRIVATE Kealib)
+    target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} ${HDF5_LIBRARIES} PRIVATE Kealib)
 endif()
 include_directories(${GDAL_INCLUDE_DIR})
 include_directories(${LIBKEA_HEADERS_DIR})
