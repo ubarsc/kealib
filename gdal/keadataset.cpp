@@ -30,6 +30,7 @@
 #include "keaband.h"
 #include "keadataset.h"
 #include "keacopy.h"
+#include "hdf5vfl.h"
 
 #include "libkea/KEACommon.h"
 #include "cpl_vsi_virtual.h"
@@ -126,18 +127,7 @@ kealib::KEADataType GDAL_to_KEA_Type( GDALDataType egdalType )
 // static function - pointer set in driver 
 GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
 {
-    bool bisKEA = false;
-    try
-    {
-        // is this a KEA file?
-        bisKEA = kealib::KEAImageIO::isKEAImage( poOpenInfo->pszFilename );
-    }
-    catch (const kealib::KEAIOException &e)
-    {
-        bisKEA = false;
-    }
-
-    if( bisKEA )
+    if( Identify(poOpenInfo) )
     {
         try
         {
@@ -145,7 +135,24 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
             H5::H5File *pH5File;
             if( poOpenInfo->eAccess == GA_ReadOnly )
             {
-                pH5File = kealib::KEAImageIO::openKeaH5RDOnly( poOpenInfo->pszFilename );
+                // use the virtual driver so we can open files using
+                // /vsicurl etc
+                // do this same as libkea
+                H5::FileAccPropList keaAccessPlist =
+                    H5::FileAccPropList(H5::FileAccPropList::DEFAULT);
+                keaAccessPlist.setCache(
+                    kealib::KEA_MDC_NELMTS, kealib::KEA_RDCC_NELMTS,
+                    kealib::KEA_RDCC_NBYTES, kealib::KEA_RDCC_W0);
+                keaAccessPlist.setSieveBufSize(kealib::KEA_SIEVE_BUF);
+                hsize_t blockSize = kealib::KEA_META_BLOCKSIZE;
+                keaAccessPlist.setMetaBlockSize(blockSize);
+                // but set the driver
+                keaAccessPlist.setDriver(HDF5VFLGetFileDriver(), nullptr);
+
+                const H5std_string keaImgFilePath(poOpenInfo->pszFilename);
+                pH5File = new H5::H5File(keaImgFilePath, H5F_ACC_RDONLY,
+                                         H5::FileCreatPropList::DEFAULT,
+                                         keaAccessPlist);
             }
             else
             {
@@ -185,23 +192,22 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
 
 // static function- pointer set in driver
 // this function is called in preference to Open
+// can't just try and open it as could be vsi
 // 
 int KEADataset::Identify( GDALOpenInfo * poOpenInfo )
 {
-    bool bisKEA = false;
-    try
+    /* -------------------------------------------------------------------- */
+    /*      Is it an HDF5 file?                                             */
+    /* -------------------------------------------------------------------- */
+    static const char achSignature[] = "\211HDF\r\n\032\n";
+
+    if (poOpenInfo->pabyHeader == nullptr ||
+        memcmp(poOpenInfo->pabyHeader, achSignature, 8) != 0)
     {
-        // is this a KEA file?
-        bisKEA = kealib::KEAImageIO::isKEAImage( poOpenInfo->pszFilename );
-    }
-    catch (const kealib::KEAIOException &e)
-    {
-        bisKEA = false;
-    }
-    if( bisKEA )
-        return 1;
-    else
         return 0;
+    }
+
+    return EQUAL(CPLGetExtension(poOpenInfo->pszFilename), "KEA");
 }
 
 // static function- pointer set in driver

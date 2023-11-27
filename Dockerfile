@@ -19,7 +19,7 @@ RUN cd /tmp/kealib \
     && mkdir build \
     && cd build \
     && cmake -D LIBKEA_WITH_GDAL=ON .. \
-    && make \
+    && make -j2 \
     && make install \
     && cd ../.. \
     && rm -rf kealib
