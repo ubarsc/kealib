@@ -54,7 +54,6 @@ set_target_properties(${LIBKEA_LIB_NAME}
 )
 
 add_library(Kealib INTERFACE)
-target_include_directories(Kealib INTERFACE $<INSTALL_INTERFACE:include>)
 target_link_libraries(Kealib INTERFACE ${LIBKEA_LIB_NAME})
 ###############################################################################
 
