@@ -35,7 +35,7 @@
 #include <string>
 #include <vector>
 
-#include "H5Cpp.h"
+#include <H5Cpp.h>
 
 #include "libkea/KEACommon.h"
 #include "libkea/KEAException.h"
