@@ -1,5 +1,14 @@
 @PACKAGE_INIT@
 
+if(NOT "@BUILD_SHARED_LIBS@")
+    # FindHDF5.cmake may expose exported targets in HDF5_LIBRARIES.
+    include(CMakeFindDependencyMacro)
+    if(NOT DEFINED HDF5_USE_STATIC_LIBRARIES)
+        set(HDF5_USE_STATIC_LIBRARIES "@HDF5_USE_STATIC_LIBRARIES@")
+    endif()
+    find_dependency(HDF5)
+endif()
+
 include("${CMAKE_CURRENT_LIST_DIR}/libkeaTargets.cmake")
 
 check_required_components(libkea)

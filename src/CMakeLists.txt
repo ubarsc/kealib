@@ -30,7 +30,7 @@ source_group("include_kea" FILES ${LIBKEA_H})
 ###############################################################################
 # Build, link and install library
 add_library(${LIBKEA_LIB_NAME} ${LIBKEA_CPP} ${LIBKEA_H} )
-target_link_libraries(${LIBKEA_LIB_NAME} ${HDF5_LIBRARIES})
+target_link_libraries(${LIBKEA_LIB_NAME} PRIVATE ${HDF5_LIBRARIES})
 
 include(GenerateExportHeader)
 generate_export_header(${LIBKEA_LIB_NAME}
@@ -54,21 +54,7 @@ set_target_properties(${LIBKEA_LIB_NAME}
 )
 
 add_library(Kealib INTERFACE)
-target_include_directories(Kealib INTERFACE
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-)
-# TODO: a better way??
-if(MSVC)
-    target_link_libraries(Kealib INTERFACE 
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/libkea${CMAKE_IMPORT_LIBRARY_SUFFIX}>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/lib/libkea${CMAKE_IMPORT_LIBRARY_SUFFIX}>)
-else()
-    target_link_libraries(Kealib INTERFACE 
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/libkea${CMAKE_SHARED_LIBRARY_SUFFIX}>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/lib/libkea${CMAKE_SHARED_LIBRARY_SUFFIX}>)
-endif(MSVC)
+target_link_libraries(Kealib INTERFACE ${LIBKEA_LIB_NAME})
 ###############################################################################
 
 ###############################################################################
