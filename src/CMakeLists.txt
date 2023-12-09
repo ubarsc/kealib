@@ -68,9 +68,20 @@ target_link_libraries (test1 ${LIBKEA_LIB_NAME})
 # Package
 include(CMakePackageConfigHelpers)
 configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/KealibConfig.cmake"
+  INSTALL_DESTINATION lib/cmake/Kealib
+)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/KealibConfigVersion.cmake"
+  VERSION "${LIBKEA_VERSION}"
+  COMPATIBILITY AnyNewerVersion
+)
+# Remove in release 1.6.0
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
   "${CMAKE_CURRENT_BINARY_DIR}/libkeaConfig.cmake"
   INSTALL_DESTINATION lib/cmake/libkea
 )
+# Remove in release 1.6.0
 write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/libkeaConfigVersion.cmake"
   VERSION "${LIBKEA_VERSION}"
@@ -87,8 +98,18 @@ install(FILES ${LIBKEA_H} ${CMAKE_CURRENT_BINARY_DIR}/include/libkea/kea_export.
         DESTINATION include/libkea)
 install(EXPORT libkeaTargets
         FILE libkeaTargets.cmake
+        NAMESPACE Kealib::
+        DESTINATION lib/cmake/Kealib)
+install(FILES
+          "${CMAKE_CURRENT_BINARY_DIR}/KealibConfig.cmake"
+          "${CMAKE_CURRENT_BINARY_DIR}/KealibConfigVersion.cmake"
+        DESTINATION lib/cmake/Kealib)
+# Remove in release 1.6.0
+install(EXPORT libkeaTargets
+        FILE libkeaTargets.cmake
         NAMESPACE libkea::
         DESTINATION lib/cmake/libkea)
+# Remove in release 1.6.0
 install(FILES
           "${CMAKE_CURRENT_BINARY_DIR}/libkeaConfig.cmake"
           "${CMAKE_CURRENT_BINARY_DIR}/libkeaConfigVersion.cmake"
