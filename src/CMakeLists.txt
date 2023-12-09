@@ -55,6 +55,7 @@ set_target_properties(${LIBKEA_LIB_NAME}
 
 add_library(Kealib INTERFACE)
 target_link_libraries(Kealib INTERFACE ${LIBKEA_LIB_NAME})
+add_library(Kealib::Kealib ALIAS ${LIBKEA_LIB_NAME})
 ###############################################################################
 
 ###############################################################################
