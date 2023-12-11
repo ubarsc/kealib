@@ -51,12 +51,12 @@ if(NOT awkward_POPULATED)
 endif()
 
 find_package(pybind11 CONFIG REQUIRED)
-find_package(libkea CONFIG REQUIRED)
+find_package(Kealib CONFIG REQUIRED)
 
 pybind11_add_module(extrat extrat.cpp)
 target_include_directories(extrat BEFORE PRIVATE "${KEALIB_INCLUDE}")
 set_target_properties(extrat PROPERTIES CXX_VISIBILITY_PRESET hidden)
-target_link_libraries(extrat PRIVATE libkea::Kealib awkward::layout-builder)
+target_link_libraries(extrat PRIVATE Kealib::Kealib awkward::layout-builder)
 
 install(FILES kea_build_neighbours DESTINATION bin PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 set(PYKEA_INSTALL_DIR "${Python_SITELIB}/kealib" CACHE PATH "Install Dir for Python Bindings")
@@ -67,10 +67,15 @@ install(FILES __init__.py build_neighbours.py DESTINATION ${PYKEA_INSTALL_DIR})
 Python_add_library(fakegdal MODULE WITH_SOABI fakegdal.cpp)
 get_target_property(FAKEGDAL_SUFFIX fakegdal SUFFIX)
 set(FAKEGDAL_NAME "fakegdal${FAKEGDAL_SUFFIX}")
-target_link_libraries(fakegdal PRIVATE libkea::Kealib)
+target_link_libraries(fakegdal PRIVATE Kealib::Kealib)
 
 add_executable(testseg testseg.cpp)
 target_link_libraries(testseg PRIVATE libkea::Kealib)
+
+# Remove in release 1.6.0
+find_package(libkea CONFIG REQUIRED)
+add_executable(testseg_libkea testseg.cpp)
+target_link_libraries(testseg_libkea PRIVATE libkea::Kealib)
 
 # custom install step to create .pyc files
 install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} -m compileall ${PYKEA_INSTALL_DIR})")
