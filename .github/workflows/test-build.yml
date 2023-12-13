@@ -85,7 +85,7 @@ jobs:
     - name: Install Dependencies
       shell: bash -el {0}
       run: |
-        conda install cmake awkward hdf5 python numpy libgdal pybind11
+        conda install cmake awkward awkward-cpp hdf5 python numpy libgdal pybind11
     - name: Cmake
       shell: bash -el {0}
       run: |
