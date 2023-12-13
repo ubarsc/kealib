@@ -31,6 +31,7 @@ source_group("include_kea" FILES ${LIBKEA_H})
 # Build, link and install library
 add_library(${LIBKEA_LIB_NAME} ${LIBKEA_CPP} ${LIBKEA_H} )
 target_link_libraries(${LIBKEA_LIB_NAME} PRIVATE ${HDF5_LIBRARIES})
+target_compile_features(${LIBKEA_LIB_NAME} PUBLIC cxx_std_11)
 
 include(GenerateExportHeader)
 generate_export_header(${LIBKEA_LIB_NAME}
