@@ -1,3 +1,12 @@
+1.5.3
+-----
+
+* Add support for /vsi file systems with GDAL support is built as a plugin
+* Fix H5Cpp.h includes 
+* Fix Kealib interface target
+* Export Kealib CMake package with Kealib::Kealib
+* Add C++11 as build requirement in CMake
+
 1.5.2
 -----
 
