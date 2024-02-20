@@ -32,7 +32,8 @@
 
 namespace kealib{
     
-    KEAAttributeTable::KEAAttributeTable(KEAATTType keaAttType)
+    KEAAttributeTable::KEAAttributeTable(KEAATTType keaAttType, const std::shared_ptr<std::recursive_mutex>& mutex)
+        : KEABase(mutex)
     {
         attType = keaAttType;
         numBoolFields = 0;

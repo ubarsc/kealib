@@ -72,6 +72,9 @@ namespace kealib{
     {
         try 
         {
+            std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+            KEAStackPrintState();
+            
             this->keaImgFile = keaImgH5File;
             this->spatialInfoFile = new KEAImageSpatialInfo();
             
@@ -210,6 +213,8 @@ namespace kealib{
     
     void KEAImageIO::writeImageBlock2Band(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -345,6 +350,8 @@ namespace kealib{
     
     void KEAImageIO::readImageBlock2Band(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -480,6 +487,8 @@ namespace kealib{
     
     void KEAImageIO::createMask(uint32_t band, uint32_t deflate)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -521,6 +530,8 @@ namespace kealib{
     
     void KEAImageIO::writeImageBlock2BandMask(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -656,6 +667,8 @@ namespace kealib{
     
     void KEAImageIO::readImageBlock2BandMask(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -789,6 +802,9 @@ namespace kealib{
     
     bool KEAImageIO::maskCreated(uint32_t band)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
+
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -835,6 +851,8 @@ namespace kealib{
     
     void KEAImageIO::setImageMetaData(const std::string &name, const std::string &value)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -885,6 +903,8 @@ namespace kealib{
     
     std::string KEAImageIO::getImageMetaData(const std::string &name)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -918,6 +938,8 @@ namespace kealib{
     
     std::vector<std::string> KEAImageIO::getImageMetaDataNames()
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -954,6 +976,8 @@ namespace kealib{
     
     std::vector< std::pair<std::string, std::string> > KEAImageIO::getImageMetaData()
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -994,6 +1018,8 @@ namespace kealib{
     
     void KEAImageIO::setImageMetaData(const std::vector< std::pair<std::string, std::string> > &data)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1024,6 +1050,8 @@ namespace kealib{
     
     void KEAImageIO::setImageBandMetaData(uint32_t band, const std::string &name, const std::string &value)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1074,6 +1102,8 @@ namespace kealib{
     
     std::string KEAImageIO::getImageBandMetaData(uint32_t band, const std::string &name)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1107,6 +1137,8 @@ namespace kealib{
     
     std::vector<std::string> KEAImageIO::getImageBandMetaDataNames(uint32_t band)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1144,6 +1176,8 @@ namespace kealib{
     
     std::vector< std::pair<std::string, std::string> > KEAImageIO::getImageBandMetaData(uint32_t band)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1185,6 +1219,8 @@ namespace kealib{
     
     void KEAImageIO::setImageBandMetaData(uint32_t band, const std::vector< std::pair<std::string, std::string> > &data)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1215,6 +1251,8 @@ namespace kealib{
     
     void KEAImageIO::setImageBandDescription(uint32_t band, const std::string &description)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1249,6 +1287,8 @@ namespace kealib{
     
     std::string KEAImageIO::getImageBandDescription(uint32_t band)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1284,6 +1324,8 @@ namespace kealib{
     
     void KEAImageIO::setNoDataValue(uint32_t band, const void *data, KEADataType inDataType)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1347,6 +1389,8 @@ namespace kealib{
     
     void KEAImageIO::getNoDataValue(uint32_t band, void *data, KEADataType inDataType)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1407,6 +1451,8 @@ namespace kealib{
     
     void KEAImageIO::undefineNoDataValue(uint32_t band)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1451,6 +1497,8 @@ namespace kealib{
     
     std::vector<KEAImageGCP*>* KEAImageIO::getGCPs()
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1556,6 +1604,8 @@ namespace kealib{
     
     void KEAImageIO::setGCPs(std::vector<KEAImageGCP*> *gcps, const std::string &projWKT)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1740,6 +1790,8 @@ namespace kealib{
     
     uint32_t KEAImageIO::getGCPCount()
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1769,6 +1821,8 @@ namespace kealib{
     
     std::string KEAImageIO::getGCPProjection()
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1793,6 +1847,8 @@ namespace kealib{
     
     void KEAImageIO::setGCPProjection(const std::string &projWKT)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1833,6 +1889,8 @@ namespace kealib{
     
     void KEAImageIO::setSpatialInfo(KEAImageSpatialInfo *inSpatialInfo)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1908,6 +1966,8 @@ namespace kealib{
     
     uint32_t KEAImageIO::getImageBlockSize(uint32_t band)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1972,6 +2032,8 @@ namespace kealib{
 
     uint32_t KEAImageIO::getAttributeTableChunkSize(uint32_t band)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -2038,6 +2100,8 @@ namespace kealib{
     
     KEADataType KEAImageIO::getImageBandDataType(uint32_t band)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -2085,6 +2149,8 @@ namespace kealib{
     
     void KEAImageIO::setImageBandLayerType(uint32_t band, KEALayerType imgLayerType)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -2115,6 +2181,8 @@ namespace kealib{
     
     KEALayerType KEAImageIO::getImageBandLayerType(uint32_t band)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -2153,6 +2221,8 @@ namespace kealib{
     
     void KEAImageIO::setImageBandClrInterp(uint32_t band, KEABandClrInterp imgLayerClrInterp)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -2188,6 +2258,8 @@ namespace kealib{
     
     KEABandClrInterp KEAImageIO::getImageBandClrInterp(uint32_t band)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -2227,6 +2299,8 @@ namespace kealib{
     
     void KEAImageIO::createOverview(uint32_t band, uint32_t overview, uint64_t xSize, uint64_t ySize)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -2332,6 +2406,8 @@ namespace kealib{
     
     void KEAImageIO::removeOverview(uint32_t band, uint32_t overview)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -2363,6 +2439,8 @@ namespace kealib{
     
     uint32_t KEAImageIO::getOverviewBlockSize(uint32_t band, uint32_t overview)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -2427,6 +2505,8 @@ namespace kealib{
     
     void KEAImageIO::writeToOverview(uint32_t band, uint32_t overview, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -2539,6 +2619,8 @@ namespace kealib{
     
     void KEAImageIO::readFromOverview(uint32_t band, uint32_t overview, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -2648,6 +2730,8 @@ namespace kealib{
     
     uint32_t KEAImageIO::getNumOfOverviews(uint32_t band)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -2679,6 +2763,8 @@ namespace kealib{
     
     void KEAImageIO::getOverviewSize(uint32_t band, uint32_t overview, uint64_t *xSize, uint64_t *ySize)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -2746,11 +2832,11 @@ namespace kealib{
         {
             if(type == kea_att_mem)
             {
-                att = kealib::KEAAttributeTableInMem::createKeaAtt(this->keaImgFile, band);
+                att = kealib::KEAAttributeTableInMem::createKeaAtt(this->keaImgFile, this->m_mutex, band);
             }
             else if(type == kea_att_file)
             {
-                att = kealib::KEAAttributeTableFile::createKeaAtt(this->keaImgFile, band);
+                att = kealib::KEAAttributeTableFile::createKeaAtt(this->keaImgFile, this->m_mutex, band);
             }
             else
             {
@@ -2775,6 +2861,8 @@ namespace kealib{
     
     void KEAImageIO::setAttributeTable(KEAAttributeTable* att, uint32_t band, uint32_t chunkSize, uint32_t deflate)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -2801,6 +2889,8 @@ namespace kealib{
     
     bool KEAImageIO::attributeTablePresent(uint32_t band)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -2852,6 +2942,8 @@ namespace kealib{
     
     void KEAImageIO::close()
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         try 
         {
             delete this->spatialInfoFile;
@@ -2876,7 +2968,7 @@ namespace kealib{
         
     H5::H5File* KEAImageIO::createKEAImage(const std::string &fileName, KEADataType dataType, uint32_t xSize, uint32_t ySize, uint32_t numImgBands, std::vector<std::string> *bandDescrips, KEAImageSpatialInfo * spatialInfo, uint32_t imageBlockSize, uint32_t attBlockSize, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize, uint32_t deflate)
     {
-        H5::Exception::dontPrint();
+        KEAStackPrintState();
         
         H5::H5File *keaImgH5File = nullptr;
         
@@ -3053,7 +3145,7 @@ namespace kealib{
     
     H5::H5File* KEAImageIO::openKeaH5RW(const std::string &fileName, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize)
     {
-        H5::Exception::dontPrint();
+        KEAStackPrintState();
         
         H5::H5File *keaImgH5File = nullptr;
         try 
@@ -3097,7 +3189,7 @@ namespace kealib{
     
     H5::H5File* KEAImageIO::openKeaH5RDOnly(const std::string &fileName, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize)
     {
-        H5::Exception::dontPrint();
+        KEAStackPrintState();
         
         H5::H5File *keaImgH5File = nullptr;
         try 
@@ -3142,7 +3234,7 @@ namespace kealib{
     bool KEAImageIO::isKEAImage(const std::string &fileName)
     {
         bool keaImageFound = false;
-        H5::Exception::dontPrint();
+        KEAStackPrintState();
         
         try 
         {
@@ -3217,6 +3309,8 @@ namespace kealib{
 
     void KEAImageIO::addImageBand(const KEADataType dataType, const std::string &bandDescrip, const uint32_t imageBlockSize, const uint32_t attBlockSize, const uint32_t deflate)
     {
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -3237,7 +3331,8 @@ namespace kealib{
     
     void KEAImageIO::removeImageBand(const uint32_t bandIndex)
     {
-
+        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
+        KEAStackPrintState();
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");

@@ -45,7 +45,7 @@
 
 namespace kealib{
         
-    class KEA_EXPORT KEAImageIO
+    class KEA_EXPORT KEAImageIO : public KEABase
     {
     public:
         KEAImageIO();

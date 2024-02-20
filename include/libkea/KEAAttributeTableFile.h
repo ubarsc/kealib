@@ -46,7 +46,7 @@ namespace kealib{
     class KEA_EXPORT KEAAttributeTableFile : public KEAAttributeTable
     {
     public:
-        KEAAttributeTableFile(H5::H5File *keaImgIn, const std::string &bandPathBaseIn, size_t numRowsIn, size_t chunkSizeIn, unsigned int deflateIn=KEA_DEFLATE);
+        KEAAttributeTableFile(H5::H5File *keaImgIn, const std::shared_ptr<std::recursive_mutex>& mutex, const std::string &bandPathBaseIn, size_t numRowsIn, size_t chunkSizeIn, unsigned int deflateIn=KEA_DEFLATE);
         
         bool getBoolField(size_t fid, const std::string &name) const;
         int64_t getIntField(size_t fid, const std::string &name) const;
@@ -91,7 +91,7 @@ namespace kealib{
         
         void addRows(size_t numRows);
         
-        static KEAAttributeTable* createKeaAtt(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE);
+        static KEAAttributeTable* createKeaAtt(H5::H5File *keaImg, const std::shared_ptr<std::recursive_mutex>& mutex, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE);
         void exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE);
         
         ~KEAAttributeTableFile();
