@@ -45,7 +45,7 @@ namespace kealib{
         free(ptr);
     }
 
-    KEAAttributeTableFile::KEAAttributeTableFile(H5::H5File *keaImgIn, const std::shared_ptr<std::recursive_mutex>& mutex, const std::string &bandPathBaseIn, size_t numRowsIn, size_t chunkSizeIn, unsigned int deflateIn) : KEAAttributeTable(kea_att_file, mutex)
+    KEAAttributeTableFile::KEAAttributeTableFile(H5::H5File *keaImgIn, const std::shared_ptr<kealib::kea_mutex>& mutex, const std::string &bandPathBaseIn, size_t numRowsIn, size_t chunkSizeIn, unsigned int deflateIn) : KEAAttributeTable(kea_att_file, mutex)
     {
         numRows = numRowsIn;
         chunkSize = chunkSizeIn;
@@ -320,8 +320,8 @@ namespace kealib{
     // RFC40
     void KEAAttributeTableFile::getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const
     {
-        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
-        KEAStackPrintState();
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -419,8 +419,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::getIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) const
     {
-        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
-        KEAStackPrintState();
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -511,8 +511,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const
     {
-        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
-        KEAStackPrintState();
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -603,8 +603,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::getStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *psBuffer) const
     {
-        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
-        KEAStackPrintState();
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -708,8 +708,8 @@ namespace kealib{
     {
         try
         {
-            std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
-            KEAStackPrintState();
+            kealib::kea_lock lock(*this->m_mutex); 
+            KEAStackPrintState printState;
             if(!neighbours->empty())
             {
                 for(auto iterNeigh = neighbours->begin(); iterNeigh != neighbours->end(); ++iterNeigh)
@@ -862,8 +862,8 @@ namespace kealib{
     // RFC40
     void KEAAttributeTableFile::setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer)
     {
-        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
-        KEAStackPrintState();
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -962,8 +962,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer)
     {
-        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
-        KEAStackPrintState();
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -1054,8 +1054,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer)
     {
-        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
-        KEAStackPrintState();
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -1146,8 +1146,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::setStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *papszStrList)
     {
-        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
-        KEAStackPrintState();
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -1257,8 +1257,8 @@ namespace kealib{
         
         try
         {
-            std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
-            KEAStackPrintState();
+            kealib::kea_lock lock(*this->m_mutex); 
+            KEAStackPrintState printState;
             H5::DataSet *neighboursDataset = nullptr;
             try
             {
@@ -1383,8 +1383,8 @@ namespace kealib{
     {
         try
         {
-            std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
-            KEAStackPrintState();
+            kealib::kea_lock lock(*this->m_mutex); 
+            KEAStackPrintState printState;
             // WRITE THE ATT SIZE USED TO THE FILE.
             hsize_t sizeDataOffset[1];
             sizeDataOffset[0] = 0;
@@ -1431,8 +1431,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::addAttBoolField(KEAATTField field, bool val)
     {
-        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
-        KEAStackPrintState();
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
         updateSizeHeader(numBoolFields+1, numIntFields, numFloatFields, numStringFields);
         
@@ -1569,8 +1569,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::addAttIntField(KEAATTField field, int64_t val)
     {
-        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
-        KEAStackPrintState();
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
         updateSizeHeader(numBoolFields, numIntFields+1, numFloatFields, numStringFields);
         
@@ -1706,8 +1706,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::addAttFloatField(KEAATTField field, float val)
     {
-        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
-        KEAStackPrintState();
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
         updateSizeHeader(numBoolFields, numIntFields, numFloatFields+1, numStringFields);
         
@@ -1843,8 +1843,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::addAttStringField(KEAATTField field, const std::string &val)
     {
-        std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
-        KEAStackPrintState();
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
         updateSizeHeader(numBoolFields, numIntFields, numFloatFields, numStringFields+1);
         
@@ -1987,8 +1987,8 @@ namespace kealib{
     {
         if( numRowsIn > 0 )
         {
-            std::lock_guard<std::recursive_mutex>(*this->m_mutex); 
-            KEAStackPrintState();
+            kealib::kea_lock lock(*this->m_mutex); 
+            KEAStackPrintState printState;
             // update header
             numRows += numRowsIn;
             updateSizeHeader(numBoolFields, numIntFields, numFloatFields, numStringFields);
@@ -2050,7 +2050,7 @@ namespace kealib{
         }
     }
     
-    KEAAttributeTable* KEAAttributeTableFile::createKeaAtt(H5::H5File *keaImg, const std::shared_ptr<std::recursive_mutex>& mutex, unsigned int band, unsigned int chunkSizeIn, unsigned int deflate)
+    KEAAttributeTable* KEAAttributeTableFile::createKeaAtt(H5::H5File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band, unsigned int chunkSizeIn, unsigned int deflate)
     {
         // Create instance of class to populate and return.
         std::string bandPathBase = KEA_DATASETNAME_BAND + uint2Str(band);

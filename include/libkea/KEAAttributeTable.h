@@ -101,7 +101,7 @@ namespace kealib{
     class KEA_EXPORT KEAAttributeTable : public KEABase
     {
     public:
-        KEAAttributeTable(KEAATTType keaAttType, const std::shared_ptr<std::recursive_mutex>& mutex);
+        KEAAttributeTable(KEAATTType keaAttType, const std::shared_ptr<kealib::kea_mutex>& mutex);
         virtual KEAATTType getKEAATTType() const;
         
         virtual bool getBoolField(size_t fid, const std::string &name) const=0;

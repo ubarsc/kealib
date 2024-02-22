@@ -327,7 +327,12 @@ namespace kealib{
         H5E_auto2_t m_func;
         void *m_clientData;  
     };
+
+    typedef std::recursive_mutex kea_mutex;
+    typedef std::lock_guard<kea_mutex> kea_lock;
     
+    // base class for KEA classes. Either create a 
+    // mutex themselves, or share one from the KEAImageIO class 
     class KEA_EXPORT KEABase
     {
     public:
@@ -335,16 +340,16 @@ namespace kealib{
         {
             // default constructor
             // create a new mutex
-            m_mutex = std::make_shared<std::recursive_mutex>();
+            m_mutex = std::make_shared<kea_mutex>();
         }
-        KEABase(const std::shared_ptr<std::recursive_mutex>& other)
+        KEABase(const std::shared_ptr<kea_mutex>& other)
         {
             // use this other when you want to use another mutex
             // to lock access
             m_mutex = other;          
         }
     protected:
-        std::shared_ptr<std::recursive_mutex>  m_mutex;
+        std::shared_ptr<kea_mutex>  m_mutex;
     };
     
 }

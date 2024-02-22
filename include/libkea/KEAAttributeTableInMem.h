@@ -46,7 +46,7 @@ namespace kealib{
     class KEA_EXPORT KEAAttributeTableInMem : public KEAAttributeTable
     {
     public:
-        KEAAttributeTableInMem(const std::shared_ptr<std::recursive_mutex>& mutex);
+        KEAAttributeTableInMem(const std::shared_ptr<kealib::kea_mutex>& mutex);
         
         bool getBoolField(size_t fid, const std::string &name) const;
         int64_t getIntField(size_t fid, const std::string &name) const;
@@ -93,7 +93,7 @@ namespace kealib{
         
         void exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE);
         
-        static KEAAttributeTable* createKeaAtt(H5::H5File *keaImg, const std::shared_ptr<std::recursive_mutex>& mutex, unsigned int band);
+        static KEAAttributeTable* createKeaAtt(H5::H5File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band);
         
         ~KEAAttributeTableInMem();
     protected:

@@ -32,7 +32,7 @@
 
 namespace kealib{
     
-    KEAAttributeTable::KEAAttributeTable(KEAATTType keaAttType, const std::shared_ptr<std::recursive_mutex>& mutex)
+    KEAAttributeTable::KEAAttributeTable(KEAATTType keaAttType, const std::shared_ptr<kealib::kea_mutex>& mutex)
         : KEABase(mutex)
     {
         attType = keaAttType;
