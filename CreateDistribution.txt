@@ -6,6 +6,7 @@ How to create a distribution of kealib.
     fields in CMakeLists.txt. Version number is of the form MAJOR.MINOR.PATCH, 
     as discussed below. 
     Also update the KEA versions in the *.iss files.
+    And setup.py.
     
 3.  Ensure the Python bindings are installed and run gen_python_docs.sh
     to update docs/python.
