@@ -45,7 +45,7 @@ namespace kealib{
         free(ptr);
     }
 
-    KEAAttributeTableFile::KEAAttributeTableFile(H5::H5File *keaImgIn, const std::string &bandPathBaseIn, size_t numRowsIn, size_t chunkSizeIn, unsigned int deflateIn) : KEAAttributeTable(kea_att_file)
+    KEAAttributeTableFile::KEAAttributeTableFile(H5::H5File *keaImgIn, const std::shared_ptr<kealib::kea_mutex>& mutex, const std::string &bandPathBaseIn, size_t numRowsIn, size_t chunkSizeIn, unsigned int deflateIn) : KEAAttributeTable(kea_att_file, mutex)
     {
         numRows = numRowsIn;
         chunkSize = chunkSizeIn;
@@ -320,6 +320,8 @@ namespace kealib{
     // RFC40
     void KEAAttributeTableFile::getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const
     {
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -417,6 +419,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::getIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) const
     {
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -507,6 +511,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const
     {
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -597,6 +603,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::getStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *psBuffer) const
     {
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -700,6 +708,8 @@ namespace kealib{
     {
         try
         {
+            kealib::kea_lock lock(*this->m_mutex); 
+            KEAStackPrintState printState;
             if(!neighbours->empty())
             {
                 for(auto iterNeigh = neighbours->begin(); iterNeigh != neighbours->end(); ++iterNeigh)
@@ -852,6 +862,8 @@ namespace kealib{
     // RFC40
     void KEAAttributeTableFile::setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer)
     {
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -950,6 +962,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer)
     {
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -1040,6 +1054,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer)
     {
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -1130,6 +1146,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::setStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *papszStrList)
     {
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -1239,6 +1257,8 @@ namespace kealib{
         
         try
         {
+            kealib::kea_lock lock(*this->m_mutex); 
+            KEAStackPrintState printState;
             H5::DataSet *neighboursDataset = nullptr;
             try
             {
@@ -1363,6 +1383,8 @@ namespace kealib{
     {
         try
         {
+            kealib::kea_lock lock(*this->m_mutex); 
+            KEAStackPrintState printState;
             // WRITE THE ATT SIZE USED TO THE FILE.
             hsize_t sizeDataOffset[1];
             sizeDataOffset[0] = 0;
@@ -1409,6 +1431,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::addAttBoolField(KEAATTField field, bool val)
     {
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
         updateSizeHeader(numBoolFields+1, numIntFields, numFloatFields, numStringFields);
         
@@ -1545,6 +1569,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::addAttIntField(KEAATTField field, int64_t val)
     {
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
         updateSizeHeader(numBoolFields, numIntFields+1, numFloatFields, numStringFields);
         
@@ -1680,6 +1706,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::addAttFloatField(KEAATTField field, float val)
     {
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
         updateSizeHeader(numBoolFields, numIntFields, numFloatFields+1, numStringFields);
         
@@ -1815,6 +1843,8 @@ namespace kealib{
     
     void KEAAttributeTableFile::addAttStringField(KEAATTField field, const std::string &val)
     {
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
         updateSizeHeader(numBoolFields, numIntFields, numFloatFields, numStringFields+1);
         
@@ -1957,6 +1987,8 @@ namespace kealib{
     {
         if( numRowsIn > 0 )
         {
+            kealib::kea_lock lock(*this->m_mutex); 
+            KEAStackPrintState printState;
             // update header
             numRows += numRowsIn;
             updateSizeHeader(numBoolFields, numIntFields, numFloatFields, numStringFields);
@@ -2018,11 +2050,12 @@ namespace kealib{
         }
     }
     
-    KEAAttributeTable* KEAAttributeTableFile::createKeaAtt(H5::H5File *keaImg, unsigned int band, unsigned int chunkSizeIn, unsigned int deflate)
+    KEAAttributeTable* KEAAttributeTableFile::createKeaAtt(H5::H5File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band, unsigned int chunkSizeIn, unsigned int deflate)
     {
         // Create instance of class to populate and return.
         std::string bandPathBase = KEA_DATASETNAME_BAND + uint2Str(band);
         KEAAttributeTableFile *att = nullptr;
+        // no lock needed - should be done by caller
         
         try
         {
@@ -2068,7 +2101,7 @@ namespace kealib{
                 throw KEAIOException("The attribute table size field is not present.");
             }
             
-            att = new KEAAttributeTableFile(keaImg, bandPathBase, numRows, chunkSize, deflate);
+            att = new KEAAttributeTableFile(keaImg, mutex, bandPathBase, numRows, chunkSize, deflate);
             
             // READ TABLE HEADERS
             H5::CompType *fieldCompTypeMem = KEAAttributeTable::createAttibuteIdxCompTypeMem();

@@ -37,6 +37,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <memory>
+#include <mutex>
 
 #include <H5Cpp.h>
 
@@ -305,6 +307,50 @@ namespace kealib{
         return strDT;
     }
     
+    // inline class to save/restore HDF5 exception stack trace
+    // printing (we usually want this off, but want to revert back to what caller had)
+    // Also, this state is per thread so if calling a method on a new thread this will
+    // need to be set. 
+    class KEAStackPrintState
+    {
+    public:
+        KEAStackPrintState()
+        {
+            H5::Exception::getAutoPrint(m_func, &m_clientData);
+            H5::Exception::dontPrint();
+        }
+        ~KEAStackPrintState()
+        {
+            H5::Exception::setAutoPrint(m_func, m_clientData);
+        }
+    private:
+        H5E_auto2_t m_func;
+        void *m_clientData;  
+    };
+
+    typedef std::recursive_mutex kea_mutex;
+    typedef std::lock_guard<kea_mutex> kea_lock;
+    
+    // base class for KEA classes. Either create a 
+    // mutex themselves, or share one from the KEAImageIO class 
+    class KEA_EXPORT KEABase
+    {
+    public:
+        KEABase()
+        {
+            // default constructor
+            // create a new mutex
+            m_mutex = std::make_shared<kea_mutex>();
+        }
+        KEABase(const std::shared_ptr<kea_mutex>& other)
+        {
+            // use this other when you want to use another mutex
+            // to lock access
+            m_mutex = other;          
+        }
+    protected:
+        std::shared_ptr<kea_mutex>  m_mutex;
+    };
     
 }
 
