@@ -1,0 +1,38 @@
+name: cppdocs
+
+# see https://pdoc.dev/docs/pdoc.html#deploying-to-github-pages
+# and https://github.com/satu0king/Github-Documentation-With-Doxygen/blob/master/main.yml
+
+# build the documentation whenever there are new commits on main
+on:
+  push:
+    branches:
+      - main
+    # Alternative: only build for tags.
+    # tags:
+    #   - '*'
+
+# security: restrict permissions for CI jobs.
+permissions:
+  contents: read
+
+jobs:
+  # Build the documentation and upload the static HTML files as an artifact.
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Doxygen Action
+        uses: mattnotmitt/doxygen-action@v1.9.8
+        
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        # If you're changing the branch from main,
+        # also change the `main` in `refs/heads/main`
+        # below accordingly.
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+
