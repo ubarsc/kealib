@@ -35,15 +35,17 @@ jobs:
         uses: actions/configure-pages@v4
       - name: Doxygen Action
         uses: mattnotmitt/doxygen-action@v1.9.8
+      - name: copy
+        run: cp -R docs docs_r
       - name: Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
-          destination: 'docs/'
+          destination: 'docs_r/'
           source: 'docs/'
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'docs/'
+          path: 'docs_r/'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
