@@ -35,6 +35,11 @@ jobs:
         uses: actions/configure-pages@v4
       - name: Doxygen Action
         uses: mattnotmitt/doxygen-action@v1.9.8
+      - name: Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          destination: 'docs/'
+          source: 'docs/'
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
