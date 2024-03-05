@@ -1,8 +1,12 @@
+---
+title: kealib
+---
+
 # kealib
 
 ![KEA](kea2.png)
 
-### An HDF5 Based Raster File Format
+## An HDF5 Based Raster File Format
 
 KEALib provides an implementation of the [GDAL](https://gdal.org/) data model. 
 The format supports raster attribute tables, image pyramids, meta-data 
@@ -44,7 +48,7 @@ Download releases through Git at [GitHub](https://github.com/ubarsc/kealib)
 ## Documentation
 
 C++ documentation is available [here](cpp/html/index.html) and documentation of the Python 
-interface is documented [here](docs/python/kealib.html).
+interface is documented [here](python/kealib.html).
 
 Some documentation on compilation is available in the 
 [KEALib wiki](https://github.com/ubarsc/kealib/wiki).
