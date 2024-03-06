@@ -2967,7 +2967,7 @@ namespace kealib{
         }
     }
         
-    H5::H5File* KEAImageIO::createKEAImage(const std::string &fileName, KEADataType dataType, uint32_t xSize, uint32_t ySize, uint32_t numImgBands, std::vector<std::string> *bandDescrips, KEAImageSpatialInfo * spatialInfo, uint32_t imageBlockSize, uint32_t attBlockSize, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize, uint32_t deflate)
+    H5::H5File* KEAImageIO::createKEAImage(const std::string &fileName, KEADataType dataType, uint32_t xSize, uint32_t ySize, uint32_t numImgBands, std::vector<std::string> *bandDescrips, KEAImageSpatialInfo * spatialInfo, uint32_t imageBlockSize, uint32_t attBlockSize, hsize_t pageSize, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize, uint32_t deflate)
     {
         KEAStackPrintState printState;
         
@@ -2982,7 +2982,10 @@ namespace kealib{
             keaAccessPlist.setMetaBlockSize(metaBlockSize);
             
             // CREATE THE HDF FILE - EXISTING FILE WILL BE TRUNCATED
-            keaImgH5File = new H5::H5File( fileName, H5F_ACC_TRUNC, H5::FileCreatPropList::DEFAULT, keaAccessPlist);
+            H5::FileCreatPropList keaPlist = H5::FileCreatPropList();
+            keaPlist.setFileSpaceStrategy(H5F_FSPACE_STRATEGY_AGGR, false, 0);
+            keaPlist.setFileSpacePagesize(pageSize);
+            keaImgH5File = new H5::H5File( fileName, H5F_ACC_TRUNC, keaPlist, keaAccessPlist);
             
             //////////// CREATE GLOBAL HEADER ////////////////
             keaImgH5File->createGroup( KEA_DATASETNAME_HEADER );
