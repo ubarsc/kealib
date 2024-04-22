@@ -250,11 +250,6 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
     if( pszValue != nullptr )
         nattblockSize = atol( pszValue );
         
-    hsize_t npageSize = kealib::KEA_PAGE_SIZE;
-    pszValue = CSLFetchNameValue( papszParmList, "PAGESIZE" );
-    if( pszValue != nullptr )
-        npageSize = atol( pszValue );
-
     unsigned int nmdcElmts = kealib::KEA_MDC_NELMTS;
     pszValue = CSLFetchNameValue( papszParmList, "MDC_NELMTS" );
     if( pszValue != nullptr )
@@ -301,7 +296,7 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
         H5::H5File *keaImgH5File = kealib::KEAImageIO::createKEAImage( pszFilename,
                                                     GDAL_to_KEA_Type( eType ),
                                                     nXSize, nYSize, nBands,
-                                                    nullptr, nullptr, npageSize, nimageblockSize, 
+                                                    nullptr, nullptr, nimageblockSize, 
                                                     nattblockSize, nmdcElmts, nrdccNElmts,
                                                     nrdccNBytes, nrdccW0, nsieveBuf, 
                                                     nmetaBlockSize, ndeflate );

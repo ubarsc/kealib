@@ -137,7 +137,6 @@ namespace kealib{
     static const unsigned int KEA_DEFLATE( 1 ); // 1
     static const hsize_t KEA_IMAGE_CHUNK_SIZE( 512 ); // 512
     static const hsize_t KEA_ATT_CHUNK_SIZE( 10000 ); // 10000
-    static const hsize_t KEA_PAGE_SIZE(8192); // 8192
     
     enum KEADataType
     {
