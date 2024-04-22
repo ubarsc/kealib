@@ -249,7 +249,7 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
     pszValue = CSLFetchNameValue( papszParmList, "ATTBLOCKSIZE" );
     if( pszValue != nullptr )
         nattblockSize = atol( pszValue );
-        
+
     unsigned int nmdcElmts = kealib::KEA_MDC_NELMTS;
     pszValue = CSLFetchNameValue( papszParmList, "MDC_NELMTS" );
     if( pszValue != nullptr )

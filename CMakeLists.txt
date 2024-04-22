@@ -79,9 +79,6 @@ if(NOT "x$ENV{HDF5_ROOT}" STREQUAL "x")
     message(STATUS "HDF5_ROOT environment variable specified: $ENV{HDF5_ROOT}")
 endif()
 find_package(HDF5 COMPONENTS C CXX REQUIRED)
-IF(${HDF5_VERSION} VERSION_LESS "1.10.1")
-    message(FATAL_ERROR "HDF5 must be at least version 1.10.1")
-endif()
 
 # https://support.hdfgroup.org/HDF5/doc/TechNotes/ThreadSafeLibrary.html
 include(CheckSymbolExists)
