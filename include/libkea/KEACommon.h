@@ -135,8 +135,8 @@ namespace kealib{
     static const hsize_t  KEA_SIEVE_BUF( 65536 ); // 65536
     static const hsize_t  KEA_META_BLOCKSIZE( 2048 ); // 2048
     static const unsigned int KEA_DEFLATE( 1 ); // 1
-    static const hsize_t KEA_IMAGE_CHUNK_SIZE( 256 ); // 256
-    static const hsize_t KEA_ATT_CHUNK_SIZE( 1000 ); // 1000
+    static const hsize_t KEA_IMAGE_CHUNK_SIZE( 512 ); // 512
+    static const hsize_t KEA_ATT_CHUNK_SIZE( 10000 ); // 10000
     
     enum KEADataType
     {
