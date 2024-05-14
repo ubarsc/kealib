@@ -37,7 +37,7 @@
 class LockedRefCount;
 
 // class that implements a GDAL dataset
-class KEADataset : public GDALPamDataset
+class KEADataset : public GDALDataset
 {
 public:
     // constructor/destructor

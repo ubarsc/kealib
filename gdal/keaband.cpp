@@ -679,7 +679,7 @@ CPLErr KEARasterBand::GetDefaultHistogram( double *pdfMin, double *pdfMax,
 {
     if( bForce )
     {
-        return GDALPamRasterBand::GetDefaultHistogram(pdfMin, pdfMax, pnBuckets, 
+        return GDALRasterBand::GetDefaultHistogram(pdfMin, pdfMax, pnBuckets, 
                         ppanHistogram, bForce, fn, pProgressData);
     }
     else
@@ -1284,7 +1284,7 @@ GDALRasterBand* KEARasterBand::GetMaskBand()
             {
                 // use the base class implementation - GDAL will delete
                 //fprintf( stderr, "returning base GetMaskBand()\n" );
-                m_pMaskBand = GDALPamRasterBand::GetMaskBand();
+                m_pMaskBand = GDALRasterBand::GetMaskBand();
             }
         }
         catch(const kealib::KEAException &e)
@@ -1304,7 +1304,7 @@ int KEARasterBand::GetMaskFlags()
             // need to return the base class one since we are using
             // the base class implementation of GetMaskBand()
             //fprintf( stderr, "returning base GetMaskFlags()\n" );
-            return GDALPamRasterBand::GetMaskFlags();
+            return GDALRasterBand::GetMaskFlags();
         }
     }
     catch(const kealib::KEAException &e)
