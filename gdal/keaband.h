@@ -30,7 +30,7 @@
 #ifndef KEABAND_H
 #define KEABAND_H
 
-#include "gdal_pam.h"
+#include "gdal_priv.h"
 
 #if (GDAL_VERSION_MAJOR > 3) || ((GDAL_VERSION_MAJOR == 3) && (GDAL_VERSION_MINOR >= 5))
     #define HAVE_64BITIMAGES

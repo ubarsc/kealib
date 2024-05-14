@@ -30,7 +30,7 @@
 #ifndef KEADATASET_H
 #define KEADATASET_H
 
-#include "gdal_pam.h"
+#include "gdal_priv.h"
 #include "cpl_multiproc.h"
 #include "libkea/KEAImageIO.h"
 
