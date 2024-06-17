@@ -30,14 +30,14 @@
 #ifndef KEADATASET_H
 #define KEADATASET_H
 
-#include "gdal_pam.h"
+#include "gdal_priv.h"
 #include "cpl_multiproc.h"
 #include "libkea/KEAImageIO.h"
 
 class LockedRefCount;
 
 // class that implements a GDAL dataset
-class KEADataset : public GDALPamDataset
+class KEADataset : public GDALDataset
 {
 public:
     // constructor/destructor

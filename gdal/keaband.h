@@ -30,7 +30,7 @@
 #ifndef KEABAND_H
 #define KEABAND_H
 
-#include "gdal_pam.h"
+#include "gdal_priv.h"
 
 #if (GDAL_VERSION_MAJOR > 3) || ((GDAL_VERSION_MAJOR == 3) && (GDAL_VERSION_MINOR >= 5))
     #define HAVE_64BITIMAGES
@@ -52,7 +52,7 @@ class KEAOverview;
 class KEAMaskBand;
 
 // Provides the implementation of a GDAL raster band
-class KEARasterBand : public GDALPamRasterBand
+class KEARasterBand : public GDALRasterBand
 {
 private:
     LockedRefCount      *m_pRefCount; // reference count of m_pImageIO
