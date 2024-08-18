@@ -45,7 +45,8 @@ KEAOverview::KEAOverview(KEADataset *pDataset, int nSrcBand, GDALAccess eAccess,
 
 KEAOverview::~KEAOverview()
 {
-
+    // according to the docs, this is required
+    this->FlushCache();
 }
 
 // overridden implementation - calls readFromOverview instead
