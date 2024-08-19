@@ -29,8 +29,15 @@
 
 #include "keaband.h" // for HAVE_64BITIMAGES
 
+// CPL_DLL definition seems to have changed for consumers of the library?
+#if defined(_MSC_VER)
+    #define KEA_DLL __declspec(dllexport)
+#else
+    #define KEA_DLL
+#endif
+
 CPL_C_START
-void CPL_DLL GDALRegister_KEA(void);
+void KEA_DLL GDALRegister_KEA(void);
 CPL_C_END
 
 // method to register this driver
