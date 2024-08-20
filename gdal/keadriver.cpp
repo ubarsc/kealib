@@ -27,6 +27,7 @@
  *
  */
 
+#define GDAL_COMPILATION  // required or linkage confusion on Windows...
 #include "keaband.h" // for HAVE_64BITIMAGES
 
 CPL_C_START
@@ -50,25 +51,48 @@ void GDALRegister_KEA()
                                    "KEA Image Format (.kea)" );
         poDriver->SetMetadataItem( GDAL_DMD_EXTENSION, "kea" );
         poDriver->SetMetadataItem( GDAL_DMD_CREATIONDATATYPES, 
-                            "Byte Int16 UInt16 Int32 UInt32 "
+            "Byte Int8 Int16 UInt16 Int32 UInt32 " 
 #ifdef HAVE_64BITIMAGES
-                            "Int64 UInt64 "
+            "Int64 UInt64 "
 #endif
-                            "Float32 Float64" );
-        poDriver->SetMetadataItem( GDAL_DMD_CREATIONOPTIONLIST, "\
-<CreationOptionList> \
-<Option name='IMAGEBLOCKSIZE' type='int' description='The size of each block for image data'/> \
-<Option name='ATTBLOCKSIZE' type='int' description='The size of each block for attribute data'/> \
-<Option name='MDC_NELMTS' type='int' description='Number of elements in the meta data cache'/> \
-<Option name='RDCC_NELMTS' type='int' description='Number of elements in the raw data chunk cache'/> \
-<Option name='RDCC_NBYTES' type='int' description='Total size of the raw data chunk cache, in bytes'/> \
-<Option name='RDCC_W0' type='float' description='Preemption policy'/> \
-<Option name='SIEVE_BUF' type='int' description='Sets the maximum size of the data sieve buffer'/> \
-<Option name='META_BLOCKSIZE' type='int' description='Sets the minimum size of metadata block allocations'/> \
-<Option name='DEFLATE' type='int' description='0 (no compression) to 9 (max compression)'/> \
-<Option name='THEMATIC' type='boolean' description='If YES then all bands are set to thematic'/> \
-</CreationOptionList>" );
-
+            "Float32 Float64" );
+        poDriver->SetMetadataItem( 
+            GDAL_DMD_CREATIONOPTIONLIST, 
+            CPLSPrintf(
+                "<CreationOptionList> "
+                "<Option name='IMAGEBLOCKSIZE' type='int' description='The size of "
+                "each block for image data' default='%d'/> "
+                "<Option name='ATTBLOCKSIZE' type='int' description='The size of "
+                "each block for attribute data' default='%d'/> "
+                "<Option name='MDC_NELMTS' type='int' description='Number of "
+                "elements in the meta data cache' default='%d'/> "
+                "<Option name='RDCC_NELMTS' type='int' description='Number of "
+                "elements in the raw data chunk cache' default='%d'/> "
+                "<Option name='RDCC_NBYTES' type='int' description='Total size of "
+                "the raw data chunk cache, in bytes' default='%d'/> "
+                "<Option name='RDCC_W0' type='float' min='0' max='1' "
+                "description='Preemption policy' default='%.2f'/> "
+                "<Option name='SIEVE_BUF' type='int' description='Sets the maximum "
+                "size of the data sieve buffer' default='%d'/> "
+                "<Option name='META_BLOCKSIZE' type='int' description='Sets the "
+                "minimum size of metadata block allocations' default='%d'/> "
+                "<Option name='DEFLATE' type='int' description='0 (no compression) "
+                "to 9 (max compression)' default='%d'/> "
+                "<Option name='THEMATIC' type='boolean' description='If YES then "
+                "all bands are set to thematic' default='NO'/> "
+                "</CreationOptionList>",
+                static_cast<int>(kealib::KEA_IMAGE_CHUNK_SIZE),
+                static_cast<int>(kealib::KEA_ATT_CHUNK_SIZE),
+                static_cast<int>(kealib::KEA_MDC_NELMTS),
+                static_cast<int>(kealib::KEA_RDCC_NELMTS),
+                static_cast<int>(kealib::KEA_RDCC_NBYTES), kealib::KEA_RDCC_W0,
+                static_cast<int>(kealib::KEA_SIEVE_BUF),
+                static_cast<int>(kealib::KEA_META_BLOCKSIZE), kealib::KEA_DEFLATE));
+        poDriver->SetMetadataItem(GDAL_DCAP_VIRTUALIO, "YES");
+        poDriver->SetMetadataItem(GDAL_DCAP_OPEN, "YES");
+        poDriver->SetMetadataItem(GDAL_DCAP_CREATE, "YES");
+        poDriver->SetMetadataItem(GDAL_DCAP_CREATECOPY, "YES");
+    
         // pointer to open function
         poDriver->pfnOpen = KEADataset::Open;
         // pointer to identify function
