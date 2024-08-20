@@ -27,7 +27,7 @@
  *
  */
 
-#define GDAL_COMPILATION
+#define GDAL_COMPILATION  // required or linkage confusion on Windows...
 #include "keaband.h" // for HAVE_64BITIMAGES
 
 CPL_C_START
