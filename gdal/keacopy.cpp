@@ -114,7 +114,6 @@ bool CopyRasterData( GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nB
     return true;
 }
 
-const int RAT_CHUNKSIZE = 1000;
 // copies the raster attribute table
 void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
 {
@@ -212,17 +211,12 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
         keaAtt->addRows(numRows);
         
 
-// We assume that if RFC40 present that #5362 (ensures HFA reads colours as 0-255 rather that 0-1 which 
-// was the old behaviour) has been applied which I think is reasonable since it was done between 
-// GDAL 1.10.1 and 1.11.0 (as was RFC40) and it is hard to test for this specifically
-//
-// Note if we don't support GDAL <=1.10.1 in future this function could be simplified
-        int *pnIntBuffer = new int[RAT_CHUNKSIZE];
-        int64_t *pnInt64Buffer = new int64_t[RAT_CHUNKSIZE];
-        double *pfDoubleBuffer = new double[RAT_CHUNKSIZE];
-        for(int ni = 0; ni < numRows; ni += RAT_CHUNKSIZE )
+        int *pnIntBuffer = new int[kealib::KEA_ATT_CHUNK_SIZE];
+        int64_t *pnInt64Buffer = new int64_t[kealib::KEA_ATT_CHUNK_SIZE];
+        double *pfDoubleBuffer = new double[kealib::KEA_ATT_CHUNK_SIZE];
+        for(int ni = 0; ni < numRows; ni += kealib::KEA_ATT_CHUNK_SIZE )
         {
-            int nLength = RAT_CHUNKSIZE;
+            int nLength = kealib::KEA_ATT_CHUNK_SIZE;
             if( ( ni + nLength ) > numRows )
             {
                 nLength = numRows - ni;
