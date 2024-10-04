@@ -1,3 +1,15 @@
+1.6.0
+-----
+
+* Improved thread safety. Potential ABI breakage.
+* Better saving and restoring of hdf5 print stack status, should now be quieter
+* Increase default chunk size for Raster Attribute Tables, should improve 
+  performance on S3/curl filesystems.
+* Stop GDAL driver deriving from the PAM baseclasses. Should now be no annoying .aux.xml files.
+* Fix overview writing - tiles were not being flushed in some situations.
+* Removed unused ERDAS Imagine and Arc drivers.
+* Increase chunksize for copying the RAT during CreateCopy operations.
+
 1.5.3
 -----
 
