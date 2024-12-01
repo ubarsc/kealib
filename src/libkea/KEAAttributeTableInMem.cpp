@@ -1934,6 +1934,7 @@ namespace kealib{
             
             neighboursDataset->close();
             delete neighboursDataset;
+            keaImg->flush(H5F_SCOPE_GLOBAL);
         }
         catch(const H5::Exception &e)
         {
@@ -2822,6 +2823,7 @@ namespace kealib{
             }
             
             delete[] attSize;
+            keaImg->flush(H5F_SCOPE_GLOBAL);
         }
         catch(const H5::Exception &e)
         {

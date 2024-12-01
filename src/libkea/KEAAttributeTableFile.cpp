@@ -941,6 +941,7 @@ namespace kealib{
             boolFieldsMemspace.close();
             
             delete[] boolVals;
+            keaImg->flush(H5F_SCOPE_GLOBAL);
         }
         catch(const H5::Exception &e)
         {
@@ -1033,6 +1034,7 @@ namespace kealib{
             intDataset.close();
             intDataspace.close();
             intFieldsMemspace.close();
+            keaImg->flush(H5F_SCOPE_GLOBAL);
         }
         catch(const H5::Exception &e)
         {
@@ -1125,6 +1127,7 @@ namespace kealib{
             floatDataset.close();
             floatDataspace.close();
             floatFieldsMemspace.close();
+            keaImg->flush(H5F_SCOPE_GLOBAL);
         }
         catch(const H5::Exception &e)
         {
@@ -1232,6 +1235,7 @@ namespace kealib{
             strFieldsMemspace.close();
             delete strTypeMem;
             delete[] stringVals;
+            keaImg->flush(H5F_SCOPE_GLOBAL);
         }
         catch(const H5::Exception &e)
         {
@@ -1346,7 +1350,7 @@ namespace kealib{
                 }
             }
             
-            
+            keaImg->flush(H5F_SCOPE_GLOBAL);
         }
         catch(const H5::Exception &e)
         {
@@ -1565,6 +1569,7 @@ namespace kealib{
         }
         boolDataset->close();
         delete boolDataset;
+        keaImg->flush(H5F_SCOPE_GLOBAL);
     }
     
     void KEAAttributeTableFile::addAttIntField(KEAATTField field, int64_t val)
@@ -1702,6 +1707,7 @@ namespace kealib{
         }
         intDataset->close();
         delete intDataset;
+        keaImg->flush(H5F_SCOPE_GLOBAL);
     }
     
     void KEAAttributeTableFile::addAttFloatField(KEAATTField field, float val)
@@ -1839,6 +1845,7 @@ namespace kealib{
         }
         floatDataset->close();
         delete floatDataset;
+        keaImg->flush(H5F_SCOPE_GLOBAL);
     }
     
     void KEAAttributeTableFile::addAttStringField(KEAATTField field, const std::string &val)
@@ -1981,6 +1988,7 @@ namespace kealib{
         stringDataset->close();
         delete stringDataset;
         delete strTypeMem;
+        keaImg->flush(H5F_SCOPE_GLOBAL);
     }
     
     void KEAAttributeTableFile::addRows(size_t numRowsIn)
@@ -2048,6 +2056,7 @@ namespace kealib{
                 // can't exist
             }
         }
+        keaImg->flush(H5F_SCOPE_GLOBAL);
     }
     
     KEAAttributeTable* KEAAttributeTableFile::createKeaAtt(H5::H5File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band, unsigned int chunkSizeIn, unsigned int deflate)
@@ -2383,6 +2392,7 @@ namespace kealib{
             }
             
             delete fieldCompTypeMem;
+            keaImg->flush(H5F_SCOPE_GLOBAL);
         }
         catch(const H5::Exception &e)
         {
