@@ -260,6 +260,7 @@ pybind11::object getNeighbours(pybind11::object &dataset, uint32_t nBand, int &s
         }
         
         freeNeighbourLists(&neighbours);
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
     }
     catch(const kealib::KEAException &e)
     {
@@ -384,6 +385,7 @@ void setNeighbours(pybind11::object &dataset, uint32_t nBand,
         pRAT->setNeighbours(startfid, cppneighbours.size(), &cppneighbours);
         
         freeNeighbourLists(&cppneighbours);
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
     }
     catch(const kealib::KEAException &e)
     {
@@ -426,9 +428,10 @@ void addField(pybind11::object &dataset, uint32_t nBand,
         }
         else 
         {
+            kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
             throw PyKeaLibException("Unsupported Type");
         }
-
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
     }
     catch(const kealib::KEAException &e)
     {
@@ -447,7 +450,9 @@ size_t getNumFields(pybind11::object &dataset, uint32_t nBand)
         {
             throw PyKeaLibException("No Attribute table in this file");
         }
-        return pRAT->getTotalNumOfCols();
+        size_t nFields = pRAT->getTotalNumOfCols();
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
+        return nFields;
     }
     catch(const kealib::KEAException &e)
     {
@@ -466,7 +471,9 @@ pybind11::object getFieldByName(pybind11::object &dataset, uint32_t nBand, const
         {
             throw PyKeaLibException("No Attribute table in this file");
         }
-        return pybind11::cast(pRAT->getField(name));
+        pybind11::object res = pybind11::cast(pRAT->getField(name));
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
+        return res;
     }
     catch(const kealib::KEAException &e)
     {
@@ -485,7 +492,9 @@ pybind11::object getFieldByIdx(pybind11::object &dataset, uint32_t nBand, int id
         {
             throw PyKeaLibException("No Attribute table in this file");
         }
-        return pybind11::cast(pRAT->getField(idx));
+        pybind11::object res = pybind11::cast(pRAT->getField(idx));
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
+        return res;
     }
     catch(const kealib::KEAException &e)
     {
@@ -504,7 +513,9 @@ size_t getSize(pybind11::object &dataset, uint32_t nBand)
         {
             throw PyKeaLibException("No Attribute table in this file");
         }
-        return pRAT->getSize();    
+        size_t res = pRAT->getSize();
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
+        return res;
     }
     catch(const kealib::KEAException &e)
     {
@@ -523,7 +534,8 @@ void addRows(pybind11::object &dataset, uint32_t nBand, size_t numRows)
         {
             throw PyKeaLibException("No Attribute table in this file");
         }
-        pRAT->addRows(numRows);    
+        pRAT->addRows(numRows); 
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
     }
     catch(const kealib::KEAException &e)
     {
@@ -582,8 +594,10 @@ pybind11::object getField(pybind11::object &dataset, uint32_t nBand, kealib::KEA
         }
         else
         {
+            kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
             throw PyKeaLibException("Unknown field type");
         }
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
     }
     catch(const kealib::KEAException &e)
     {
@@ -692,8 +706,10 @@ void setField(pybind11::object &dataset, uint32_t nBand, kealib::KEAATTField fie
         }
         else
         {
+            kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
             throw PyKeaLibException("Unknown field type");
         }
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
     }
     catch(const kealib::KEAException &e)
     {
@@ -968,7 +984,7 @@ private:
     
     // map keyed on image values where the value is a vector of neighbours
     std::unordered_map<size_t, std::vector<size_t>* > m_neighbourMap;
-    // refernce to the RAT 
+    // reference to the RAT 
     kealib::KEAAttributeTable *m_pRAT;
     // our copy of the user supplied histogram
     uint64_t *m_pHistogram;
@@ -1035,6 +1051,7 @@ NeighbourAccumulator::NeighbourAccumulator(pybind11::array &hist,
         throw PyKeaLibException("Unsupported data type");
     }    
 
+    m_pRAT = nullptr;
     kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset);
     
     try
@@ -1058,6 +1075,7 @@ NeighbourAccumulator::NeighbourAccumulator(pybind11::array &hist,
 // all written out if the histogram is correct.
 NeighbourAccumulator::~NeighbourAccumulator()
 {
+    kealib::KEAAttributeTable::destroyAttributeTable(m_pRAT);
     delete[] m_pHistogram;
     
     for( auto itr = m_neighbourMap.begin(); itr != m_neighbourMap.end(); itr++)

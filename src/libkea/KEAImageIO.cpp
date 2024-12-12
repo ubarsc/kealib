@@ -2966,7 +2966,7 @@ namespace kealib{
             throw KEAIOException(e.what());
         }
     }
-        
+
     H5::H5File* KEAImageIO::createKEAImage(const std::string &fileName, KEADataType dataType, uint32_t xSize, uint32_t ySize, uint32_t numImgBands, std::vector<std::string> *bandDescrips, KEAImageSpatialInfo * spatialInfo, uint32_t imageBlockSize, uint32_t attBlockSize, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize, uint32_t deflate)
     {
         KEAStackPrintState printState;

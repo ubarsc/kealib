@@ -99,7 +99,7 @@ def buildNeighbours(ds, band, tilesize=DFLT_TILESIZE, eightway=False):
     size = extrat.getSize(ds, band)
     histogram = extrat.getField(ds, band, fieldInfo, 0, size)
     
-    # will through exception if not set, but we need a nodata otherwise
+    # will throw exception if not set, but we need a nodata otherwise
     # we can't do a read with margin
     nodata = extrat.getNoDataValue(ds, band)
     
