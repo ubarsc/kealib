@@ -862,6 +862,58 @@ pybind11::object getImageBlock(pybind11::object &dataset, uint32_t nBand,
 } 
 
 
+class NeighbourPage
+{
+public:
+    NeighbourPage(size_t nStartVal, size_t length)
+        :m_neighbours(length)
+    {
+        m_nFinished = 0;
+        m_nStartVal = nStartVal;
+        for( size_t n = 0; n < length; n++ )
+        {
+            m_neighbours[n] = new std::vector<size_t>();
+        }
+    }
+    ~NeighbourPage()
+    {
+        freeNeighbourLists(&m_neighbours);
+    }
+    void addNeighbourEntry(size_t nVal, size_t nNewNeighbour)
+    {
+        if( m_neighbours.size() == 0 )
+        {
+            throw PyKeaLibException("Page already written out");
+        }
+        auto neighbours = m_neighbours[nVal - m_nStartVal];
+        if( std::find(neighbours->begin(), neighbours->end(), nNewNeighbour) == neighbours->end() )
+        {
+            neighbours->push_back(nNewNeighbour);
+        }
+    }
+    bool ValueDone(kealib::KEAAttributeTable *pRAT)
+    {
+        bool bDone = false;
+        // we've completed all the neighbours for this value
+        m_nFinished++;
+        if( m_nFinished == m_neighbours.size() )
+        {
+            // this page is done
+            //fprintf(stderr, "writing page for %zu\n", m_nStartVal);
+            pRAT->setNeighbours(m_nStartVal, m_neighbours.size(), &m_neighbours);
+            bDone = true;
+        }
+        return bDone;
+    }
+
+private:
+    std::vector<std::vector<size_t>* > m_neighbours;
+    size_t m_nFinished;
+    size_t m_nStartVal;
+};
+
+const uint64_t PAGE_SIZE = 1000;
+
 // class that holds the neighbours and accumulates new neighbours
 // from given 2d numpy arrays
 class NeighbourAccumulator
@@ -894,18 +946,22 @@ private:
                 T val = input.at(y, x);
                 if( val != nTypeIgnore )
                 {
-                    std::vector<size_t> *pVec = nullptr;
-                    auto found = m_neighbourMap.find(val);
-                    if( found != m_neighbourMap.end() )
+                    // find the page this is in
+                    size_t nPageId = int(val / PAGE_SIZE) * PAGE_SIZE;
+                    NeighbourPage *pPage = nullptr;
+                    auto found = m_neighbourPageMap.find(nPageId);
+                    if( found != m_neighbourPageMap.end() )
                     {
                         // already in our map - grab it
-                        pVec = found->second;
+                        pPage = found->second;
                     }
                     else
                     {
                         // not in our map - add it
-                        pVec = new std::vector<size_t>();
-                        m_neighbourMap.insert({val, pVec});
+                        size_t nLength = std::min(PAGE_SIZE, m_nHistSize - nPageId);
+                        pPage = new NeighbourPage(nPageId, nLength);
+                        m_neighbourPageMap.insert({nPageId, pPage});
+                        //fprintf(stderr, "Creating page for %zu %zu\n", nPageId, nLength);
                     }
                 
                     // check neighbouring pixels - left/right and up/down
@@ -928,12 +984,8 @@ private:
                                     T other_val = input.at(y_idx, x_idx);
                                     if( (val != other_val) && (other_val != nTypeIgnore ) )
                                     {
-                                        // check we don't already have this pixel
-                                        if( std::find(pVec->begin(), pVec->end(), other_val) == pVec->end() )
-                                        {
-                                            // not already in there...
-                                            pVec->push_back(other_val);
-                                        }
+                                        // add (does check not already there)
+                                        pPage->addNeighbourEntry(val, other_val);
                                     }
                                 }
                             }
@@ -944,24 +996,13 @@ private:
                     m_pHistogram[val]--;
                     if( m_pHistogram[val] == 0 )
                     {
-                        // need to write this one out - have visited each occurrance of it
-                        // and searched for neighbours.
-                        // Create a vector wrapping pVec
-                        //fprintf(stderr, "Writing neighbours for %d\n", (int)val);
-                        std::vector<std::vector<size_t>* > cppneighbours(1);
-                        cppneighbours.at(0) = pVec;
-                        try
+                        // will write if page complete
+                        if( pPage->ValueDone(m_pRAT) )
                         {
-                            m_pRAT->setNeighbours(val, 1, &cppneighbours);
+                            // remove it from our map and delete it.
+                            m_neighbourPageMap.erase(nPageId);
+                            delete pPage;
                         }
-                        catch(const kealib::KEAException &e)
-                        {
-                            throw PyKeaLibException(e.what());
-                        }
-                        
-                        // remove it from our map and delete it.
-                        m_neighbourMap.erase(val);
-                        delete pVec;
                     }
                 }
             }
@@ -973,21 +1014,22 @@ private:
     template<typename T>
     void copyHistogram(pybind11::array_t<T> input)
     {
-        ssize_t nSize = input.size();
-        m_pHistogram = new uint64_t[nSize];
-        for( ssize_t i = 0; i < nSize; i++ )
+        m_nHistSize = input.size();
+        m_pHistogram = new uint64_t[m_nHistSize];
+        for( ssize_t i = 0; i < m_nHistSize; i++ )
         {
             T val = input.at(i);
             m_pHistogram[i] = val;
         }
     }
     
-    // map keyed on image values where the value is a vector of neighbours
-    std::unordered_map<size_t, std::vector<size_t>* > m_neighbourMap;
+    // map keyed on page id (start val)
+    std::unordered_map<size_t, NeighbourPage*> m_neighbourPageMap;
     // reference to the RAT 
     kealib::KEAAttributeTable *m_pRAT;
     // our copy of the user supplied histogram
     uint64_t *m_pHistogram;
+    uint64_t m_nHistSize;
     // the ignore value obtained from the file
     double m_ignore;
     // whether to consider just 4 neighbours or 8.
@@ -1051,7 +1093,6 @@ NeighbourAccumulator::NeighbourAccumulator(pybind11::array &hist,
         throw PyKeaLibException("Unsupported data type");
     }    
 
-    m_pRAT = nullptr;
     kealib::KEAImageIO *pImageIO = getImageIOFromDataset(dataset);
     
     try
@@ -1078,9 +1119,9 @@ NeighbourAccumulator::~NeighbourAccumulator()
     kealib::KEAAttributeTable::destroyAttributeTable(m_pRAT);
     delete[] m_pHistogram;
     
-    for( auto itr = m_neighbourMap.begin(); itr != m_neighbourMap.end(); itr++)
+    for( auto itr = m_neighbourPageMap.begin(); itr != m_neighbourPageMap.end(); itr++)
     {
-        fprintf(stderr, "Neighbours not written for %d\n", (int)itr->first);
+        fprintf(stderr, "Neighbours not written for page %zu\n", itr->first);
         delete itr->second;
     }
 }
