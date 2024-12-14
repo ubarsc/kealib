@@ -865,6 +865,7 @@ pybind11::object getImageBlock(pybind11::object &dataset, uint32_t nBand,
 // represents a 'page' of the neighbours RAT. Generally contains PAGE_SIZE
 // entries, but may be less for the last page.
 // accumulates neighbours for that page and writes out when complete
+// Similar to Neil's RatPage in pyshepseg.tiling.
 class NeighbourPage
 {
 public:
