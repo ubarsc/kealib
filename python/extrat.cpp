@@ -42,6 +42,7 @@
 #include "libkea/KEAImageIO.h"
 
 #ifdef WIN32
+    #define NOMINMAX  // otherwise std::min won't work
     #include <Windows.h>
     #define DEFAULT_GDAL "gdal.dll"
 #else
