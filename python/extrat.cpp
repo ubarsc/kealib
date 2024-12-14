@@ -861,7 +861,9 @@ pybind11::object getImageBlock(pybind11::object &dataset, uint32_t nBand,
     }
 } 
 
-
+// represents a 'page' of the neighbours RAT. Generally contains PAGE_SIZE
+// entries, but may be less for the last page.
+// accumulates neighbours for that page and writes out when complete
 class NeighbourPage
 {
 public:
@@ -886,6 +888,8 @@ public:
     {
         freeNeighbourLists(&m_neighbours);
     }
+    // call when a neighbour is found. Only actually does something
+    // if this is a new neighbour.
     void addNeighbourEntry(size_t nVal, size_t nNewNeighbour)
     {
         if( m_neighbours.size() == 0 )
@@ -902,6 +906,8 @@ public:
             neighbours->push_back(nNewNeighbour);
         }
     }
+    // call when all the neighbours have been found for an entry in this page
+    // writes to file if all of the entries are complete.
     bool ValueDone(kealib::KEAAttributeTable *pRAT)
     {
         bool bDone = false;
@@ -958,7 +964,7 @@ private:
                 if( val != nTypeIgnore )
                 {
                     // find the page this is in
-                    size_t nPageId = int(val / PAGE_SIZE) * PAGE_SIZE;
+                    size_t nPageId = size_t(val / PAGE_SIZE) * PAGE_SIZE;
                     NeighbourPage *pPage = nullptr;
                     auto found = m_neighbourPageMap.find(nPageId);
                     if( found != m_neighbourPageMap.end() )
@@ -1036,6 +1042,7 @@ private:
     }
     
     // map keyed on page id (start val)
+    // each contains a 'page' of neighbours (PAGE_SIZE or so in length). 
     std::unordered_map<size_t, NeighbourPage*> m_neighbourPageMap;
     // reference to the RAT 
     kealib::KEAAttributeTable *m_pRAT;
