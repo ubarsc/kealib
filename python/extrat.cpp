@@ -865,14 +865,21 @@ pybind11::object getImageBlock(pybind11::object &dataset, uint32_t nBand,
 class NeighbourPage
 {
 public:
-    NeighbourPage(size_t nStartVal, size_t length)
+    NeighbourPage(size_t nStartVal, size_t length, uint64_t *pHistogram)
         :m_neighbours(length)
     {
-        m_nFinished = 0;
+        m_nTodo = 0;
         m_nStartVal = nStartVal;
         for( size_t n = 0; n < length; n++ )
         {
+            // need to create this for every value as kealib requires it
             m_neighbours[n] = new std::vector<size_t>();
+            // count the non-zero histgram values in this page
+            // (assume nodata has a histogram of zero which it should be via RIOS)
+            if( pHistogram[nStartVal + n] > 0 )
+            {
+               m_nTodo++; 
+            }
         }
     }
     ~NeighbourPage()
@@ -886,6 +893,10 @@ public:
             throw PyKeaLibException("Page already written out");
         }
         auto neighbours = m_neighbours[nVal - m_nStartVal];
+        if( neighbours == nullptr)
+        {
+            fprintf(stderr, "git null got nval %zu\n", nVal);
+        }
         if( std::find(neighbours->begin(), neighbours->end(), nNewNeighbour) == neighbours->end() )
         {
             neighbours->push_back(nNewNeighbour);
@@ -895,8 +906,8 @@ public:
     {
         bool bDone = false;
         // we've completed all the neighbours for this value
-        m_nFinished++;
-        if( m_nFinished == m_neighbours.size() )
+        m_nTodo--;
+        if( m_nTodo == 0 )
         {
             // this page is done
             //fprintf(stderr, "writing page for %zu\n", m_nStartVal);
@@ -908,7 +919,7 @@ public:
 
 private:
     std::vector<std::vector<size_t>* > m_neighbours;
-    size_t m_nFinished;
+    size_t m_nTodo;
     size_t m_nStartVal;
 };
 
@@ -959,7 +970,8 @@ private:
                     {
                         // not in our map - add it
                         size_t nLength = std::min(PAGE_SIZE, m_nHistSize - nPageId);
-                        pPage = new NeighbourPage(nPageId, nLength);
+                        pPage = new NeighbourPage(nPageId, nLength, m_pHistogram);
+                        
                         m_neighbourPageMap.insert({nPageId, pPage});
                         //fprintf(stderr, "Creating page for %zu %zu\n", nPageId, nLength);
                     }
