@@ -42,6 +42,7 @@
 #include "libkea/KEAImageIO.h"
 
 #ifdef WIN32
+    #define NOMINMAX  // otherwise std::min won't work
     #include <Windows.h>
     #define DEFAULT_GDAL "gdal.dll"
 #else
@@ -260,6 +261,7 @@ pybind11::object getNeighbours(pybind11::object &dataset, uint32_t nBand, int &s
         }
         
         freeNeighbourLists(&neighbours);
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
     }
     catch(const kealib::KEAException &e)
     {
@@ -384,6 +386,7 @@ void setNeighbours(pybind11::object &dataset, uint32_t nBand,
         pRAT->setNeighbours(startfid, cppneighbours.size(), &cppneighbours);
         
         freeNeighbourLists(&cppneighbours);
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
     }
     catch(const kealib::KEAException &e)
     {
@@ -426,9 +429,10 @@ void addField(pybind11::object &dataset, uint32_t nBand,
         }
         else 
         {
+            kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
             throw PyKeaLibException("Unsupported Type");
         }
-
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
     }
     catch(const kealib::KEAException &e)
     {
@@ -447,7 +451,9 @@ size_t getNumFields(pybind11::object &dataset, uint32_t nBand)
         {
             throw PyKeaLibException("No Attribute table in this file");
         }
-        return pRAT->getTotalNumOfCols();
+        size_t nFields = pRAT->getTotalNumOfCols();
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
+        return nFields;
     }
     catch(const kealib::KEAException &e)
     {
@@ -466,7 +472,9 @@ pybind11::object getFieldByName(pybind11::object &dataset, uint32_t nBand, const
         {
             throw PyKeaLibException("No Attribute table in this file");
         }
-        return pybind11::cast(pRAT->getField(name));
+        pybind11::object res = pybind11::cast(pRAT->getField(name));
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
+        return res;
     }
     catch(const kealib::KEAException &e)
     {
@@ -485,7 +493,9 @@ pybind11::object getFieldByIdx(pybind11::object &dataset, uint32_t nBand, int id
         {
             throw PyKeaLibException("No Attribute table in this file");
         }
-        return pybind11::cast(pRAT->getField(idx));
+        pybind11::object res = pybind11::cast(pRAT->getField(idx));
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
+        return res;
     }
     catch(const kealib::KEAException &e)
     {
@@ -504,7 +514,9 @@ size_t getSize(pybind11::object &dataset, uint32_t nBand)
         {
             throw PyKeaLibException("No Attribute table in this file");
         }
-        return pRAT->getSize();    
+        size_t res = pRAT->getSize();
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
+        return res;
     }
     catch(const kealib::KEAException &e)
     {
@@ -523,7 +535,8 @@ void addRows(pybind11::object &dataset, uint32_t nBand, size_t numRows)
         {
             throw PyKeaLibException("No Attribute table in this file");
         }
-        pRAT->addRows(numRows);    
+        pRAT->addRows(numRows); 
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
     }
     catch(const kealib::KEAException &e)
     {
@@ -582,8 +595,10 @@ pybind11::object getField(pybind11::object &dataset, uint32_t nBand, kealib::KEA
         }
         else
         {
+            kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
             throw PyKeaLibException("Unknown field type");
         }
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
     }
     catch(const kealib::KEAException &e)
     {
@@ -692,8 +707,10 @@ void setField(pybind11::object &dataset, uint32_t nBand, kealib::KEAATTField fie
         }
         else
         {
+            kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
             throw PyKeaLibException("Unknown field type");
         }
+        kealib::KEAAttributeTable::destroyAttributeTable(pRAT);
     }
     catch(const kealib::KEAException &e)
     {
@@ -845,6 +862,76 @@ pybind11::object getImageBlock(pybind11::object &dataset, uint32_t nBand,
     }
 } 
 
+// represents a 'page' of the neighbours RAT. Generally contains PAGE_SIZE
+// entries, but may be less for the last page.
+// accumulates neighbours for that page and writes out when complete
+// Similar to Neil's RatPage in pyshepseg.tiling.
+class NeighbourPage
+{
+public:
+    NeighbourPage(size_t nStartVal, size_t length, uint64_t *pHistogram)
+        :m_neighbours(length)
+    {
+        m_nTodo = 0;
+        m_nStartVal = nStartVal;
+        for( size_t n = 0; n < length; n++ )
+        {
+            // need to create this for every value as kealib requires it
+            m_neighbours[n] = new std::vector<size_t>();
+            // count the non-zero histgram values in this page
+            // (assume nodata has a histogram of zero which it should be via RIOS)
+            if( pHistogram[nStartVal + n] > 0 )
+            {
+               m_nTodo++; 
+            }
+        }
+    }
+    ~NeighbourPage()
+    {
+        freeNeighbourLists(&m_neighbours);
+    }
+    // call when a neighbour is found. Only actually does something
+    // if this is a new neighbour.
+    void addNeighbourEntry(size_t nVal, size_t nNewNeighbour)
+    {
+        if( m_neighbours.size() == 0 )
+        {
+            throw PyKeaLibException("Page already written out");
+        }
+        auto neighbours = m_neighbours[nVal - m_nStartVal];
+        if( neighbours == nullptr)
+        {
+            fprintf(stderr, "git null got nval %zu\n", nVal);
+        }
+        if( std::find(neighbours->begin(), neighbours->end(), nNewNeighbour) == neighbours->end() )
+        {
+            neighbours->push_back(nNewNeighbour);
+        }
+    }
+    // call when all the neighbours have been found for an entry in this page
+    // writes to file if all of the entries are complete.
+    bool ValueDone(kealib::KEAAttributeTable *pRAT)
+    {
+        bool bDone = false;
+        // we've completed all the neighbours for this value
+        m_nTodo--;
+        if( m_nTodo == 0 )
+        {
+            // this page is done
+            //fprintf(stderr, "writing page for %zu\n", m_nStartVal);
+            pRAT->setNeighbours(m_nStartVal, m_neighbours.size(), &m_neighbours);
+            bDone = true;
+        }
+        return bDone;
+    }
+
+private:
+    std::vector<std::vector<size_t>* > m_neighbours;
+    size_t m_nTodo;
+    size_t m_nStartVal;
+};
+
+const uint64_t PAGE_SIZE = 1000;
 
 // class that holds the neighbours and accumulates new neighbours
 // from given 2d numpy arrays
@@ -878,18 +965,23 @@ private:
                 T val = input.at(y, x);
                 if( val != nTypeIgnore )
                 {
-                    std::vector<size_t> *pVec = nullptr;
-                    auto found = m_neighbourMap.find(val);
-                    if( found != m_neighbourMap.end() )
+                    // find the page this is in
+                    size_t nPageId = size_t(val / PAGE_SIZE) * PAGE_SIZE;
+                    NeighbourPage *pPage = nullptr;
+                    auto found = m_neighbourPageMap.find(nPageId);
+                    if( found != m_neighbourPageMap.end() )
                     {
                         // already in our map - grab it
-                        pVec = found->second;
+                        pPage = found->second;
                     }
                     else
                     {
                         // not in our map - add it
-                        pVec = new std::vector<size_t>();
-                        m_neighbourMap.insert({val, pVec});
+                        size_t nLength = std::min(PAGE_SIZE, m_nHistSize - nPageId);
+                        pPage = new NeighbourPage(nPageId, nLength, m_pHistogram);
+                        
+                        m_neighbourPageMap.insert({nPageId, pPage});
+                        //fprintf(stderr, "Creating page for %zu %zu\n", nPageId, nLength);
                     }
                 
                     // check neighbouring pixels - left/right and up/down
@@ -912,12 +1004,8 @@ private:
                                     T other_val = input.at(y_idx, x_idx);
                                     if( (val != other_val) && (other_val != nTypeIgnore ) )
                                     {
-                                        // check we don't already have this pixel
-                                        if( std::find(pVec->begin(), pVec->end(), other_val) == pVec->end() )
-                                        {
-                                            // not already in there...
-                                            pVec->push_back(other_val);
-                                        }
+                                        // add (does check not already there)
+                                        pPage->addNeighbourEntry(val, other_val);
                                     }
                                 }
                             }
@@ -928,24 +1016,13 @@ private:
                     m_pHistogram[val]--;
                     if( m_pHistogram[val] == 0 )
                     {
-                        // need to write this one out - have visited each occurrance of it
-                        // and searched for neighbours.
-                        // Create a vector wrapping pVec
-                        //fprintf(stderr, "Writing neighbours for %d\n", (int)val);
-                        std::vector<std::vector<size_t>* > cppneighbours(1);
-                        cppneighbours.at(0) = pVec;
-                        try
+                        // will write if page complete
+                        if( pPage->ValueDone(m_pRAT) )
                         {
-                            m_pRAT->setNeighbours(val, 1, &cppneighbours);
+                            // remove it from our map and delete it.
+                            m_neighbourPageMap.erase(nPageId);
+                            delete pPage;
                         }
-                        catch(const kealib::KEAException &e)
-                        {
-                            throw PyKeaLibException(e.what());
-                        }
-                        
-                        // remove it from our map and delete it.
-                        m_neighbourMap.erase(val);
-                        delete pVec;
                     }
                 }
             }
@@ -957,21 +1034,23 @@ private:
     template<typename T>
     void copyHistogram(pybind11::array_t<T> input)
     {
-        ssize_t nSize = input.size();
-        m_pHistogram = new uint64_t[nSize];
-        for( ssize_t i = 0; i < nSize; i++ )
+        m_nHistSize = input.size();
+        m_pHistogram = new uint64_t[m_nHistSize];
+        for( ssize_t i = 0; i < m_nHistSize; i++ )
         {
             T val = input.at(i);
             m_pHistogram[i] = val;
         }
     }
     
-    // map keyed on image values where the value is a vector of neighbours
-    std::unordered_map<size_t, std::vector<size_t>* > m_neighbourMap;
-    // refernce to the RAT 
+    // map keyed on page id (start val)
+    // each contains a 'page' of neighbours (PAGE_SIZE or so in length). 
+    std::unordered_map<size_t, NeighbourPage*> m_neighbourPageMap;
+    // reference to the RAT 
     kealib::KEAAttributeTable *m_pRAT;
     // our copy of the user supplied histogram
     uint64_t *m_pHistogram;
+    uint64_t m_nHistSize;
     // the ignore value obtained from the file
     double m_ignore;
     // whether to consider just 4 neighbours or 8.
@@ -1058,11 +1137,12 @@ NeighbourAccumulator::NeighbourAccumulator(pybind11::array &hist,
 // all written out if the histogram is correct.
 NeighbourAccumulator::~NeighbourAccumulator()
 {
+    kealib::KEAAttributeTable::destroyAttributeTable(m_pRAT);
     delete[] m_pHistogram;
     
-    for( auto itr = m_neighbourMap.begin(); itr != m_neighbourMap.end(); itr++)
+    for( auto itr = m_neighbourPageMap.begin(); itr != m_neighbourPageMap.end(); itr++)
     {
-        fprintf(stderr, "Neighbours not written for %d\n", (int)itr->first);
+        fprintf(stderr, "Neighbours not written for page %zu\n", itr->first);
         delete itr->second;
     }
 }

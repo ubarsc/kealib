@@ -1345,8 +1345,8 @@ namespace kealib{
                     delete[] ((hsize_t*)neighbourVals[i].p);
                 }
             }
-            
-            
+            neighboursDataset->close();
+            delete neighboursDataset;
         }
         catch(const H5::Exception &e)
         {
@@ -2411,6 +2411,8 @@ namespace kealib{
     
     KEAAttributeTableFile::~KEAAttributeTableFile()
     {
+        // because we don't flush on each operation, let's do it here so any changes are written
+        keaImg->flush(H5F_SCOPE_GLOBAL);
     }
     
 }
