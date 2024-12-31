@@ -35,7 +35,7 @@
 #include <string>
 #include <vector>
 
-#include <H5Cpp.h>
+#include <highfive/highfive.hpp>
 
 #include "libkea/KEACommon.h"
 #include "libkea/KEAException.h"
@@ -91,9 +91,9 @@ namespace kealib{
         
         void addRows(size_t numRows);
         
-        void exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE);
+        void exportToKeaFile(HighFive::File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE);
         
-        static KEAAttributeTable* createKeaAtt(H5::H5File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band);
+        static KEAAttributeTable* createKeaAtt(HighFive::File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band);
         
         ~KEAAttributeTableInMem();
     protected:

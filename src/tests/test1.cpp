@@ -42,7 +42,7 @@ int main()
     try
     {
         kealib::KEAImageIO io;
-        H5::H5File *h5file = kealib::KEAImageIO::createKEAImage("bob.kea", 
+        HighFive::File *h5file = kealib::KEAImageIO::createKEAImage("bob.kea",
                         kealib::kea_8uint, IMG_XSIZE, IMG_YSIZE, 1);
 
         io.openKEAImageHeader(h5file);

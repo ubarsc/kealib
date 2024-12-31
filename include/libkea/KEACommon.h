@@ -316,12 +316,12 @@ namespace kealib{
     public:
         KEAStackPrintState()
         {
-            H5::Exception::getAutoPrint(m_func, &m_clientData);
-            H5::Exception::dontPrint();
+            //H5::Exception::getAutoPrint(m_func, &m_clientData);
+            //H5::Exception::dontPrint();
         }
         ~KEAStackPrintState()
         {
-            H5::Exception::setAutoPrint(m_func, m_clientData);
+            //H5::Exception::setAutoPrint(m_func, m_clientData);
         }
     private:
         H5E_auto2_t m_func;

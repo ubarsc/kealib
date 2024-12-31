@@ -596,8 +596,9 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTableInMem::exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize, unsigned int deflate)
-    {        
+    void KEAAttributeTableInMem::exportToKeaFile(HighFive::File *keaImg, unsigned int band, unsigned int chunkSize, unsigned int deflate)
+    {
+        /*
         try
         {
             if(attRows->size() == 0)
@@ -1951,10 +1952,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
-    KEAAttributeTable* KEAAttributeTableInMem::createKeaAtt(H5::H5File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band)
+    KEAAttributeTable* KEAAttributeTableInMem::createKeaAtt(HighFive::File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band)
     {
+        /*
         // Create instance of class to populate and return.
         KEAAttributeTableInMem *att = new KEAAttributeTableInMem(mutex);
         
@@ -2522,7 +2525,7 @@ namespace kealib{
                     throw KEAIOException("The neighbours datasets needs to have 1 dimension.");
                 }
                 
-                /* Neighbours */
+                // Neighbours
                 hsize_t *neighboursDims = new hsize_t[neighboursNDims];
                 neighboursDataspace.getSimpleExtentDims(neighboursDims);
                 if(attSize[0] > neighboursDims[0])
@@ -2841,6 +2844,7 @@ namespace kealib{
         }
         
         return att;
+        */
     }
     
     KEAAttributeTableInMem::~KEAAttributeTableInMem()

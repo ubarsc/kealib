@@ -45,7 +45,7 @@ namespace kealib{
         free(ptr);
     }
 
-    KEAAttributeTableFile::KEAAttributeTableFile(H5::H5File *keaImgIn, const std::shared_ptr<kealib::kea_mutex>& mutex, const std::string &bandPathBaseIn, size_t numRowsIn, size_t chunkSizeIn, unsigned int deflateIn) : KEAAttributeTable(kea_att_file, mutex)
+    KEAAttributeTableFile::KEAAttributeTableFile(HighFive::File *keaImgIn, const std::shared_ptr<kealib::kea_mutex>& mutex, const std::string &bandPathBaseIn, size_t numRowsIn, size_t chunkSizeIn, unsigned int deflateIn) : KEAAttributeTable(kea_att_file, mutex)
     {
         numRows = numRowsIn;
         chunkSize = chunkSizeIn;
@@ -320,6 +320,7 @@ namespace kealib{
     // RFC40
     void KEAAttributeTableFile::getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if((startfid+len) > numRows)
@@ -415,10 +416,12 @@ namespace kealib{
         {
             throw KEAATTException(e.what());
         }
+        */
     }
     
     void KEAAttributeTableFile::getIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) const
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if((startfid+len) > numRows)
@@ -507,10 +510,12 @@ namespace kealib{
         {
             throw KEAATTException(e.what());
         }
+        */
     }
     
     void KEAAttributeTableFile::getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if((startfid+len) > numRows)
@@ -599,10 +604,12 @@ namespace kealib{
         {
             throw KEAATTException(e.what());
         }
+        */
     }
     
     void KEAAttributeTableFile::getStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *psBuffer) const
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if((startfid+len) > numRows)
@@ -702,10 +709,12 @@ namespace kealib{
         {
             throw KEAATTException(e.what());
         }
+        */
     }
     
     void KEAAttributeTableFile::getNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const
     {
+        /*
         try
         {
             kealib::kea_lock lock(*this->m_mutex); 
@@ -788,6 +797,7 @@ namespace kealib{
         {
             throw KEAATTException(e.what());
         }
+        */
     }
     
     void KEAAttributeTableFile::setBoolField(size_t fid, size_t colIdx, bool value)
@@ -862,6 +872,7 @@ namespace kealib{
     // RFC40
     void KEAAttributeTableFile::setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if((startfid+len) > numRows)
@@ -958,10 +969,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     void KEAAttributeTableFile::setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if((startfid+len) > numRows)
@@ -1050,10 +1063,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     void KEAAttributeTableFile::setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if((startfid+len) > numRows)
@@ -1142,10 +1157,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     void KEAAttributeTableFile::setStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *papszStrList)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if((startfid+len) > numRows)
@@ -1249,12 +1266,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     void KEAAttributeTableFile::setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours)
     {
-        //throw KEAATTException("KEAAttributeTableFile::setNeighbours(size_t startfid, size_t len, std::vector<size_t> neighbours) is not implemented.");
-        
+        /*
         try
         {
             kealib::kea_lock lock(*this->m_mutex); 
@@ -1364,8 +1381,7 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        
-        
+        */
     }
     
     KEAATTFeature* KEAAttributeTableFile::getFeature(size_t fid) const
@@ -1381,6 +1397,7 @@ namespace kealib{
     
     void KEAAttributeTableFile::updateSizeHeader(hsize_t nbools, hsize_t nints, hsize_t nfloats, hsize_t nstrings)
     {
+        /*
         try
         {
             kealib::kea_lock lock(*this->m_mutex); 
@@ -1427,10 +1444,12 @@ namespace kealib{
         {
             throw KEAATTException(e.getDetailMsg());
         }
+        */
     }
     
     void KEAAttributeTableFile::addAttBoolField(KEAATTField field, bool val)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
@@ -1565,10 +1584,12 @@ namespace kealib{
         }
         boolDataset->close();
         delete boolDataset;
+        */
     }
     
     void KEAAttributeTableFile::addAttIntField(KEAATTField field, int64_t val)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
@@ -1702,10 +1723,12 @@ namespace kealib{
         }
         intDataset->close();
         delete intDataset;
+        */
     }
     
     void KEAAttributeTableFile::addAttFloatField(KEAATTField field, float val)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
@@ -1839,10 +1862,12 @@ namespace kealib{
         }
         floatDataset->close();
         delete floatDataset;
+        */
     }
     
     void KEAAttributeTableFile::addAttStringField(KEAATTField field, const std::string &val)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
@@ -1981,10 +2006,12 @@ namespace kealib{
         stringDataset->close();
         delete stringDataset;
         delete strTypeMem;
+        */
     }
     
     void KEAAttributeTableFile::addRows(size_t numRowsIn)
     {
+        /*
         if( numRowsIn > 0 )
         {
             kealib::kea_lock lock(*this->m_mutex); 
@@ -2048,10 +2075,12 @@ namespace kealib{
                 // can't exist
             }
         }
+        */
     }
     
-    KEAAttributeTable* KEAAttributeTableFile::createKeaAtt(H5::H5File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band, unsigned int chunkSizeIn, unsigned int deflate)
+    KEAAttributeTable* KEAAttributeTableFile::createKeaAtt(HighFive::File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band, unsigned int chunkSizeIn, unsigned int deflate)
     {
+        /*
         // Create instance of class to populate and return.
         std::string bandPathBase = KEA_DATASETNAME_BAND + uint2Str(band);
         KEAAttributeTableFile *att = nullptr;
@@ -2193,7 +2222,7 @@ namespace kealib{
                     KEAAttributeIdx *inFields = new KEAAttributeIdx[att->numIntFields];
                     
                     H5::DSetMemXferPropList xfer;
-                    /* Ensures that malloc()/free() are from the same C runtime */
+                    // Ensures that malloc()/free() are from the same C runtime
                     xfer.setVlenMemManager(kealibmalloc, nullptr, kealibfree, nullptr);
                     intFieldsDataset.read(inFields, *fieldCompTypeMem, intFieldsMemspace, intFieldsDataspace, xfer);
                     
@@ -2263,7 +2292,7 @@ namespace kealib{
                     KEAAttributeIdx *inFields = new KEAAttributeIdx[att->numFloatFields];
                     
                     H5::DSetMemXferPropList xfer;
-                    /* Ensures that malloc()/free() are from the same C runtime */
+                    // Ensures that malloc()/free() are from the same C runtime
                     xfer.setVlenMemManager(kealibmalloc, nullptr, kealibfree, nullptr);
                     floatFieldsDataset.read(inFields, *fieldCompTypeMem, floatFieldsMemspace, floatFieldsDataspace, xfer);
                     
@@ -2333,7 +2362,7 @@ namespace kealib{
                     KEAAttributeIdx *inFields = new KEAAttributeIdx[att->numStringFields];
                     
                     H5::DSetMemXferPropList xfer;
-                    /* Ensures that malloc()/free() are from the same C runtime */
+                    // Ensures that malloc()/free() are from the same C runtime
                     xfer.setVlenMemManager(kealibmalloc, nullptr, kealibfree, nullptr);
                     strFieldsDataset.read(inFields, *fieldCompTypeMem, strFieldsMemspace, strFieldsDataspace, xfer);
                     
@@ -2402,9 +2431,10 @@ namespace kealib{
         }
         
         return att;
+        */
     }
     
-    void KEAAttributeTableFile::exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize, unsigned int deflate)
+    void KEAAttributeTableFile::exportToKeaFile(HighFive::File *keaImg, unsigned int band, unsigned int chunkSize, unsigned int deflate)
     {
         throw KEAIOException("KEAAttributeTableFile does not support exporting to file");
     }
@@ -2412,7 +2442,7 @@ namespace kealib{
     KEAAttributeTableFile::~KEAAttributeTableFile()
     {
         // because we don't flush on each operation, let's do it here so any changes are written
-        keaImg->flush(H5F_SCOPE_GLOBAL);
+        //keaImg->flush(H5F_SCOPE_GLOBAL);
     }
     
 }

@@ -37,7 +37,7 @@
 #include <map>
 #include <math.h>
 
-#include <H5Cpp.h>
+#include <highfive/highfive.hpp>
 
 #include "libkea/KEACommon.h"
 #include "libkea/KEAException.h"
@@ -173,7 +173,7 @@ namespace kealib{
         virtual size_t getMaxGlobalColIdx() const;
         virtual void addRows(size_t numRows)=0;
         
-        virtual void exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE)=0;
+        virtual void exportToKeaFile(HighFive::File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE)=0;
         virtual void exportToASCII(const std::string &outputFile);
         
         virtual void printAttributeTableHeaderInfo();
@@ -183,10 +183,10 @@ namespace kealib{
         // for cross heap use in Windows
         static void destroyAttributeTable(KEAAttributeTable *pTable);
     protected:
-        static H5::CompType* createAttibuteIdxCompTypeDisk();
-        static H5::CompType* createAttibuteIdxCompTypeMem();
-        static H5::CompType* createKeaStringCompTypeDisk();
-        static H5::CompType* createKeaStringCompTypeMem();
+        //static H5::CompType* createAttibuteIdxCompTypeDisk();
+        //static H5::CompType* createAttibuteIdxCompTypeMem();
+        //static H5::CompType* createKeaStringCompTypeDisk();
+        //static H5::CompType* createKeaStringCompTypeMem();
         virtual void addAttBoolField(KEAATTField field, bool val)=0;
         virtual void addAttIntField(KEAATTField field, int64_t val)=0;
         virtual void addAttFloatField(KEAATTField field, float val)=0;

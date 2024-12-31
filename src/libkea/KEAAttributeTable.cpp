@@ -572,7 +572,7 @@ namespace kealib{
         
         std::cout << "Max. Column Index: " << this->numOfCols << std::endl;
     }
-    
+    /*
     H5::CompType* KEAAttributeTable::createAttibuteIdxCompTypeDisk()
     {
         try
@@ -690,6 +690,7 @@ namespace kealib{
             throw KEAATTException(e.getDetailMsg());
         }
     }
+    */
         
     KEAAttributeTable::~KEAAttributeTable()
     {

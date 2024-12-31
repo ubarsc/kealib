@@ -52,13 +52,14 @@ namespace kealib{
     
     std::string KEAImageIO::readString(H5::DataSet& dataset, H5::DataType strDataType)
     {
+        /*
         hid_t nativeVerStrType;
         if((nativeVerStrType=H5Tget_native_type(strDataType.getId(), H5T_DIR_DEFAULT))<0)
         {
             throw KEAIOException("Could not define a native string type");
         }
         H5::DSetMemXferPropList xfer;
-        /* Ensures that malloc()/free() are from the same C runtime */
+        // Ensures that malloc()/free() are from the same C runtime
         xfer.setVlenMemManager(kealibmalloc, nullptr, kealibfree, nullptr);
         char* strData[1];
         dataset.read((void*)strData, strDataType, H5::DataSpace::ALL, H5::DataSpace::ALL, xfer);
@@ -66,10 +67,12 @@ namespace kealib{
         free(strData[0]);
         H5Tclose(nativeVerStrType);
         return ret;
+        */
     }
     
-    void KEAImageIO::openKEAImageHeader(H5::H5File *keaImgH5File)
+    void KEAImageIO::openKEAImageHeader(HighFive::File *keaImgH5File)
     {
+        /*
         try 
         {
             kealib::kea_lock lock(*this->m_mutex); 
@@ -209,10 +212,12 @@ namespace kealib{
         }
         
         this->fileOpen = true;
+        */
     }
     
     void KEAImageIO::writeImageBlock2Band(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -346,10 +351,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     void KEAImageIO::readImageBlock2Band(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -481,12 +488,14 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
   
     
     
     void KEAImageIO::createMask(uint32_t band, uint32_t deflate)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -526,10 +535,12 @@ namespace kealib{
             imgBandDataSet.close();
             imgBandDataSpace.close();
         }
+        */
     }
     
     void KEAImageIO::writeImageBlock2BandMask(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -663,10 +674,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     void KEAImageIO::readImageBlock2BandMask(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex);
  
         KEAStackPrintState printState;
@@ -799,10 +812,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     bool KEAImageIO::maskCreated(uint32_t band)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
 
@@ -847,11 +862,13 @@ namespace kealib{
         }
         
         return maskPresent;
+        */
     }
     
     
     void KEAImageIO::setImageMetaData(const std::string &name, const std::string &value)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -900,10 +917,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     std::string KEAImageIO::getImageMetaData(const std::string &name)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -935,10 +954,12 @@ namespace kealib{
         }
         
         return value;
+        */
     }
     
     std::vector<std::string> KEAImageIO::getImageMetaDataNames()
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -973,10 +994,12 @@ namespace kealib{
         }
         
         return metaDataNames;
+        */
     }
     
     std::vector< std::pair<std::string, std::string> > KEAImageIO::getImageMetaData()
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1015,10 +1038,12 @@ namespace kealib{
         }
         
         return metaData;
+        */
     }
     
     void KEAImageIO::setImageMetaData(const std::vector< std::pair<std::string, std::string> > &data)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1047,10 +1072,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     void KEAImageIO::setImageBandMetaData(uint32_t band, const std::string &name, const std::string &value)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1099,10 +1126,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     std::string KEAImageIO::getImageBandMetaData(uint32_t band, const std::string &name)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1134,10 +1163,12 @@ namespace kealib{
         }
         
         return value;
+        */
     }
     
     std::vector<std::string> KEAImageIO::getImageBandMetaDataNames(uint32_t band)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1173,10 +1204,12 @@ namespace kealib{
         }
         
         return metaDataNames;
+        */
     }
     
     std::vector< std::pair<std::string, std::string> > KEAImageIO::getImageBandMetaData(uint32_t band)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1216,10 +1249,12 @@ namespace kealib{
         }
         
         return metaData;
+        */
     }
     
     void KEAImageIO::setImageBandMetaData(uint32_t band, const std::vector< std::pair<std::string, std::string> > &data)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1248,10 +1283,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     void KEAImageIO::setImageBandDescription(uint32_t band, const std::string &description)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1284,10 +1321,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     std::string KEAImageIO::getImageBandDescription(uint32_t band)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1319,12 +1358,14 @@ namespace kealib{
         }
         
         return description;
+        */
     }
     
     
     
     void KEAImageIO::setNoDataValue(uint32_t band, const void *data, KEADataType inDataType)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1386,10 +1427,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     void KEAImageIO::getNoDataValue(uint32_t band, void *data, KEADataType inDataType)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex);
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1448,10 +1491,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     void KEAImageIO::undefineNoDataValue(uint32_t band)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1494,10 +1539,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     std::vector<KEAImageGCP*>* KEAImageIO::getGCPs()
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1554,7 +1601,7 @@ namespace kealib{
                 
                 gcpsDataspace.selectHyperslab( H5S_SELECT_SET, boolFieldsDims, boolFieldOff );
                 H5::DSetMemXferPropList xfer;
-                /* Ensures that malloc()/free() are from the same C runtime */
+                // Ensures that malloc()/free() are from the same C runtime
                 xfer.setVlenMemManager(kealibmalloc, nullptr, kealibfree, nullptr);
                 gcpsDataset.read(gcpsHDF, *fieldDtMem, gcpsMemspace, gcpsDataspace, xfer);
                 
@@ -1601,10 +1648,12 @@ namespace kealib{
         }
         
         return gcps;
+        */
     }
     
     void KEAImageIO::setGCPs(std::vector<KEAImageGCP*> *gcps, const std::string &projWKT)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1786,11 +1835,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        
+        */
     }
     
     uint32_t KEAImageIO::getGCPCount()
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1818,10 +1868,12 @@ namespace kealib{
         }
         
         return numGCPs;
+        */
     }
     
     std::string KEAImageIO::getGCPProjection()
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1844,10 +1896,12 @@ namespace kealib{
         }
         
         return gcpProj;
+        */
     }
     
     void KEAImageIO::setGCPProjection(const std::string &projWKT)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1886,10 +1940,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     void KEAImageIO::setSpatialInfo(KEAImageSpatialInfo *inSpatialInfo)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1943,6 +1999,7 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     KEAImageSpatialInfo* KEAImageIO::getSpatialInfo()
@@ -1967,6 +2024,7 @@ namespace kealib{
     
     uint32_t KEAImageIO::getImageBlockSize(uint32_t band)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2029,10 +2087,12 @@ namespace kealib{
         }
         
         return imgBlockSize;
+        */
     }
 
     uint32_t KEAImageIO::getAttributeTableChunkSize(uint32_t band)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2097,10 +2157,12 @@ namespace kealib{
         }
         
         return attChunkSize;
+        */
     }
     
     KEADataType KEAImageIO::getImageBandDataType(uint32_t band)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2136,6 +2198,7 @@ namespace kealib{
         }
         
         return imgDataType;
+        */
     }
     
     std::string KEAImageIO::getKEAImageVersion() 
@@ -2150,6 +2213,7 @@ namespace kealib{
     
     void KEAImageIO::setImageBandLayerType(uint32_t band, KEALayerType imgLayerType)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2178,10 +2242,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     KEALayerType KEAImageIO::getImageBandLayerType(uint32_t band)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2218,10 +2284,12 @@ namespace kealib{
         }
         
         return imgLayerType;
+        */
     }
     
     void KEAImageIO::setImageBandClrInterp(uint32_t band, KEABandClrInterp imgLayerClrInterp)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2255,10 +2323,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     KEABandClrInterp KEAImageIO::getImageBandClrInterp(uint32_t band)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2296,10 +2366,12 @@ namespace kealib{
         }
         
         return imgLayerClrInterp;
+        */
     }
     
     void KEAImageIO::createOverview(uint32_t band, uint32_t overview, uint64_t xSize, uint64_t ySize)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2403,10 +2475,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     void KEAImageIO::removeOverview(uint32_t band, uint32_t overview)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2435,11 +2509,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        
+        */
     }
     
     uint32_t KEAImageIO::getOverviewBlockSize(uint32_t band, uint32_t overview)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2502,10 +2577,12 @@ namespace kealib{
         }
         
         return ovBlockSize;
+        */
     }
     
     void KEAImageIO::writeToOverview(uint32_t band, uint32_t overview, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2616,10 +2693,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     void KEAImageIO::readFromOverview(uint32_t band, uint32_t overview, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2727,10 +2806,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     uint32_t KEAImageIO::getNumOfOverviews(uint32_t band)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2760,10 +2841,12 @@ namespace kealib{
         }
         
         return numOverviews;
+        */
     }
     
     void KEAImageIO::getOverviewSize(uint32_t band, uint32_t overview, uint64_t *xSize, uint64_t *ySize)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2824,10 +2907,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     KEAAttributeTable* KEAImageIO::getAttributeTable(KEAATTType type, uint32_t band)
     {
+        /*
         KEAAttributeTable *att = nullptr;
         try 
         {
@@ -2858,10 +2943,12 @@ namespace kealib{
         }
         
         return att;
+        */
     }
     
     void KEAImageIO::setAttributeTable(KEAAttributeTable* att, uint32_t band, uint32_t chunkSize, uint32_t deflate)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2886,10 +2973,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
     bool KEAImageIO::attributeTablePresent(uint32_t band)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2939,10 +3028,12 @@ namespace kealib{
             throw KEAIOException(e.what());
         }
         return attPresent;
+        */
     }
     
     void KEAImageIO::close()
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         try 
@@ -2965,13 +3056,15 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
 
-    H5::H5File* KEAImageIO::createKEAImage(const std::string &fileName, KEADataType dataType, uint32_t xSize, uint32_t ySize, uint32_t numImgBands, std::vector<std::string> *bandDescrips, KEAImageSpatialInfo * spatialInfo, uint32_t imageBlockSize, uint32_t attBlockSize, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize, uint32_t deflate)
+    HighFive::File* KEAImageIO::createKEAImage(const std::string &fileName, KEADataType dataType, uint32_t xSize, uint32_t ySize, uint32_t numImgBands, std::vector<std::string> *bandDescrips, KEAImageSpatialInfo * spatialInfo, uint32_t imageBlockSize, uint32_t attBlockSize, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize, uint32_t deflate)
     {
+        /*
         KEAStackPrintState printState;
         
-        H5::H5File *keaImgH5File = nullptr;
+        HighFive::File *keaImgH5File = nullptr;
         
         try 
         {
@@ -2982,7 +3075,7 @@ namespace kealib{
             keaAccessPlist.setMetaBlockSize(metaBlockSize);
             
             // CREATE THE HDF FILE - EXISTING FILE WILL BE TRUNCATED
-            keaImgH5File = new H5::H5File( fileName, H5F_ACC_TRUNC, H5::FileCreatPropList::DEFAULT, keaAccessPlist);
+            keaImgH5File = new HighFive::File( fileName, H5F_ACC_TRUNC, H5::FileCreatPropList::DEFAULT, keaAccessPlist);
             
             //////////// CREATE GLOBAL HEADER ////////////////
             keaImgH5File->createGroup( KEA_DATASETNAME_HEADER );
@@ -3142,13 +3235,15 @@ namespace kealib{
         }
         
         return keaImgH5File;
+        */
     }
     
-    H5::H5File* KEAImageIO::openKeaH5RW(const std::string &fileName, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize)
+    HighFive::File* KEAImageIO::openKeaH5RW(const std::string &fileName, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize)
     {
         KEAStackPrintState printState;
         
-        H5::H5File *keaImgH5File = nullptr;
+        HighFive::File *keaImgH5File = nullptr;
+        /*
         try 
         {
             H5::FileAccPropList keaAccessPlist = H5::FileAccPropList(H5::FileAccPropList::DEFAULT);
@@ -3157,7 +3252,7 @@ namespace kealib{
             keaAccessPlist.setMetaBlockSize(metaBlockSize);
             
             const H5std_string keaImgFilePath(fileName);
-            keaImgH5File = new H5::H5File(keaImgFilePath, H5F_ACC_RDWR, H5::FileCreatPropList::DEFAULT, keaAccessPlist);
+            keaImgH5File = new HighFive::File(keaImgFilePath, H5F_ACC_RDWR, H5::FileCreatPropList::DEFAULT, keaAccessPlist);
             
         } 
         catch (const KEAIOException &e) 
@@ -3184,15 +3279,16 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        
+        */
         return keaImgH5File;
     }
     
-    H5::H5File* KEAImageIO::openKeaH5RDOnly(const std::string &fileName, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize)
+    HighFive::File* KEAImageIO::openKeaH5RDOnly(const std::string &fileName, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize)
     {
         KEAStackPrintState printState;
         
-        H5::H5File *keaImgH5File = nullptr;
+        HighFive::File *keaImgH5File = nullptr;
+        /*
         try 
         {
             H5::FileAccPropList keaAccessPlist = H5::FileAccPropList(H5::FileAccPropList::DEFAULT);
@@ -3201,7 +3297,7 @@ namespace kealib{
             keaAccessPlist.setMetaBlockSize(metaBlockSize);
             
             const H5std_string keaImgFilePath(fileName);
-            keaImgH5File = new H5::H5File(keaImgFilePath, H5F_ACC_RDONLY, H5::FileCreatPropList::DEFAULT, keaAccessPlist);
+            keaImgH5File = new HighFive::File(keaImgFilePath, H5F_ACC_RDONLY, H5::FileCreatPropList::DEFAULT, keaAccessPlist);
             
         }
         catch (const KEAIOException &e) 
@@ -3228,7 +3324,7 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        
+        */
         return keaImgH5File;
     }
         
@@ -3236,12 +3332,12 @@ namespace kealib{
     {
         bool keaImageFound = false;
         KEAStackPrintState printState;
-        
+        /*
         try 
         {
-            H5::H5File *keaImgH5File = nullptr;
+            HighFive::File *keaImgH5File = nullptr;
             const H5std_string keaImgFilePath(fileName);
-            keaImgH5File = new H5::H5File(keaImgFilePath, H5F_ACC_RDONLY);
+            keaImgH5File = new HighFive::File(keaImgFilePath, H5F_ACC_RDONLY);
             
             try 
             {
@@ -3299,7 +3395,7 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        
+        */
         return keaImageFound;
     }
 
@@ -3310,6 +3406,7 @@ namespace kealib{
 
     void KEAImageIO::addImageBand(const KEADataType dataType, const std::string &bandDescrip, const uint32_t imageBlockSize, const uint32_t attBlockSize, const uint32_t deflate)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -3328,10 +3425,12 @@ namespace kealib{
         KEAImageIO::setNumImgBandsInFileMetadata(this->keaImgFile, this->numImgBands);
 
         this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+        */
     }
     
     void KEAImageIO::removeImageBand(const uint32_t bandIndex)
     {
+        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -3347,10 +3446,12 @@ namespace kealib{
         KEAImageIO::setNumImgBandsInFileMetadata(this->keaImgFile, this->numImgBands);
 
         this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+        */
     }
 
     H5::DataType KEAImageIO::convertDatatypeKeaToH5STD(const KEADataType dataType)
     {
+        /*
         H5::DataType h5Datatype = H5::PredType::IEEE_F32LE;
         switch (dataType)
         {
@@ -3378,10 +3479,12 @@ namespace kealib{
                 throw KEAIOException("The specified data type was not recognised.");
         }
         return h5Datatype;
+        */
     }
 
     H5::DataType KEAImageIO::convertDatatypeKeaToH5Native(const KEADataType dataType)
     {
+        /*
         H5::DataType h5Datatype = H5::PredType::NATIVE_FLOAT;
         switch (dataType)
         {
@@ -3409,10 +3512,12 @@ namespace kealib{
                 throw KEAIOException("The specified data type was not recognised.");
         }
         return h5Datatype;
+        */
     }
 
-    void KEAImageIO::addImageBandToFile(H5::H5File *keaImgH5File, const KEADataType dataType, const uint32_t xSize,   const uint32_t ySize, const uint32_t bandIndex, const std::string &bandDescripIn, const uint32_t imageBlockSize, const uint32_t attBlockSize,  const uint32_t deflate)
+    void KEAImageIO::addImageBandToFile(HighFive::File *keaImgH5File, const KEADataType dataType, const uint32_t xSize,   const uint32_t ySize, const uint32_t bandIndex, const std::string &bandDescripIn, const uint32_t imageBlockSize, const uint32_t attBlockSize,  const uint32_t deflate)
     {
+        /*
         int initFillVal = 0;
         std::string bandDescrip = bandDescripIn; // may be updated below
 
@@ -3554,10 +3659,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
-    void KEAImageIO::removeImageBandFromFile(H5::H5File *keaImgH5File, const uint32_t bandIndex, const uint32_t numImgBands)
+    void KEAImageIO::removeImageBandFromFile(HighFive::File *keaImgH5File, const uint32_t bandIndex, const uint32_t numImgBands)
     {
+        /*
         if( ( bandIndex < 1) || ( bandIndex > numImgBands ) )
         {
             throw KEAIOException("Invalid band index");
@@ -3584,11 +3691,12 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-    
+        */
     }
 
-    void KEAImageIO::setNumImgBandsInFileMetadata(H5::H5File *keaImgH5File, const uint32_t numImgBands)
+    void KEAImageIO::setNumImgBandsInFileMetadata(HighFive::File *keaImgH5File, const uint32_t numImgBands)
     {
+        /*
         try
         {
             H5::DataSet numBandsDataset;
@@ -3620,11 +3728,13 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
+        */
     }
     
-    
+    /*
     H5::CompType* KEAImageIO::createGCPCompTypeDisk()
     {
+
         try
         {
             H5::StrType strTypeDisk(0, H5T_VARIABLE);
@@ -3655,6 +3765,7 @@ namespace kealib{
         {
             throw KEAATTException(e.getDetailMsg());
         }
+
     }
     
     H5::CompType* KEAImageIO::createGCPCompTypeMem()
@@ -3690,7 +3801,7 @@ namespace kealib{
             throw KEAATTException(e.getDetailMsg());
         }
     }
-
+    */
 } // namespace libkea
 
 #include "libkea/kea-config.h"
