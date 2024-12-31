@@ -1,3 +1,11 @@
+1.6.1
+-----
+
+* Fixed memory leaks accessing the RAT in the Python bindings
+* Fixed flushing of neighbours to disc - was not happening correctly in all circumstances
+* Improved performance of building neighbours with the Python bindings
+* add __version__ to the Python bindings
+
 1.6.0
 -----
 

@@ -40,6 +40,7 @@
 #include "awkward/LayoutBuilder.h"
 
 #include "libkea/KEAImageIO.h"
+#include "libkea/kea-config.h"
 
 #ifdef WIN32
     #define NOMINMAX  // otherwise std::min won't work
@@ -1287,6 +1288,7 @@ bool IsFakeGDALFunction()
 
 PYBIND11_MODULE(extrat, m) {
     m.doc() = "Module that contains helpers for accessing kealib features not available from GDAL";
+    m.attr("__version__") = LIBKEA_VERSION;
 
     m.def("IsFakeGDAL", &IsFakeGDALFunction);
     m.def("getNeighbours", &getNeighbours,
