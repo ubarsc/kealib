@@ -45,7 +45,11 @@
 #include <stdint.h>
 
 namespace kealib{
-        
+
+    static const std::string KEA_FILE_TYPE( "KEA" );
+    static const std::string KEA_SOFTWARE( "LibKEA" );
+    static const std::string KEA_VERSION( "1.1" );
+
     static const std::string KEA_DATASETNAME_HEADER( "/HEADER" );
     static const std::string KEA_DATASETNAME_HEADER_NUMBANDS( "/HEADER/NUMBANDS" );
     static const std::string KEA_DATASETNAME_HEADER_BLOCKSIZE( "/HEADER/BLOCKSIZE" );
@@ -324,8 +328,8 @@ namespace kealib{
             //H5::Exception::setAutoPrint(m_func, m_clientData);
         }
     private:
-        H5E_auto2_t m_func;
-        void *m_clientData;  
+        //H5E_auto2_t m_func;
+        //void *m_clientData;
     };
 
     typedef std::recursive_mutex kea_mutex;

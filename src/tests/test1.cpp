@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include "libkea/KEAImageIO.h"
 
-#define IMG_XSIZE 20
+#define IMG_XSIZE 10
 #define IMG_YSIZE 20
 #define TEST_FIELD "test"
 #define RAT_SIZE 256
@@ -41,10 +41,26 @@ int main()
 {
     try
     {
-        kealib::KEAImageIO io;
-        HighFive::File *h5file = kealib::KEAImageIO::createKEAImage("bob.kea",
-                        kealib::kea_8uint, IMG_XSIZE, IMG_YSIZE, 1);
+        auto spatialInfo = new kealib::KEAImageSpatialInfo();
+        spatialInfo->tlX = 10.0;
+        spatialInfo->tlY = 100.0;
+        spatialInfo->xRes = 1.0;
+        spatialInfo->yRes = -1.0;
+        spatialInfo->xRot = 5.0;
+        spatialInfo->yRot = 2.0;
+        spatialInfo->wktString = "Hello World";
 
+        auto bandDescrips = std::vector<std::string>(2);
+        bandDescrips[0] = "Band 1 Name";
+        bandDescrips[1] = "Band 2 Name";
+
+        kealib::KEAImageIO io;
+        std::cout << "Creating file" << std::endl;
+        HighFive::File *h5file = kealib::KEAImageIO::createKEAImage("bob.kea",
+                        kealib::kea_8uint, IMG_XSIZE, IMG_YSIZE, 2,
+                        &bandDescrips, spatialInfo);
+        std::cout << "Created file" << std::endl;
+        /*
         io.openKEAImageHeader(h5file);
 
         unsigned char *pData = (unsigned char*)calloc(IMG_XSIZE * IMG_YSIZE, sizeof(unsigned char));
@@ -72,6 +88,7 @@ int main()
 
         free(pRATData);
         io.close();
+        */
     }
     catch(const kealib::KEAException &e)
     {

@@ -137,12 +137,12 @@ namespace kealib{
         /**
          * Converts KEA datatypes to the respective standard HDF5 datatypes.
          */
-        static H5::DataType convertDatatypeKeaToH5STD(const KEADataType dataType);
+        static HighFive::DataType convertDatatypeKeaToH5STD(const KEADataType dataType);
 
         /**
          * Converts KEA datatypes to the respective native HDF5 datatypes.
          */
-        static H5::DataType convertDatatypeKeaToH5Native( const KEADataType dataType);
+        static HighFive::DataType convertDatatypeKeaToH5Native( const KEADataType dataType);
 
         /**
          * Adds an image band to the specified file. Does NOT flush the file
@@ -166,7 +166,7 @@ namespace kealib{
         //static H5::CompType* createGCPCompTypeDisk();
         //static H5::CompType* createGCPCompTypeMem();
         
-        static std::string readString(H5::DataSet& dataset, H5::DataType strDataType);
+        //static std::string readString(H5::DataSet& dataset, H5::DataType strDataType);
         
         /********** PROTECTED MEMBERS **********/
         bool fileOpen;
