@@ -71,147 +71,141 @@ namespace kealib{
     
     void KEAImageIO::openKEAImageHeader(HighFive::File *keaImgH5File)
     {
-        /*
         try 
         {
             kealib::kea_lock lock(*this->m_mutex); 
-            KEAStackPrintState printState;
+            //KEAStackPrintState printState;
             
             this->keaImgFile = keaImgH5File;
             this->spatialInfoFile = new KEAImageSpatialInfo();
-            
+
+            // READ KEA File Type - Check it is a KEA file.
+            std::string fileType = "";
+            if (keaImgH5File->exist(KEA_DATASETNAME_HEADER_FILETYPE))
+            {
+                auto datasetFileType = keaImgH5File->getDataSet(KEA_DATASETNAME_HEADER_FILETYPE);
+                datasetFileType.read(fileType);
+            }
+            else
+            {
+                throw KEAIOException("The KEA file type dataset was not found in the file.");
+            }
+            if (fileType != "KEA")
+            {
+                throw KEAIOException("The input file cannot be identified as a KEA file.");
+            }
+
             // READ KEA VERSION NUMBER
-            try
+            if (keaImgH5File->exist(KEA_DATASETNAME_HEADER_VERSION))
             {
-                H5::DataSet datasetFileVersion = keaImgH5File->openDataSet( KEA_DATASETNAME_HEADER_VERSION );
-                H5::DataType strVerDataType = datasetFileVersion.getDataType();
-                keaVersion = readString(datasetFileVersion, strVerDataType);
-                datasetFileVersion.close();
+                auto datasetFileVersion = keaImgH5File->getDataSet(KEA_DATASETNAME_HEADER_VERSION);
+                datasetFileVersion.read(this->keaVersion);
             }
-            catch ( const H5::Exception &e)
+            else
             {
-                throw KEAIOException("The number of image bands was not specified.");
+                throw KEAIOException("The KEA file format version number was not specified.");
             }
-            
-            
+
             // READ NUMBER OF IMAGE BANDS
-            try 
+            if (keaImgH5File->exist(KEA_DATASETNAME_HEADER_NUMBANDS))
             {
-                hsize_t dimsValue[1];
-                dimsValue[0] = 1;
-                H5::DataSpace valueDataSpace(1, dimsValue);
-                uint32_t value[1];
-                H5::DataSet datasetNumImgBands = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_NUMBANDS );
-                datasetNumImgBands.read(value, H5::PredType::NATIVE_UINT32, valueDataSpace);
-                this->numImgBands = value[0];
-                datasetNumImgBands.close();
-                valueDataSpace.close();
-            } 
-            catch ( const H5::Exception &e) 
+                auto datasetNumImgBands = keaImgH5File->getDataSet(KEA_DATASETNAME_HEADER_NUMBANDS);
+                datasetNumImgBands.read(this->numImgBands);
+            }
+            else
             {
                 throw KEAIOException("The number of image bands was not specified.");
             }
-                        
+
             // READ TL COORDINATES
-            try 
+            if (keaImgH5File->exist(KEA_DATASETNAME_HEADER_TL))
             {
-                hsize_t dimsValue[1];
-                dimsValue[0] = 2;
-                H5::DataSpace valueDataSpace(1, dimsValue);
-                double values[2];
-                H5::DataSet datasetSpatialTL = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_TL );
-                datasetSpatialTL.read(values, H5::PredType::NATIVE_DOUBLE, valueDataSpace);
-                this->spatialInfoFile->tlX = values[0];
-                this->spatialInfoFile->tlY = values[1];
-                datasetSpatialTL.close();
-                valueDataSpace.close();
-            } 
-            catch ( const H5::Exception &e) 
+                std::vector<double> tlCoordsSpatial(2);
+                auto datasetSpatialTL = keaImgH5File->getDataSet(KEA_DATASETNAME_HEADER_TL);
+                datasetSpatialTL.read(tlCoordsSpatial);
+                this->spatialInfoFile->tlX = tlCoordsSpatial[0];
+                this->spatialInfoFile->tlY = tlCoordsSpatial[1];
+            }
+            else
             {
                 throw KEAIOException("The TL coordinate is not specified.");
             }
+            std::cout << "TL: " << this->spatialInfoFile->tlX << ", " << this->spatialInfoFile->tlY << std::endl;
+
             
             // READ RESOLUTION
-            try 
+            if (keaImgH5File->exist(KEA_DATASETNAME_HEADER_RES))
             {
-                hsize_t dimsValue[1];
-                dimsValue[0] = 2;
-                H5::DataSpace valueDataSpace(1, dimsValue);
-                double values[2];
-                H5::DataSet spatialResDataset = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_RES );
-                spatialResDataset.read(values, H5::PredType::NATIVE_DOUBLE, valueDataSpace);
-                this->spatialInfoFile->xRes = values[0];
-                this->spatialInfoFile->yRes = values[1];
-                spatialResDataset.close();
-                valueDataSpace.close();
-            } 
-            catch ( const H5::Exception &e) 
+                std::vector<float> pxlResSpatial(2);
+                auto spatialResDataset = keaImgH5File->getDataSet(KEA_DATASETNAME_HEADER_RES);
+                spatialResDataset.read(pxlResSpatial);
+                this->spatialInfoFile->xRes = pxlResSpatial[0];
+                this->spatialInfoFile->yRes = pxlResSpatial[1];
+            }
+            else
             {
                 throw KEAIOException("The pixel resolution was not specified.");
             }
+            std::cout << "Res: " << this->spatialInfoFile->xRes << ", " << this->spatialInfoFile->yRes << std::endl;
+
             
             // READ ROTATION
-            try 
+            if (keaImgH5File->exist(KEA_DATASETNAME_HEADER_ROT))
             {
-                hsize_t dimsValue[1];
-                dimsValue[0] = 2;
-                H5::DataSpace valueDataSpace(1, dimsValue);
-                double values[2];
-                H5::DataSet spatialRotDataset = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_ROT );
-                spatialRotDataset.read(values, H5::PredType::NATIVE_DOUBLE, valueDataSpace);
-                this->spatialInfoFile->xRot = values[0];
-                this->spatialInfoFile->yRot = values[1];
-                spatialRotDataset.close();
-                valueDataSpace.close();
-            } 
-            catch ( const H5::Exception &e) 
-            {
-                throw KEAIOException("The image resolution was not specified.");
+                std::vector<float> pxlRotSpatial(2);
+                auto spatialRotDataset = keaImgH5File->getDataSet(KEA_DATASETNAME_HEADER_ROT);
+                spatialRotDataset.read(pxlRotSpatial);
+                this->spatialInfoFile->xRot = pxlRotSpatial[0];
+                this->spatialInfoFile->yRot = pxlRotSpatial[1];
             }
+            else
+            {
+                throw KEAIOException("The image rotation was not specified.");
+            }
+            std::cout << "Rot: " << this->spatialInfoFile->xRot << ", " << this->spatialInfoFile->yRot << std::endl;
+
+
             
             // READ IMAGE SIZE
-            try 
+            if (keaImgH5File->exist(KEA_DATASETNAME_HEADER_SIZE))
             {
-                hsize_t dimsValue[1];
-                dimsValue[0] = 2;
-                H5::DataSpace valueDataSpace(1, dimsValue);
-                uint64_t values[2];
-                H5::DataSet spatialSizeDataset = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_SIZE );
-                spatialSizeDataset.read(values, H5::PredType::NATIVE_UINT64, valueDataSpace);
-                this->spatialInfoFile->xSize = values[0];
-                this->spatialInfoFile->ySize = values[1];
-                spatialSizeDataset.close();
-                valueDataSpace.close();
-            } 
-            catch ( const H5::Exception &e) 
+                std::vector<uint64_t> imgSizeSpatial(2);
+                auto spatialRotDataset = keaImgH5File->getDataSet(KEA_DATASETNAME_HEADER_SIZE);
+                spatialRotDataset.read(imgSizeSpatial);
+                this->spatialInfoFile->xSize = imgSizeSpatial[0];
+                this->spatialInfoFile->ySize = imgSizeSpatial[1];
+            }
+            else
             {
-                throw KEAIOException("The image resolution was not specified.");
+                throw KEAIOException("The image size was not specified.");
             }
             
             // READ WKT STRING
-            try 
+            if (keaImgH5File->exist(KEA_DATASETNAME_HEADER_WKT))
             {
-                H5::DataSet datasetSpatialReference = this->keaImgFile->openDataSet( KEA_DATASETNAME_HEADER_WKT );
-                H5::DataType strDataType = datasetSpatialReference.getDataType();
-                this->spatialInfoFile->wktString = readString(datasetSpatialReference, strDataType);
-                datasetSpatialReference.close();
-            } 
-            catch ( const H5::Exception &e) 
-            {
-                throw KEAIOException("The spatial reference was not specified.");
+                auto spatialRotDataset = keaImgH5File->getDataSet(KEA_DATASETNAME_HEADER_WKT);
+                spatialRotDataset.read(this->spatialInfoFile->wktString);
             }
+            else
+            {
+                throw KEAIOException("The spatial reference (WKT String) was not specified.");
+            }
+            std::cout << "WKT: " << this->spatialInfoFile->wktString << std::endl;
         } 
         catch ( const KEAIOException &e)
         {
             throw e;
         }
+        catch ( const HighFive::Exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
         catch ( const std::exception &e)
         {
             throw KEAIOException(e.what());
         }
-        
+
         this->fileOpen = true;
-        */
     }
     
     void KEAImageIO::writeImageBlock2Band(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
@@ -321,7 +315,7 @@ namespace kealib{
                 
                 this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
             } 
-            catch ( const H5::Exception &e) 
+            catch ( const H5::Exception &e)
             {
                 throw KEAIOException("Could not write image data.");
             }            
@@ -458,7 +452,7 @@ namespace kealib{
                 imgBandDataspace.close();
                 read2BandDataspace.close();
             } 
-            catch ( const H5::Exception &e) 
+            catch ( const H5::Exception &e)
             {
                 throw KEAIOException("Could not read image data.");
             }            
@@ -888,7 +882,7 @@ namespace kealib{
             {
                 datasetMetaData = this->keaImgFile->openDataSet( metaDataH5Path );
             }
-            catch (const H5::Exception &e)
+            catch (const HighFive::File &e)
             {
                 hsize_t	dimsForStr[1];
                 dimsForStr[0] = 1; // number of lines;
@@ -3077,7 +3071,6 @@ namespace kealib{
         try
         {
             auto keaFileAccessProps = HighFive::FileAccessProps::Default();
-
             //keaAccessPlist.setCache(mdcElmts, rdccNElmts, rdccNBytes, rdccW0);
             //keaAccessPlist.setSieveBufSize(sieveBuf);
             //keaAccessPlist.setMetaBlockSize(metaBlockSize);
@@ -3198,120 +3191,92 @@ namespace kealib{
     
     HighFive::File* KEAImageIO::openKeaH5RW(const std::string &fileName, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize)
     {
-        KEAStackPrintState printState;
+        //KEAStackPrintState printState;
         
         HighFive::File *keaImgH5File = nullptr;
-        /*
         try 
         {
-            H5::FileAccPropList keaAccessPlist = H5::FileAccPropList(H5::FileAccPropList::DEFAULT);
-            keaAccessPlist.setCache(mdcElmts, rdccNElmts, rdccNBytes, rdccW0);
-            keaAccessPlist.setSieveBufSize(sieveBuf);
-            keaAccessPlist.setMetaBlockSize(metaBlockSize);
-            
-            const H5std_string keaImgFilePath(fileName);
-            keaImgH5File = new HighFive::File(keaImgFilePath, H5F_ACC_RDWR, H5::FileCreatPropList::DEFAULT, keaAccessPlist);
-            
+            auto keaFileAccessProps = HighFive::FileAccessProps::Default();
+            //keaAccessPlist.setCache(mdcElmts, rdccNElmts, rdccNBytes, rdccW0);
+            //keaAccessPlist.setSieveBufSize(sieveBuf);
+            //keaAccessPlist.setMetaBlockSize(metaBlockSize);
+
+            keaImgH5File = new HighFive::File( fileName, HighFive::File::ReadWrite, keaFileAccessProps);
+
         } 
         catch (const KEAIOException &e) 
         {
             throw e;
         }
-        catch( const H5::FileIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataSetIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataSpaceIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataTypeIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
+        catch (HighFive::Exception &e) {
+            throw KEAIOException(e.what());
+        }
         catch ( const std::exception &e)
         {
             throw KEAIOException(e.what());
         }
-        */
+
         return keaImgH5File;
     }
     
     HighFive::File* KEAImageIO::openKeaH5RDOnly(const std::string &fileName, int mdcElmts, hsize_t rdccNElmts, hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize)
     {
-        KEAStackPrintState printState;
+        //KEAStackPrintState printState;
         
         HighFive::File *keaImgH5File = nullptr;
-        /*
+
         try 
         {
-            H5::FileAccPropList keaAccessPlist = H5::FileAccPropList(H5::FileAccPropList::DEFAULT);
-            keaAccessPlist.setCache(mdcElmts, rdccNElmts, rdccNBytes, rdccW0);
-            keaAccessPlist.setSieveBufSize(sieveBuf);
-            keaAccessPlist.setMetaBlockSize(metaBlockSize);
-            
-            const H5std_string keaImgFilePath(fileName);
-            keaImgH5File = new HighFive::File(keaImgFilePath, H5F_ACC_RDONLY, H5::FileCreatPropList::DEFAULT, keaAccessPlist);
-            
+            auto keaFileAccessProps = HighFive::FileAccessProps::Default();
+            //keaAccessPlist.setCache(mdcElmts, rdccNElmts, rdccNBytes, rdccW0);
+            //keaAccessPlist.setSieveBufSize(sieveBuf);
+            //keaAccessPlist.setMetaBlockSize(metaBlockSize);
+
+            keaImgH5File = new HighFive::File( fileName, HighFive::File::ReadOnly, keaFileAccessProps);
+
         }
         catch (const KEAIOException &e) 
         {
             throw e;
         }
-        catch( const H5::FileIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataSetIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataSpaceIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataTypeIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
+        catch (HighFive::Exception &e) {
+            throw KEAIOException(e.what());
+        }
         catch ( const std::exception &e)
         {
             throw KEAIOException(e.what());
         }
-        */
+
         return keaImgH5File;
     }
         
     bool KEAImageIO::isKEAImage(const std::string &fileName)
     {
         bool keaImageFound = false;
-        KEAStackPrintState printState;
-        /*
+        //KEAStackPrintState printState;
         try 
         {
-            HighFive::File *keaImgH5File = nullptr;
-            const H5std_string keaImgFilePath(fileName);
-            keaImgH5File = new HighFive::File(keaImgFilePath, H5F_ACC_RDONLY);
-            
+            auto keaImgH5File = HighFive::File( fileName, HighFive::File::ReadOnly);
+
             try 
             {
-                H5::DataSet datasetFileType = keaImgH5File->openDataSet( KEA_DATASETNAME_HEADER_FILETYPE );
-                H5::DataType strFTDataType = datasetFileType.getDataType();
-                std::string fileType = readString(datasetFileType, strFTDataType);
-                datasetFileType.close();
+                std::string fileType = "";
+                if (keaImgH5File.exist(KEA_DATASETNAME_HEADER_FILETYPE))
+                {
+                    auto datasetFileType = keaImgH5File.getDataSet(KEA_DATASETNAME_HEADER_FILETYPE);
+                    datasetFileType.read(fileType);
+                }
                                 
                 try 
                 {
                     if(fileType == "KEA")
                     {
-                        H5::DataSet datasetFileVersion = keaImgH5File->openDataSet( KEA_DATASETNAME_HEADER_VERSION );
-                        H5::DataType strVerDataType = datasetFileVersion.getDataType();
-                        std::string fileVersion = readString(datasetFileVersion, strVerDataType);
-                        datasetFileVersion.close();
+                        std::string fileVersion = "";
+                        if (keaImgH5File.exist(KEA_DATASETNAME_HEADER_VERSION))
+                        {
+                            auto datasetFileVersion = keaImgH5File.getDataSet(KEA_DATASETNAME_HEADER_VERSION);
+                            datasetFileVersion.read(fileVersion);
+                        }
                         
                         if((fileVersion == "1.0") || (fileVersion == "1.1"))
                         {
@@ -3327,24 +3292,21 @@ namespace kealib{
                         keaImageFound = false;
                     }
                 } 
-                catch ( const H5::Exception &e) // WILL BE THROWN IF THE FILE VERSION DATASET IS NOT PRESENT
+                catch (HighFive::Exception &e)
                 {
                     keaImageFound = false;
                 }
                 
             } 
-            catch ( const H5::Exception &e) // WILL BE THROWN IF THE FILE TYPE DATASET IS NOT PRESENT
+            catch (HighFive::Exception &e)
             {
                 keaImageFound = false;
             }
-            
-            keaImgH5File->close();
-            delete keaImgH5File;
-        } 
-        catch( const H5::Exception &e ) // WILL BE THROWN WHEN THE HDF LIBRARY CANNOT OPEN THE FILE - IE IT IS NOT A HDF5 FILE!
-		{
-			keaImageFound = false;
-		}
+        }
+        catch (HighFive::Exception &e)
+        {
+            keaImageFound = false;
+        }
         catch ( const KEAIOException &e)
         {
             throw e;
@@ -3353,7 +3315,7 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        */
+
         return keaImageFound;
     }
 
@@ -3387,7 +3349,7 @@ namespace kealib{
     void KEAImageIO::removeImageBand(const uint32_t bandIndex)
     {
         kealib::kea_lock lock(*this->m_mutex); 
-        KEAStackPrintState printState;
+        //KEAStackPrintState printState;
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -3536,27 +3498,16 @@ namespace kealib{
             keaImgH5File->createGroup( bandName+KEA_ATT_GROUPNAME_NEIGHBOURS );
             keaImgH5File->createGroup( bandName+KEA_ATT_GROUPNAME_HEADER );
 
-            /*
+
             // SET ATTRIBUTE TABLE CHUNK SIZE
-            int attChunkSize = attBlockSize;
-            hsize_t dimsAttChunkSize[] = { 1 };
-            H5::DataSpace attChunkSizeDataSpace(1, dimsAttChunkSize);
-            H5::DataSet attChunkSizeDataset = keaImgH5File->createDataSet((bandName+KEA_ATT_CHUNKSIZE_HEADER), H5::PredType::STD_U64LE, attChunkSizeDataSpace);
-            attChunkSizeDataset.write( &attChunkSize, H5::PredType::NATIVE_INT);
-            attChunkSizeDataset.close();
-            attChunkSizeDataSpace.close();
+            auto attChunkSizeDataset = keaImgH5File->createDataSet<uint64_t>((bandName+KEA_ATT_CHUNKSIZE_HEADER), attBlockSize);
+            attChunkSizeDataset.write(attBlockSize);
 
             // SET ATTRIBUTE TABLE SIZE
-            int attSize[] = { 0, 0, 0, 0, 0 };
-            hsize_t dimsAttSize[] = { 5 };
-            H5::DataSpace attSizeDataSpace(1, dimsAttSize);
-            H5::DataSet attSizeDataset = keaImgH5File->createDataSet((bandName+KEA_ATT_SIZE_HEADER), H5::PredType::STD_U64LE, attSizeDataSpace);
-            attSizeDataset.write( attSize, H5::PredType::NATIVE_INT );
-            attSizeDataset.close();
-            attSizeDataSpace.close();
+            std::vector<uint64_t> attSize = {0, 0, 0, 0, 0};
+            auto spatialTLDataset = keaImgH5File->createDataSet<uint64_t>((bandName+KEA_ATT_SIZE_HEADER), HighFive::DataSpace::From(attSize));
+            spatialTLDataset.write(attSize);
 
-            attr_dataspace.close();
-            */
         }
         catch (const HighFive::DataSetException &e)
         {
@@ -3586,7 +3537,6 @@ namespace kealib{
     
     void KEAImageIO::removeImageBandFromFile(HighFive::File *keaImgH5File, const uint32_t bandIndex, const uint32_t numImgBands)
     {
-        /*
         if( ( bandIndex < 1) || ( bandIndex > numImgBands ) )
         {
             throw KEAIOException("Invalid band index");
@@ -3602,18 +3552,17 @@ namespace kealib{
             {
                 std::string srcName = KEA_DATASETNAME_BAND + uint2Str(sourceIndex);
                 std::string dstName = KEA_DATASETNAME_BAND + uint2Str(sourceIndex - 1);
-                keaImgH5File->move(srcName, dstName);
+                keaImgH5File->rename(srcName, dstName);
             }
         }
-        catch (const H5::Exception &e)
+        catch (const HighFive::Exception &e)
         {
-            throw KEAIOException("Could not remove the image band.");
+            throw KEAIOException(e.what());
         }
         catch ( const std::exception &e)
         {
             throw KEAIOException(e.what());
         }
-        */
     }
 
     void KEAImageIO::setNumImgBandsInFileMetadata(HighFive::File *keaImgH5File, const uint32_t numImgBands)

@@ -57,6 +57,45 @@ include(CMakeDependentOption)
 # CMake global option valiable
 option (BUILD_SHARED_LIBS "Build shared library" ON)
 
+# FindHDF5 feature
+# -------------------
+# On UNIX systems, this module will read the variable
+# HDF5_USE_STATIC_LIBRARIES to determine whether or not to prefer a
+# static link to a dynamic link for HDF5 and all of it's dependencies.
+# To use this feature, make sure that the HDF5_USE_STATIC_LIBRARIES
+# variable is set before the call to find_package.
+option(HDF5_USE_STATIC_LIBRARIES "Force to use HDF5 static libraries." OFF)
+# Both the serial and parallel HDF5 wrappers are considered and the first
+# directory to contain either one will be used.  In the event that both appear
+# in the same directory the serial version is preferentially selected. This
+# behavior can be reversed by setting the variable HDF5_PREFER_PARALLEL to
+# true.
+option(HDF5_PREFER_PARALLEL "Prefer HDF5 parallel wrapper instead of serial one." OFF)
+# To provide the module with a hint about where to find your HDF5
+# installation, you can set the environment variable HDF5_ROOT.  The
+# Find module will then look in this path when searching for HDF5
+# executables, paths, and libraries.
+if(NOT "x$ENV{HDF5_ROOT}" STREQUAL "x")
+    message(STATUS "HDF5_ROOT environment variable specified: $ENV{HDF5_ROOT}")
+endif()
+find_package(HDF5 COMPONENTS C REQUIRED)
+
+# https://support.hdfgroup.org/HDF5/doc/TechNotes/ThreadSafeLibrary.html
+include(CheckSymbolExists)
+SET(CMAKE_REQUIRED_INCLUDES ${HDF5_INCLUDE_DIRS})
+if(MSVC AND NOT HDF5_USE_STATIC_LIBRARIES)
+    # Needed so that correct result of threadsafe test is obtained
+    set(CMAKE_REQUIRED_DEFINITIONS -DH5_BUILT_AS_DYNAMIC_LIB)
+endif(MSVC AND NOT HDF5_USE_STATIC_LIBRARIES)
+
+check_symbol_exists(H5_HAVE_THREADSAFE "H5pubconf.h" HDF5_THREADSAFE)
+if( NOT HDF5_THREADSAFE )
+    message(NOTICE "")
+    message(NOTICE "*** HDF5 not built with HDF5_ENABLE_THREADSAFE=ON ***")
+    message(NOTICE "*** KEALib WILL NOT be threadsafe ***")
+    message(NOTICE "")
+endif()
+
 # Get HighFive library - HDF5
 find_package(HighFive REQUIRED)
 
@@ -67,6 +106,57 @@ find_package(GDAL)
 cmake_dependent_option(LIBKEA_WITH_GDAL  "Choose if .kea GDAL driver should be built" OFF "GDAL_FOUND" OFF)
 ###############################################################################
 
+# Code to change HDF5_LIBRARIES (from FindHDF5.cmake) into a form
+# that can be understood by libtool and put into kea-config
+
+SET(HDF5_LIBRARIES_PATHS)
+SET(HDF5_LIBRARIES_NAMES)
+foreach(lib_name ${HDF5_LIBRARIES})
+    get_filename_component(DIRNAME ${lib_name} DIRECTORY)
+    get_filename_component(LIBNAME ${lib_name} NAME_WE)
+    list(APPEND HDF5_LIBRARIES_PATHS ${DIRNAME})
+
+    # remove the 'lib' bit if it has one
+    string(FIND ${LIBNAME} "lib" lib_index)
+    if(${lib_index} EQUAL "0")
+        string(SUBSTRING ${LIBNAME} 3 -1 LIBNAME)
+    endif()
+
+    list(APPEND HDF5_LIBRARIES_NAMES ${LIBNAME})
+endforeach(lib_name)
+
+# Remove duplicates if stuff was actually in there
+if(HDF5_LIBRARIES_PATHS)
+    list(REMOVE_DUPLICATES HDF5_LIBRARIES_PATHS)
+endif()
+if(HDF5_LIBRARIES_NAMES)
+    list(REMOVE_DUPLICATES HDF5_LIBRARIES_NAMES)
+endif()
+
+# Code below changes from arrays returned by FindHDF5.cmake
+# into strings as expected by kea-config.in and used by libtool
+# (otherwise things end up separated by semicolons etc)
+
+# variables "fixed" in this way have the _LIBTOOL suffix
+set(HDF5_LIBRARIES_LIBTOOL)
+foreach(dir_name ${HDF5_LIBRARIES_PATHS})
+    string(CONCAT HDF5_LIBRARIES_LIBTOOL ${HDF5_LIBRARIES_LIBTOOL} " -L" ${dir_name})
+endforeach(dir_name)
+
+foreach(lib_name ${HDF5_LIBRARIES_NAMES})
+    string(CONCAT HDF5_LIBRARIES_LIBTOOL ${HDF5_LIBRARIES_LIBTOOL} " -l" ${lib_name})
+endforeach(lib_name)
+message(STATUS "HDF5_LIBRARIES_LIBTOOL ${HDF5_LIBRARIES_LIBTOOL}")
+
+set(HDF5_INCLUDE_LIBTOOL)
+set(HDF5_CFLAGS_LIBTOOL)
+foreach(dir_name ${HDF5_INCLUDE_DIRS})
+    message(STATUS "dir_name ${dir_name}")
+    string(CONCAT HDF5_INCLUDE_LIBTOOL ${HDF5_INCLUDE_LIBTOOL} " " ${dir_name})
+    string(CONCAT HDF5_CFLAGS_LIBTOOL ${HDF5_CFLAGS_LIBTOOL} " -I" ${dir_name})
+endforeach(dir_name)
+message(STATUS "HDF5_INCLUDE_LIBTOOL ${HDF5_INCLUDE_LIBTOOL}")
+message(STATUS "HDF5_CFLAGS_LIBTOOL ${HDF5_CFLAGS_LIBTOOL}")
 
 ###############################################################################
 # CMake settings

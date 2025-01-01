@@ -55,14 +55,30 @@ int main()
         bandDescrips[1] = "Band 2 Name";
 
         kealib::KEAImageIO io;
+
+        std::string test_kea_file = "bob.kea";
+
         std::cout << "Creating file" << std::endl;
-        HighFive::File *h5file = kealib::KEAImageIO::createKEAImage("bob.kea",
+        HighFive::File *h5file = kealib::KEAImageIO::createKEAImage(test_kea_file,
                         kealib::kea_8uint, IMG_XSIZE, IMG_YSIZE, 2,
                         &bandDescrips, spatialInfo);
         std::cout << "Created file" << std::endl;
-        /*
+
+        delete h5file;
+
+
+        if (kealib::KEAImageIO::isKEAImage(test_kea_file))
+        {
+            std::cout << "File is a KEA image" << std::endl;
+        }
+
+        std::cout << "Opening file" << std::endl;
+        h5file = kealib::KEAImageIO::openKeaH5RW(test_kea_file);
+        std::cout << "Openned file" << std::endl;
+
         io.openKEAImageHeader(h5file);
 
+        /*
         unsigned char *pData = (unsigned char*)calloc(IMG_XSIZE * IMG_YSIZE, sizeof(unsigned char));
         for( int i = 0; i < (IMG_XSIZE * IMG_YSIZE); i++ )
         {

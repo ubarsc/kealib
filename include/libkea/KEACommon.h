@@ -310,7 +310,8 @@ namespace kealib{
            
         return strDT;
     }
-    
+
+    /*
     // inline class to save/restore HDF5 exception stack trace
     // printing (we usually want this off, but want to revert back to what caller had)
     // Also, this state is per thread so if calling a method on a new thread this will
@@ -331,6 +332,7 @@ namespace kealib{
         //H5E_auto2_t m_func;
         //void *m_clientData;
     };
+    */
 
     typedef std::recursive_mutex kea_mutex;
     typedef std::lock_guard<kea_mutex> kea_lock;
