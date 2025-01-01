@@ -132,15 +132,15 @@ namespace kealib{
     
     static const std::string KEA_NODATA_DEFINED( "NO_DATA_DEFINED" );
     
-    static const int KEA_MDC_NELMTS( 0 ); // 0
-    static const hsize_t  KEA_RDCC_NELMTS( 512 ); // 512
-    static const hsize_t  KEA_RDCC_NBYTES( 1048576 ); // 1048576
-    static const double KEA_RDCC_W0( 0.75 ); // 0.75
-    static const hsize_t  KEA_SIEVE_BUF( 65536 ); // 65536
-    static const hsize_t  KEA_META_BLOCKSIZE( 2048 ); // 2048
-    static const unsigned int KEA_DEFLATE( 1 ); // 1
-    static const hsize_t KEA_IMAGE_CHUNK_SIZE( 512 ); // 512
-    static const hsize_t KEA_ATT_CHUNK_SIZE( 10000 ); // 10000
+    static const int KEA_MDC_NELMTS( 0 );              // 0
+    static const hsize_t  KEA_RDCC_NELMTS( 512 );      // 512
+    static const hsize_t  KEA_RDCC_NBYTES( 1048576 );  // 1048576
+    static const double KEA_RDCC_W0( 0.75 );           // 0.75
+    static const hsize_t  KEA_SIEVE_BUF( 65536 );      // 65536
+    static const hsize_t  KEA_META_BLOCKSIZE( 2048 );  // 2048
+    static const unsigned int KEA_DEFLATE( 1 );        // 1
+    static const hsize_t KEA_IMAGE_CHUNK_SIZE( 512 );  // 512
+    static const hsize_t KEA_ATT_CHUNK_SIZE( 10000 );  // 10000
     
     enum KEADataType
     {
@@ -311,28 +311,6 @@ namespace kealib{
         return strDT;
     }
 
-    /*
-    // inline class to save/restore HDF5 exception stack trace
-    // printing (we usually want this off, but want to revert back to what caller had)
-    // Also, this state is per thread so if calling a method on a new thread this will
-    // need to be set. 
-    class KEAStackPrintState
-    {
-    public:
-        KEAStackPrintState()
-        {
-            //H5::Exception::getAutoPrint(m_func, &m_clientData);
-            //H5::Exception::dontPrint();
-        }
-        ~KEAStackPrintState()
-        {
-            //H5::Exception::setAutoPrint(m_func, m_clientData);
-        }
-    private:
-        //H5E_auto2_t m_func;
-        //void *m_clientData;
-    };
-    */
 
     typedef std::recursive_mutex kea_mutex;
     typedef std::lock_guard<kea_mutex> kea_lock;

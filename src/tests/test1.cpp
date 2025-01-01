@@ -91,7 +91,7 @@ int main()
         uint64_t subXOff = 0;
         uint64_t subYOff = 0;
 
-
+        std::cout << "Writing some image data" << std::endl;
         unsigned char *pData = (unsigned char*)calloc(subXSize * subYSize, sizeof(unsigned char));
         for( int i = 0; i < (subXSize * subYSize); i++ )
         {
@@ -99,9 +99,34 @@ int main()
         }
         io.writeImageBlock2Band(1, pData, subXOff, subYOff, subXSize, subYSize,
                     subXSize, subYSize, kealib::kea_8uint);
-        free(pData);
+        //free(pData);
+        std::cout << "Written some image data" << std::endl;
         io.close();
 
+
+        std::cout << "Opening file" << std::endl;
+        h5file = kealib::KEAImageIO::openKeaH5RDOnly(test_kea_file);
+        io.openKEAImageHeader(h5file);
+        std::cout << "Openned file" << std::endl;
+
+        std::cout << "Reading some image data" << std::endl;
+        unsigned char *pReadData = (unsigned char*)calloc(subXSize * subYSize, sizeof(unsigned char));
+        io.readImageBlock2Band(1, pReadData, subXOff, subYOff, subXSize, subYSize, subXSize, subYSize, kealib::kea_8uint);
+        std::cout << "Read some image data" << std::endl;
+        io.close();
+
+        std::cout << "Comparing data written and read data" << std::endl;
+        for (int i = 0; i < subXSize * subYSize; i++)
+        {
+            if (pReadData[i] != pData[i])
+            {
+                std::cout << "Error at " << i << std::endl;
+            }
+        }
+        std::cout << "Data compared" << std::endl;
+
+        free(pData);
+        free(pReadData);
         /*
         io.setImageBandLayerType(1, kealib::kea_thematic);
         kealib::KEAAttributeTable *pRat = io.getAttributeTable(kealib::kea_att_file, 1);
