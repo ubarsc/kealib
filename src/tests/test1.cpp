@@ -32,8 +32,8 @@
 #include <stdlib.h>
 #include "libkea/KEAImageIO.h"
 
-#define IMG_XSIZE 10
-#define IMG_YSIZE 20
+#define IMG_XSIZE 100
+#define IMG_YSIZE 200
 #define TEST_FIELD "test"
 #define RAT_SIZE 256
 
@@ -77,17 +77,32 @@ int main()
         std::cout << "Openned file" << std::endl;
 
         io.openKEAImageHeader(h5file);
-
         /*
-        unsigned char *pData = (unsigned char*)calloc(IMG_XSIZE * IMG_YSIZE, sizeof(unsigned char));
-        for( int i = 0; i < (IMG_XSIZE * IMG_YSIZE); i++ )
+        uint64_t subXSize = 50;
+        uint64_t subYSize = 100;
+
+        uint64_t subXOff = 25;
+        uint64_t subYOff = 50;
+        */
+
+        uint64_t subXSize = IMG_XSIZE;
+        uint64_t subYSize = IMG_YSIZE;
+
+        uint64_t subXOff = 0;
+        uint64_t subYOff = 0;
+
+
+        unsigned char *pData = (unsigned char*)calloc(subXSize * subYSize, sizeof(unsigned char));
+        for( int i = 0; i < (subXSize * subYSize); i++ )
         {
             pData[i] = rand() % 255;
         }
-        io.writeImageBlock2Band(1, pData, 0, 0, IMG_XSIZE, IMG_YSIZE, 
-                    IMG_XSIZE, IMG_YSIZE, kealib::kea_8uint);
+        io.writeImageBlock2Band(1, pData, subXOff, subYOff, subXSize, subYSize,
+                    subXSize, subYSize, kealib::kea_8uint);
         free(pData);
+        io.close();
 
+        /*
         io.setImageBandLayerType(1, kealib::kea_thematic);
         kealib::KEAAttributeTable *pRat = io.getAttributeTable(kealib::kea_att_file, 1);
         pRat->addAttIntField(TEST_FIELD, 0);

@@ -144,6 +144,8 @@ namespace kealib{
          */
         static HighFive::DataType convertDatatypeKeaToH5Native( const KEADataType dataType);
 
+        static const std::string convertDatatypeKeaToCStdStr(const KEADataType dataType);
+
         /**
          * Adds an image band to the specified file. Does NOT flush the file
          * buffer.

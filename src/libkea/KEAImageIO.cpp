@@ -191,7 +191,7 @@ namespace kealib{
                 throw KEAIOException("The spatial reference (WKT String) was not specified.");
             }
             std::cout << "WKT: " << this->spatialInfoFile->wktString << std::endl;
-        } 
+        }
         catch ( const KEAIOException &e)
         {
             throw e;
@@ -210,13 +210,14 @@ namespace kealib{
     
     void KEAImageIO::writeImageBlock2Band(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
-        KEAStackPrintState printState;
+
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
         }
+
+        auto imgBandDT = convertDatatypeKeaToH5Native(inDataType);
         
         try 
         {
@@ -252,99 +253,55 @@ namespace kealib{
             {
                 throw KEAIOException("End Y Pixel is not within image.");  
             }
-            
-            // GET NATIVE DATASET
-            H5::DataType imgBandDT = convertDatatypeKeaToH5Native(inDataType);
 
             // OPEN BAND DATASET AND WRITE IMAGE DATA
-            try 
+            std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band);
+            if (this->keaImgFile->exist(imageBandPath + KEA_BANDNAME_DATA))
             {
-                std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band);
-                H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( imageBandPath + KEA_BANDNAME_DATA );
-                H5::DataSpace imgBandDataspace = imgBandDataset.getSpace();                
-                
-                hsize_t imgOffset[2];
-                imgOffset[0] = yPxlOff;
-                imgOffset[1] = xPxlOff;
-                hsize_t dataDims[2];
-                dataDims[0] = ySizeBuf;
-                dataDims[1] = xSizeBuf;
-                H5::DataSpace write2BandDataspace = H5::DataSpace(2, dataDims);
-                
-                if((ySizeOut != ySizeBuf) | (xSizeOut != xSizeBuf))
-                {                    
-                    hsize_t dataSelectMemDims[2];
-                    dataSelectMemDims[0] = ySizeOut;
-                    dataSelectMemDims[1] = 1;
+                auto imgBandDataset = this->keaImgFile->getDataSet(imageBandPath + KEA_BANDNAME_DATA);
+                std::vector<size_t> imgDataDims = imgBandDataset.getDimensions();
+                std::cout << "imgDataDims: " << imgDataDims[0] << ", " << imgDataDims[1] << std::endl;
 
-                    hsize_t dataOffDims[2];
-                    dataOffDims[0] = 0;
-                    dataOffDims[1] = 0;
+                if ((this->spatialInfoFile->ySize != ySizeBuf) || (this->spatialInfoFile->xSize != xSizeBuf))
+                {
+                    std::cout << "Writing subset of band " << band << " to image." << std::endl;
+                    std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf << std::endl;
+                    std::cout << "xSizeOut: " << xSizeOut << ", ySizeOut: " << ySizeOut << std::endl;
 
-                    hsize_t dataSelectStrideDims[2];
-                    dataSelectStrideDims[0] = 1;
-                    if(xSizeBuf == xSizeOut)
-                    {
-                        dataSelectStrideDims[1] = 1;
-                    }
-                    else
-                    {
-                        dataSelectStrideDims[1] = xSizeBuf - xSizeOut;
-                    }
-
-                    hsize_t dataSelectBlockSizeDims[2];
-                    dataSelectBlockSizeDims[0] = 1;
-                    dataSelectBlockSizeDims[1] = xSizeOut;
-                    write2BandDataspace.selectHyperslab(H5S_SELECT_SET, dataSelectMemDims, dataOffDims, dataSelectStrideDims, dataSelectBlockSizeDims);
-                    
-                    hsize_t dataOutDims[2];
-                    dataOutDims[0] = ySizeOut;
-                    dataOutDims[1] = xSizeOut;
-                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataOutDims, imgOffset);
+                    std::vector<size_t> startOffset = {yPxlOff, xPxlOff};
+                    std::vector<size_t> bufSize = {ySizeBuf, xSizeBuf};
+                    imgBandDataset.select(startOffset, bufSize).write_raw(data, imgBandDT);
                 }
                 else
                 {
-                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataDims, imgOffset);
+                    std::cout << "Writing band " << band << " to image." << std::endl;
+                    std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf << std::endl;
+                    std::cout << "xSizeOut: " << xSizeOut << ", ySizeOut: " << ySizeOut << std::endl;
+
+                    imgBandDataset.write_raw(data, imgBandDT);
                 }
-                
-                imgBandDataset.write( data, imgBandDT, write2BandDataspace, imgBandDataspace);
-                                
-                imgBandDataset.close();
-                imgBandDataspace.close();
-                write2BandDataspace.close();
-                
-                this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
-            } 
-            catch ( const H5::Exception &e)
+
+                // Flushing the dataset
+                this->keaImgFile->flush();
+                std::cout << "Band " << band << " flushed to image." << std::endl;
+            }
+            else
             {
-                throw KEAIOException("Could not write image data.");
-            }            
+                throw KEAIOException("Band image dataset does not exist.");
+            }
         }
         catch(const KEAIOException &e)
         {
             throw e;
         }
-        catch( const H5::FileIException &e )
+		catch( const HighFive::Exception &e )
 		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataSetIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataSpaceIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataTypeIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
+			throw KEAIOException(e.what());
 		}
         catch ( const std::exception &e)
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     void KEAImageIO::readImageBlock2Band(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
@@ -3026,30 +2983,30 @@ namespace kealib{
     
     void KEAImageIO::close()
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
-        KEAStackPrintState printState;
-        try 
+        if (this->fileOpen)
         {
-            delete this->spatialInfoFile;
-            this->keaImgFile->close();
-            delete this->keaImgFile;
-            this->keaImgFile = nullptr;
-            this->fileOpen = false;
+            try
+            {
+                delete this->spatialInfoFile;
+                this->keaImgFile->flush();
+                delete this->keaImgFile;
+                this->keaImgFile = nullptr;
+                this->fileOpen = false;
+            }
+            catch(const KEAIOException &e)
+            {
+                throw e;
+            }
+            catch( const HighFive::Exception &e )
+            {
+                throw KEAIOException(e.what());
+            }
+            catch ( const std::exception &e)
+            {
+                throw KEAIOException(e.what());
+            }
         }
-        catch(const KEAIOException &e)
-        {
-            throw e;
-        }
-        catch( const H5::Exception &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-        catch ( const std::exception &e)
-        {
-            throw KEAIOException(e.what());
-        }
-        */
     }
 
     HighFive::File *KEAImageIO::createKEAImage(
@@ -3425,6 +3382,35 @@ namespace kealib{
         }
     }
 
+    const std::string KEAImageIO::convertDatatypeKeaToCStdStr(const KEADataType dataType)
+    {
+        switch (dataType)
+        {
+            case kea_8int:
+                return "int8_t";
+            case kea_16int:
+                return "int16_t";
+            case kea_32int:
+                return "int32_t";
+            case kea_64int:
+                return "int64_t";
+            case kea_8uint:
+                return "uint8_t";
+            case kea_16uint:
+                return "uint16_t";
+            case kea_32uint:
+                return "uint32_t";
+            case kea_64uint:
+                return "uint64_t";
+            case kea_32float:
+                return "float";
+            case kea_64float:
+                return "double";
+            default:
+                throw KEAIOException("The specified data type was not recognised.");
+        }
+    }
+
     void KEAImageIO::addImageBandToFile(HighFive::File *keaImgH5File, const KEADataType dataType, const uint32_t xSize,   const uint32_t ySize, const uint32_t bandIndex, const std::string &bandDescripIn, const uint32_t imageBlockSize, const uint32_t attBlockSize,  const uint32_t deflate)
     {
         // Define dataspaces for writing string data
@@ -3579,7 +3565,7 @@ namespace kealib{
                 keaImgH5File->createDataSet<uint16_t>(KEA_DATASETNAME_HEADER_NUMBANDS, numImgBands);
             }
         }
-        catch (const HighFive::DataSetException &e)
+        catch (const HighFive::Exception &e)
         {
             throw kealib::KEAIOException(e.what());
         }
