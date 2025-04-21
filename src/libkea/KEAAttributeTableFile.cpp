@@ -941,6 +941,8 @@ namespace kealib{
             boolFieldsMemspace.close();
             
             delete[] boolVals;
+            // we flush on each operation
+            keaImg->flush(H5F_SCOPE_GLOBAL);
         }
         catch(const H5::Exception &e)
         {
@@ -1033,6 +1035,8 @@ namespace kealib{
             intDataset.close();
             intDataspace.close();
             intFieldsMemspace.close();
+            // we flush on each operation
+            keaImg->flush(H5F_SCOPE_GLOBAL);
         }
         catch(const H5::Exception &e)
         {
@@ -1125,6 +1129,8 @@ namespace kealib{
             floatDataset.close();
             floatDataspace.close();
             floatFieldsMemspace.close();
+            // we flush on each operation
+            keaImg->flush(H5F_SCOPE_GLOBAL);
         }
         catch(const H5::Exception &e)
         {
@@ -1232,6 +1238,8 @@ namespace kealib{
             strFieldsMemspace.close();
             delete strTypeMem;
             delete[] stringVals;
+            // we flush on each operation
+            keaImg->flush(H5F_SCOPE_GLOBAL);
         }
         catch(const H5::Exception &e)
         {
@@ -1347,6 +1355,8 @@ namespace kealib{
             }
             neighboursDataset->close();
             delete neighboursDataset;
+            // we flush on each operation
+            keaImg->flush(H5F_SCOPE_GLOBAL);
         }
         catch(const H5::Exception &e)
         {
@@ -1422,6 +1432,8 @@ namespace kealib{
             chunkSizeDataset.close();
             chunkSizeWriteDataSpace.close();
             newChunkSizeDataspace.close();
+            // we flush on each operation
+            keaImg->flush(H5F_SCOPE_GLOBAL);
         }
         catch(const H5::Exception &e)
         {
@@ -1565,6 +1577,8 @@ namespace kealib{
         }
         boolDataset->close();
         delete boolDataset;
+        // we flush on each operation
+        keaImg->flush(H5F_SCOPE_GLOBAL);
     }
     
     void KEAAttributeTableFile::addAttIntField(KEAATTField field, int64_t val)
@@ -1702,6 +1716,8 @@ namespace kealib{
         }
         intDataset->close();
         delete intDataset;
+        // we flush on each operation
+        keaImg->flush(H5F_SCOPE_GLOBAL);
     }
     
     void KEAAttributeTableFile::addAttFloatField(KEAATTField field, float val)
@@ -1839,6 +1855,8 @@ namespace kealib{
         }
         floatDataset->close();
         delete floatDataset;
+        // we flush on each operation
+        keaImg->flush(H5F_SCOPE_GLOBAL);
     }
     
     void KEAAttributeTableFile::addAttStringField(KEAATTField field, const std::string &val)
@@ -1981,6 +1999,8 @@ namespace kealib{
         stringDataset->close();
         delete stringDataset;
         delete strTypeMem;
+        // we flush on each operation
+        keaImg->flush(H5F_SCOPE_GLOBAL);
     }
     
     void KEAAttributeTableFile::addRows(size_t numRowsIn)
@@ -2047,6 +2067,8 @@ namespace kealib{
             {
                 // can't exist
             }
+            // we flush on each operation
+            keaImg->flush(H5F_SCOPE_GLOBAL);
         }
     }
     
@@ -2383,6 +2405,8 @@ namespace kealib{
             }
             
             delete fieldCompTypeMem;
+            // we flush on each operation
+            keaImg->flush(H5F_SCOPE_GLOBAL);
         }
         catch(const H5::Exception &e)
         {
@@ -2411,7 +2435,7 @@ namespace kealib{
     
     KEAAttributeTableFile::~KEAAttributeTableFile()
     {
-        // because we don't flush on each operation, let's do it here so any changes are written
+        // we flush on each operation, do here again just to be sure
         keaImg->flush(H5F_SCOPE_GLOBAL);
     }
     
