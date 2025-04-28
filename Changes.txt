@@ -1,3 +1,9 @@
+1.6.2
+-----
+
+* Always flush RAT operations like we do with imagery. This should prevent weird file corruption bugs if a file is kept open somewhere else.
+* Update cmake scripts to work with latest cmake without warnings. Bump minimum version of cmake required.
+
 1.6.1
 -----
 
