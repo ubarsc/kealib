@@ -130,10 +130,10 @@
 </span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a><span class="sd"> *</span>
 </span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a>
-</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="kn">import</span> <span class="nn">os</span>
-</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="kn">import</span> <span class="nn">argparse</span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="kn">import</span> <span class="nn">numpy</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="kn">from</span> <span class="nn">kealib</span> <span class="kn">import</span> <span class="n">extrat</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">kealib</span><span class="w"> </span><span class="kn">import</span> <span class="n">extrat</span>
 </span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a>
 </span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a><span class="n">DFLT_TILESIZE</span> <span class="o">=</span> <span class="mi">2048</span>
 </span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>
@@ -148,7 +148,7 @@
 </span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a>    <span class="n">extrat</span><span class="o">.</span><span class="n">KEADataType</span><span class="o">.</span><span class="n">t32float</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
 </span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a>    <span class="n">extrat</span><span class="o">.</span><span class="n">KEADataType</span><span class="o">.</span><span class="n">t64float</span><span class="p">:</span> <span class="nb">float</span><span class="p">}</span>
 </span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>
-</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a><span class="k">def</span> <span class="nf">getCmdargs</span><span class="p">():</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getCmdargs</span><span class="p">():</span>
 </span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;     </span>
 </span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a><span class="sd">    Get the command line arguments.</span>
 </span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -167,7 +167,7 @@
 </span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a>    
 </span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>    <span class="k">return</span> <span class="n">cmdargs</span>
 </span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a>    
-</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a><span class="k">def</span> <span class="nf">riosAccumulate</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">otherargs</span><span class="p">):</span>
+</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a><span class="k">def</span><span class="w"> </span><span class="nf">riosAccumulate</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">otherargs</span><span class="p">):</span>
 </span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a><span class="sd">    Calls NeighbourAccumulator.addArray() with each tile</span>
 </span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -175,7 +175,7 @@
 </span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">input</span><span class="p">[</span><span class="n">otherargs</span><span class="o">.</span><span class="n">band</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
 </span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>    <span class="n">otherargs</span><span class="o">.</span><span class="n">accumulator</span><span class="o">.</span><span class="n">addArray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>
-</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
 </span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a><span class="sd">    Main routine. For calling from the command line </span>
 </span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -185,13 +185,13 @@
 </span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a>    <span class="c1"># Open using GDAL here, test routines can supply a fake</span>
 </span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>    <span class="c1"># GDAL dataset.</span>
 </span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a>    <span class="c1"># only import here so we don&#39;t need GDAL for testing</span>
-</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>    <span class="kn">from</span> <span class="nn">osgeo</span> <span class="kn">import</span> <span class="n">gdal</span>
+</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">osgeo</span><span class="w"> </span><span class="kn">import</span> <span class="n">gdal</span>
 </span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a>    <span class="n">gdal</span><span class="o">.</span><span class="n">UseExceptions</span><span class="p">()</span>
 </span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a>    <span class="n">ds</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">cmdargs</span><span class="o">.</span><span class="n">infile</span><span class="p">,</span> <span class="n">gdal</span><span class="o">.</span><span class="n">GA_Update</span><span class="p">)</span>
 </span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a>    
 </span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a>    <span class="n">buildNeighbours</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">cmdargs</span><span class="o">.</span><span class="n">band</span><span class="p">,</span> <span class="n">cmdargs</span><span class="o">.</span><span class="n">tilesize</span><span class="p">,</span> <span class="n">cmdargs</span><span class="o">.</span><span class="n">eightway</span><span class="p">)</span>
 </span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a>    
-</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="k">def</span> <span class="nf">buildNeighbours</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">band</span><span class="p">,</span> <span class="n">tilesize</span><span class="o">=</span><span class="n">DFLT_TILESIZE</span><span class="p">,</span> <span class="n">eightway</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="k">def</span><span class="w"> </span><span class="nf">buildNeighbours</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">band</span><span class="p">,</span> <span class="n">tilesize</span><span class="o">=</span><span class="n">DFLT_TILESIZE</span><span class="p">,</span> <span class="n">eightway</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 </span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a><span class="sd">    Does the actual work or building the neighbours. </span>
 </span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a><span class="sd">    </span>
@@ -229,7 +229,7 @@
 </span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a>            <span class="n">accumulator</span><span class="o">.</span><span class="n">addArray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>                        
 </span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>    
-</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a><span class="k">def</span> <span class="nf">readBlockWithMargin</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">band</span><span class="p">,</span> <span class="n">xoff</span><span class="p">,</span> <span class="n">yoff</span><span class="p">,</span> <span class="n">xsize</span><span class="p">,</span> <span class="n">ysize</span><span class="p">,</span> <span class="n">margin</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> 
+</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a><span class="k">def</span><span class="w"> </span><span class="nf">readBlockWithMargin</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">band</span><span class="p">,</span> <span class="n">xoff</span><span class="p">,</span> <span class="n">yoff</span><span class="p">,</span> <span class="n">xsize</span><span class="p">,</span> <span class="n">ysize</span><span class="p">,</span> <span class="n">margin</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> 
 </span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>        <span class="n">nodata</span><span class="p">,</span> <span class="n">RasterXSize</span><span class="p">,</span> <span class="n">RasterYSize</span><span class="p">):</span>
 </span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="sd">        Stolen from RIOS</span>
@@ -352,7 +352,7 @@
 
     </div>
     <a class="headerlink" href="#getCmdargs"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="getCmdargs-50"><a href="#getCmdargs-50"><span class="linenos">50</span></a><span class="k">def</span> <span class="nf">getCmdargs</span><span class="p">():</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="getCmdargs-50"><a href="#getCmdargs-50"><span class="linenos">50</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getCmdargs</span><span class="p">():</span>
 </span><span id="getCmdargs-51"><a href="#getCmdargs-51"><span class="linenos">51</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;     </span>
 </span><span id="getCmdargs-52"><a href="#getCmdargs-52"><span class="linenos">52</span></a><span class="sd">    Get the command line arguments.</span>
 </span><span id="getCmdargs-53"><a href="#getCmdargs-53"><span class="linenos">53</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -389,7 +389,7 @@
 
     </div>
     <a class="headerlink" href="#riosAccumulate"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="riosAccumulate-69"><a href="#riosAccumulate-69"><span class="linenos">69</span></a><span class="k">def</span> <span class="nf">riosAccumulate</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">otherargs</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="riosAccumulate-69"><a href="#riosAccumulate-69"><span class="linenos">69</span></a><span class="k">def</span><span class="w"> </span><span class="nf">riosAccumulate</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">otherargs</span><span class="p">):</span>
 </span><span id="riosAccumulate-70"><a href="#riosAccumulate-70"><span class="linenos">70</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="riosAccumulate-71"><a href="#riosAccumulate-71"><span class="linenos">71</span></a><span class="sd">    Calls NeighbourAccumulator.addArray() with each tile</span>
 </span><span id="riosAccumulate-72"><a href="#riosAccumulate-72"><span class="linenos">72</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -415,7 +415,7 @@
 
     </div>
     <a class="headerlink" href="#main"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="main-77"><a href="#main-77"><span class="linenos">77</span></a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="main-77"><a href="#main-77"><span class="linenos">77</span></a><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
 </span><span id="main-78"><a href="#main-78"><span class="linenos">78</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="main-79"><a href="#main-79"><span class="linenos">79</span></a><span class="sd">    Main routine. For calling from the command line </span>
 </span><span id="main-80"><a href="#main-80"><span class="linenos">80</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -425,7 +425,7 @@
 </span><span id="main-84"><a href="#main-84"><span class="linenos">84</span></a>    <span class="c1"># Open using GDAL here, test routines can supply a fake</span>
 </span><span id="main-85"><a href="#main-85"><span class="linenos">85</span></a>    <span class="c1"># GDAL dataset.</span>
 </span><span id="main-86"><a href="#main-86"><span class="linenos">86</span></a>    <span class="c1"># only import here so we don&#39;t need GDAL for testing</span>
-</span><span id="main-87"><a href="#main-87"><span class="linenos">87</span></a>    <span class="kn">from</span> <span class="nn">osgeo</span> <span class="kn">import</span> <span class="n">gdal</span>
+</span><span id="main-87"><a href="#main-87"><span class="linenos">87</span></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">osgeo</span><span class="w"> </span><span class="kn">import</span> <span class="n">gdal</span>
 </span><span id="main-88"><a href="#main-88"><span class="linenos">88</span></a>    <span class="n">gdal</span><span class="o">.</span><span class="n">UseExceptions</span><span class="p">()</span>
 </span><span id="main-89"><a href="#main-89"><span class="linenos">89</span></a>    <span class="n">ds</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">cmdargs</span><span class="o">.</span><span class="n">infile</span><span class="p">,</span> <span class="n">gdal</span><span class="o">.</span><span class="n">GA_Update</span><span class="p">)</span>
 </span><span id="main-90"><a href="#main-90"><span class="linenos">90</span></a>    
@@ -449,7 +449,7 @@
 
     </div>
     <a class="headerlink" href="#buildNeighbours"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="buildNeighbours-93"><a href="#buildNeighbours-93"><span class="linenos"> 93</span></a><span class="k">def</span> <span class="nf">buildNeighbours</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">band</span><span class="p">,</span> <span class="n">tilesize</span><span class="o">=</span><span class="n">DFLT_TILESIZE</span><span class="p">,</span> <span class="n">eightway</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="buildNeighbours-93"><a href="#buildNeighbours-93"><span class="linenos"> 93</span></a><span class="k">def</span><span class="w"> </span><span class="nf">buildNeighbours</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">band</span><span class="p">,</span> <span class="n">tilesize</span><span class="o">=</span><span class="n">DFLT_TILESIZE</span><span class="p">,</span> <span class="n">eightway</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 </span><span id="buildNeighbours-94"><a href="#buildNeighbours-94"><span class="linenos"> 94</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="buildNeighbours-95"><a href="#buildNeighbours-95"><span class="linenos"> 95</span></a><span class="sd">    Does the actual work or building the neighbours. </span>
 </span><span id="buildNeighbours-96"><a href="#buildNeighbours-96"><span class="linenos"> 96</span></a><span class="sd">    </span>
@@ -506,7 +506,7 @@
 
     </div>
     <a class="headerlink" href="#readBlockWithMargin"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="readBlockWithMargin-131"><a href="#readBlockWithMargin-131"><span class="linenos">131</span></a><span class="k">def</span> <span class="nf">readBlockWithMargin</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">band</span><span class="p">,</span> <span class="n">xoff</span><span class="p">,</span> <span class="n">yoff</span><span class="p">,</span> <span class="n">xsize</span><span class="p">,</span> <span class="n">ysize</span><span class="p">,</span> <span class="n">margin</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> 
+            <div class="pdoc-code codehilite"><pre><span></span><span id="readBlockWithMargin-131"><a href="#readBlockWithMargin-131"><span class="linenos">131</span></a><span class="k">def</span><span class="w"> </span><span class="nf">readBlockWithMargin</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">band</span><span class="p">,</span> <span class="n">xoff</span><span class="p">,</span> <span class="n">yoff</span><span class="p">,</span> <span class="n">xsize</span><span class="p">,</span> <span class="n">ysize</span><span class="p">,</span> <span class="n">margin</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> 
 </span><span id="readBlockWithMargin-132"><a href="#readBlockWithMargin-132"><span class="linenos">132</span></a>        <span class="n">nodata</span><span class="p">,</span> <span class="n">RasterXSize</span><span class="p">,</span> <span class="n">RasterYSize</span><span class="p">):</span>
 </span><span id="readBlockWithMargin-133"><a href="#readBlockWithMargin-133"><span class="linenos">133</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="readBlockWithMargin-134"><a href="#readBlockWithMargin-134"><span class="linenos">134</span></a><span class="sd">        Stolen from RIOS</span>
