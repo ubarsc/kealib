@@ -311,6 +311,26 @@ namespace kealib{
         return strDT;
     }
 
+    // inline class to save/restore HDF5 exception stack trace
+    // printing (we usually want this off, but want to revert back to what caller had)
+    // Also, this state is per thread so if calling a method on a new thread this will
+    // need to be set. 
+    class KEAStackPrintState
+    {
+    public:
+        KEAStackPrintState()
+        {
+            H5Eget_auto2(H5E_DEFAULT, &m_func, &m_clientData);
+            H5Eset_auto2(H5E_DEFAULT, NULL, NULL);
+        }
+        ~KEAStackPrintState()
+        {
+            H5Eset_auto2(H5E_DEFAULT, m_func, m_clientData);
+        }
+    private:
+        H5E_auto2_t m_func;
+        void *m_clientData;  
+    };
 
     typedef std::recursive_mutex kea_mutex;
     typedef std::lock_guard<kea_mutex> kea_lock;
