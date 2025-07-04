@@ -836,15 +836,16 @@ namespace kealib{
         {        
             dataset = this->keaImgFile->getDataSet(metaDataH5Path);
         }
-        catch (const HighFive::File &e)
+        catch (const HighFive::DataSetException &e)
         {   
             HighFive::DataSpace dataSpace = HighFive::DataSpace(1, 1);
-            dataset = keaImgFile->createDataSet(metaDataH5Path, dataSpace, HighFive::StringType());
+            dataset = keaImgFile->createDataSet(metaDataH5Path, dataSpace, HighFive::AtomicType<std::string>());
+            std::cout << "created dataset " << metaDataH5Path << std::endl;
         }
         // WRITE IMAGE META DATA
         try 
         {
-            dataset.write_raw(value.c_str(), HighFive::StringType());
+            dataset.write(value);
         
             // Flushing the dataset
             this->keaImgFile->flush();

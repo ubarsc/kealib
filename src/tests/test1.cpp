@@ -71,10 +71,15 @@ int main()
         {
             std::cout << "File is a KEA image" << std::endl;
         }
+        else
+        {
+            std::cout << "File is NOT a KEA image" << std::endl;
+            return 1;  
+        }
 
         std::cout << "Opening file" << std::endl;
         h5file = kealib::KEAImageIO::openKeaH5RW(test_kea_file);
-        std::cout << "Openned file" << std::endl;
+        std::cout << "Opened file" << std::endl;
 
         io.openKEAImageHeader(h5file);
         /*
@@ -93,7 +98,7 @@ int main()
 
         std::cout << "Writing some image data" << std::endl;
         unsigned char *pData = (unsigned char*)calloc(subXSize * subYSize, sizeof(unsigned char));
-        for( int i = 0; i < (subXSize * subYSize); i++ )
+        for( uint64_t i = 0; i < (subXSize * subYSize); i++ )
         {
             pData[i] = rand() % 255;
         }
@@ -101,6 +106,32 @@ int main()
                     subXSize, subYSize, kealib::kea_8uint);
         //free(pData);
         std::cout << "Written some image data" << std::endl;
+        
+        io.createMask(1, 1);
+
+        std::cout << "Created Mask" << std::endl;
+                
+        // write some mask data
+        io.writeImageBlock2BandMask(1, pData, subXOff, subYOff, subXSize, subYSize,
+                    subXSize, subYSize, kealib::kea_8uint);
+        std::cout << "Wrote mask" << std::endl;
+                    
+        // metadata
+        io.setImageMetaData("Test1", "Value1");
+        io.setImageMetaData("Test2", "Value2");
+        std::cout << "Wrote dataset metadata" << std::endl;
+        if( io.getImageMetaData("Test1") != "Value1" )
+        {
+            std::cout << "Error reading metadata" << std::endl;
+            return 1;
+        }
+        if( io.getImageMetaData("Test2") != "Value2" )
+        {
+            std::cout << "Error reading metadata" << std::endl;
+            return 1;
+        }
+        std::cout << "Successfully read dataset metadata" << std::endl;
+        
         io.close();
 
 
@@ -113,17 +144,43 @@ int main()
         unsigned char *pReadData = (unsigned char*)calloc(subXSize * subYSize, sizeof(unsigned char));
         io.readImageBlock2Band(1, pReadData, subXOff, subYOff, subXSize, subYSize, subXSize, subYSize, kealib::kea_8uint);
         std::cout << "Read some image data" << std::endl;
-        io.close();
 
         std::cout << "Comparing data written and read data" << std::endl;
-        for (int i = 0; i < subXSize * subYSize; i++)
+        for (uint64_t i = 0; i < (subXSize * subYSize); i++)
         {
             if (pReadData[i] != pData[i])
             {
                 std::cout << "Error at " << i << std::endl;
+                return 1;
             }
         }
         std::cout << "Data compared" << std::endl;
+        
+        if( io.maskCreated(1) )
+        {
+            std::cout << "Mask created" << std::endl;
+        }
+        else
+        {
+            std::cout << "Mask NOT created" << std::endl;
+            return 1;
+        }
+        
+        io.readImageBlock2BandMask(1, pReadData, subXOff, subYOff, subXSize, subYSize, subXSize, subYSize, kealib::kea_8uint);
+        std::cout << "Read some mask data" << std::endl;
+
+        std::cout << "Comparing data written and read mask" << std::endl;
+        for (uint64_t i = 0; i < (subXSize * subYSize); i++)
+        {
+            if (pReadData[i] != pData[i])
+            {
+                std::cout << "Error at " << i << std::endl;
+                return 1;
+            }
+        }
+        std::cout << "Mask compared" << std::endl;
+
+        io.close();
 
         free(pData);
         free(pReadData);
