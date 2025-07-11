@@ -120,17 +120,11 @@ int main()
         io.setImageMetaData("Test1", "Value1");
         io.setImageMetaData("Test2", "Value2");
         std::cout << "Wrote dataset metadata" << std::endl;
-        if( io.getImageMetaData("Test1") != "Value1" )
-        {
-            std::cout << "Error reading metadata" << std::endl;
-            return 1;
-        }
-        if( io.getImageMetaData("Test2") != "Value2" )
-        {
-            std::cout << "Error reading metadata" << std::endl;
-            return 1;
-        }
-        std::cout << "Successfully read dataset metadata" << std::endl;
+        
+        std::vector< std::pair<std::string, std::string> > metaData;
+        metaData.push_back(std::pair<std::string, std::string>("Test98","Value98"));
+        metaData.push_back(std::pair<std::string, std::string>("Test99","Value99"));
+        io.setImageMetaData(metaData);
         
         io.close();
 
@@ -138,7 +132,7 @@ int main()
         std::cout << "Opening file" << std::endl;
         h5file = kealib::KEAImageIO::openKeaH5RDOnly(test_kea_file);
         io.openKEAImageHeader(h5file);
-        std::cout << "Openned file" << std::endl;
+        std::cout << "Opened file" << std::endl;
 
         std::cout << "Reading some image data" << std::endl;
         unsigned char *pReadData = (unsigned char*)calloc(subXSize * subYSize, sizeof(unsigned char));
@@ -179,6 +173,58 @@ int main()
             }
         }
         std::cout << "Mask compared" << std::endl;
+
+        if( io.getImageMetaData("Test1") != "Value1" )
+        {
+            std::cout << "Error reading metadata" << std::endl;
+            return 1;
+        }
+        if( io.getImageMetaData("Test2") != "Value2" )
+        {
+            std::cout << "Error reading metadata" << std::endl;
+            return 1;
+        }
+        std::cout << "Successfully read dataset metadata" << std::endl;
+        
+        auto names = io.getImageMetaDataNames();
+        if( names.size() != 4 )
+        {
+            std::cout << "Wrong number of image metadata items" << std::endl;
+            return 1;
+        }
+        if( std::find(names.begin(), names.end(), "Test1") == names.end())
+        {
+            std::cout << "Can't find Test1 in image metadata" << std::endl;
+            return 1;
+        }
+        if( std::find(names.begin(), names.end(), "Test2") == names.end())
+        {
+            std::cout << "Can't find Test2 in image metadata" << std::endl;
+            return 1;
+        }
+        std::cout << "Successfully read dataset metadata names" << std::endl;
+        
+        auto name_values = io.getImageMetaData();
+        if( name_values.size() != 4 )
+        {
+            std::cout << "Wrong number of image metadata items/values" << std::endl;
+            return 1;
+        }
+        for( auto itr = name_values.begin(); itr != name_values.end(); itr++)
+        {
+            auto name = (*itr).first;
+            if( (name != "Test1") && (name != "Test2") && (name != "Test98") && (name != "Test99"))
+            {
+                std::cout << "Unexpected name " << name << std::endl;
+                return 1;
+            }
+            auto value = (*itr).second;
+            if( ( value != "Value1") && (value != "Value2") && (value != "Value98") && (value != "Value99"))
+            {
+                std::cout << "Unexpected name " << value << std::endl;
+                return 1;
+            }
+        }
 
         io.close();
 

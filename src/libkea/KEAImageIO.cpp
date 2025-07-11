@@ -85,6 +85,7 @@ namespace kealib{
      */
     void KEAImageIO::openKEAImageHeader(HighFive::File *keaImgH5File)
     {
+        KEAStackPrintState printState;
         try 
         {
             kealib::kea_lock lock(*this->m_mutex); 
@@ -249,6 +250,7 @@ namespace kealib{
     )
     {
         kealib::kea_lock lock(*this->m_mutex);
+        KEAStackPrintState printState;
 
         if (!this->fileOpen)
         {
@@ -392,6 +394,8 @@ namespace kealib{
     )
     {
         kealib::kea_lock lock(*this->m_mutex);
+        KEAStackPrintState printState;
+        
         if (!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -497,7 +501,9 @@ namespace kealib{
     
     void KEAImageIO::createMask(uint32_t band, uint32_t deflate)
     {
-        kealib::kea_lock lock(*this->m_mutex); 
+        kealib::kea_lock lock(*this->m_mutex);
+        KEAStackPrintState printState;
+         
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -535,6 +541,7 @@ namespace kealib{
                     KEA_ATTRIBUTENAME_BLOCK_SIZE,
                     blockSize2Use
                 );
+                this->keaImgFile->flush();
             }
             catch (const HighFive::DataSetException &e)
             {
@@ -566,6 +573,7 @@ namespace kealib{
     void KEAImageIO::writeImageBlock2BandMask(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
         kealib::kea_lock lock(*this->m_mutex);
+        KEAStackPrintState printState;
 
         if (!this->fileOpen)
         {
@@ -679,6 +687,8 @@ namespace kealib{
     void KEAImageIO::readImageBlock2BandMask(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
         kealib::kea_lock lock(*this->m_mutex);
+        KEAStackPrintState printState;
+        
         if (!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -783,6 +793,7 @@ namespace kealib{
     bool KEAImageIO::maskCreated(uint32_t band)
     {
         kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
 
         if(!this->fileOpen)
         {
@@ -831,26 +842,26 @@ namespace kealib{
         // FORM META-DATA PATH WITHIN THE H5 FILE 
         std::string metaDataH5Path = KEA_DATASETNAME_METADATA + std::string("/") + name;
         
-        HighFive::DataSet dataset;
         try
         {        
-            dataset = this->keaImgFile->getDataSet(metaDataH5Path);
+            this->keaImgFile->getDataSet(metaDataH5Path);
         }
         catch (const HighFive::DataSetException &e)
         {   
             HighFive::DataSpace dataSpace = HighFive::DataSpace(1, 1);
-            dataset = keaImgFile->createDataSet(metaDataH5Path, dataSpace, HighFive::AtomicType<std::string>());
+            keaImgFile->createDataSet(metaDataH5Path, dataSpace, HighFive::AtomicType<std::string>());
             std::cout << "created dataset " << metaDataH5Path << std::endl;
         }
         // WRITE IMAGE META DATA
         try 
         {
+            auto dataset = this->keaImgFile->getDataSet(metaDataH5Path);
             dataset.write(value);
         
             // Flushing the dataset
             this->keaImgFile->flush();
         }
-        catch (const H5::Exception &e) 
+        catch (const HighFive::Exception &e) 
         {
             throw KEAIOException("Could not set image meta-data.");
         }
@@ -881,7 +892,7 @@ namespace kealib{
             auto dataset = this->keaImgFile->getDataSet(metaDataH5Path);
             dataset.read(value);
         } 
-        catch ( const H5::Exception &e) 
+        catch ( const HighFive::Exception &e) 
         {
             throw KEAIOException("Meta-data variable was not accessable.");
         }
@@ -899,7 +910,6 @@ namespace kealib{
     
     std::vector<std::string> KEAImageIO::getImageMetaDataNames()
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -907,39 +917,24 @@ namespace kealib{
             throw KEAIOException("Image was not open.");
         }
         
-        std::vector<std::string> metaDataNames;
-        
         try 
         {
             // Try to open dataset with overviewName
-            H5::Group imgBandMetaDataGrp = this->keaImgFile->openGroup(KEA_DATASETNAME_METADATA);
-            hsize_t numMetaDataItems = imgBandMetaDataGrp.getNumObjs();
-            
-            for(hsize_t i = 0; i < numMetaDataItems; ++i)
-            {
-                metaDataNames.push_back(imgBandMetaDataGrp.getObjnameByIdx(i));
-            }
+            auto group = this->keaImgFile->getGroup(KEA_DATASETNAME_METADATA);
+            return group.listObjectNames();
         }
-        catch (const H5::Exception &e)
+        catch (const HighFive::Exception &e)
         {
             throw KEAIOException("Could not retrieve image meta data.");
-        }
-        catch ( const KEAIOException &e)
-        {
-            throw e;
         }
         catch ( const std::exception &e)
         {
             throw KEAIOException(e.what());
         }
-        
-        return metaDataNames;
-        */
     }
     
     std::vector< std::pair<std::string, std::string> > KEAImageIO::getImageMetaData()
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -951,24 +946,15 @@ namespace kealib{
         
         try 
         {
-            // Try to open dataset with overviewName
-            H5::Group imgBandMetaDataGrp = this->keaImgFile->openGroup(KEA_DATASETNAME_METADATA);
-            hsize_t numMetaDataItems = imgBandMetaDataGrp.getNumObjs();
-            std::string name = "";
-            std::string value = "";
-            
-            for(hsize_t i = 0; i < numMetaDataItems; ++i)
+            auto group = this->keaImgFile->getGroup(KEA_DATASETNAME_METADATA);
+            for( size_t i = 0; i < group.getNumberObjects(); i++ )
             {
-                name = imgBandMetaDataGrp.getObjnameByIdx(i);
-                value = this->getImageMetaData(name);
+                std::string name = group.getObjectName(i);
+                std::string value = this->getImageMetaData(name);
                 metaData.push_back(std::pair<std::string, std::string>(name,value));
             }
         }
-        catch (const KEAIOException &e)
-        {
-            throw e;
-        }
-        catch (const H5::Exception &e)
+        catch (const HighFive::Exception &e)
         {
             throw KEAIOException("Could not retrieve image meta data.");
         }
@@ -978,12 +964,10 @@ namespace kealib{
         }
         
         return metaData;
-        */
     }
     
     void KEAImageIO::setImageMetaData(const std::vector< std::pair<std::string, std::string> > &data)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -997,10 +981,8 @@ namespace kealib{
             {
                 this->setImageMetaData(iterMetaData->first, iterMetaData->second);
             }
-            
-            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
         }
-        catch (const H5::Exception &e)
+        catch (const HighFive::Exception &e)
         {
             throw KEAIOException("Could not set image band meta data.");
         }
@@ -1012,7 +994,6 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     void KEAImageIO::setImageBandMetaData(uint32_t band, const std::string &name, const std::string &value)
