@@ -116,15 +116,25 @@ int main()
                     subXSize, subYSize, kealib::kea_8uint);
         std::cout << "Wrote mask" << std::endl;
                     
-        // metadata
+        // dataset metadata
         io.setImageMetaData("Test1", "Value1");
         io.setImageMetaData("Test2", "Value2");
-        std::cout << "Wrote dataset metadata" << std::endl;
         
         std::vector< std::pair<std::string, std::string> > metaData;
         metaData.push_back(std::pair<std::string, std::string>("Test98","Value98"));
         metaData.push_back(std::pair<std::string, std::string>("Test99","Value99"));
         io.setImageMetaData(metaData);
+        std::cout << "Wrote dataset metadata" << std::endl;
+        
+        // band metadata
+        io.setImageBandMetaData(1, "BandTest1", "Value1");
+        io.setImageBandMetaData(1, "BandTest2", "Value2");
+
+        std::vector< std::pair<std::string, std::string> > bandmetaData;
+        bandmetaData.push_back(std::pair<std::string, std::string>("BandTest98","Value98"));
+        bandmetaData.push_back(std::pair<std::string, std::string>("BandTest99","Value99"));
+        io.setImageBandMetaData(1, bandmetaData);
+        std::cout << "Wrote band metadata" << std::endl;
         
         io.close();
 
@@ -184,7 +194,6 @@ int main()
             std::cout << "Error reading metadata" << std::endl;
             return 1;
         }
-        std::cout << "Successfully read dataset metadata" << std::endl;
         
         auto names = io.getImageMetaDataNames();
         if( names.size() != 4 )
@@ -202,7 +211,6 @@ int main()
             std::cout << "Can't find Test2 in image metadata" << std::endl;
             return 1;
         }
-        std::cout << "Successfully read dataset metadata names" << std::endl;
         
         auto name_values = io.getImageMetaData();
         if( name_values.size() != 4 )
@@ -225,6 +233,59 @@ int main()
                 return 1;
             }
         }
+        std::cout << "Successfully read dataset metadata" << std::endl;
+
+        if( io.getImageBandMetaData(1, "BandTest1") != "Value1" )
+        {
+            std::cout << "Error reading metadata" << std::endl;
+            return 1;
+        }
+        if( io.getImageBandMetaData(1, "BandTest2") != "Value2" )
+        {
+            std::cout << "Error reading metadata" << std::endl;
+            return 1;
+        }
+
+        auto bandnames = io.getImageBandMetaDataNames(1);
+        if( bandnames.size() != 4 )
+        {
+            std::cout << "Wrong number of band metadata items" << std::endl;
+            return 1;
+        }
+        if( std::find(bandnames.begin(), bandnames.end(), "BandTest1") == names.end())
+        {
+            std::cout << "Can't find BandTest1 in image metadata" << std::endl;
+            return 1;
+        }
+        if( std::find(bandnames.begin(), bandnames.end(), "BandTest2") == names.end())
+        {
+            std::cout << "Can't find BandTest2 in image metadata" << std::endl;
+            return 1;
+        }
+        
+        auto bandname_values = io.getImageBandMetaData(1);
+        if( bandname_values.size() != 4 )
+        {
+            std::cout << "Wrong number of image metadata items/values" << std::endl;
+            return 1;
+        }
+        for( auto itr = bandname_values.begin(); itr != bandname_values.end(); itr++)
+        {
+            auto name = (*itr).first;
+            if( (name != "BandTest1") && (name != "BandTest2") && (name != "BandTest98") && (name != "BandTest99"))
+            {
+                std::cout << "Unexpected name " << name << std::endl;
+                return 1;
+            }
+            auto value = (*itr).second;
+            if( ( value != "Value1") && (value != "Value2") && (value != "Value98") && (value != "Value99"))
+            {
+                std::cout << "Unexpected value " << value << std::endl;
+                return 1;
+            }
+        }
+
+        std::cout << "Successfully read band metadata" << std::endl;
 
         io.close();
 
