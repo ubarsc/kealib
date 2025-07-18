@@ -842,19 +842,15 @@ namespace kealib{
         // FORM META-DATA PATH WITHIN THE H5 FILE 
         std::string metaDataH5Path = KEA_DATASETNAME_METADATA + std::string("/") + name;
         
-        try
-        {        
-            this->keaImgFile->getDataSet(metaDataH5Path);
-        }
-        catch (const HighFive::DataSetException &e)
-        {   
-            HighFive::DataSpace dataSpace = HighFive::DataSpace(1, 1);
-            keaImgFile->createDataSet(metaDataH5Path, dataSpace, HighFive::AtomicType<std::string>());
-            std::cout << "created dataset " << metaDataH5Path << std::endl;
-        }
         // WRITE IMAGE META DATA
         try 
         {
+            if(!this->keaImgFile->exist(metaDataH5Path))
+            {
+                HighFive::DataSpace dataSpace = HighFive::DataSpace(1, 1);
+                keaImgFile->createDataSet(metaDataH5Path, dataSpace, HighFive::AtomicType<std::string>());
+                std::cout << "created dataset " << metaDataH5Path << std::endl;
+            }
             auto dataset = this->keaImgFile->getDataSet(metaDataH5Path);
             dataset.write(value);
         
@@ -919,7 +915,7 @@ namespace kealib{
         
         try 
         {
-            // Try to open dataset with overviewName
+            // Try to open dataset with matadata name
             auto group = this->keaImgFile->getGroup(KEA_DATASETNAME_METADATA);
             return group.listObjectNames();
         }
@@ -1008,12 +1004,8 @@ namespace kealib{
         // FORM META-DATA PATH WITHIN THE H5 FILE 
         std::string metaDataH5Path = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_METADATA + std::string("/") + name;
 
-        try
-        {        
-            this->keaImgFile->getDataSet(metaDataH5Path);
-        }
-        catch (const HighFive::DataSetException &e)
-        {   
+        if(!this->keaImgFile->exist(metaDataH5Path))
+        {
             HighFive::DataSpace dataSpace = HighFive::DataSpace(1, 1);
             keaImgFile->createDataSet(metaDataH5Path, dataSpace, HighFive::AtomicType<std::string>());
             std::cout << "created dataset " << metaDataH5Path << std::endl;
@@ -1176,18 +1168,13 @@ namespace kealib{
         std::string descDataH5Path = KEA_DATASETNAME_BAND + uint2Str(band) + std::string("/") + KEA_BANDNAME_DESCRIP;
 
         // WRITE IMAGE BAND DESCRIPTION
-        try
-        {        
-            this->keaImgFile->getDataSet(descDataH5Path);
-        }
-        catch (const HighFive::DataSetException &e)
-        {   
-            HighFive::DataSpace dataSpace = HighFive::DataSpace(1, 1);
-            keaImgFile->createDataSet(descDataH5Path, dataSpace, HighFive::AtomicType<std::string>());
-        }
-        // WRITE IMAGE META DATA
         try 
         {
+            if(!this->keaImgFile->exist(descDataH5Path))
+            {
+                HighFive::DataSpace dataSpace = HighFive::DataSpace(1, 1);
+                keaImgFile->createDataSet(descDataH5Path, dataSpace, HighFive::AtomicType<std::string>());
+            }
             auto dataset = this->keaImgFile->getDataSet(descDataH5Path);
             dataset.write(description);
         
@@ -1245,7 +1232,6 @@ namespace kealib{
     
     void KEAImageIO::setNoDataValue(uint32_t band, const void *data, KEADataType inDataType)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1253,51 +1239,31 @@ namespace kealib{
             throw KEAIOException("Image was not open.");
         }
         
-        // READ IMAGE DATA TYPE
+        std::string noDataValPath = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_NO_DATA_VAL;
+        // SET NODATA
         try 
         {    
-            std::string noDataValPath = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_NO_DATA_VAL;
-            H5::DataSet datasetImgNDV;
-            H5::Attribute noDataDefAttribute;
-            
-            try 
+            auto hdfDataType = convertDatatypeKeaToH5Native(inDataType);
+            if(!this->keaImgFile->exist(noDataValPath))
             {
-                datasetImgNDV = this->keaImgFile->openDataSet( noDataValPath );
-            }
-            catch (const H5::Exception &e)
-            {
-                hsize_t	dimsForNDV[1];
-                dimsForNDV[0] = 1; // number of lines;
-                H5::DataSpace dataspaceNDV(1, dimsForNDV);
-                
+                HighFive::DataSpace dataSpace = HighFive::DataSpace(1, 1);
                 KEADataType imgDataType = this->getImageBandDataType(band);
-                H5::DataType imgBandDT = convertDatatypeKeaToH5STD(imgDataType);
-
-                datasetImgNDV = this->keaImgFile->createDataSet(noDataValPath, imgBandDT, dataspaceNDV);
+                keaImgFile->createDataSet(noDataValPath, dataSpace, hdfDataType);
+                std::cout << "created dataset " << noDataValPath << std::endl;
             }
-            
-            try
-            {
-                noDataDefAttribute = datasetImgNDV.openAttribute(KEA_NODATA_DEFINED);
-            }
-            catch (const H5::Exception &e)
-            {
-                H5::DataSpace attr_dataspace = H5::DataSpace(H5S_SCALAR);
-                noDataDefAttribute = datasetImgNDV.createAttribute(KEA_NODATA_DEFINED, H5::PredType::STD_I8LE, attr_dataspace);
-            }
-            
-            int val = 1;
-            noDataDefAttribute.write(H5::PredType::NATIVE_INT, &val);
-            noDataDefAttribute.close();
-            
-            H5::DataType dataDT = convertDatatypeKeaToH5Native(inDataType);
-            datasetImgNDV.write( data, dataDT );
-            datasetImgNDV.close();
-            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
-        } 
-        catch ( const H5::Exception &e) 
+            auto dataset = this->keaImgFile->getDataSet( noDataValPath );
+            dataset.write_raw(data, hdfDataType);
+            std::cout << "wrote value" << std::endl;
+            // now set flag that says whether nodata set or not
+            int8_t val = 1;
+            dataset.createAttribute(KEA_NODATA_DEFINED, val);
+            std::cout << "wrote attr" << std::endl;
+            // Flushing the dataset
+            this->keaImgFile->flush();
+        }
+        catch ( const HighFive::Exception &e) 
         {
-            throw KEAIOException("The image data type was not specified.");
+            throw KEAIOException(e.what()); // "Could not set nodata value");
         }
         catch ( const KEAIOException &e)
         {
@@ -1307,12 +1273,10 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     void KEAImageIO::getNoDataValue(uint32_t band, void *data, KEADataType inDataType)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex);
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1322,46 +1286,27 @@ namespace kealib{
         
         
         // READ IMAGE BAND NO DATA VALUE
-        try 
-        {            
-            H5::DataType imgBandDT = convertDatatypeKeaToH5Native(inDataType);
-            hsize_t dimsValue[1];
-            dimsValue[0] = 1;
-            H5::DataSpace valueDataSpace(1, dimsValue);
-            H5::DataSet datasetImgNDV = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_NO_DATA_VAL );
-            
-            bool noDataDefined = true;
-            try
+        std::string noDataValPath = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_NO_DATA_VAL;
+        
+        try
+        {
+            auto hdfDataType = convertDatatypeKeaToH5Native(inDataType);
+            if (keaImgFile->exist(noDataValPath))
             {
-                H5::Attribute noDataDefAttribute = datasetImgNDV.openAttribute(KEA_NODATA_DEFINED);
-                int val = 1;
-                noDataDefAttribute.read(H5::PredType::NATIVE_INT, &val);
-                noDataDefAttribute.close();
-                
-                if(val == 0)
+                auto datasetBandDataType = keaImgFile->getDataSet(noDataValPath);
+                // check set/not set flag
+                auto setattrib = datasetBandDataType.getAttribute(KEA_NODATA_DEFINED);
+                int8_t val = 0;
+                setattrib.read(&val);
+                if( val == 1 )
                 {
-                    noDataDefined = false;
+                    datasetBandDataType.read_raw(data, hdfDataType);
                 }
             }
-            catch ( const H5::Exception &e)
-            {
-                noDataDefined = true;
-            }
-            
-            if(noDataDefined)
-            {
-                datasetImgNDV.read(data, imgBandDT, valueDataSpace);
-            }
-            else
-            {
-                throw KEAIOException("The image band no data value was not defined.");
-            }
-            datasetImgNDV.close();
-            valueDataSpace.close();
         } 
-        catch ( const H5::Exception &e) 
+        catch ( const HighFive::Exception &e) 
         {
-            throw KEAIOException("The image band no data value was not specified.");
+            throw KEAIOException("The image band no data value was not found.");
         }
         catch ( const KEAIOException &e)
         {
@@ -1371,12 +1316,10 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     void KEAImageIO::undefineNoDataValue(uint32_t band)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1384,30 +1327,26 @@ namespace kealib{
             throw KEAIOException("Image was not open.");
         }
         
+        std::string noDataValPath = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_NO_DATA_VAL;
         
         // UNDEFINE THE NO DATA VALUE
         try
         {
-            H5::DataSet datasetImgNDV = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_NO_DATA_VAL );
-            try
+            auto datasetBandDataType = keaImgFile->getDataSet(noDataValPath);
+            int8_t val = 0;
+            if( datasetBandDataType.hasAttribute(KEA_NODATA_DEFINED))
             {
-                H5::Attribute noDataDefAttribute = datasetImgNDV.openAttribute(KEA_NODATA_DEFINED);
-                int val = 0;
-                noDataDefAttribute.write(H5::PredType::NATIVE_INT, &val);
-                noDataDefAttribute.close();
+                auto attribset = datasetBandDataType.getAttribute(KEA_NODATA_DEFINED);
+                attribset.write(val);
             }
-            catch ( const H5::Exception &e)
+            else
             {
-                H5::DataSpace attr_dataspace = H5::DataSpace(H5S_SCALAR);
-                H5::Attribute noDataDefAttribute = datasetImgNDV.createAttribute(KEA_NODATA_DEFINED, H5::PredType::STD_I8LE, attr_dataspace);
-                int val = 0;
-                noDataDefAttribute.write(H5::PredType::NATIVE_INT, &val);
-                noDataDefAttribute.close();
+                datasetBandDataType.createAttribute(KEA_NODATA_DEFINED, &val);
             }
-            
-            datasetImgNDV.close();
+            // Flushing the dataset
+            this->keaImgFile->flush();
         }
-        catch ( const H5::Exception &e)
+        catch ( const HighFive::Exception &e)
         {
             throw KEAIOException("The image band no data value had not been created.");
         }
@@ -1419,7 +1358,6 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     std::vector<KEAImageGCP*>* KEAImageIO::getGCPs()

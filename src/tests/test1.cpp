@@ -138,8 +138,30 @@ int main()
         
         // description
         io.setImageBandDescription(1, "HBand1Desc");
-        io.setImageBandDescription(1, "HBand2Desc");
+        io.setImageBandDescription(2, "HBand2Desc");
         std::cout << "Wrote descriptions" << std::endl;
+        
+        // nodata
+        uint16_t u16nodata = 999;
+        // check reading is empty
+        io.getNoDataValue(1, &u16nodata, kealib::kea_16uint);
+        if( u16nodata != 999 )
+        {
+            std::cout << "Nodata appears set" << std::endl;
+            return 1;
+        }
+        
+        io.setNoDataValue(1, &u16nodata, kealib::kea_16uint);
+        double dnodata = -123.89;
+        io.setNoDataValue(2, &dnodata, kealib::kea_64float);
+        io.getNoDataValue(2, &dnodata, kealib::kea_64float);
+        if( dnodata !=  -123.89)
+        {
+            std::cout << "Nodata not written correctly" << std::endl;
+            return 1;
+        }
+        io.undefineNoDataValue(2);
+        std::cout << "Wrote nodata" << std::endl;
         
         io.close();
 
@@ -296,8 +318,28 @@ int main()
         auto desc2 = io.getImageBandDescription(2);
         if( (desc1 != "HBand1Desc") || (desc2 != "HBand2Desc"))
         {
-            std::cout << "band descriptions did not match" << std::endl;
+            std::cout << "band descriptions did not match " << desc1 << " " << desc1 << std::endl;
+            return 1;
         }
+        std::cout << "Read band descriptions ok" << std::endl;
+        
+        // read nodata back as different type
+        uint32_t u32nodata = 0;
+        io.getNoDataValue(1, &u32nodata, kealib::kea_32uint);
+        if( u32nodata != 999 )
+        {
+            std::cout << "Wrong nodata value read" << std::endl;
+            return 1;
+        }
+        // band 2 nodata is undefined
+        dnodata = -1;
+        io.getNoDataValue(2, &dnodata, kealib::kea_64float);
+        if( dnodata != -1 )
+        {
+            std::cout << "Nodata not properly undefined" << std::endl;
+            return 1;
+        }
+        std::cout << "Read nodata ok" << std::endl;
         
         io.close();
 
