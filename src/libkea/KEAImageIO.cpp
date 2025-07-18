@@ -1166,7 +1166,6 @@ namespace kealib{
     
     void KEAImageIO::setImageBandDescription(uint32_t band, const std::string &description)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1174,22 +1173,30 @@ namespace kealib{
             throw KEAIOException("Image was not open.");
         }
         
-        std::string bandName = KEA_DATASETNAME_BAND + uint2Str(band);
-        
+        std::string descDataH5Path = KEA_DATASETNAME_BAND + uint2Str(band) + std::string("/") + KEA_BANDNAME_DESCRIP;
+
         // WRITE IMAGE BAND DESCRIPTION
+        try
+        {        
+            this->keaImgFile->getDataSet(descDataH5Path);
+        }
+        catch (const HighFive::DataSetException &e)
+        {   
+            HighFive::DataSpace dataSpace = HighFive::DataSpace(1, 1);
+            keaImgFile->createDataSet(descDataH5Path, dataSpace, HighFive::AtomicType<std::string>());
+        }
+        // WRITE IMAGE META DATA
         try 
         {
-            H5::StrType strTypeAll(0, H5T_VARIABLE);
-            H5::DataSet datasetBandDescription = this->keaImgFile->openDataSet( bandName+KEA_BANDNAME_DESCRIP );
-            const char *wStrdata[1];
-            wStrdata[0] = description.c_str();			
-            datasetBandDescription.write((void*)wStrdata, strTypeAll);
-            datasetBandDescription.close();
-            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+            auto dataset = this->keaImgFile->getDataSet(descDataH5Path);
+            dataset.write(description);
+        
+            // Flushing the dataset
+            this->keaImgFile->flush();
         }
-        catch (const H5::Exception &e) 
+        catch ( const HighFive::Exception &e) 
         {
-            throw KEAIOException("Could not set image band description.");
+            throw KEAIOException("Description was not accessable.");
         }
         catch ( const KEAIOException &e)
         {
@@ -1199,12 +1206,10 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     std::string KEAImageIO::getImageBandDescription(uint32_t band)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1212,19 +1217,18 @@ namespace kealib{
             throw KEAIOException("Image was not open.");
         }
         
-        std::string bandName = KEA_DATASETNAME_BAND + uint2Str(band) + std::string("/") + KEA_BANDNAME_DESCRIP;
+        std::string descDataH5Path = KEA_DATASETNAME_BAND + uint2Str(band) + std::string("/") + KEA_BANDNAME_DESCRIP;
         std::string description = "";
         // READ IMAGE BAND DESCRIPTION
+        
         try 
         {
-            H5::DataSet datasetBandDescription = this->keaImgFile->openDataSet( bandName );
-            H5::DataType strDataType = datasetBandDescription.getDataType();
-            description = readString(datasetBandDescription, strDataType);
-            datasetBandDescription.close();
+            auto dataset = this->keaImgFile->getDataSet(descDataH5Path);
+            dataset.read(description);
         } 
-        catch ( const H5::Exception &e) 
+        catch ( const HighFive::Exception &e) 
         {
-            throw KEAIOException("Could not read band description.");
+            throw KEAIOException("Meta-data band variable was not accessable.");
         }
         catch ( const KEAIOException &e)
         {
@@ -1234,9 +1238,7 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        
         return description;
-        */
     }
     
     

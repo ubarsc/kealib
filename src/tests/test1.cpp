@@ -136,6 +136,11 @@ int main()
         io.setImageBandMetaData(1, bandmetaData);
         std::cout << "Wrote band metadata" << std::endl;
         
+        // description
+        io.setImageBandDescription(1, "HBand1Desc");
+        io.setImageBandDescription(1, "HBand2Desc");
+        std::cout << "Wrote descriptions" << std::endl;
+        
         io.close();
 
 
@@ -287,6 +292,13 @@ int main()
 
         std::cout << "Successfully read band metadata" << std::endl;
 
+        auto desc1 = io.getImageBandDescription(1);
+        auto desc2 = io.getImageBandDescription(2);
+        if( (desc1 != "HBand1Desc") || (desc2 != "HBand2Desc"))
+        {
+            std::cout << "band descriptions did not match" << std::endl;
+        }
+        
         io.close();
 
         free(pData);
