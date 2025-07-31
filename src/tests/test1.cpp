@@ -37,6 +37,52 @@
 #define TEST_FIELD "test"
 #define RAT_SIZE 256
 
+bool compareSpatialInfo(kealib::KEAImageSpatialInfo *p1, kealib::KEAImageSpatialInfo *p2)
+{
+    if( p1->tlX != p2->tlX )
+    {
+        std::cout << "tlX does not match" << std::endl;
+        return false;
+    }
+    if( p1->tlY != p2->tlY )
+    {
+        std::cout << "tlY does not match" << std::endl;
+        return false;
+    }
+    if( p1->xRes != p2->xRes )
+    {
+        std::cout << "xRes does not match" << std::endl;
+        return false;
+    }
+    if( p1->yRes != p2->yRes )
+    {
+        std::cout << "yRes does not match" << std::endl;
+        return false;
+    }
+    if( p1->xRot != p2->xRot )
+    {
+        std::cout << "xRot does not match" << std::endl;
+        return false;
+    }
+    if( p1->yRot != p2->yRot )
+    {
+        std::cout << "yRot does not match" << std::endl;
+        return false;
+    }
+    if( p1->tlX != p2->tlX )
+    {
+        std::cout << "tlX does not match" << std::endl;
+        return false;
+    }
+    if( p1->wktString != p2->wktString )
+    {
+        std::cout << "wktString does not match" << std::endl;
+        return false;
+    }
+    // TOOD: xSize and ySize?
+    return true;
+}
+
 int main()
 {
     try
@@ -82,6 +128,12 @@ int main()
         std::cout << "Opened file" << std::endl;
 
         io.openKEAImageHeader(h5file);
+        
+        auto readinfo = io.getSpatialInfo();
+        if( !compareSpatialInfo(spatialInfo, readinfo))
+        {
+            return 1;
+        }
         /*
         uint64_t subXSize = 50;
         uint64_t subYSize = 100;
@@ -137,6 +189,13 @@ int main()
         std::cout << "Wrote band metadata" << std::endl;
         
         // description
+        // test what was set on create
+        if( (io.getImageBandDescription(1) != "Band 1 Name") ||
+            (io.getImageBandDescription(2) != "Band 2 Name") )
+        {
+            std::cout << "Band names set on creation not retriived" << std::endl;
+            return 1;
+        }
         io.setImageBandDescription(1, "HBand1Desc");
         io.setImageBandDescription(2, "HBand2Desc");
         std::cout << "Wrote descriptions" << std::endl;
@@ -162,6 +221,10 @@ int main()
         }
         io.undefineNoDataValue(2);
         std::cout << "Wrote nodata" << std::endl;
+
+        // Pete: skipping the GCPs for now
+        io.setGCPProjection("KmKmqw");
+        std::cout << "Wrote GCP Proj" << std::endl;
         
         io.close();
 
@@ -340,6 +403,12 @@ int main()
             return 1;
         }
         std::cout << "Read nodata ok" << std::endl;
+        
+        if( io.getGCPProjection() != "KmKmqw" )
+        {
+            std::cout << "GCP Projection not correctly read" << std::endl;
+            return 1;
+        }
         
         io.close();
 

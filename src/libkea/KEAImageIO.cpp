@@ -35,6 +35,8 @@
 
 namespace kealib{
 
+    //HIGHFIVE_REGISTER_TYPE(KEAImageGCP, kealib::KEAImageIO::createGCPCompType)
+
     static void* kealibmalloc(size_t nSize, void* ignored)
     {
         return malloc(nSize);
@@ -1247,7 +1249,6 @@ namespace kealib{
             if(!this->keaImgFile->exist(noDataValPath))
             {
                 HighFive::DataSpace dataSpace = HighFive::DataSpace(1, 1);
-                KEADataType imgDataType = this->getImageBandDataType(band);
                 keaImgFile->createDataSet(noDataValPath, dataSpace, hdfDataType);
                 std::cout << "created dataset " << noDataValPath << std::endl;
             }
@@ -1263,7 +1264,7 @@ namespace kealib{
         }
         catch ( const HighFive::Exception &e) 
         {
-            throw KEAIOException(e.what()); // "Could not set nodata value");
+            throw KEAIOException("Could not set nodata value");
         }
         catch ( const KEAIOException &e)
         {
@@ -1471,7 +1472,7 @@ namespace kealib{
     
     void KEAImageIO::setGCPs(std::vector<KEAImageGCP*> *gcps, const std::string &projWKT)
     {
-        /*
+        // Pete: I can't work out this compound data type stuff...
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1481,146 +1482,65 @@ namespace kealib{
         
         uint32_t numGCPs = gcps->size();
         
-        KEAImageGCP_HDF5 *gcpsHDF = new KEAImageGCP_HDF5[numGCPs];
+        std::vector<KEAImageGCP> mygcps;
         
-        uint32_t i = 0;
+        KEAImageGCP_HDF5 *gcpsHDF = new KEAImageGCP_HDF5[numGCPs];
         for(auto iterGCP = gcps->begin(); iterGCP != gcps->end(); ++iterGCP)
         {
-            // Copy the char from one to the other for PSZ ID.
-            const size_t lenPSZId = strlen((*iterGCP)->pszId.c_str());
-            gcpsHDF[i].pszId = new char[lenPSZId + 1];
-            strncpy(gcpsHDF[i].pszId, (*iterGCP)->pszId.c_str(), lenPSZId);
-            gcpsHDF[i].pszId[lenPSZId] = '\0';
-            
-            // Copy the char from one to the other for PSZ INFO.
-            const size_t lenPSZInfo = strlen((*iterGCP)->pszInfo.c_str());
-            gcpsHDF[i].pszInfo = new char[lenPSZInfo + 1];
-            strncpy(gcpsHDF[i].pszInfo, (*iterGCP)->pszInfo.c_str(), lenPSZInfo);
-            gcpsHDF[i].pszInfo[lenPSZInfo] = '\0';
-            
-            gcpsHDF[i].dfGCPPixel = (*iterGCP)->dfGCPPixel;
-            gcpsHDF[i].dfGCPLine = (*iterGCP)->dfGCPLine;
-            gcpsHDF[i].dfGCPX = (*iterGCP)->dfGCPX;
-            gcpsHDF[i].dfGCPY = (*iterGCP)->dfGCPY;
-            gcpsHDF[i].dfGCPZ = (*iterGCP)->dfGCPZ;            
-            
-            ++i;
+            mygcps.push_back(*(*iterGCP));
         }
         
         try
         {
             // Open or create the GCPs dataset 
-            try
+            auto fieldDtMem = this->createGCPCompType();
+            if( this->keaImgFile->exist(KEA_GCPS_DATA))
             {
-                H5::DataSet gcpsDataset = this->keaImgFile->openDataSet(KEA_GCPS_DATA);
-                H5::DataSpace gcpsWriteDataSpace = gcpsDataset.getSpace();
-                
-                H5::CompType *fieldDtMem = this->createGCPCompTypeMem();
-                
-                hsize_t gcpsDataDims[1];
-                gcpsWriteDataSpace.getSimpleExtentDims(gcpsDataDims);
+                auto gcpsDataset = this->keaImgFile->getDataSet(KEA_GCPS_DATA);
+                auto gcpsDataDims = gcpsDataset.getDimensions();
                 
                 if(numGCPs > gcpsDataDims[0])
                 {
-                    hsize_t extendGCPsDatasetTo[1];
-                    extendGCPsDatasetTo[0] = numGCPs;
-                    gcpsDataset.extend( extendGCPsDatasetTo );
+                    std::vector<size_t> dims;
+                    dims.push_back(numGCPs);
+                    gcpsDataset.resize(dims);
                 }
                 
-                hsize_t gcpsOffset[1];
-                gcpsOffset[0] = 0;
-                gcpsDataDims[0] = numGCPs;
-                
-                gcpsWriteDataSpace.close();
-                gcpsWriteDataSpace = gcpsDataset.getSpace();
-                gcpsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, gcpsDataDims, gcpsOffset);
-                H5::DataSpace newGCPsDataspace = H5::DataSpace(1, gcpsDataDims);
-                
-                gcpsDataset.write(gcpsHDF, *fieldDtMem, newGCPsDataspace, gcpsWriteDataSpace);
-                
-                gcpsWriteDataSpace.close();
-                newGCPsDataspace.close();
-                gcpsDataset.close();
-                
-                delete fieldDtMem;
+                //gcpsDataset.write(mygcps);
             }
-            catch ( const H5::Exception &e)
+            else
             {
-                H5::CompType *fieldDtDisk = this->createGCPCompTypeDisk();
-                H5::CompType *fieldDtMem = this->createGCPCompTypeMem();
+                // https://github.com/highfive-devs/highfive/blob/main/src/examples/create_datatype.cpp
+                HighFive::DataSpace gcpsDataSpace = HighFive::DataSpace(numGCPs);
                 
-                hsize_t initDimsGCPsDS[1];
-                initDimsGCPsDS[0] = numGCPs;
-                hsize_t maxDimsGCPsDS[1];
-                maxDimsGCPsDS[0] = H5S_UNLIMITED;
-                H5::DataSpace gcpsDataSpace = H5::DataSpace(1, initDimsGCPsDS, maxDimsGCPsDS);
-                
-                hsize_t dimsGCPsChunk[1];
-                dimsGCPsChunk[0] = numGCPs;
-                
-                H5::DSetCreatPropList creationGCPsDSPList;
-                creationGCPsDSPList.setChunk(1, dimsGCPsChunk);
-                creationGCPsDSPList.setShuffle();
-                creationGCPsDSPList.setDeflate(1);
-                H5::DataSet gcpsDataset = this->keaImgFile->createDataSet(KEA_GCPS_DATA, *fieldDtDisk, gcpsDataSpace, creationGCPsDSPList);
-                
-                hsize_t gcpsOffset[1];
-                gcpsOffset[0] = 0;
-                hsize_t gcpsDataDims[1];
-                gcpsDataDims[0] = numGCPs;
-                
-                H5::DataSpace gcpsWriteDataSpace = gcpsDataset.getSpace();
-                gcpsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, gcpsDataDims, gcpsOffset);
-                H5::DataSpace newGCPsDataspace = H5::DataSpace(1, gcpsDataDims);
-                
-                gcpsDataset.write(gcpsHDF, *fieldDtMem, newGCPsDataspace, gcpsWriteDataSpace);
-                
-                gcpsDataSpace.close();
-                gcpsWriteDataSpace.close();
-                newGCPsDataspace.close();
-                gcpsDataset.close();                
-                
-                delete fieldDtDisk;
-                delete fieldDtMem;
+                HighFive::DataSetCreateProps creationGCPsDSPList;
+                creationGCPsDSPList.add(HighFive::Chunking(numGCPs));
+                creationGCPsDSPList.add(HighFive::Deflate(KEA_DEFLATE));
+                creationGCPsDSPList.add(HighFive::Shuffle());
+
+                fieldDtMem.commit(*this->keaImgFile, "GCPType");
+
+                auto gcpsDataset = this->keaImgFile->createDataSet(KEA_GCPS_DATA, gcpsDataSpace, fieldDtMem, creationGCPsDSPList);
+                //gcpsDataset.write(mygcps);
             }
             
             
-            // Set the number of GCPs
-            try
+            if( !this->keaImgFile->exist(KEA_GCPS_NUM))
             {
-                H5::DataSet numBandsDataset;
-                try
-                {
-                    // open the dataset
-                    numBandsDataset = this->keaImgFile->openDataSet(KEA_GCPS_NUM);
-                }
-                catch (const H5::Exception &e)
-                {
-                    // create the dataset if it does not exist
-                    hsize_t dimsNumBands[] = { 1 };
-                    H5::DataSpace numBandsDataSpace(1, dimsNumBands);
-                    numBandsDataset = this->keaImgFile->createDataSet(KEA_GCPS_NUM, H5::PredType::STD_U32LE, numBandsDataSpace);
-                    numBandsDataSpace.close();
-                }
-                numBandsDataset.write(&numGCPs, H5::PredType::NATIVE_UINT32);
-                numBandsDataset.close();
+                this->keaImgFile->createDataSet(KEA_GCPS_NUM, numGCPs);
             }
-            catch (const H5::Exception &e)
+            else
             {
-                throw KEAIOException("Could not write the number of GCPs.");
+                auto numBandsDataset = this->keaImgFile->getDataSet(KEA_GCPS_NUM);
+                numBandsDataset.write(numGCPs);
             }
-            catch ( const KEAIOException &e)
-            {
-                throw e;
-            }
-            catch ( const std::exception &e)
-            {
-                throw KEAIOException(e.what());
-            }
+            
+            // Flushing the dataset
+            this->keaImgFile->flush();
         }
-        catch (const H5::Exception &e)
+        catch (const HighFive::Exception &e)
         {
-            throw KEAIOException(e.getCDetailMsg());
+            throw KEAIOException(e.what());
         }
         catch ( const KEAIOException &e)
         {
@@ -1630,15 +1550,6 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        
-        for(uint32_t j = 0; j < i; j++)
-        {
-            delete[] gcpsHDF[j].pszId;
-            delete[] gcpsHDF[j].pszInfo;
-        }
-        
-        delete[] gcpsHDF;
-        
         
         // Set the projection string
         try
@@ -1653,7 +1564,6 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     uint32_t KEAImageIO::getGCPCount()
@@ -1691,7 +1601,6 @@ namespace kealib{
     
     std::string KEAImageIO::getGCPProjection()
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1703,23 +1612,19 @@ namespace kealib{
         std::string gcpProj = "";
         try
         {
-            H5::DataSet datasetGCPSpatialReference = this->keaImgFile->openDataSet( KEA_GCPS_PROJ );
-            H5::DataType strDataType = datasetGCPSpatialReference.getDataType();
-            gcpProj = readString(datasetGCPSpatialReference, strDataType);
-            datasetGCPSpatialReference.close();
+            auto datasetGCPSpatialReference = this->keaImgFile->getDataSet( KEA_GCPS_PROJ );
+            datasetGCPSpatialReference.read(gcpProj);
         }
-        catch ( const H5::Exception &e)
+        catch ( const HighFive::Exception &e)
         {
             throw KEAIOException("The spatial reference was not specified.");
         }
         
         return gcpProj;
-        */
     }
     
     void KEAImageIO::setGCPProjection(const std::string &projWKT)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1727,28 +1632,25 @@ namespace kealib{
             throw KEAIOException("Image was not open.");
         }
         
-        // SET THE WKT STRING SPATAIL REFERENCE IN GLOBAL HEADER
+        // SET THE WKT STRING SPATIAL REFERENCE IN GLOBAL HEADER
         try
         {
-            const char *wStrdata[1];
-            H5::DataSet datasetSpatialReference = this->keaImgFile->openDataSet(KEA_GCPS_PROJ);
-            H5::DataType strDataType = datasetSpatialReference.getDataType();
-            wStrdata[0] = projWKT.c_str();
-            datasetSpatialReference.write((void*)wStrdata, strDataType);
-            datasetSpatialReference.close();
-            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+            if( this->keaImgFile->exist(KEA_GCPS_PROJ))
+            {
+                auto datasetSpatialReference = this->keaImgFile->getDataSet(KEA_GCPS_PROJ);
+                datasetSpatialReference.write(projWKT);
+            }
+            else
+            {
+                HighFive::DataSpace dataSpace = HighFive::DataSpace(1, 1);
+                auto datasetSpatialReference = this->keaImgFile->createDataSet(KEA_GCPS_PROJ, dataSpace, HighFive::AtomicType<std::string>());
+                datasetSpatialReference.write(projWKT);
+            }
+            this->keaImgFile->flush();
         }
-        catch (const H5::Exception &e)
+        catch (const HighFive::Exception &e)
         {
-            const char *wStrdata[1];
-			hsize_t	dimsForStr[1];
-			dimsForStr[0] = 1; // number of lines;
-            H5::DataSpace dataspaceStrAll(1, dimsForStr);
-            H5::StrType strTypeAll(0, H5T_VARIABLE);
-            H5::DataSet datasetSpatialReference = this->keaImgFile->createDataSet(KEA_GCPS_PROJ, strTypeAll, dataspaceStrAll);
-			wStrdata[0] = projWKT.c_str();
-			datasetSpatialReference.write((void*)wStrdata, strTypeAll);
-			datasetSpatialReference.close();
+            throw KEAIOException(e.what());
         }
         catch ( const KEAIOException &e)
         {
@@ -1758,56 +1660,66 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     void KEAImageIO::setSpatialInfo(KEAImageSpatialInfo *inSpatialInfo)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
         }
+        // Define dataspaces for writing string data
+        auto scalar_dataspace = HighFive::DataSpace(
+            HighFive::DataSpace::dataspace_scalar
+        );
+        auto var_stringtype = HighFive::VariableLengthStringType();
         
         try 
         {
             // SET X AND Y TL IN GLOBAL HEADER
-            double doubleVals[2];
-            doubleVals[0] = inSpatialInfo->tlX;
-            doubleVals[1] = inSpatialInfo->tlY;
-            H5::DataSet spatialTLDataset = this->keaImgFile->openDataSet(KEA_DATASETNAME_HEADER_TL);
-			spatialTLDataset.write( doubleVals, H5::PredType::NATIVE_DOUBLE );
-            spatialTLDataset.close();
-            
+            std::vector<double> tlCoordsSpatial(2);
+            tlCoordsSpatial[0] = double(inSpatialInfo->tlX);
+            tlCoordsSpatial[1] = double(inSpatialInfo->tlY);
+            auto spatialTLDataset = keaImgFile->createDataSet<double>(
+                KEA_DATASETNAME_HEADER_TL,
+                HighFive::DataSpace::From(tlCoordsSpatial)
+            ); // Explicit datatype: IEEE_F64LE
+            spatialTLDataset.write(tlCoordsSpatial);
+
             // SET X AND Y RESOLUTION IN GLOBAL HEADER
-            doubleVals[0] = inSpatialInfo->xRes;
-            doubleVals[1] = inSpatialInfo->yRes;
-            H5::DataSet spatialResDataset = this->keaImgFile->openDataSet(KEA_DATASETNAME_HEADER_RES);
-			spatialResDataset.write( doubleVals, H5::PredType::NATIVE_DOUBLE );
-            spatialResDataset.close();
-            
+            std::vector<float> pxlResSpatial(2);
+            pxlResSpatial[0] = float(inSpatialInfo->xRes);
+            pxlResSpatial[1] = float(inSpatialInfo->yRes);
+            auto spatialResDataset = keaImgFile->createDataSet<float>(
+                KEA_DATASETNAME_HEADER_RES,
+                HighFive::DataSpace::From(pxlResSpatial)
+            ); // Explicit datatype: IEEE_F32LE
+            spatialResDataset.write(pxlResSpatial);
+
             // SET X AND Y ROTATION IN GLOBAL HEADER
-            doubleVals[0] = inSpatialInfo->xRot;
-            doubleVals[1] = inSpatialInfo->yRot;
-            H5::DataSet spatialRotDataset = this->keaImgFile->openDataSet(KEA_DATASETNAME_HEADER_ROT);
-			spatialRotDataset.write( doubleVals, H5::PredType::NATIVE_DOUBLE );
-            spatialRotDataset.close();
-            
-            // SET THE WKT STRING SPATAIL REFERENCE IN GLOBAL HEADER
-			const char *wStrdata[1];
-            H5::DataSet datasetSpatialReference = this->keaImgFile->openDataSet(KEA_DATASETNAME_HEADER_WKT);
-            H5::DataType strDataType = datasetSpatialReference.getDataType();
-			wStrdata[0] = inSpatialInfo->wktString.c_str();			
-			datasetSpatialReference.write((void*)wStrdata, strDataType);
-			datasetSpatialReference.close();
-            
-            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+            std::vector<float> pxlRotSpatial(2);
+            pxlRotSpatial[0] = float(inSpatialInfo->xRot);
+            pxlRotSpatial[1] = float(inSpatialInfo->yRot);
+            auto spatialRotDataset = keaImgFile->createDataSet<float>(
+                KEA_DATASETNAME_HEADER_ROT,
+                HighFive::DataSpace::From(pxlRotSpatial)
+            ); // Explicit datatype: IEEE_F32LE
+            spatialRotDataset.write(pxlRotSpatial);
+
+            // SET THE WKT STRING SPATIAL REFERENCE IN GLOBAL HEADER
+            auto datasetSpatialReference = keaImgFile->createDataSet(
+                KEA_DATASETNAME_HEADER_WKT,
+                scalar_dataspace,
+                var_stringtype
+            );
+            datasetSpatialReference.write(inSpatialInfo->wktString);
+            this->keaImgFile->flush();
         } 
-        catch (const H5::Exception &e)
+        catch (const HighFive::Exception &e)
         {
-            throw KEAIOException(e.getCDetailMsg());
+            throw KEAIOException(e.what());
         }
         catch ( const KEAIOException &e)
         {
@@ -1817,7 +1729,6 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     KEAImageSpatialInfo* KEAImageIO::getSpatialInfo()
@@ -1915,70 +1826,6 @@ namespace kealib{
         }
 
         return imgBlockSize;
-        /*
-        kealib::kea_lock lock(*this->m_mutex); 
-        KEAStackPrintState printState;
-        if(!this->fileOpen)
-        {
-            throw KEAIOException("Image was not open.");
-        }
-        
-        uint32_t imgBlockSize = 0;
-        
-        try 
-        {
-            // CHECK PARAMETERS PROVIDED FIT WITHIN IMAGE
-            if(band == 0)
-            {
-                throw KEAIOException("KEA Image Bands start at 1.");
-            }
-            else if(band > this->numImgBands)
-            {
-                throw KEAIOException("Band is not present within image."); 
-            }
-            
-            // OPEN BAND DATASET
-            try 
-            {
-                std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band);
-                H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( imageBandPath + KEA_BANDNAME_DATA );
-                H5::Attribute blockSizeAtt = imgBandDataset.openAttribute(KEA_ATTRIBUTENAME_BLOCK_SIZE);
-                blockSizeAtt.read(H5::PredType::NATIVE_UINT32, &imgBlockSize);
-                imgBandDataset.close();
-                blockSizeAtt.close();
-            } 
-            catch ( const H5::Exception &e) 
-            {
-                throw KEAIOException("Could not get image block size.");
-            }            
-        }
-        catch(const KEAIOException &e)
-        {
-            throw e;
-        }
-        catch( const H5::FileIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataSetIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataSpaceIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataTypeIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-        catch ( const std::exception &e)
-        {
-            throw KEAIOException(e.what());
-        }
-        
-        return imgBlockSize;
-        */
     }
 
     uint32_t KEAImageIO::getAttributeTableChunkSize(uint32_t band)
@@ -3898,78 +3745,27 @@ namespace kealib{
             throw KEAIOException(e.what());
         }
     }
+   
     
-    /*
-    H5::CompType* KEAImageIO::createGCPCompTypeDisk()
-    {
-
-        try
-        {
-            H5::StrType strTypeDisk(0, H5T_VARIABLE);
-            
-            H5::CompType *gcpDataType = new H5::CompType( sizeof(KEAImageGCP_HDF5) );
-            gcpDataType->insertMember(KEA_GCPS_PSZID, HOFFSET(KEAImageGCP_HDF5, pszId), strTypeDisk);
-            gcpDataType->insertMember(KEA_GCPS_PSZINFO, HOFFSET(KEAImageGCP_HDF5, pszInfo), strTypeDisk);
-            gcpDataType->insertMember(KEA_GCPS_DFPIXEL, HOFFSET(KEAImageGCP_HDF5, dfGCPPixel), H5::PredType::IEEE_F64LE);
-            gcpDataType->insertMember(KEA_GCPS_DFLINE, HOFFSET(KEAImageGCP_HDF5, dfGCPLine), H5::PredType::IEEE_F64LE);            
-            gcpDataType->insertMember(KEA_GCPS_DFX, HOFFSET(KEAImageGCP_HDF5, dfGCPX), H5::PredType::IEEE_F64LE);
-            gcpDataType->insertMember(KEA_GCPS_DFY, HOFFSET(KEAImageGCP_HDF5, dfGCPY), H5::PredType::IEEE_F64LE);
-            gcpDataType->insertMember(KEA_GCPS_DFZ, HOFFSET(KEAImageGCP_HDF5, dfGCPZ), H5::PredType::IEEE_F64LE);
-            return gcpDataType;
-        }
-        catch( const H5::FileIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataSetIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataSpaceIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataTypeIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-
-    }
-    
-    H5::CompType* KEAImageIO::createGCPCompTypeMem()
+    HighFive::CompoundType KEAImageIO::createGCPCompType()
     {
         try
         {
-            H5::StrType strTypeMem(0, H5T_VARIABLE);
-            
-            H5::CompType *gcpDataType = new H5::CompType( sizeof(KEAImageGCP_HDF5) );
-            gcpDataType->insertMember(KEA_GCPS_PSZID, HOFFSET(KEAImageGCP_HDF5, pszId), strTypeMem);
-            gcpDataType->insertMember(KEA_GCPS_PSZINFO, HOFFSET(KEAImageGCP_HDF5, pszInfo), strTypeMem);
-            gcpDataType->insertMember(KEA_GCPS_DFPIXEL, HOFFSET(KEAImageGCP_HDF5, dfGCPPixel), H5::PredType::NATIVE_DOUBLE);
-            gcpDataType->insertMember(KEA_GCPS_DFLINE, HOFFSET(KEAImageGCP_HDF5, dfGCPLine), H5::PredType::NATIVE_DOUBLE);
-            gcpDataType->insertMember(KEA_GCPS_DFX, HOFFSET(KEAImageGCP_HDF5, dfGCPX), H5::PredType::NATIVE_DOUBLE);
-            gcpDataType->insertMember(KEA_GCPS_DFY, HOFFSET(KEAImageGCP_HDF5, dfGCPY), H5::PredType::NATIVE_DOUBLE);
-            gcpDataType->insertMember(KEA_GCPS_DFZ, HOFFSET(KEAImageGCP_HDF5, dfGCPZ), H5::PredType::NATIVE_DOUBLE);
-            return gcpDataType;
+            std::vector<HighFive::CompoundType::member_def> members;
+            members.push_back(HighFive::CompoundType::member_def(KEA_GCPS_PSZID, HighFive::AtomicType<std::string>()));
+            members.push_back(HighFive::CompoundType::member_def(KEA_GCPS_PSZINFO, HighFive::AtomicType<std::string>()));
+            members.push_back(HighFive::CompoundType::member_def(KEA_GCPS_DFPIXEL, HighFive::AtomicType<double>()));
+            members.push_back(HighFive::CompoundType::member_def(KEA_GCPS_DFLINE, HighFive::AtomicType<double>()));
+            members.push_back(HighFive::CompoundType::member_def(KEA_GCPS_DFX, HighFive::AtomicType<double>()));
+            members.push_back(HighFive::CompoundType::member_def(KEA_GCPS_DFY, HighFive::AtomicType<double>()));
+            members.push_back(HighFive::CompoundType::member_def(KEA_GCPS_DFZ, HighFive::AtomicType<double>()));
+            return HighFive::CompoundType(members);
         }
-        catch( const H5::FileIException &e )
+        catch( const HighFive::Exception &e)
         {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataSetIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataSpaceIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataTypeIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
+            throw kealib::KEAIOException(e.what());
         }
     }
-    */
 } // namespace libkea
 
 #include "libkea/kea-config.h"

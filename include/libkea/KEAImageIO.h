@@ -165,8 +165,7 @@ namespace kealib{
          */
         static void setNumImgBandsInFileMetadata(HighFive::File *keaImgH5File, const uint32_t numImgBands);
 
-        //static H5::CompType* createGCPCompTypeDisk();
-        //static H5::CompType* createGCPCompTypeMem();
+        static HighFive::CompoundType createGCPCompType();
         
         //static std::string readString(H5::DataSet& dataset, H5::DataType strDataType);
         
