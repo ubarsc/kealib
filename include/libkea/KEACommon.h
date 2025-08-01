@@ -48,7 +48,7 @@ namespace kealib{
 
     static const std::string KEA_FILE_TYPE( "KEA" );
     static const std::string KEA_SOFTWARE( "LibKEA" );
-    static const std::string KEA_VERSION( "1.1" );
+    static const std::string KEA_VERSION( "2.0" );
 
     static const std::string KEA_DATASETNAME_HEADER( "/HEADER" );
     static const std::string KEA_DATASETNAME_HEADER_NUMBANDS( "/HEADER/NUMBANDS" );

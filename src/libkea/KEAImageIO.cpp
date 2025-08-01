@@ -1670,11 +1670,6 @@ namespace kealib{
         {
             throw KEAIOException("Image was not open.");
         }
-        // Define dataspaces for writing string data
-        auto scalar_dataspace = HighFive::DataSpace(
-            HighFive::DataSpace::dataspace_scalar
-        );
-        auto var_stringtype = HighFive::VariableLengthStringType();
         
         try 
         {
@@ -1682,9 +1677,8 @@ namespace kealib{
             std::vector<double> tlCoordsSpatial(2);
             tlCoordsSpatial[0] = double(inSpatialInfo->tlX);
             tlCoordsSpatial[1] = double(inSpatialInfo->tlY);
-            auto spatialTLDataset = keaImgFile->createDataSet<double>(
-                KEA_DATASETNAME_HEADER_TL,
-                HighFive::DataSpace::From(tlCoordsSpatial)
+            auto spatialTLDataset = keaImgFile->getDataSet(
+                KEA_DATASETNAME_HEADER_TL
             ); // Explicit datatype: IEEE_F64LE
             spatialTLDataset.write(tlCoordsSpatial);
 
@@ -1692,9 +1686,8 @@ namespace kealib{
             std::vector<float> pxlResSpatial(2);
             pxlResSpatial[0] = float(inSpatialInfo->xRes);
             pxlResSpatial[1] = float(inSpatialInfo->yRes);
-            auto spatialResDataset = keaImgFile->createDataSet<float>(
-                KEA_DATASETNAME_HEADER_RES,
-                HighFive::DataSpace::From(pxlResSpatial)
+            auto spatialResDataset = keaImgFile->getDataSet(
+                KEA_DATASETNAME_HEADER_RES
             ); // Explicit datatype: IEEE_F32LE
             spatialResDataset.write(pxlResSpatial);
 
@@ -1702,17 +1695,14 @@ namespace kealib{
             std::vector<float> pxlRotSpatial(2);
             pxlRotSpatial[0] = float(inSpatialInfo->xRot);
             pxlRotSpatial[1] = float(inSpatialInfo->yRot);
-            auto spatialRotDataset = keaImgFile->createDataSet<float>(
-                KEA_DATASETNAME_HEADER_ROT,
-                HighFive::DataSpace::From(pxlRotSpatial)
+            auto spatialRotDataset = keaImgFile->getDataSet(
+                KEA_DATASETNAME_HEADER_ROT
             ); // Explicit datatype: IEEE_F32LE
             spatialRotDataset.write(pxlRotSpatial);
 
             // SET THE WKT STRING SPATIAL REFERENCE IN GLOBAL HEADER
-            auto datasetSpatialReference = keaImgFile->createDataSet(
-                KEA_DATASETNAME_HEADER_WKT,
-                scalar_dataspace,
-                var_stringtype
+            auto datasetSpatialReference = keaImgFile->getDataSet(
+                KEA_DATASETNAME_HEADER_WKT
             );
             datasetSpatialReference.write(inSpatialInfo->wktString);
             this->keaImgFile->flush();
@@ -1830,7 +1820,6 @@ namespace kealib{
 
     uint32_t KEAImageIO::getAttributeTableChunkSize(uint32_t band)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1853,16 +1842,11 @@ namespace kealib{
             }
             
             // OPEN BAND DATASET
+            std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band);
             try 
             {
-                hsize_t dimsValue[1];
-                dimsValue[0] = 1;
-                H5::DataSpace valueDataSpace(1, dimsValue);
-                std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band);
-                H5::DataSet datasetAttSize = this->keaImgFile->openDataSet( imageBandPath + KEA_ATT_CHUNKSIZE_HEADER);
-                datasetAttSize.read(&attChunkSize, H5::PredType::NATIVE_UINT32, valueDataSpace);
-                datasetAttSize.close();
-                valueDataSpace.close();
+                auto datasetAttSize = this->keaImgFile->getDataSet( imageBandPath + KEA_ATT_CHUNKSIZE_HEADER);
+                datasetAttSize.read(attChunkSize);
             } 
             catch ( const H5::Exception &e) 
             {
@@ -1873,21 +1857,9 @@ namespace kealib{
         {
             throw e;
         }
-        catch( const H5::FileIException &e )
+        catch( const HighFive::Exception &e )
 		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataSetIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataSpaceIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataTypeIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
+			throw KEAIOException(e.what());
 		}
         catch ( const std::exception &e)
         {
@@ -1895,7 +1867,6 @@ namespace kealib{
         }
         
         return attChunkSize;
-        */
     }
 
     KEADataType KEAImageIO::getImageBandDataType(uint32_t band)
@@ -3203,7 +3174,7 @@ namespace kealib{
                             datasetFileVersion.read(fileVersion);
                         }
 
-                        if ((fileVersion == "1.0") || (fileVersion == "1.1"))
+                        if ((fileVersion == "1.0") || (fileVersion == "1.1") || (fileVersion == "2.0"))
                         {
                             keaImageFound = true;
                         }
@@ -3570,7 +3541,6 @@ namespace kealib{
                 (bandName + KEA_BANDNAME_DT),
                 dataType
             );
-            dtDataset.write(bandType);
 
             // SET IMAGE BAND TYPE IN IMAGE BAND (I.E., CONTINUOUS (0) OR
             // THEMATIC (1))
@@ -3578,14 +3548,12 @@ namespace kealib{
                 (bandName + KEA_BANDNAME_TYPE),
                 bandType
             );
-            typeDataset.write(bandType);
 
             // SET IMAGE BAND USAGE IN IMAGE BAND
             auto usageDataset = keaImgH5File->createDataSet<uint8_t>(
                 (bandName + KEA_BANDNAME_USAGE),
                 bandUsage
             );
-            usageDataset.write(bandUsage);
 
             // CREATE META-DATA
             keaImgH5File->createGroup(bandName + KEA_BANDNAME_METADATA);

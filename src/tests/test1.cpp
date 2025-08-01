@@ -134,6 +134,16 @@ int main()
         {
             return 1;
         }
+        
+        auto spatialInfo2 = new kealib::KEAImageSpatialInfo();
+        spatialInfo->tlX = 11.0;
+        spatialInfo->tlY = 110.0;
+        spatialInfo->xRes = 1.5;
+        spatialInfo->yRes = -1.5;
+        spatialInfo->xRot = 5.1;
+        spatialInfo->yRot = 2.1;
+        spatialInfo->wktString = "Hello World2";
+        io.setSpatialInfo(spatialInfo2);
         /*
         uint64_t subXSize = 50;
         uint64_t subYSize = 100;
@@ -225,6 +235,19 @@ int main()
         // Pete: skipping the GCPs for now
         io.setGCPProjection("KmKmqw");
         std::cout << "Wrote GCP Proj" << std::endl;
+        
+        if ( (io.getImageBandDataType(1) != kealib::kea_8uint) ||
+             (io.getImageBandDataType(2) != kealib::kea_8uint))
+        {
+            std::cout << "Wrong data type read" << std::endl;
+            return 1;
+        }
+        
+        if( io.getKEAImageVersion() != kealib::KEA_VERSION)
+        {
+            std::cout << "wrong kealib version string" << std::endl;
+            return 1;
+        }
         
         io.close();
 
@@ -407,6 +430,30 @@ int main()
         if( io.getGCPProjection() != "KmKmqw" )
         {
             std::cout << "GCP Projection not correctly read" << std::endl;
+            return 1;
+        }
+        
+        auto readinfo2 = io.getSpatialInfo();
+        if( !compareSpatialInfo(spatialInfo2, readinfo2))
+        {
+            return 1;
+        }
+        
+        if( io.getAttributeTableChunkSize(1) != kealib::KEA_ATT_CHUNK_SIZE )
+        {
+            std::cout << "Attribute chunk size does not match" << std::endl;
+            return 1;
+        }
+        
+        if( io.getNumOfImageBands() != 2)
+        {
+            std::cout << "Wrong number of image bands" << std::endl;
+            return 1; 
+        }
+        
+        if( io.getImageBlockSize(1) != 100 ) // smaller than KEA_IMAGE_CHUNK_SIZE
+        {
+            std::cout << "image block size does not match" << std::endl;
             return 1;
         }
         
