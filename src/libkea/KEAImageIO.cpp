@@ -1850,7 +1850,7 @@ namespace kealib{
             } 
             catch ( const H5::Exception &e) 
             {
-                throw KEAIOException("Could not get image block size.");
+                throw KEAIOException("Could not get attribute table block size.");
             }            
         }
         catch(const KEAIOException &e)
@@ -1933,7 +1933,6 @@ namespace kealib{
     
     void KEAImageIO::setImageBandLayerType(uint32_t band, KEALayerType imgLayerType)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1945,14 +1944,13 @@ namespace kealib{
         try 
         {
             uint32_t value = (uint32_t)imgLayerType;
-            H5::DataSet datasetImgLT = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_TYPE );
-            datasetImgLT.write(&value, H5::PredType::NATIVE_UINT32);
-            datasetImgLT.close();
-            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+            auto datasetImgLT = this->keaImgFile->getDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_TYPE );
+            datasetImgLT.write(value);
+            this->keaImgFile->flush();
         } 
-        catch ( const H5::Exception &e) 
+        catch ( const HighFive::Exception &e) 
         {
-            throw KEAIOException("The image band data type was not specified.");
+            throw KEAIOException(e.what());
         }
         catch ( const KEAIOException &e)
         {
@@ -1962,12 +1960,10 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     KEALayerType KEAImageIO::getImageBandLayerType(uint32_t band)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1978,19 +1974,13 @@ namespace kealib{
         KEALayerType imgLayerType = kea_continuous;
         
         // READ IMAGE LAYER TYPE
+        uint32_t value;
         try 
         {
-            hsize_t dimsValue[1];
-            dimsValue[0] = 1;
-            H5::DataSpace valueDataSpace(1, dimsValue);
-            uint32_t value[1];
-            H5::DataSet datasetImgLT = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_TYPE );
-            datasetImgLT.read(value, H5::PredType::NATIVE_UINT32, valueDataSpace);
-            imgLayerType = (KEALayerType)value[0];
-            datasetImgLT.close();
-            valueDataSpace.close();
+            auto datasetImgLT = this->keaImgFile->getDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_TYPE );
+            datasetImgLT.read(value);
         } 
-        catch ( const H5::Exception &e) 
+        catch ( const HighFive::Exception &e) 
         {
             throw KEAIOException("The image band data type was not specified.");
         }
@@ -2003,13 +1993,11 @@ namespace kealib{
             throw KEAIOException(e.what());
         }
         
-        return imgLayerType;
-        */
+        return (KEALayerType)value;
     }
     
     void KEAImageIO::setImageBandClrInterp(uint32_t band, KEABandClrInterp imgLayerClrInterp)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2019,21 +2007,22 @@ namespace kealib{
         
         // WRITE IMAGE LAYER USAGE
         uint32_t value = (uint32_t) imgLayerClrInterp;
+        std::string datasetName = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_USAGE;
         try 
         {
-            H5::DataSet datasetImgLU = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_USAGE );
-            datasetImgLU.write(&value, H5::PredType::NATIVE_UINT32);
-            datasetImgLU.close();
-            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+            if( !this->keaImgFile->exist(datasetName) )
+            {
+                keaImgFile->createDataSet<uint32_t>(datasetName, value);
+            }
+            else
+            {
+                auto dataset = keaImgFile->getDataSet(datasetName);
+                dataset.write(value);
+            }
         } 
-        catch ( const H5::Exception &e) 
+        catch ( const HighFive::Exception &e) 
         {
-            hsize_t dimsUsage[1];
-            dimsUsage[0] = 1;
-            H5::DataSpace usageDataSpace(1, dimsUsage);
-            H5::DataSet usageDataset = this->keaImgFile->createDataSet((KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_USAGE), H5::PredType::STD_U8LE, usageDataSpace);
-            usageDataset.write( &value, H5::PredType::NATIVE_UINT32 );
-            usageDataset.close();
+            throw KEAIOException(e.what());
         }
         catch ( const KEAIOException &e)
         {
@@ -2043,12 +2032,10 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     KEABandClrInterp KEAImageIO::getImageBandClrInterp(uint32_t band)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2059,17 +2046,13 @@ namespace kealib{
         KEABandClrInterp imgLayerClrInterp = kea_generic;
         
         // READ IMAGE LAYER USAGE
+        std::string datasetName = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_USAGE;
         try 
         {
-            hsize_t dimsValue[1];
-            dimsValue[0] = 1;
-            H5::DataSpace valueDataSpace(1, dimsValue);
-            uint32_t value[1];
-            H5::DataSet datasetImgLU = this->keaImgFile->openDataSet( KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_USAGE );
-            datasetImgLU.read(value, H5::PredType::NATIVE_UINT32, valueDataSpace);
-            imgLayerClrInterp = (KEABandClrInterp)value[0];
-            datasetImgLU.close();
-            valueDataSpace.close();
+            auto dataset = keaImgFile->getDataSet(datasetName);
+            uint32_t value;
+            dataset.read(value);
+            imgLayerClrInterp = (KEABandClrInterp)value;
         } 
         catch ( const H5::Exception &e) 
         {
@@ -2086,7 +2069,6 @@ namespace kealib{
         }
         
         return imgLayerClrInterp;
-        */
     }
     
     void KEAImageIO::createOverview(uint32_t band, uint32_t overview, uint64_t xSize, uint64_t ySize)

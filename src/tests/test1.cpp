@@ -249,9 +249,17 @@ int main()
             return 1;
         }
         
+        io.setImageBandLayerType(2, kealib::kea_thematic);
+        std::cout << "set layer type" << std::endl;
+        
+        io.setImageBandClrInterp(2, kealib::kea_redband);
+        std::cout << "set layer colour interp" << std::endl;
+       
+        
         io.close();
 
 
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         std::cout << "Opening file" << std::endl;
         h5file = kealib::KEAImageIO::openKeaH5RDOnly(test_kea_file);
         io.openKEAImageHeader(h5file);
@@ -454,6 +462,24 @@ int main()
         if( io.getImageBlockSize(1) != 100 ) // smaller than KEA_IMAGE_CHUNK_SIZE
         {
             std::cout << "image block size does not match" << std::endl;
+            return 1;
+        }
+        
+        // band 2 should be the default (kea_continuous)
+        // but we changed band 1
+        if( (io.getImageBandLayerType(1) != kealib::kea_continuous) ||
+            (io.getImageBandLayerType(2) != kealib::kea_thematic) )
+        {
+            std::cout << "layer types do not match" << std::endl;
+            return 1;
+        }
+        
+        // band 2 should be the default (kea_generic) but 
+        // we changed band 1
+        if( ( io.getImageBandClrInterp(1) != kealib::kea_generic) ||
+            (io.getImageBandClrInterp(2) != kealib::kea_redband))
+        {
+            std::cout << "colour interp does not match" << std::endl;
             return 1;
         }
         
