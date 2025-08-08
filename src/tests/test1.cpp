@@ -254,7 +254,28 @@ int main()
         
         io.setImageBandClrInterp(2, kealib::kea_redband);
         std::cout << "set layer colour interp" << std::endl;
+        
+        if( (io.getNumOfOverviews(1) != 0) || (io.getNumOfOverviews(2) != 0))
+        {
+            std::cout << "should be zero overviews" << std::endl;
+            return 1; 
+        }
+        
+        io.createOverview(1, 0, 50, 100);
+        io.createOverview(1, 1, 25, 50);
+        if( io.getNumOfOverviews(1) != 2 )
+        {
+            std::cout << "should be 2 overviews" << std::endl;
+            return 1;
+        }
        
+        io.createOverview(2, 0, 50, 100);
+        io.removeOverview(2, 0);
+        if( io.getNumOfOverviews(2) != 0 )
+        {
+            std::cout << "should be 2 overviews" << std::endl;
+            return 1;
+        }
         
         io.close();
 
@@ -480,6 +501,37 @@ int main()
             (io.getImageBandClrInterp(2) != kealib::kea_redband))
         {
             std::cout << "colour interp does not match" << std::endl;
+            return 1;
+        }
+
+        // overviews        
+        if( io.getNumOfOverviews(1) != 2 )
+        {
+            std::cout << "should be 2 overviews" << std::endl;
+            return 1;
+        }
+        if(io.getNumOfOverviews(2) != 0)
+        {
+            std::cout << "should be 0 overviews" << std::endl;
+            return 1;
+        }
+        if( io.getOverviewBlockSize(1, 0) != 50)
+        {
+            std::cout << "wrong overview block size" << std::endl;
+            return 1;
+        }
+        
+        uint64_t xsize, ysize;
+        io.getOverviewSize(1, 0, &xsize, &ysize);
+        if( (xsize != 50) || (ysize != 100))
+        {
+            std::cout << "wrong overview size" << std::endl;
+            return 1;
+        }
+        io.getOverviewSize(1, 1, &xsize, &ysize);
+        if( (xsize != 25) || (ysize != 50))
+        {
+            std::cout << "wrong overview size" << std::endl;
             return 1;
         }
         

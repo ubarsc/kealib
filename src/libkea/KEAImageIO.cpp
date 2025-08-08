@@ -2073,7 +2073,6 @@ namespace kealib{
     
     void KEAImageIO::createOverview(uint32_t band, uint32_t overview, uint64_t xSize, uint64_t ySize)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2083,91 +2082,56 @@ namespace kealib{
         
         std::string overviewName = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_OVERVIEWSNAME_OVERVIEW + uint2Str(overview);
                 
-        try 
+        if( this->keaImgFile->exist(overviewName))
         {
-            // Try to open dataset with overviewName
-            H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( overviewName );
             this->keaImgFile->unlink(overviewName);
         }
-        catch (const H5::Exception &e)
-        {
-            // Do nothing as dataset does not exist.
-        }
+
+        // Find the smallest axis of the image.
+        uint32_t imageBlockSize = this->getImageBlockSize(band);
+        uint64_t minImgDim = xSize < ySize ? xSize : ySize;
+        uint32_t blockSize2Use =
+                imageBlockSize > minImgDim ? minImgDim : imageBlockSize;
         
         try 
         {
             KEADataType imgDataType = this->getImageBandDataType(band);
-            
-            H5::DataType imgBandDT = convertDatatypeKeaToH5STD(imgDataType);
-            int initFillVal = 0;
-            
-            hsize_t imageBandDims[2];
-            imageBandDims[0] = ySize;
-            imageBandDims[1] = xSize;
-            H5::DataSpace imgBandDataSpace(2, imageBandDims);
-            
-            hsize_t dimsImageBandChunk[2];
-            // Make sure that the chuck size is not bigger than the dataset.
-            uint32_t imgBlockSize = this->getImageBlockSize(band);
-            uint64_t smallestAxis = 0;
-            if(xSize < ySize)
-            {
-                smallestAxis = xSize;
-            }
-            else
-            {
-                smallestAxis = ySize;
-            }
-            if(smallestAxis < imgBlockSize)
-            {
-                dimsImageBandChunk[0] = smallestAxis;
-                dimsImageBandChunk[1] = smallestAxis;
-            }
-            else
-            {
-                dimsImageBandChunk[0] = imgBlockSize;
-                dimsImageBandChunk[1] = imgBlockSize;
-            }
-			
-            
-            H5::DSetCreatPropList initParamsImgBand;
-			initParamsImgBand.setChunk(2, dimsImageBandChunk);			
-			initParamsImgBand.setShuffle();
-            initParamsImgBand.setDeflate(KEA_DEFLATE);
-			initParamsImgBand.setFillValue( H5::PredType::NATIVE_INT, &initFillVal);
-            
-            H5::StrType strdatatypeLen6(H5::PredType::C_S1, 6);
-            H5::StrType strdatatypeLen4(H5::PredType::C_S1, 4);
-            const H5std_string strClassVal ("IMAGE");
-            const H5std_string strImgVerVal ("1.2");
-            H5::DataSpace attr_dataspace = H5::DataSpace(H5S_SCALAR);
-                        
+
+            HighFive::DataSpace dataSpace = HighFive::DataSpace({ySize, xSize});
+            HighFive::DataType dataTypeH5 = convertDatatypeKeaToH5STD(imgDataType);
+
+            HighFive::DataSetCreateProps imgBandDataSetProps;
+            imgBandDataSetProps.add(HighFive::Chunking(blockSize2Use, blockSize2Use));
+            imgBandDataSetProps.add(HighFive::Shuffle());
+            // HOW TO Add a FILL VALUE?
+
+            HighFive::DataSetAccessProps imgBandAccessProps =
+                    HighFive::DataSetAccessProps::Default();
+
             // CREATE THE IMAGE DATA ARRAY
-            H5::DataSet imgBandDataSet = this->keaImgFile->createDataSet(overviewName, imgBandDT, imgBandDataSpace, initParamsImgBand);
+            HighFive::DataSet imgBandDataSet = this->keaImgFile->createDataSet(
+                overviewName,
+                dataSpace,
+                dataTypeH5,
+                imgBandDataSetProps,
+                imgBandAccessProps
+            );
+
+            imgBandDataSet.createAttribute<char[6]>(KEA_ATTRIBUTENAME_CLASS, "IMAGE");
+            imgBandDataSet.createAttribute<char[4]>(
+                KEA_ATTRIBUTENAME_IMAGE_VERSION,
+                "1.2"
+            );
+            imgBandDataSet.createAttribute<uint16_t>(
+                KEA_ATTRIBUTENAME_BLOCK_SIZE,
+                blockSize2Use
+            );
             
-            H5::Attribute classAttribute = imgBandDataSet.createAttribute(KEA_ATTRIBUTENAME_CLASS, strdatatypeLen6, attr_dataspace);
-            classAttribute.write(strdatatypeLen6, strClassVal); 
-            classAttribute.close();
-            
-            H5::Attribute imgVerAttribute = imgBandDataSet.createAttribute(KEA_ATTRIBUTENAME_IMAGE_VERSION, strdatatypeLen4, attr_dataspace);
-            imgVerAttribute.write(strdatatypeLen4, strImgVerVal);
-            imgVerAttribute.close();
-            
-            H5::Attribute blockSizeAttribute = imgBandDataSet.createAttribute(KEA_ATTRIBUTENAME_BLOCK_SIZE, H5::PredType::STD_U16LE, attr_dataspace);
-            uint32_t blockSizeTmp = dimsImageBandChunk[0]; // copy into a temporary variable to write to the file - fixing a bug on solaris.
-            blockSizeAttribute.write(H5::PredType::NATIVE_UINT32, &blockSizeTmp);
-            blockSizeAttribute.close();
-            
-            imgBandDataSet.close();
-            
-            attr_dataspace.close();
-            imgBandDataSet.close();
-            
-            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+            this->keaImgFile->flush();
         }
-        catch (const H5::Exception &e)
+        catch (const HighFive::Exception &e)
         {
-            throw KEAIOException(e.getCDetailMsg());
+            throw KEAIOException(e.what());
         }
         catch ( const KEAIOException &e)
         {
@@ -2177,12 +2141,10 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     void KEAImageIO::removeOverview(uint32_t band, uint32_t overview)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2195,11 +2157,11 @@ namespace kealib{
         try 
         {
             // Try to open dataset with overviewName
-            H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( overviewName );
+            auto imgBandDataset = this->keaImgFile->getDataSet( overviewName );
             this->keaImgFile->unlink(overviewName);
-            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+            this->keaImgFile->flush();
         }
-        catch (const H5::Exception &e)
+        catch (const HighFive::Exception &e)
         {
             // Do nothing as dataset does not exist.
         }
@@ -2211,12 +2173,10 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     uint32_t KEAImageIO::getOverviewBlockSize(uint32_t band, uint32_t overview)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2242,13 +2202,14 @@ namespace kealib{
             try 
             {
                 std::string overviewName = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_OVERVIEWSNAME_OVERVIEW + uint2Str(overview);
-                H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( overviewName );
-                H5::Attribute blockSizeAtt = imgBandDataset.openAttribute(KEA_ATTRIBUTENAME_BLOCK_SIZE);
-                blockSizeAtt.read(H5::PredType::NATIVE_UINT32, &ovBlockSize);
-                imgBandDataset.close();
-                blockSizeAtt.close();
+                auto imgBandDataset = this->keaImgFile->getDataSet( overviewName );
+                
+                auto imgBandBlockSizeAttribute = imgBandDataset.getAttribute(
+                      KEA_ATTRIBUTENAME_BLOCK_SIZE
+                );
+                imgBandBlockSizeAttribute.read(ovBlockSize);
             } 
-            catch ( const H5::Exception &e) 
+            catch ( const HighFive::Exception &e) 
             {
                 throw KEAIOException("Could not retrieve the overview block size.");
             }            
@@ -2257,29 +2218,12 @@ namespace kealib{
         {
             throw e;
         }
-        catch( const H5::FileIException &e )
+        catch( const HighFive::Exception &e )
 		{
-			throw KEAIOException(e.getCDetailMsg());
+			throw KEAIOException(e.what());
 		}
-		catch( const H5::DataSetIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataSpaceIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataTypeIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-        catch ( const std::exception &e)
-        {
-            throw KEAIOException(e.what());
-        }
         
         return ovBlockSize;
-        */
     }
     
     void KEAImageIO::writeToOverview(uint32_t band, uint32_t overview, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
@@ -2513,7 +2457,6 @@ namespace kealib{
     
     uint32_t KEAImageIO::getNumOfOverviews(uint32_t band)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2525,11 +2468,10 @@ namespace kealib{
         uint32_t numOverviews = 0;
         try 
         {
-            // Try to open dataset with overviewName
-            H5::Group imgOverviewsGrp = this->keaImgFile->openGroup(overviewGroupName);
-            numOverviews = imgOverviewsGrp.getNumObjs();
+            auto group = this->keaImgFile->getGroup(overviewGroupName);
+            numOverviews = group.getNumberObjects();
         }
-        catch (const H5::Exception &e)
+        catch (const HighFive::Exception &e)
         {
             throw KEAIOException("Could not retrieve the number of image band overviews.");
         }
@@ -2543,12 +2485,10 @@ namespace kealib{
         }
         
         return numOverviews;
-        */
     }
     
     void KEAImageIO::getOverviewSize(uint32_t band, uint32_t overview, uint64_t *xSize, uint64_t *ySize)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2572,32 +2512,28 @@ namespace kealib{
             try 
             {
                 std::string overviewName = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_OVERVIEWSNAME_OVERVIEW + uint2Str(overview);
-                H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( overviewName );
-                H5::DataSpace imgBandDataspace = imgBandDataset.getSpace();                
+                auto imgBandDataset = this->keaImgFile->getDataSet( overviewName );
                 
-                uint32_t nDims = imgBandDataspace.getSimpleExtentNdims();
-                if(nDims != 2)
+                auto dims = imgBandDataset.getDimensions();
+                
+                if(dims.size() != 2)
                 {
                     throw KEAIOException("The number of dimensions for the overview must be 2.");
                 }
-                hsize_t dims[2];
-                imgBandDataspace.getSimpleExtentDims(dims);
                 
                 *xSize = dims[1];
                 *ySize = dims[0];
-
-                imgBandDataset.close();
             } 
             catch(const KEAIOException &e)
             {
                 throw e;
             }
-            catch ( const H5::Exception &e) 
+            catch ( const HighFive::Exception &e) 
             {
                 throw KEAIOException("Could not read from image overview.");
             }            
         }
-        catch( const H5::Exception &e )
+        catch( const HighFive::Exception &e )
 		{
 			throw KEAIOException("Could not get the overview size.");
 		}
@@ -2609,7 +2545,6 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     KEAAttributeTable* KEAImageIO::getAttributeTable(KEAATTType type, uint32_t band)
