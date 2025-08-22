@@ -131,6 +131,8 @@ namespace kealib{
         static HighFive::File* openKeaH5RW(const std::string &fileName, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE);
         static HighFive::File* openKeaH5RDOnly(const std::string &fileName, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE);
         virtual ~KEAImageIO();
+        
+        static HighFive::CompoundType createGCPCompType();
 
     protected:
         /********** STATIC PROTECTED **********/
@@ -165,7 +167,6 @@ namespace kealib{
          */
         static void setNumImgBandsInFileMetadata(HighFive::File *keaImgH5File, const uint32_t numImgBands);
 
-        static HighFive::CompoundType createGCPCompType();
         
         //static std::string readString(H5::DataSet& dataset, H5::DataType strDataType);
         

@@ -232,7 +232,45 @@ int main()
         io.undefineNoDataValue(2);
         std::cout << "Wrote nodata" << std::endl;
 
-        // Pete: skipping the GCPs for now
+        std::vector<kealib::KEAImageGCP*> gcps;
+        kealib::KEAImageGCP *pgcp1 = new kealib::KEAImageGCP();
+        pgcp1->pszId = "id1";
+        pgcp1->pszInfo = "info1";
+        pgcp1->dfGCPPixel = 10.1;
+        pgcp1->dfGCPLine = 29.3;
+        pgcp1->dfGCPX = 10090.0;
+        pgcp1->dfGCPY = -231122.1;
+        pgcp1->dfGCPZ = 99.1;
+        gcps.push_back(pgcp1);
+        kealib::KEAImageGCP *pgcp2 = new kealib::KEAImageGCP();
+        pgcp2->pszId = "id1";
+        pgcp2->pszInfo = "info1";
+        pgcp2->dfGCPPixel = 11.1;
+        pgcp2->dfGCPLine = 24.3;
+        pgcp2->dfGCPX = 10091.0;
+        pgcp2->dfGCPY = -231111.1;
+        pgcp2->dfGCPZ = 90.1;
+        gcps.push_back(pgcp2);
+        io.setGCPs(&gcps, "WKT1");
+        std::cout << "wrote gcps" << std::endl;
+        
+        if( io.getGCPProjection() != "WKT1" )
+        {
+            std::cout << "GCP Projection not correctly read" << std::endl;
+            return 1;
+        }
+        
+        if( io.getGCPCount() != 2 )
+        {
+            std::cout << "Wrong number of GCPs read" << std::endl;
+            return 1;
+        }
+        
+        for( auto itr = gcps.begin(); itr != gcps.end(); itr++)
+        {
+            delete *itr;
+        }
+
         io.setGCPProjection("KmKmqw");
         std::cout << "Wrote GCP Proj" << std::endl;
         
@@ -461,6 +499,14 @@ int main()
             std::cout << "GCP Projection not correctly read" << std::endl;
             return 1;
         }
+        
+        if( io.getGCPCount() != 2 )
+        {
+            std::cout << "Wrong number of GCPs read" << std::endl;
+            return 1;
+        }
+        
+        // TODO: check GCPs
         
         auto readinfo2 = io.getSpatialInfo();
         if( !compareSpatialInfo(spatialInfo2, readinfo2))

@@ -33,9 +33,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-namespace kealib{
+HIGHFIVE_REGISTER_TYPE(kealib::KEAImageGCP_HDF5, kealib::KEAImageIO::createGCPCompType)
 
-    //HIGHFIVE_REGISTER_TYPE(KEAImageGCP, kealib::KEAImageIO::createGCPCompType)
+namespace kealib{
 
     static void* kealibmalloc(size_t nSize, void* ignored)
     {
@@ -1482,12 +1482,29 @@ namespace kealib{
         
         uint32_t numGCPs = gcps->size();
         
-        std::vector<KEAImageGCP> mygcps;
-        
         KEAImageGCP_HDF5 *gcpsHDF = new KEAImageGCP_HDF5[numGCPs];
+        uint32_t i = 0;
         for(auto iterGCP = gcps->begin(); iterGCP != gcps->end(); ++iterGCP)
         {
-            mygcps.push_back(*(*iterGCP));
+            // Copy the char from one to the other for PSZ ID.
+            const size_t lenPSZId = strlen((*iterGCP)->pszId.c_str());
+            gcpsHDF[i].pszId = new char[lenPSZId + 1];
+            strncpy(gcpsHDF[i].pszId, (*iterGCP)->pszId.c_str(), lenPSZId);
+            gcpsHDF[i].pszId[lenPSZId] = '\0';
+            
+            // Copy the char from one to the other for PSZ INFO.
+            const size_t lenPSZInfo = strlen((*iterGCP)->pszInfo.c_str());
+            gcpsHDF[i].pszInfo = new char[lenPSZInfo + 1];
+            strncpy(gcpsHDF[i].pszInfo, (*iterGCP)->pszInfo.c_str(), lenPSZInfo);
+            gcpsHDF[i].pszInfo[lenPSZInfo] = '\0';
+            
+            gcpsHDF[i].dfGCPPixel = (*iterGCP)->dfGCPPixel;
+            gcpsHDF[i].dfGCPLine = (*iterGCP)->dfGCPLine;
+            gcpsHDF[i].dfGCPX = (*iterGCP)->dfGCPX;
+            gcpsHDF[i].dfGCPY = (*iterGCP)->dfGCPY;
+            gcpsHDF[i].dfGCPZ = (*iterGCP)->dfGCPZ;            
+            
+            ++i;
         }
         
         try
@@ -1506,7 +1523,7 @@ namespace kealib{
                     gcpsDataset.resize(dims);
                 }
                 
-                //gcpsDataset.write(mygcps);
+                gcpsDataset.write(gcpsHDF);
             }
             else
             {
@@ -1521,7 +1538,7 @@ namespace kealib{
                 fieldDtMem.commit(*this->keaImgFile, "GCPType");
 
                 auto gcpsDataset = this->keaImgFile->createDataSet(KEA_GCPS_DATA, gcpsDataSpace, fieldDtMem, creationGCPsDSPList);
-                //gcpsDataset.write(mygcps);
+                gcpsDataset.write(gcpsHDF);
             }
             
             
@@ -1551,6 +1568,14 @@ namespace kealib{
             throw KEAIOException(e.what());
         }
         
+        for(uint32_t j = 0; j < i; j++)
+        {
+            delete[] gcpsHDF[j].pszId;
+            delete[] gcpsHDF[j].pszInfo;
+        }
+        
+        delete[] gcpsHDF;
+                
         // Set the projection string
         try
         {
@@ -1568,7 +1593,6 @@ namespace kealib{
     
     uint32_t KEAImageIO::getGCPCount()
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1580,23 +1604,15 @@ namespace kealib{
         uint32_t numGCPs = 0;
         try
         {
-            hsize_t dimsValue[1];
-            dimsValue[0] = 1;
-            H5::DataSpace valueDataSpace(1, dimsValue);
-            uint32_t value[1];
-            H5::DataSet datasetNumGCPs = this->keaImgFile->openDataSet( KEA_GCPS_NUM );
-            datasetNumGCPs.read(value, H5::PredType::NATIVE_UINT32, valueDataSpace);
-            numGCPs = value[0];
-            datasetNumGCPs.close();
-            valueDataSpace.close();
+            auto numBandsDataset = this->keaImgFile->getDataSet(KEA_GCPS_NUM);
+            numBandsDataset.read(numGCPs);
         }
-        catch ( const H5::Exception &e)
+        catch ( const HighFive::Exception &e)
         {
-            throw KEAIOException("The number of image bands was not specified.");
+            throw KEAIOException("Unable to read number of GCPs");
         }
         
         return numGCPs;
-        */
     }
     
     std::string KEAImageIO::getGCPProjection()
@@ -3637,8 +3653,8 @@ namespace kealib{
         try
         {
             std::vector<HighFive::CompoundType::member_def> members;
-            members.push_back(HighFive::CompoundType::member_def(KEA_GCPS_PSZID, HighFive::AtomicType<std::string>()));
-            members.push_back(HighFive::CompoundType::member_def(KEA_GCPS_PSZINFO, HighFive::AtomicType<std::string>()));
+            members.push_back(HighFive::CompoundType::member_def(KEA_GCPS_PSZID, HighFive::VariableLengthStringType()));
+            members.push_back(HighFive::CompoundType::member_def(KEA_GCPS_PSZINFO, HighFive::VariableLengthStringType()));
             members.push_back(HighFive::CompoundType::member_def(KEA_GCPS_DFPIXEL, HighFive::AtomicType<double>()));
             members.push_back(HighFive::CompoundType::member_def(KEA_GCPS_DFLINE, HighFive::AtomicType<double>()));
             members.push_back(HighFive::CompoundType::member_def(KEA_GCPS_DFX, HighFive::AtomicType<double>()));
