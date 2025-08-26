@@ -1363,7 +1363,6 @@ namespace kealib{
     
     std::vector<KEAImageGCP*>* KEAImageIO::getGCPs()
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -1373,24 +1372,16 @@ namespace kealib{
         
         std::vector<KEAImageGCP*> *gcps = new std::vector<KEAImageGCP*>();
         
-        
         try
         {            
             uint32_t numGCPs = 0;
             // Get the number of GCPs
             try
             {
-                hsize_t dimsValue[1];
-                dimsValue[0] = 1;
-                H5::DataSpace valueDataSpace(1, dimsValue);
-                uint32_t value[1];
-                H5::DataSet datasetNumGCPs = this->keaImgFile->openDataSet( KEA_GCPS_NUM );
-                datasetNumGCPs.read(value, H5::PredType::NATIVE_UINT32, valueDataSpace);
-                numGCPs = value[0];
-                datasetNumGCPs.close();
-                valueDataSpace.close();
+                auto numBandsDataset = this->keaImgFile->getDataSet(KEA_GCPS_NUM);
+                numBandsDataset.read(numGCPs);
             }
-            catch (const H5::Exception &e)
+            catch (const HighFive::Exception &e)
             {
                 throw KEAIOException("Could not read the number of GCPs.");
             }
@@ -1407,32 +1398,21 @@ namespace kealib{
             
             try
             {
-                H5::CompType *fieldDtMem = this->createGCPCompTypeMem();
-                H5::DataSet gcpsDataset = this->keaImgFile->openDataSet( KEA_GCPS_DATA );
-                
-                H5::DataSpace gcpsDataspace = gcpsDataset.getSpace();
-                hsize_t boolFieldOff[1];
-                boolFieldOff[0] = 0;
-                
-                hsize_t boolFieldsDims[1];
-                boolFieldsDims[0] = numGCPs;
-                H5::DataSpace gcpsMemspace(1, boolFieldsDims);
-                
-                gcpsDataspace.selectHyperslab( H5S_SELECT_SET, boolFieldsDims, boolFieldOff );
-                H5::DSetMemXferPropList xfer;
-                // Ensures that malloc()/free() are from the same C runtime
-                xfer.setVlenMemManager(kealibmalloc, nullptr, kealibfree, nullptr);
-                gcpsDataset.read(gcpsHDF, *fieldDtMem, gcpsMemspace, gcpsDataspace, xfer);
-                
-                gcpsDataset.close();
-                gcpsDataspace.close();
-                gcpsMemspace.close();
-                
-                delete fieldDtMem;
+                // Open the GCPs dataset 
+                auto fieldDtMem = this->createGCPCompType();
+                if( this->keaImgFile->exist(KEA_GCPS_DATA))
+                {
+                    auto gcpsDataset = this->keaImgFile->getDataSet(KEA_GCPS_DATA);
+                    gcpsDataset.read(gcpsHDF);
+                }
+                else
+                {
+                    throw KEAIOException("Unable to read GCPs");
+                }
             }
-            catch( const H5::Exception &e )
+            catch( const HighFive::Exception &e )
             {
-                throw KEAIOException(e.getDetailMsg());
+                throw KEAIOException(e.what());
             }
             
             KEAImageGCP *tmpGCP = nullptr;
@@ -1453,9 +1433,9 @@ namespace kealib{
             
             delete[] gcpsHDF;
         }
-        catch (const H5::Exception &e)
+        catch (const HighFive::Exception &e)
         {
-            throw KEAIOException(e.getCDetailMsg());
+            throw KEAIOException(e.what());
         }
         catch ( const KEAIOException &e)
         {
@@ -1467,12 +1447,10 @@ namespace kealib{
         }
         
         return gcps;
-        */
     }
     
     void KEAImageIO::setGCPs(std::vector<KEAImageGCP*> *gcps, const std::string &projWKT)
     {
-        // Pete: I can't work out this compound data type stuff...
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)

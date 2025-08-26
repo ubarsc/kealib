@@ -83,18 +83,70 @@ bool compareSpatialInfo(kealib::KEAImageSpatialInfo *p1, kealib::KEAImageSpatial
     return true;
 }
 
+bool compareGCPs(std::vector<kealib::KEAImageGCP*>* g1, std::vector<kealib::KEAImageGCP*>* g2)
+{
+    if( g1->size() != g2->size() )
+    {
+        std::cout << "count of gcps don't match" << std::endl;
+        return false;
+    }
+    
+    for( size_t n = 0; n < g1->size(); n++ )
+    {
+        kealib::KEAImageGCP* e1 = g1->at(n);
+        kealib::KEAImageGCP* e2 = g2->at(n);
+        if(e1->pszId != e2->pszId)
+        {
+            std::cout << "pszId does not match" << std::endl;
+            return false;
+        }
+        if(e1->pszInfo != e2->pszInfo)
+        {
+            std::cout << "pszInfo does not match" << std::endl;
+            return false;
+        }
+        if(e1->dfGCPPixel != e2->dfGCPPixel)
+        {
+            std::cout << "dfGCPPixel does not match" << std::endl;
+            return false;
+        }
+        if(e1->dfGCPLine != e2->dfGCPLine)
+        {
+            std::cout << "dfGCPLine does not match" << std::endl;
+            return false;
+        }
+        if(e1->dfGCPX != e2->dfGCPX)
+        {
+            std::cout << "dfGCPX does not match" << std::endl;
+            return false;
+        }
+        if(e1->dfGCPY != e2->dfGCPY)
+        {
+            std::cout << "dfGCPY does not match" << std::endl;
+            return false;
+        }
+        if(e1->dfGCPZ != e2->dfGCPZ)
+        {
+            std::cout << "dfGCPZ does not match" << std::endl;
+            return false;
+        }
+    }
+    
+    return true;
+}
+
 int main()
 {
     try
     {
-        auto spatialInfo = new kealib::KEAImageSpatialInfo();
-        spatialInfo->tlX = 10.0;
-        spatialInfo->tlY = 100.0;
-        spatialInfo->xRes = 1.0;
-        spatialInfo->yRes = -1.0;
-        spatialInfo->xRot = 5.0;
-        spatialInfo->yRot = 2.0;
-        spatialInfo->wktString = "Hello World";
+        auto spatialInfo = kealib::KEAImageSpatialInfo();
+        spatialInfo.tlX = 10.0;
+        spatialInfo.tlY = 100.0;
+        spatialInfo.xRes = 1.0;
+        spatialInfo.yRes = -1.0;
+        spatialInfo.xRot = 5.0;
+        spatialInfo.yRot = 2.0;
+        spatialInfo.wktString = "Hello World";
 
         auto bandDescrips = std::vector<std::string>(2);
         bandDescrips[0] = "Band 1 Name";
@@ -107,7 +159,7 @@ int main()
         std::cout << "Creating file" << std::endl;
         HighFive::File *h5file = kealib::KEAImageIO::createKEAImage(test_kea_file,
                         kealib::kea_8uint, IMG_XSIZE, IMG_YSIZE, 2,
-                        &bandDescrips, spatialInfo);
+                        &bandDescrips, &spatialInfo);
         std::cout << "Created file" << std::endl;
 
         delete h5file;
@@ -130,20 +182,20 @@ int main()
         io.openKEAImageHeader(h5file);
         
         auto readinfo = io.getSpatialInfo();
-        if( !compareSpatialInfo(spatialInfo, readinfo))
+        if( !compareSpatialInfo(&spatialInfo, readinfo))
         {
             return 1;
         }
         
-        auto spatialInfo2 = new kealib::KEAImageSpatialInfo();
-        spatialInfo->tlX = 11.0;
-        spatialInfo->tlY = 110.0;
-        spatialInfo->xRes = 1.5;
-        spatialInfo->yRes = -1.5;
-        spatialInfo->xRot = 5.1;
-        spatialInfo->yRot = 2.1;
-        spatialInfo->wktString = "Hello World2";
-        io.setSpatialInfo(spatialInfo2);
+        auto spatialInfo2 = kealib::KEAImageSpatialInfo();
+        spatialInfo.tlX = 11.0;
+        spatialInfo.tlY = 110.0;
+        spatialInfo.xRes = 1.5;
+        spatialInfo.yRes = -1.5;
+        spatialInfo.xRot = 5.1;
+        spatialInfo.yRot = 2.1;
+        spatialInfo.wktString = "Hello World2";
+        io.setSpatialInfo(&spatialInfo2);
         /*
         uint64_t subXSize = 50;
         uint64_t subYSize = 100;
@@ -266,11 +318,6 @@ int main()
             return 1;
         }
         
-        for( auto itr = gcps.begin(); itr != gcps.end(); itr++)
-        {
-            delete *itr;
-        }
-
         io.setGCPProjection("KmKmqw");
         std::cout << "Wrote GCP Proj" << std::endl;
         
@@ -507,9 +554,25 @@ int main()
         }
         
         // TODO: check GCPs
+        auto readgcps = io.getGCPs();
+        if(!compareGCPs(&gcps, readgcps))
+        {
+            std::cout << "GCPs don't match" << std::endl;
+            return 1;
+        }
+        
+        for( auto itr = gcps.begin(); itr != gcps.end(); itr++)
+        {
+            delete *itr;
+        }
+        for( auto itr = readgcps->begin(); itr != readgcps->end(); itr++)
+        {
+            delete *itr;
+        }
+        delete readgcps;
         
         auto readinfo2 = io.getSpatialInfo();
-        if( !compareSpatialInfo(spatialInfo2, readinfo2))
+        if( !compareSpatialInfo(&spatialInfo2, readinfo2))
         {
             return 1;
         }
