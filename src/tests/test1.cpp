@@ -362,6 +362,15 @@ int main()
             return 1;
         }
         
+        // write to overview
+        unsigned char *pOvData = (unsigned char*)calloc(50 * 100, sizeof(unsigned char));
+        for( uint64_t i = 0; i < (50 * 100); i++ )
+        {
+            pOvData[i] = rand() % 255;
+        }
+        std::cout << "write to overview" << std::endl;
+        io.writeToOverview(1, 0, pOvData, 0, 0, 50, 100, 50, 100, kealib::kea_8uint);
+        
         io.close();
 
 
@@ -643,6 +652,24 @@ int main()
             std::cout << "wrong overview size" << std::endl;
             return 1;
         }
+        
+        std::cout << "Reading some overview data" << std::endl;
+        unsigned char *pReadOvData = (unsigned char*)calloc(50 * 100, sizeof(unsigned char));
+        io.readFromOverview(1, 0, pReadOvData, 0, 0, 50, 100, 50, 100, kealib::kea_8uint);
+        std::cout << "Read some overview data" << std::endl;
+
+        std::cout << "Comparing overview written and read data" << std::endl;
+        for (uint64_t i = 0; i < (50 * 100); i++)
+        {
+            if (pReadOvData[i] != pOvData[i])
+            {
+                std::cout << "Error at " << i << std::endl;
+                return 1;
+            }
+        }
+        free(pOvData);
+        free(pReadOvData);
+        std::cout << "Overview compared" << std::endl;
         
         io.close();
 

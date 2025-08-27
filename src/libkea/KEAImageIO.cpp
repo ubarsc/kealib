@@ -51,25 +51,6 @@ namespace kealib{
     {
         this->fileOpen = false;
     }
-    /*
-    std::string KEAImageIO::readString(H5::DataSet& dataset, H5::DataType strDataType)
-    {
-        hid_t nativeVerStrType;
-        if((nativeVerStrType=H5Tget_native_type(strDataType.getId(), H5T_DIR_DEFAULT))<0)
-        {
-            throw KEAIOException("Could not define a native string type");
-        }
-        H5::DSetMemXferPropList xfer;
-        // Ensures that malloc()/free() are from the same C runtime
-        xfer.setVlenMemManager(kealibmalloc, nullptr, kealibfree, nullptr);
-        char* strData[1];
-        dataset.read((void*)strData, strDataType, H5::DataSpace::ALL, H5::DataSpace::ALL, xfer);
-        std::string ret = strData[0];
-        free(strData[0]);
-        H5Tclose(nativeVerStrType);
-        return ret;
-    }
-    */
 
     /**
      * Opens the header of the KEA image file and initializes relevant spatial and metadata attributes.
@@ -2222,7 +2203,6 @@ namespace kealib{
     
     void KEAImageIO::writeToOverview(uint32_t band, uint32_t overview, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2243,109 +2223,80 @@ namespace kealib{
             }
             
             // GET NATIVE DATASET
-            H5::DataType imgBandDT = convertDatatypeKeaToH5Native(inDataType);
+            auto imgBandDT = convertDatatypeKeaToH5Native(inDataType);
+            std::string overviewName = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_OVERVIEWSNAME_OVERVIEW + uint2Str(overview);
 
             // OPEN BAND DATASET AND WRITE IMAGE DATA
-            try 
+            if (this->keaImgFile->exist(overviewName))
             {
-                std::string overviewName = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_OVERVIEWSNAME_OVERVIEW + uint2Str(overview);
-                H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( overviewName );
-                H5::DataSpace imgBandDataspace = imgBandDataset.getSpace();                
-                
-                hsize_t imgOffset[2];
-                imgOffset[0] = yPxlOff;
-                imgOffset[1] = xPxlOff;
-                hsize_t dataDims[2];
-                dataDims[0] = ySizeBuf;
-                dataDims[1] = xSizeBuf;
-                H5::DataSpace write2BandDataspace = H5::DataSpace(2, dataDims);
-                
-                if((ySizeOut != ySizeBuf) | (xSizeOut != xSizeBuf))
-                {                    
-                    hsize_t dataSelectMemDims[2];
-                    dataSelectMemDims[0] = ySizeOut;
-                    dataSelectMemDims[1] = 1;
+                auto imgBandDataset = this->keaImgFile->getDataSet(overviewName);
+                std::vector<size_t> imgDataDims = imgBandDataset.getDimensions();
+                std::cout << "imgDataDims: " << imgDataDims[0] << ", " << imgDataDims[1]
+                        << std::endl;
 
-                    hsize_t dataOffDims[2];
-                    dataOffDims[0] = 0;
-                    dataOffDims[1] = 0;
+                if ((imgDataDims[1] != ySizeBuf) || (
+                        imgDataDims[0] != xSizeBuf))
+                {
+                    std::cout << "Writing subset of band " << band << " to overview." <<
+                            std::endl;
+                    std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
+                            << std::endl;
+                    std::cout << "xSizeOut: " << xSizeOut << ", ySizeOut: " << ySizeOut
+                            << std::endl;
+                    std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
+                            std::endl;
 
-                    hsize_t dataSelectStrideDims[2];
-                    dataSelectStrideDims[0] = 1;
-                    if(xSizeBuf == xSizeOut)
-                    {
-                        dataSelectStrideDims[1] = 1;
-                    }
-                    else
-                    {
-                        dataSelectStrideDims[1] = xSizeBuf - xSizeOut;
-                    }
-
-                    hsize_t dataSelectBlockSizeDims[2];
-                    dataSelectBlockSizeDims[0] = 1;
-                    dataSelectBlockSizeDims[1] = xSizeOut;
-                    write2BandDataspace.selectHyperslab(H5S_SELECT_SET, dataSelectMemDims, dataOffDims, dataSelectStrideDims, dataSelectBlockSizeDims);
-                    
-                    hsize_t dataOutDims[2];
-                    dataOutDims[0] = ySizeOut;
-                    dataOutDims[1] = xSizeOut;
-                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataOutDims, imgOffset);
+                    std::vector<size_t> startOffset = {yPxlOff, xPxlOff};
+                    std::vector<size_t> bufSize = {ySizeBuf, xSizeBuf};
+                    imgBandDataset.select(startOffset, bufSize).write_raw(
+                        data,
+                        imgBandDT
+                    );
                 }
                 else
                 {
-                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataDims, imgOffset);
+                    std::cout << "Writing band " << band << " to image." << std::endl;
+                    std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
+                            << std::endl;
+                    std::cout << "xSizeOut: " << xSizeOut << ", ySizeOut: " << ySizeOut
+                            << std::endl;
+                    std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
+                            std::endl;
+
+                    imgBandDataset.write_raw(data, imgBandDT);
                 }
-                
-                imgBandDataset.write( data, imgBandDT, write2BandDataspace, imgBandDataspace);
-                
-                imgBandDataset.close();
-                imgBandDataspace.close();
-                write2BandDataspace.close();
-            } 
-            catch ( const H5::Exception &e) 
-            {
-                throw KEAIOException("Could not write image data.");
+
+                // Flushing the dataset
+                this->keaImgFile->flush();
             }
-            
-            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+            else
+            { 
+                throw KEAIOException("Band overview dataset does not exist.");
+            }
         }
         catch(const KEAIOException &e)
         {
             throw e;
         }
-        catch( const H5::FileIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataSetIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataSpaceIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataTypeIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
+        catch (const HighFive::Exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
         catch ( const std::exception &e)
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     void KEAImageIO::readFromOverview(uint32_t band, uint32_t overview, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
         }
-        
+
         try 
         {
             // CHECK PARAMETERS PROVIDED FIT WITHIN IMAGE
@@ -2359,94 +2310,62 @@ namespace kealib{
             }
             
             // GET NATIVE DATASET
-            H5::DataType imgBandDT = convertDatatypeKeaToH5Native(inDataType);
+            auto imgBandDT = convertDatatypeKeaToH5Native(inDataType);
+            std::string overviewName = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_OVERVIEWSNAME_OVERVIEW + uint2Str(overview);
             
-            // OPEN BAND DATASET AND READ IMAGE DATA
-            try 
+            if (this->keaImgFile->exist(overviewName))
             {
-                std::string overviewName = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_OVERVIEWSNAME_OVERVIEW + uint2Str(overview);
-                H5::DataSet imgBandDataset = this->keaImgFile->openDataSet( overviewName );
-                H5::DataSpace imgBandDataspace = imgBandDataset.getSpace();                
-                
-                hsize_t dataOffset[2];
-                dataOffset[0] = yPxlOff;
-                dataOffset[1] = xPxlOff;
-                hsize_t dataDims[2];
-                dataDims[0] = ySizeBuf;
-                dataDims[1] = xSizeBuf;
-                H5::DataSpace read2BandDataspace = H5::DataSpace(2, dataDims);
-                
-                if((ySizeBuf != ySizeIn) | (xSizeBuf != xSizeIn))
+                auto imgBandDataset = this->keaImgFile->getDataSet(overviewName);
+                std::vector<size_t> imgDataDims = imgBandDataset.getDimensions();
+                if ((imgDataDims[1] != ySizeBuf) || (
+                        imgDataDims[0] != xSizeBuf))
                 {
-                    hsize_t dataSelectMemDims[2];
-                    dataSelectMemDims[0] = ySizeIn;
-                    dataSelectMemDims[1] = 1;
+                    std::cout << "Writing subset of band " << band << "overview" << overview << " to image." <<
+                            std::endl;
+                    std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
+                            << std::endl;
+                    std::cout << "xSizeIn: " << xSizeIn << ", ySizeIn: " << ySizeIn <<
+                            std::endl;
+                    std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
+                            std::endl;
 
-                    hsize_t dataOffDims[2];
-                    dataOffDims[0] = 0;
-                    dataOffDims[1] = 0;
-
-                    hsize_t dataSelectStrideDims[2];
-                    dataSelectStrideDims[0] = 1;
-                    if(xSizeBuf == xSizeIn)
-                    {
-                        dataSelectStrideDims[1] = 1;
-                    }
-                    else
-                    {
-                        dataSelectStrideDims[1] = xSizeBuf - xSizeIn;
-                    }
-
-                    hsize_t dataSelectBlockSizeDims[2];
-                    dataSelectBlockSizeDims[0] = 1;
-                    dataSelectBlockSizeDims[1] = xSizeIn;
-                    read2BandDataspace.selectHyperslab(H5S_SELECT_SET, dataSelectMemDims, dataOffDims, dataSelectStrideDims, dataSelectBlockSizeDims);
-                    
-                    hsize_t dataInDims[2];
-                    dataInDims[0] = ySizeIn;
-                    dataInDims[1] = xSizeIn;
-                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataInDims, dataOffset);
+                    std::vector<size_t> startOffset = {yPxlOff, xPxlOff};
+                    std::vector<size_t> bufSize = {ySizeBuf, xSizeBuf};
+                    imgBandDataset.select(startOffset, bufSize).read_raw(
+                        data,
+                        imgBandDT
+                    );
                 }
                 else
                 {
-                    imgBandDataspace.selectHyperslab( H5S_SELECT_SET, dataDims, dataOffset);
+                    std::cout << "Writing band " << band << "overview" << overview << " to image." << std::endl;
+                    std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
+                            << std::endl;
+                    std::cout << "xSizeIn: " << xSizeIn << ", ySizeIn: " << ySizeIn <<
+                            std::endl;
+                    std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
+                            std::endl;
+
+                    imgBandDataset.read_raw(data, imgBandDT);
                 }
-                imgBandDataset.read( data, imgBandDT, read2BandDataspace, imgBandDataspace);
-                
-                imgBandDataset.close();
-                imgBandDataspace.close();
-                read2BandDataspace.close();
-            } 
-            catch ( const H5::Exception &e) 
+            }
+            else
             {
-                throw KEAIOException("Could not read from image overview.");
-            }            
+                throw KEAIOException("Band image dataset does not exist.");
+            }
         }
         catch(const KEAIOException &e)
         {
             throw e;
         }
-        catch( const H5::FileIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataSetIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataSpaceIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
-		catch( const H5::DataTypeIException &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
+        catch (const HighFive::Exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
         catch ( const std::exception &e)
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     uint32_t KEAImageIO::getNumOfOverviews(uint32_t band)
