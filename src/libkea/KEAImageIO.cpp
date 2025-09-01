@@ -300,6 +300,8 @@ namespace kealib{
                     std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
                             std::endl;
 
+                    // TODO: stride
+
                     std::vector<size_t> startOffset = {yPxlOff, xPxlOff};
                     std::vector<size_t> bufSize = {ySizeBuf, xSizeBuf};
                     imgBandDataset.select(startOffset, bufSize).write_raw(
@@ -423,12 +425,10 @@ namespace kealib{
             auto imgBandDT = convertDatatypeKeaToH5Native(inDataType);
 
             // OPEN BAND DATASET AND READ IMAGE DATA
-            std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band);
-            if (this->keaImgFile->exist(imageBandPath + KEA_BANDNAME_DATA))
+            std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_DATA;
+            if (this->keaImgFile->exist(imageBandPath))
             {
-                auto imgBandDataset = this->keaImgFile->getDataSet(
-                    imageBandPath + KEA_BANDNAME_DATA
-                );
+                auto imgBandDataset = this->keaImgFile->getDataSet(imageBandPath);
                 if ((this->spatialInfoFile->ySize != ySizeBuf) || (
                         this->spatialInfoFile->xSize != xSizeBuf))
                 {
@@ -441,6 +441,7 @@ namespace kealib{
                     std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
                             std::endl;
 
+                    // TODO: set stride
                     std::vector<size_t> startOffset = {yPxlOff, xPxlOff};
                     std::vector<size_t> bufSize = {ySizeBuf, xSizeBuf};
                     imgBandDataset.select(startOffset, bufSize).read_raw(
@@ -734,6 +735,7 @@ namespace kealib{
                     std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
                             std::endl;
 
+                    // TODO: stride
                     std::vector<size_t> startOffset = {yPxlOff, xPxlOff};
                     std::vector<size_t> bufSize = {ySizeBuf, xSizeBuf};
                     imgBandDataset.select(startOffset, bufSize).read_raw(
@@ -2246,6 +2248,8 @@ namespace kealib{
                     std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
                             std::endl;
 
+                    // TODO: stride
+
                     std::vector<size_t> startOffset = {yPxlOff, xPxlOff};
                     std::vector<size_t> bufSize = {ySizeBuf, xSizeBuf};
                     imgBandDataset.select(startOffset, bufSize).write_raw(
@@ -2328,6 +2332,8 @@ namespace kealib{
                             std::endl;
                     std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
                             std::endl;
+
+                    // TODO: stride
 
                     std::vector<size_t> startOffset = {yPxlOff, xPxlOff};
                     std::vector<size_t> bufSize = {ySizeBuf, xSizeBuf};

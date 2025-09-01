@@ -215,7 +215,8 @@ endif(LIBKEA_WITH_GDAL)
 ###############################################################################
 # Tests
 enable_testing()
-add_test(NAME test1 COMMAND src/test1)
+add_test(NAME testwrite COMMAND src/testwrite)
+add_test(NAME testread COMMAND src/testread)
 ###############################################################################
 
 ###############################################################################

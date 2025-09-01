@@ -62,8 +62,11 @@ add_library(Kealib::Kealib ALIAS ${LIBKEA_LIB_NAME})
 ###############################################################################
 # Testing
 # exe needs to be in 'src' otherwise it doesn't work
-add_executable (test1 ${PROJECT_SOURCE_DIR}/src/tests/test1.cpp)
-target_link_libraries (test1 ${LIBKEA_LIB_NAME} ${HDF5_LIBRARIES})
+add_executable (testwrite ${PROJECT_SOURCE_DIR}/src/tests/testwrite.cpp ${PROJECT_SOURCE_DIR}/src/tests/testsupport.cpp)
+target_link_libraries (testwrite ${LIBKEA_LIB_NAME} ${HDF5_LIBRARIES})
+
+add_executable (testread ${PROJECT_SOURCE_DIR}/src/tests/testread.cpp ${PROJECT_SOURCE_DIR}/src/tests/testsupport.cpp)
+target_link_libraries (testread ${LIBKEA_LIB_NAME} ${HDF5_LIBRARIES})
 ###############################################################################
 
 ###############################################################################
