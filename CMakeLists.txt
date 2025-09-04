@@ -53,6 +53,8 @@ set (LIBKEA_COPYRIGHT_YEAR 2013)
 
 set(LIBKEA_LIB_NAME kea)
 
+set(KEA_TEST_TYPES uint8_t int8_t uint16_t int16_t uint32_t int32_t uint64_t int64_t float double)
+
 include(CMakeDependentOption)
 # CMake global option valiable
 option (BUILD_SHARED_LIBS "Build shared library" ON)
@@ -215,8 +217,11 @@ endif(LIBKEA_WITH_GDAL)
 ###############################################################################
 # Tests
 enable_testing()
-add_test(NAME testwrite COMMAND src/testwrite)
-add_test(NAME testread COMMAND src/testread)
+foreach(typename IN LISTS KEA_TEST_TYPES)
+    add_test(NAME testwrite${typename} COMMAND src/testwrite${typename})
+    add_test(NAME testread${typename} COMMAND src/testread${typename})
+    set_tests_properties(testread${typename} PROPERTIES DEPENDS "testwrite${typename}")
+endforeach()
 ###############################################################################
 
 ###############################################################################

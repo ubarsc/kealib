@@ -74,5 +74,36 @@ bool compareData(T *p1, T *p2, uint64_t xSize, uint64_t ySize)
     return true;
 }
 
+template <typename T>
+bool compareDataSubset(T *p1, T *pSubset, uint64_t xOff, uint64_t yOff, 
+    uint64_t xSize, uint64_t ySize, uint64_t xSubsetSize, uint64_t ySubsetSize)
+{
+    for( uint64_t x = 0; x < xSubsetSize; x++ )
+    {
+        for( uint64_t y = 0; y < ySubsetSize; y++ )
+        {
+            uint64_t idx_full = ((y + yOff) * xSize) + (x + xOff);
+            uint64_t idx_subset = (y * xSubsetSize) + x;
+            
+            if( p1[idx_full] != pSubset[idx_subset])
+            {
+                std::cout << "Error comparing values at" << x << "," << y << std::endl;
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+const uint64_t IMG_XSIZE = 600;
+const uint64_t IMG_YSIZE = 700;
+const uint64_t OV_XSIZE = 300;
+const uint64_t OV_YSIZE = 350;
+const uint64_t OV2_XSIZE = 25;
+const uint64_t OV2_YSIZE = 50;
+const std::string TEST_FIELD = "test";
+const uint64_t RAT_SIZE = 256;
+#define STRINGIFY(x) XSTRINGIFY(x)
+#define XSTRINGIFY(x) #x
 
 #endif //TESTSUPPORT_H

@@ -34,18 +34,11 @@
 #include "libkea/KEAImageIO.h"
 #include "testsupport.h"
 
-#define IMG_XSIZE 600
-#define IMG_YSIZE 700
-#define OV_XSIZE 300
-#define OV_YSIZE 350
-#define TEST_FIELD "test"
-#define RAT_SIZE 256
-
 int main()
 {
     try
     {
-        kealib::KEADataType keatype = CTypeStringToKEAType("uint8_t");
+        kealib::KEADataType keatype = CTypeStringToKEAType(STRINGIFY(KEA_DTYPE));
     
         auto spatialInfo = getSpatialInfo(0);
     
@@ -55,7 +48,7 @@ int main()
 
         kealib::KEAImageIO io;
 
-        std::string test_kea_file = "test_uint8_t.kea";
+        std::string test_kea_file = "test_" STRINGIFY(KEA_DTYPE) ".kea";
 
         std::cout << "Creating file" << std::endl;
         HighFive::File *h5file = kealib::KEAImageIO::createKEAImage(test_kea_file,
@@ -90,13 +83,6 @@ int main()
         
         auto spatialInfo2 = getSpatialInfo(10);
         io.setSpatialInfo(&spatialInfo2);
-        /*
-        uint64_t subXSize = 50;
-        uint64_t subYSize = 100;
-
-        uint64_t subXOff = 25;
-        uint64_t subYOff = 50;
-        */
 
         uint64_t subXSize = IMG_XSIZE;
         uint64_t subYSize = IMG_YSIZE;
@@ -105,7 +91,7 @@ int main()
         uint64_t subYOff = 0;
 
         std::cout << "Writing some image data" << std::endl;
-        uint8_t *pData = createDataForType<uint8_t>(subXSize, subYSize);
+        KEA_DTYPE *pData = createDataForType<KEA_DTYPE>(subXSize, subYSize);
         io.writeImageBlock2Band(1, pData, subXOff, subYOff, subXSize, subYSize,
                     subXSize, subYSize, keatype);
         free(pData);
@@ -115,7 +101,7 @@ int main()
 
         std::cout << "Created Mask" << std::endl;
                 
-        // write some mask data
+        // write some mask data - note always uint8_t here
         uint8_t *pMaskData = createDataForType<uint8_t>(subXSize, subYSize);
         io.writeImageBlock2BandMask(1, pMaskData, subXOff, subYOff, subXSize, subYSize,
                     subXSize, subYSize, kealib::kea_8uint);
@@ -223,7 +209,7 @@ int main()
         }
         
         io.createOverview(1, 0, OV_XSIZE, OV_YSIZE);
-        io.createOverview(1, 1, 25, 50);
+        io.createOverview(1, 1, OV2_XSIZE, OV2_YSIZE);
         if( io.getNumOfOverviews(1) != 2 )
         {
             std::cout << "should be 2 overviews" << std::endl;
@@ -239,7 +225,7 @@ int main()
         }
         
         // write to overview
-        uint8_t *pOvData = createDataForType<uint8_t>(OV_XSIZE, OV_YSIZE);
+        KEA_DTYPE *pOvData = createDataForType<KEA_DTYPE>(OV_XSIZE, OV_YSIZE);
         std::cout << "write to overview" << std::endl;
         io.writeToOverview(1, 0, pOvData, 0, 0, OV_XSIZE, OV_YSIZE, OV_XSIZE, OV_YSIZE, keatype);
         free(pOvData);

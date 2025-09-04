@@ -34,16 +34,15 @@
 #include "libkea/KEAImageIO.h"
 #include "testsupport.h"
 
-#define OV_XSIZE 300
-#define OV_YSIZE 350
-
 int main()
 {
     try
     {
+        kealib::KEADataType keatype = CTypeStringToKEAType(STRINGIFY(KEA_DTYPE));
+    
         kealib::KEAImageIO io;
 
-        std::string test_kea_file = "test_uint8_t.kea";
+        std::string test_kea_file = "test_" STRINGIFY(KEA_DTYPE) ".kea";
         
         std::cout << "Opening file" << std::endl;
         HighFive::File *h5file = kealib::KEAImageIO::openKeaH5RDOnly(test_kea_file);
@@ -58,17 +57,28 @@ int main()
         }
 
         std::cout << "Reading some image data" << std::endl;
-        uint8_t *pReadData = (uint8_t*)calloc(readinfo2->xSize * readinfo2->ySize, sizeof(uint8_t));
-        io.readImageBlock2Band(1, pReadData, 0, 0, readinfo2->xSize, readinfo2->ySize, readinfo2->xSize, readinfo2->ySize, kealib::kea_8uint);
+        KEA_DTYPE *pReadData = (KEA_DTYPE*)calloc(readinfo2->xSize * readinfo2->ySize, sizeof(KEA_DTYPE));
+        io.readImageBlock2Band(1, pReadData, 0, 0, readinfo2->xSize, readinfo2->ySize, readinfo2->xSize, readinfo2->ySize, keatype);
         std::cout << "Read some image data" << std::endl;
 
-        uint8_t *pCheckData = createDataForType<uint8_t>(readinfo2->xSize, readinfo2->ySize);
+        KEA_DTYPE *pCheckData = createDataForType<KEA_DTYPE>(readinfo2->xSize, readinfo2->ySize);
         std::cout << "Comparing data written and read data" << std::endl;
-        if( !compareData<uint8_t>(pReadData, pCheckData, readinfo2->xSize, readinfo2->ySize))
+        if( !compareData<KEA_DTYPE>(pReadData, pCheckData, readinfo2->xSize, readinfo2->ySize))
         {
             return 1;
         }
         std::cout << "Data compared" << std::endl;
+        
+        std::cout << "Reading a Subset" << std::endl;
+        KEA_DTYPE *pSubData = (KEA_DTYPE*)calloc(100 * 100, sizeof(KEA_DTYPE));
+        io.readImageBlock2Band(1, pSubData, 200, 150, 100, 100, 100, 100, keatype);
+        if( !compareDataSubset<KEA_DTYPE>(pReadData, pSubData, 200, 150, readinfo2->xSize, readinfo2->ySize, 100, 100))
+        {
+            return 1;
+        }
+        std::cout << "subset compared" << std::endl;
+        
+        free(pSubData);
         free(pReadData);
         free(pCheckData);
         
@@ -82,6 +92,7 @@ int main()
             return 1;
         }
         
+        // note: mask always uint8_t in here
         uint8_t *pReadMask = (uint8_t*)calloc(readinfo2->xSize * readinfo2->ySize, sizeof(uint8_t));
         io.readImageBlock2BandMask(1, pReadMask, 0, 0, readinfo2->xSize, readinfo2->ySize, readinfo2->xSize, readinfo2->ySize, kealib::kea_8uint);
         std::cout << "Read some mask data" << std::endl;
@@ -308,20 +319,20 @@ int main()
             return 1;
         }
         io.getOverviewSize(1, 1, &xsize, &ysize);
-        if( (xsize != 25) || (ysize != 50))
+        if( (xsize != OV2_XSIZE) || (ysize != OV2_YSIZE))
         {
             std::cout << "wrong overview size2" << std::endl;
             return 1;
         }
         
         std::cout << "Reading some overview data" << std::endl;
-        uint8_t *pReadOvData = (uint8_t*)calloc(OV_XSIZE * OV_YSIZE, sizeof(uint8_t));
-        io.readFromOverview(1, 0, pReadOvData, 0, 0, OV_XSIZE, OV_YSIZE, OV_XSIZE, OV_YSIZE, kealib::kea_8uint);
+        KEA_DTYPE *pReadOvData = (KEA_DTYPE*)calloc(OV_XSIZE * OV_YSIZE, sizeof(KEA_DTYPE));
+        io.readFromOverview(1, 0, pReadOvData, 0, 0, OV_XSIZE, OV_YSIZE, OV_XSIZE, OV_YSIZE, keatype);
         std::cout << "Read some overview data" << std::endl;
 
         std::cout << "Comparing overview written and read data" << std::endl;
-        uint8_t *pTestOvData = createDataForType<uint8_t>(OV_XSIZE, OV_YSIZE);
-        if( !compareData<uint8_t>(pReadOvData, pTestOvData, OV_XSIZE, OV_YSIZE))
+        KEA_DTYPE *pTestOvData = createDataForType<KEA_DTYPE>(OV_XSIZE, OV_YSIZE);
+        if( !compareData<KEA_DTYPE>(pReadOvData, pTestOvData, OV_XSIZE, OV_YSIZE))
         {
             return 1;
         }
