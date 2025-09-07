@@ -132,13 +132,13 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
         try
         {
             // try and open it in the appropriate mode
-            H5::H5File *pH5File;
+            HighFive::File *pH5File;
             if( poOpenInfo->eAccess == GA_ReadOnly )
             {
                 // use the virtual driver so we can open files using
                 // /vsicurl etc
                 // do this same as libkea
-                H5::FileAccPropList keaAccessPlist =
+                /*H5::FileAccPropList keaAccessPlist =
                     H5::FileAccPropList(H5::FileAccPropList::DEFAULT);
                 keaAccessPlist.setCache(
                     kealib::KEA_MDC_NELMTS, kealib::KEA_RDCC_NELMTS,
@@ -152,7 +152,12 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
                 const H5std_string keaImgFilePath(poOpenInfo->pszFilename);
                 pH5File = new H5::H5File(keaImgFilePath, H5F_ACC_RDONLY,
                                          H5::FileCreatPropList::DEFAULT,
-                                         keaAccessPlist);
+                                         keaAccessPlist);*/
+                //auto keaFileAccessProps = HighFive::FileAccessProps::Default();
+                //pH5File = new HighFive::File(poOpenInfo->pszFilename,
+                //    HighFive::File::ReadOnly,
+                //    keaFileAccessProps);
+                pH5File = kealib::KEAImageIO::openKeaH5RDOnly(poOpenInfo->pszFilename);
             }
             else
             {
@@ -293,7 +298,7 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
     try
     {
         // now create it
-        H5::H5File *keaImgH5File = kealib::KEAImageIO::createKEAImage( pszFilename,
+        HighFive::File *keaImgH5File = kealib::KEAImageIO::createKEAImage( pszFilename,
                                                     GDAL_to_KEA_Type( eType ),
                                                     nXSize, nYSize, nBands,
                                                     nullptr, nullptr, nimageblockSize, 
@@ -407,7 +412,7 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
     try
     {
         // now create it
-        H5::H5File *keaImgH5File = kealib::KEAImageIO::createKEAImage( pszFilename,
+        HighFive::File *keaImgH5File = kealib::KEAImageIO::createKEAImage( pszFilename,
                                                     GDAL_to_KEA_Type( eType ),
                                                     nXSize, nYSize, nBands,
                                                     nullptr, nullptr, nimageblockSize, 
@@ -469,7 +474,7 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
 }
 
 // constructor
-KEADataset::KEADataset( H5::H5File *keaImgH5File, GDALAccess eAccess )
+KEADataset::KEADataset( HighFive::File *keaImgH5File, GDALAccess eAccess )
 {
     this->m_hMutex = CPLCreateMutex();
     CPLReleaseMutex( this->m_hMutex );
@@ -494,7 +499,9 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File, GDALAccess eAccess )
         {
             // note GDAL uses indices starting at 1 and so does kealib
             // create band object
+            fprintf(stderr, "about to create band\n");
             KEARasterBand *pBand = new KEARasterBand( this, nCount + 1, eAccess, m_pImageIO, m_pRefcount );
+            fprintf(stderr, "created band\n");
             // read in overviews
             pBand->readExistingOverviews();
             // set the band into this dataset
@@ -507,6 +514,7 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File, GDALAccess eAccess )
 
         // nullptr until we read them in 
         m_pGCPs = nullptr;
+        fprintf(stderr, "Finished constructor\n");
     }
     catch (const kealib::KEAIOException &e)
     {

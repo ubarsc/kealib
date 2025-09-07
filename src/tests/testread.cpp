@@ -305,20 +305,20 @@ int main()
             std::cout << "should be 0 overviews" << std::endl;
             return 1;
         }
-        if( io.getOverviewBlockSize(1, 0) != 300)
+        if( io.getOverviewBlockSize(1, 1) != OV_XSIZE)
         {
             std::cout << "wrong overview block size" << std::endl;
             return 1;
         }
         
         uint64_t xsize, ysize;
-        io.getOverviewSize(1, 0, &xsize, &ysize);
+        io.getOverviewSize(1, 1, &xsize, &ysize);
         if( (xsize != OV_XSIZE) || (ysize != OV_YSIZE))
         {
             std::cout << "wrong overview size" << std::endl;
             return 1;
         }
-        io.getOverviewSize(1, 1, &xsize, &ysize);
+        io.getOverviewSize(1, 2, &xsize, &ysize);
         if( (xsize != OV2_XSIZE) || (ysize != OV2_YSIZE))
         {
             std::cout << "wrong overview size2" << std::endl;
@@ -327,7 +327,7 @@ int main()
         
         std::cout << "Reading some overview data" << std::endl;
         KEA_DTYPE *pReadOvData = (KEA_DTYPE*)calloc(OV_XSIZE * OV_YSIZE, sizeof(KEA_DTYPE));
-        io.readFromOverview(1, 0, pReadOvData, 0, 0, OV_XSIZE, OV_YSIZE, OV_XSIZE, OV_YSIZE, keatype);
+        io.readFromOverview(1, 1, pReadOvData, 0, 0, OV_XSIZE, OV_YSIZE, OV_XSIZE, OV_YSIZE, keatype);
         std::cout << "Read some overview data" << std::endl;
 
         std::cout << "Comparing overview written and read data" << std::endl;

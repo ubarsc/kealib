@@ -208,16 +208,16 @@ int main()
             return 1; 
         }
         
-        io.createOverview(1, 0, OV_XSIZE, OV_YSIZE);
-        io.createOverview(1, 1, OV2_XSIZE, OV2_YSIZE);
+        io.createOverview(1, 1, OV_XSIZE, OV_YSIZE);
+        io.createOverview(1, 2, OV2_XSIZE, OV2_YSIZE);
         if( io.getNumOfOverviews(1) != 2 )
         {
             std::cout << "should be 2 overviews" << std::endl;
             return 1;
         }
        
-        io.createOverview(2, 0, 50, 100);
-        io.removeOverview(2, 0);
+        io.createOverview(2, 1, 50, 100);
+        io.removeOverview(2, 1);
         if( io.getNumOfOverviews(2) != 0 )
         {
             std::cout << "should be 2 overviews" << std::endl;
@@ -227,7 +227,7 @@ int main()
         // write to overview
         KEA_DTYPE *pOvData = createDataForType<KEA_DTYPE>(OV_XSIZE, OV_YSIZE);
         std::cout << "write to overview" << std::endl;
-        io.writeToOverview(1, 0, pOvData, 0, 0, OV_XSIZE, OV_YSIZE, OV_XSIZE, OV_YSIZE, keatype);
+        io.writeToOverview(1, 1, pOvData, 0, 0, OV_XSIZE, OV_YSIZE, OV_XSIZE, OV_YSIZE, keatype);
         free(pOvData);
         
         io.close();

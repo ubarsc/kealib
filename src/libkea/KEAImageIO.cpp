@@ -1150,7 +1150,7 @@ namespace kealib{
             throw KEAIOException("Image was not open.");
         }
         
-        std::string descDataH5Path = KEA_DATASETNAME_BAND + uint2Str(band) + std::string("/") + KEA_BANDNAME_DESCRIP;
+        std::string descDataH5Path = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_DESCRIP;
 
         // WRITE IMAGE BAND DESCRIPTION
         try 
@@ -1189,7 +1189,7 @@ namespace kealib{
             throw KEAIOException("Image was not open.");
         }
         
-        std::string descDataH5Path = KEA_DATASETNAME_BAND + uint2Str(band) + std::string("/") + KEA_BANDNAME_DESCRIP;
+        std::string descDataH5Path = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_DESCRIP;
         std::string description = "";
         // READ IMAGE BAND DESCRIPTION
         
@@ -1285,6 +1285,10 @@ namespace kealib{
                 if( val == 1 )
                 {
                     datasetBandDataType.read_raw(data, hdfDataType);
+                }
+                else
+                {
+                    throw KEAIOException("The image band no data value was not defined.");
                 }
             }
         } 
@@ -2500,6 +2504,7 @@ namespace kealib{
         
         return att;
         */
+        return nullptr;
     }
     
     void KEAImageIO::setAttributeTable(KEAAttributeTable* att, uint32_t band, uint32_t chunkSize, uint32_t deflate)
@@ -2585,6 +2590,7 @@ namespace kealib{
         }
         return attPresent;
         */
+        return false;
     }
 
     /**
@@ -3405,7 +3411,7 @@ namespace kealib{
 
 
             // SET ATTRIBUTE TABLE CHUNK SIZE
-            auto attChunkSizeDataset = keaImgH5File->createDataSet<uint64_t>(
+            auto attChunkSizeDataset = keaImgH5File->createDataSet<uint32_t>(
                 (bandName + KEA_ATT_CHUNKSIZE_HEADER),
                 attBlockSize
             );

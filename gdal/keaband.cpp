@@ -159,6 +159,7 @@ void KEARasterBand::UpdateMetadataList()
     {
         m_papszMetadataList = CSLSetNameValue(m_papszMetadataList, "LAYER_TYPE", "thematic" );
     }
+    
 
     // STATISTICS_HISTONUMBINS
     const GDALRasterAttributeTable *pTable = this->GetDefaultRAT();
@@ -779,10 +780,13 @@ GDALRasterAttributeTable *KEARasterBand::GetDefaultRAT()
     {
         try
         {
-            // we assume this is never nullptr - creates a new one if none exists
+            // creates a new one if none exists
             // (or raises exception)
             kealib::KEAAttributeTable *pKEATable = this->m_pImageIO->getAttributeTable(kealib::kea_att_file, this->nBand);
-            this->m_pAttributeTable = new KEARasterAttributeTable(pKEATable, this);
+            if( pKEATable != nullptr )
+            {
+                this->m_pAttributeTable = new KEARasterAttributeTable(pKEATable, this);
+            }
         }
         catch(const kealib::KEAException &e)
         {
