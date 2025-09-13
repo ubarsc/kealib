@@ -1229,10 +1229,12 @@ namespace kealib{
         try 
         {    
             auto hdfDataType = convertDatatypeKeaToH5Native(inDataType);
+            KEADataType imgDataType = this->getImageBandDataType(band);
+            auto imgBandDT = convertDatatypeKeaToH5STD(imgDataType);
             if(!this->keaImgFile->exist(noDataValPath))
             {
                 HighFive::DataSpace dataSpace = HighFive::DataSpace(1, 1);
-                keaImgFile->createDataSet(noDataValPath, dataSpace, hdfDataType);
+                keaImgFile->createDataSet(noDataValPath, dataSpace, imgBandDT);
                 std::cout << "created dataset " << noDataValPath << std::endl;
             }
             auto dataset = this->keaImgFile->getDataSet( noDataValPath );
@@ -1268,7 +1270,6 @@ namespace kealib{
             throw KEAIOException("Image was not open.");
         }
         
-        
         // READ IMAGE BAND NO DATA VALUE
         std::string noDataValPath = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_NO_DATA_VAL;
         
@@ -1290,6 +1291,10 @@ namespace kealib{
                 {
                     throw KEAIOException("The image band no data value was not defined.");
                 }
+            }
+            else
+            {
+                throw KEAIOException("The image band no data value was not set.");
             }
         } 
         catch ( const HighFive::Exception &e) 
@@ -3318,6 +3323,8 @@ namespace kealib{
         );
         auto var_stringtype = HighFive::VariableLengthStringType();
         auto stringType = HighFive::AtomicType<std::string>();
+        // TODO: dataspace instead of scalar to be compatible with old KEA
+        auto oldKeaDataSpace = HighFive::DataSpace({1});
 
         //int initFillVal = 0;
         std::string bandDescrip = bandDescripIn; // may be updated below
@@ -3341,8 +3348,8 @@ namespace kealib{
             HighFive::DataSetAccessProps imgBandAccessProps =
                     HighFive::DataSetAccessProps::Default();
 
-            uint32_t bandType = kea_continuous;
-            uint32_t bandUsage = kea_generic;
+            uint8_t bandType = kea_continuous;
+            uint8_t bandUsage = kea_generic;
 
             // CREATE IMAGE BAND HDF5 GROUP
             std::string bandName = KEA_DATASETNAME_BAND + uint2Str(bandIndex);
@@ -3356,8 +3363,8 @@ namespace kealib{
                 imgBandDataSetProps,
                 imgBandAccessProps
             );
-            imgBandDataSet.createAttribute<char[6]>(KEA_ATTRIBUTENAME_CLASS, "IMAGE");
-            imgBandDataSet.createAttribute<char[4]>(
+            imgBandDataSet.createAttribute<std::string>(KEA_ATTRIBUTENAME_CLASS, "IMAGE");
+            imgBandDataSet.createAttribute<std::string>(
                 KEA_ATTRIBUTENAME_IMAGE_VERSION,
                 "1.2"
             );
@@ -3379,23 +3386,29 @@ namespace kealib{
             datasetBandDescript.write(bandDescrip);
 
             // SET IMAGE BAND DATA TYPE IN IMAGE BAND
+            // TODO: dataspace instead of scalar to be compatible with old KEA
             auto dtDataset = keaImgH5File->createDataSet<uint16_t>(
                 (bandName + KEA_BANDNAME_DT),
-                dataType
+                oldKeaDataSpace
             );
+            dtDataset.write(uint16_t(dataType));
 
             // SET IMAGE BAND TYPE IN IMAGE BAND (I.E., CONTINUOUS (0) OR
             // THEMATIC (1))
+            // TODO: dataspace instead of scalar to be compatible with old KEA
             auto typeDataset = keaImgH5File->createDataSet<uint8_t>(
                 (bandName + KEA_BANDNAME_TYPE),
-                bandType
+                oldKeaDataSpace
             );
+            typeDataset.write(bandType);
 
             // SET IMAGE BAND USAGE IN IMAGE BAND
+            // TODO: dataspace instead of scalar to be compatible with old KEA
             auto usageDataset = keaImgH5File->createDataSet<uint8_t>(
                 (bandName + KEA_BANDNAME_USAGE),
-                bandUsage
+                oldKeaDataSpace
             );
+            usageDataset.write(bandUsage);
 
             // CREATE META-DATA
             keaImgH5File->createGroup(bandName + KEA_BANDNAME_METADATA);
@@ -3411,11 +3424,14 @@ namespace kealib{
 
 
             // SET ATTRIBUTE TABLE CHUNK SIZE
-            auto attChunkSizeDataset = keaImgH5File->createDataSet<uint32_t>(
+            // TODO: dataspace instead of scalar to be compatible with old KEA
+            auto attChunkSizeDataSpace = HighFive::DataSpace({1});
+            auto attChunkSizeDataset = keaImgH5File->createDataSet<uint64_t>(
                 (bandName + KEA_ATT_CHUNKSIZE_HEADER),
-                attBlockSize
+                attChunkSizeDataSpace
             );
             attChunkSizeDataset.write(attBlockSize);
+
 
             // SET ATTRIBUTE TABLE SIZE
             std::vector<uint64_t> attSize = {0, 0, 0, 0, 0};

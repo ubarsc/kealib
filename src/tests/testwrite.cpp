@@ -141,20 +141,34 @@ int main()
         std::cout << "Wrote descriptions" << std::endl;
         
         // nodata
-        uint16_t u16nodata = 999;
-        // check reading is empty
-        io.getNoDataValue(1, &u16nodata, kealib::kea_16uint);
-        if( u16nodata != 999 )
+        bool bNoDataSet = true;
+        uint16_t u16nodata = 99;
+        try
+        {
+            // check reading is empty
+            io.getNoDataValue(1, &u16nodata, kealib::kea_16uint);
+        }
+        catch(const kealib::KEAIOException &e)
+        {
+            bNoDataSet = false;
+        }
+        if( bNoDataSet )
         {
             std::cout << "Nodata appears set" << std::endl;
+            return 1;
+        }
+        if( u16nodata != 99 )
+        {
+            std::cout << "Nodata changed when not set" << std::endl;
             return 1;
         }
         
         io.setNoDataValue(1, &u16nodata, kealib::kea_16uint);
         double dnodata = -123.89;
+        KEA_DTYPE expected_nodata = dnodata; // should cast to type of image
         io.setNoDataValue(2, &dnodata, kealib::kea_64float);
         io.getNoDataValue(2, &dnodata, kealib::kea_64float);
-        if( dnodata !=  -123.89)
+        if( dnodata != expected_nodata)
         {
             std::cout << "Nodata not written correctly" << std::endl;
             return 1;

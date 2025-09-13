@@ -499,9 +499,7 @@ KEADataset::KEADataset( HighFive::File *keaImgH5File, GDALAccess eAccess )
         {
             // note GDAL uses indices starting at 1 and so does kealib
             // create band object
-            fprintf(stderr, "about to create band\n");
             KEARasterBand *pBand = new KEARasterBand( this, nCount + 1, eAccess, m_pImageIO, m_pRefcount );
-            fprintf(stderr, "created band\n");
             // read in overviews
             pBand->readExistingOverviews();
             // set the band into this dataset
@@ -514,7 +512,6 @@ KEADataset::KEADataset( HighFive::File *keaImgH5File, GDALAccess eAccess )
 
         // nullptr until we read them in 
         m_pGCPs = nullptr;
-        fprintf(stderr, "Finished constructor\n");
     }
     catch (const kealib::KEAIOException &e)
     {

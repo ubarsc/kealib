@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <algorithm>
 #include "libkea/KEAImageIO.h"
 #include "testsupport.h"
 
@@ -221,15 +222,23 @@ int main()
         // read nodata back as different type
         uint32_t u32nodata = 0;
         io.getNoDataValue(1, &u32nodata, kealib::kea_32uint);
-        if( u32nodata != 999 )
+        if( u32nodata != 99 )
         {
             std::cout << "Wrong nodata value read" << std::endl;
             return 1;
         }
         // band 2 nodata is undefined
         double dnodata = -1;
-        io.getNoDataValue(2, &dnodata, kealib::kea_64float);
-        if( dnodata != -1 )
+        bool bNoDataSet = true;
+        try
+        {
+            io.getNoDataValue(2, &dnodata, kealib::kea_64float);
+        }
+        catch(const kealib::KEAIOException &e)
+        {
+            bNoDataSet = false;
+        }
+        if( bNoDataSet )
         {
             std::cout << "Nodata not properly undefined" << std::endl;
             return 1;
