@@ -62,8 +62,15 @@ add_library(Kealib::Kealib ALIAS ${LIBKEA_LIB_NAME})
 ###############################################################################
 # Testing
 # exe needs to be in 'src' otherwise it doesn't work
-add_executable (test1 ${PROJECT_SOURCE_DIR}/src/tests/test1.cpp)
-target_link_libraries (test1 ${LIBKEA_LIB_NAME})
+foreach(typename IN LISTS KEA_TEST_TYPES)
+    add_executable (testwrite${typename} ${PROJECT_SOURCE_DIR}/src/tests/testwrite.cpp ${PROJECT_SOURCE_DIR}/src/tests/testsupport.cpp)
+    target_link_libraries (testwrite${typename} ${LIBKEA_LIB_NAME} ${HDF5_LIBRARIES})
+    target_compile_definitions (testwrite${typename} PRIVATE KEA_DTYPE=${typename})
+
+    add_executable (testread${typename} ${PROJECT_SOURCE_DIR}/src/tests/testread.cpp ${PROJECT_SOURCE_DIR}/src/tests/testsupport.cpp)
+    target_link_libraries (testread${typename} ${LIBKEA_LIB_NAME} ${HDF5_LIBRARIES})
+    target_compile_definitions (testread${typename} PRIVATE KEA_DTYPE=${typename})
+endforeach()
 ###############################################################################
 
 ###############################################################################
