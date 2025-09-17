@@ -99,7 +99,8 @@ if( NOT HDF5_THREADSAFE )
 endif()
 
 # Get HighFive library - HDF5
-find_package(HighFive REQUIRED)
+# note: version 3 required
+find_package(HighFive 3 REQUIRED)
 
 # required to get compilation on Windows
 find_package(Threads)
