@@ -133,7 +133,7 @@ namespace kealib{
             // READ RESOLUTION
             if (keaImgH5File->exist(KEA_DATASETNAME_HEADER_RES))
             {
-                std::vector<float> pxlResSpatial(2);
+                std::vector<double> pxlResSpatial(2);
                 auto spatialResDataset = keaImgH5File->getDataSet(KEA_DATASETNAME_HEADER_RES);
                 spatialResDataset.read(pxlResSpatial);
                 this->spatialInfoFile->xRes = pxlResSpatial[0];
@@ -149,7 +149,7 @@ namespace kealib{
             // READ ROTATION
             if (keaImgH5File->exist(KEA_DATASETNAME_HEADER_ROT))
             {
-                std::vector<float> pxlRotSpatial(2);
+                std::vector<double> pxlRotSpatial(2);
                 auto spatialRotDataset = keaImgH5File->getDataSet(KEA_DATASETNAME_HEADER_ROT);
                 spatialRotDataset.read(pxlRotSpatial);
                 this->spatialInfoFile->xRot = pxlRotSpatial[0];
@@ -432,7 +432,7 @@ namespace kealib{
                 if ((this->spatialInfoFile->ySize != ySizeBuf) || (
                         this->spatialInfoFile->xSize != xSizeBuf))
                 {
-                    std::cout << "Writing subset of band " << band << " to image." <<
+                    std::cout << "reading subset of band " << band << " from image." <<
                             std::endl;
                     std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
                             << std::endl;
@@ -451,7 +451,7 @@ namespace kealib{
                 }
                 else
                 {
-                    std::cout << "Writing band " << band << " to image." << std::endl;
+                    std::cout << "reading band " << band << " from image." << std::endl;
                     std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
                             << std::endl;
                     std::cout << "xSizeIn: " << xSizeIn << ", ySizeIn: " << ySizeIn <<
@@ -617,7 +617,7 @@ namespace kealib{
                 if ((this->spatialInfoFile->ySize != ySizeBuf) || (
                         this->spatialInfoFile->xSize != xSizeBuf))
                 {
-                    std::cout << "Writing subset of band " << band << " to image." <<
+                    std::cout << "Writing subset of mask band " << band << " to image." <<
                             std::endl;
                     std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
                             << std::endl;
@@ -635,7 +635,7 @@ namespace kealib{
                 }
                 else
                 {
-                    std::cout << "Writing band " << band << " to image." << std::endl;
+                    std::cout << "Writing mask band " << band << " to image." << std::endl;
                     std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
                             << std::endl;
                     std::cout << "xSizeOut: " << xSizeOut << ", ySizeOut: " << ySizeOut
@@ -728,7 +728,7 @@ namespace kealib{
                 if ((this->spatialInfoFile->ySize != ySizeBuf) || (
                         this->spatialInfoFile->xSize != xSizeBuf))
                 {
-                    std::cout << "Writing subset of band " << band << " to image." <<
+                    std::cout << "Writing subset of mask band " << band << " to image." <<
                             std::endl;
                     std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
                             << std::endl;
@@ -747,7 +747,7 @@ namespace kealib{
                 }
                 else
                 {
-                    std::cout << "Writing band " << band << " to image." << std::endl;
+                    std::cout << "Writing mask band " << band << " to image." << std::endl;
                     std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
                             << std::endl;
                     std::cout << "xSizeIn: " << xSizeIn << ", ySizeIn: " << ySizeIn <<
@@ -834,6 +834,7 @@ namespace kealib{
         {
             if(!this->keaImgFile->exist(metaDataH5Path))
             {
+          		// TODO: dataspace instead of scalar to be compatible with old KEA
                 HighFive::DataSpace dataSpace = HighFive::DataSpace({1});
                 keaImgFile->createDataSet(metaDataH5Path, dataSpace, HighFive::VariableLengthStringType());
                 std::cout << "created dataset " << metaDataH5Path << std::endl;
@@ -1235,6 +1236,7 @@ namespace kealib{
             auto imgBandDT = convertDatatypeKeaToH5STD(imgDataType);
             if(!this->keaImgFile->exist(noDataValPath))
             {
+        		// TODO: dataspace instead of scalar to be compatible with old KEA
                 HighFive::DataSpace dataSpace = HighFive::DataSpace({1});
                 keaImgFile->createDataSet(noDataValPath, dataSpace, imgBandDT);
                 std::cout << "created dataset " << noDataValPath << std::endl;
@@ -1499,14 +1501,19 @@ namespace kealib{
             else
             {
                 // https://github.com/highfive-devs/highfive/blob/main/src/examples/create_datatype.cpp
-                HighFive::DataSpace gcpsDataSpace = HighFive::DataSpace(numGCPs);
+                // allow the number of GCPs to grow
+                std::vector<size_t> dims;
+                dims.push_back(numGCPs);
+                std::vector<size_t> maxdims;
+                maxdims.push_back(HighFive::DataSpace::UNLIMITED);
+                HighFive::DataSpace gcpsDataSpace = HighFive::DataSpace(dims, maxdims);
                 
                 HighFive::DataSetCreateProps creationGCPsDSPList;
                 creationGCPsDSPList.add(HighFive::Chunking(numGCPs));
                 creationGCPsDSPList.add(HighFive::Deflate(KEA_DEFLATE));
                 creationGCPsDSPList.add(HighFive::Shuffle());
-
-                fieldDtMem.commit(*this->keaImgFile, "GCPType");
+                
+                // don't commit data type - HDF5 will but data type in file right here
 
                 auto gcpsDataset = this->keaImgFile->createDataSet(KEA_GCPS_DATA, gcpsDataSpace, fieldDtMem, creationGCPsDSPList);
                 gcpsDataset.write(gcpsHDF);
@@ -1515,6 +1522,7 @@ namespace kealib{
             
             if( !this->keaImgFile->exist(KEA_GCPS_NUM))
             {
+        		// TODO: dataspace instead of scalar to be compatible with old KEA
 				HighFive::DataSpace dataSpace = HighFive::DataSpace({1});
                 this->keaImgFile->createDataSet<uint32_t>(KEA_GCPS_NUM, dataSpace).write(numGCPs);
             }
@@ -1630,6 +1638,7 @@ namespace kealib{
             }
             else
             {
+        		// TODO: dataspace instead of scalar to be compatible with old KEA
                 HighFive::DataSpace dataSpace = HighFive::DataSpace({1});
                 auto datasetSpatialReference = this->keaImgFile->createDataSet(KEA_GCPS_PROJ, dataSpace, HighFive::VariableLengthStringType());
                 datasetSpatialReference.write(projWKT);
@@ -1676,7 +1685,7 @@ namespace kealib{
             pxlResSpatial[1] = float(inSpatialInfo->yRes);
             auto spatialResDataset = keaImgFile->getDataSet(
                 KEA_DATASETNAME_HEADER_RES
-            ); // Explicit datatype: IEEE_F32LE
+            ); 
             spatialResDataset.write(pxlResSpatial);
 
             // SET X AND Y ROTATION IN GLOBAL HEADER
@@ -1685,7 +1694,7 @@ namespace kealib{
             pxlRotSpatial[1] = float(inSpatialInfo->yRot);
             auto spatialRotDataset = keaImgFile->getDataSet(
                 KEA_DATASETNAME_HEADER_ROT
-            ); // Explicit datatype: IEEE_F32LE
+            ); 
             spatialRotDataset.write(pxlRotSpatial);
 
             // SET THE WKT STRING SPATIAL REFERENCE IN GLOBAL HEADER
@@ -2253,7 +2262,7 @@ namespace kealib{
                 if ((imgDataDims[1] != ySizeBuf) || (
                         imgDataDims[0] != xSizeBuf))
                 {
-                    std::cout << "Writing subset of band " << band << " to overview." <<
+                    std::cout << "writing subset of band " << band << " from overview." <<
                             std::endl;
                     std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
                             << std::endl;
@@ -2273,7 +2282,7 @@ namespace kealib{
                 }
                 else
                 {
-                    std::cout << "Writing band " << band << " to image." << std::endl;
+                    std::cout << "writing band " << band << " from overview." << std::endl;
                     std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
                             << std::endl;
                     std::cout << "xSizeOut: " << xSizeOut << ", ySizeOut: " << ySizeOut
@@ -2338,7 +2347,7 @@ namespace kealib{
                 if ((imgDataDims[1] != ySizeBuf) || (
                         imgDataDims[0] != xSizeBuf))
                 {
-                    std::cout << "Writing subset of band " << band << "overview" << overview << " to image." <<
+                    std::cout << "Reading subset of band " << band << "overview" << overview << " from image." <<
                             std::endl;
                     std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
                             << std::endl;
@@ -2358,7 +2367,7 @@ namespace kealib{
                 }
                 else
                 {
-                    std::cout << "Writing band " << band << "overview" << overview << " to image." << std::endl;
+                    std::cout << "Reading band " << band << "overview" << overview << " from image." << std::endl;
                     std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
                             << std::endl;
                     std::cout << "xSizeIn: " << xSizeIn << ", ySizeIn: " << ySizeIn <<
@@ -2754,7 +2763,7 @@ namespace kealib{
             auto spatialResDataset = keaImgH5File->createDataSet<double>(
                 KEA_DATASETNAME_HEADER_RES,
                 HighFive::DataSpace::From(pxlResSpatial)
-            ); // Explicit datatype: IEEE_F32LE
+            ); 
             spatialResDataset.write(pxlResSpatial);
 
             // SET X AND Y ROTATION IN GLOBAL HEADER
@@ -2764,7 +2773,7 @@ namespace kealib{
             auto spatialRotDataset = keaImgH5File->createDataSet<double>(
                 KEA_DATASETNAME_HEADER_ROT,
                 HighFive::DataSpace::From(pxlRotSpatial)
-            ); // Explicit datatype: IEEE_F32LE
+            ); 
             spatialRotDataset.write(pxlRotSpatial);
 
             // SET NUMBER OF X AND Y PIXELS
@@ -3561,6 +3570,7 @@ namespace kealib{
             }
             else
             {
+          		// TODO: dataspace instead of scalar to be compatible with old KEA
                 keaImgH5File->createDataSet<uint16_t>(
                     KEA_DATASETNAME_HEADER_NUMBANDS,
                     HighFive::DataSpace({1})
