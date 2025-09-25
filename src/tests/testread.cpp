@@ -79,6 +79,15 @@ int main()
         }
         std::cout << "subset compared" << std::endl;
         
+        std::cout << "Reading edge" << std::endl;
+        io.readImageBlock2Band(1, pSubData, IMG_XSIZE - 50, 0, 50, 100, 100, 100, keatype);
+        if( !compareDataSubsetEdge<KEA_DTYPE>(pReadData, pSubData, IMG_XSIZE - 50, 0, readinfo2->xSize, readinfo2->ySize, 100, 100, 50, 100, 99))
+        {
+            return 1;
+        }
+        
+        std::cout << "edge compared" << std::endl;
+        
         free(pSubData);
         free(pReadData);
         free(pCheckData);

@@ -441,14 +441,87 @@ namespace kealib{
                     std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
                             std::endl;
 
-                    // TODO: set stride
-                    std::vector<size_t> startOffset = {yPxlOff, xPxlOff};
-                    std::vector<size_t> bufSize = {ySizeBuf, xSizeBuf};
-                    imgBandDataset.select(startOffset, bufSize).read_raw(
-                        data,
-                        imgBandDT
-                    );
-                }
+					if((ySizeBuf != ySizeIn) || (xSizeBuf != xSizeIn))
+					{
+						HighFive::DataSpace dataSpace = HighFive::DataSpace({ySizeBuf, xSizeBuf});
+						
+						void *pNoData = malloc(imgBandDT.getSize());
+						try
+						{
+						    this->getNoDataValue(band, pNoData, inDataType);
+						}
+						catch(const KEAIOException &e)
+						{
+						    free(pNoData);
+						    pNoData = NULL;  // H5Dfill defaults to 0 in this case
+						}
+						
+						// TODO: retrieve actual nodata value
+						if( H5Dfill(pNoData, imgBandDT.getId(), data, imgBandDT.getId(), dataSpace.getId()) < 0 )
+						{
+						    H5Eprint(H5E_DEFAULT, stderr);
+						    throw KEAIOException("Error in H5Dfill");
+						}
+						free(pNoData);
+							
+						hsize_t dataSelectMemDims[2];
+						dataSelectMemDims[0] = ySizeIn;
+						dataSelectMemDims[1] = 1;
+
+						hsize_t dataOffDims[2];
+						dataOffDims[0] = 0;
+						dataOffDims[1] = 0;
+
+						hsize_t dataSelectStrideDims[2];
+						dataSelectStrideDims[0] = 1;
+						if(xSizeBuf == xSizeIn)
+						{
+							dataSelectStrideDims[1] = 1;
+						}
+						else
+						{
+							dataSelectStrideDims[1] = xSizeBuf - xSizeIn;
+						}
+
+						hsize_t dataSelectBlockSizeDims[2];
+						dataSelectBlockSizeDims[0] = 1;
+						dataSelectBlockSizeDims[1] = xSizeIn;
+						if( H5Sselect_hyperslab(dataSpace.getId(), H5S_SELECT_SET, dataOffDims, dataSelectStrideDims, dataSelectMemDims, dataSelectBlockSizeDims) < 0 )
+						{
+						    H5Eprint(H5E_DEFAULT, stderr);
+						    throw KEAIOException("Error in H5Sselect_hyperslab 1");
+						}
+						
+						auto imgBandDataspace = imgBandDataset.getSpace();
+						hsize_t dataOffset[2];
+                        dataOffset[0] = yPxlOff;
+                        dataOffset[1] = xPxlOff;
+                        hsize_t dataInDims[2];
+                        dataInDims[0] = ySizeIn;
+                        dataInDims[1] = xSizeIn;
+                        if( H5Sselect_hyperslab(imgBandDataspace.getId(), H5S_SELECT_SET, dataOffset, NULL, dataInDims, NULL) < 0 )
+                        {
+						    H5Eprint(H5E_DEFAULT, stderr);
+						    throw KEAIOException("Error in H5Sselect_hyperslab 2");
+                        }
+						
+                        if( H5Dread(imgBandDataset.getId(), imgBandDT.getId(), dataSpace.getId(), imgBandDataspace.getId(), H5P_DEFAULT, data) < 0 )
+                        {
+						    H5Eprint(H5E_DEFAULT, stderr);
+						    throw KEAIOException("Error in H5Dread");
+                        }
+					}
+					else
+					{
+						std::vector<size_t> startOffset = {yPxlOff, xPxlOff};
+						std::vector<size_t> bufSize = {ySizeBuf, xSizeBuf};
+						imgBandDataset.select(startOffset, bufSize).read_raw(
+							data,
+							imgBandDT
+						);
+
+					}
+				}
                 else
                 {
                     std::cout << "reading band " << band << " from image." << std::endl;
