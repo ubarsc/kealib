@@ -70,6 +70,7 @@ int main()
         }
         std::cout << "Data compared" << std::endl;
         
+        // below tests check reading off the edge ok
         std::cout << "Reading a Subset" << std::endl;
         KEA_DTYPE *pSubData = (KEA_DTYPE*)calloc(100 * 100, sizeof(KEA_DTYPE));
         io.readImageBlock2Band(1, pSubData, 200, 150, 100, 100, 100, 100, keatype);
@@ -79,14 +80,32 @@ int main()
         }
         std::cout << "subset compared" << std::endl;
         
-        std::cout << "Reading edge" << std::endl;
+        std::cout << "Reading right edge" << std::endl;
         io.readImageBlock2Band(1, pSubData, IMG_XSIZE - 50, 0, 50, 100, 100, 100, keatype);
         if( !compareDataSubsetEdge<KEA_DTYPE>(pReadData, pSubData, IMG_XSIZE - 50, 0, readinfo2->xSize, readinfo2->ySize, 100, 100, 50, 100, 99))
         {
             return 1;
         }
         
-        std::cout << "edge compared" << std::endl;
+        std::cout << "right edge compared" << std::endl;
+
+        std::cout << "Reading bottom edge" << std::endl;
+        io.readImageBlock2Band(1, pSubData, 0, IMG_YSIZE - 50, 100, 50, 100, 100, keatype);
+        if( !compareDataSubsetEdge<KEA_DTYPE>(pReadData, pSubData, 0, IMG_YSIZE - 50, readinfo2->xSize, readinfo2->ySize, 100, 100, 100, 50, 99))
+        {
+            return 1;
+        }
+        
+        std::cout << "bottom edge compared" << std::endl;
+
+        std::cout << "Reading bottom right edge" << std::endl;
+        io.readImageBlock2Band(1, pSubData, IMG_XSIZE - 50, IMG_YSIZE - 50, 50, 50, 100, 100, keatype);
+        if( !compareDataSubsetEdge<KEA_DTYPE>(pReadData, pSubData, IMG_XSIZE - 50, IMG_YSIZE - 50, readinfo2->xSize, readinfo2->ySize, 100, 100, 50, 50, 99))
+        {
+            return 1;
+        }
+        
+        std::cout << "bottom right edge compared" << std::endl;
         
         free(pSubData);
         free(pReadData);

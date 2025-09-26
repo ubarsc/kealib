@@ -83,6 +83,15 @@ int main()
         
         auto spatialInfo2 = getSpatialInfo(10);
         io.setSpatialInfo(&spatialInfo2);
+        
+        // read image data (nothing written yet)
+        // is it all zero?
+        KEA_DTYPE *pUnsetData = (KEA_DTYPE*)calloc(100 * 100, sizeof(KEA_DTYPE));
+        io.readImageBlock2Band(1, pUnsetData, 0, 0, 100, 100, 100, 100, keatype);
+        if(!compareDataConstant<KEA_DTYPE>(pUnsetData, 0, 100, 100))
+        {
+            return 1;
+        }
 
         uint64_t subXSize = IMG_XSIZE;
         uint64_t subYSize = IMG_YSIZE;
@@ -100,6 +109,20 @@ int main()
         io.createMask(1, 1);
 
         std::cout << "Created Mask" << std::endl;
+
+        // is the mask band all 255?
+        io.readImageBlock2BandMask(1, pUnsetData, 0, 0, 100, 100, 100, 100, keatype);
+        KEA_DTYPE expected = 255;
+        if( strcmp(STRINGIFY(KEA_DTYPE), "int8_t") == 0 )
+        {
+            expected = 127; // gets truncated
+        }
+        if(!compareDataConstant<KEA_DTYPE>(pUnsetData, expected, 100, 100))
+        {
+            return 1;
+        }
+        
+        free(pUnsetData);
                 
         // write some mask data - note always uint8_t here
         uint8_t *pMaskData = createDataForType<uint8_t>(subXSize, subYSize);

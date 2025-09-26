@@ -167,6 +167,15 @@ namespace kealib{
          */
         static void setNumImgBandsInFileMetadata(HighFive::File *keaImgH5File, const uint32_t numImgBands);
 
+        /**
+          * helper to read part of an image form a HDF5 dataset
+          */        
+        void readImageFromDataset(const HighFive::DataSet &dataset, uint32_t band, 
+            void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn,
+            uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType,
+            bool ismask=false);
+
+
         
         //static std::string readString(H5::DataSet& dataset, H5::DataType strDataType);
         

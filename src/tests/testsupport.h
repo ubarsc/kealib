@@ -129,6 +129,24 @@ bool compareDataSubsetEdge(T *p1, T *pSubset, uint64_t xOff, uint64_t yOff,
     return true;
 }
 
+template <typename T>
+bool compareDataConstant(T *p, T val, uint64_t xSize, uint64_t ySize)
+{
+    for( uint64_t x = 0; x < xSize; x++ )
+    {
+        for( uint64_t y = 0; y < ySize; y++ )
+        {
+            uint64_t idx = (y * xSize) + x;
+            if( p[idx] != val)
+            {
+                std::cout << "Pixel not " << int(val) << " is " << int(p[idx]) << " at " << x << "," << y << std::endl;
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 const uint64_t IMG_XSIZE = 600;
 const uint64_t IMG_YSIZE = 700;
 const uint64_t OV_XSIZE = 300;

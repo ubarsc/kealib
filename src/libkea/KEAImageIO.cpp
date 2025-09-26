@@ -344,6 +344,180 @@ namespace kealib{
             throw KEAIOException(e.what());
         }
     }
+    
+    void KEAImageIO::readImageFromDataset(const HighFive::DataSet &dataset, uint32_t band, 
+        void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn,
+        uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType, 
+        bool ismask)
+    {
+        uint64_t endXPxl = xPxlOff + xSizeIn;
+        uint64_t endYPxl = yPxlOff + ySizeIn;
+        auto dims = dataset.getDimensions();
+
+        if (xPxlOff > dims[1])
+        {
+            throw KEAIOException("Start X Pixel is not within image.");
+        }
+
+        if (endXPxl > dims[1])
+        {
+            throw KEAIOException("End X Pixel is not within image.");
+        }
+
+        if (yPxlOff > dims[0])
+        {
+            throw KEAIOException("Start Y Pixel is not within image.");
+        }
+
+        if (endYPxl > dims[0])
+        {
+            throw KEAIOException("End Y Pixel is not within image.");
+        }
+
+        // GET NATIVE DATASET
+        auto imgBandDT = convertDatatypeKeaToH5Native(inDataType);
+        
+        // what type of read?
+        if((dims[0] != ySizeBuf) || (dims[1] != xSizeBuf))
+        {
+            // partial
+            std::cout << "reading subset of band " << band << " from image." <<
+                    std::endl;
+            std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
+                    << std::endl;
+            std::cout << "xSizeIn: " << xSizeIn << ", ySizeIn: " << ySizeIn <<
+                    std::endl;
+            std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
+                    std::endl;
+
+            // Is this a read off the edge?
+			if((ySizeBuf != ySizeIn) || (xSizeBuf != xSizeIn))
+			{
+                // so we need to read just image data but put it in a larger buffer.
+                // This goes beyond what HighFive can currently do so we must resort
+                // to the C API. This is a rough port of what happens in the old Kealib.
+				HighFive::DataSpace dataSpace = HighFive::DataSpace({ySizeBuf, xSizeBuf});
+				
+				if(!ismask)
+				{
+    				// First, work out the ignore value (I don't think old kealib does this)
+    				void *pNoData = malloc(imgBandDT.getSize());
+    				try
+    				{
+    					this->getNoDataValue(band, pNoData, inDataType);
+    				}
+    				catch(const KEAIOException &e)
+    				{
+    				    // no nodata set
+    					free(pNoData);
+    					pNoData = NULL;  // H5Dfill defaults to 0 in this case which is the default fill value
+    					// for an image dataset
+    				}
+    				
+    				// fill the whole buffer with the no data value so parts that are not read in stay
+    				// set to this value.
+    				if( H5Dfill(pNoData, imgBandDT.getId(), data, imgBandDT.getId(), dataSpace.getId()) < 0 )
+    				{
+    					H5Eprint(H5E_DEFAULT, stderr);
+    					throw KEAIOException("Error in H5Dfill");
+    				}
+    				free(pNoData);
+                }
+                else
+                {
+                    // is a mask. Fill with 255
+                    int fill = 255;
+    				if( H5Dfill(&fill, H5T_NATIVE_INT, data, imgBandDT.getId(), dataSpace.getId()) < 0 )
+    				{
+    					H5Eprint(H5E_DEFAULT, stderr);
+    					throw KEAIOException("Error in H5Dfill");
+    				}
+                }
+					
+				// So the main trick here is that you can "select" on a dataspace (the buffer)
+				// with HDF5, but not HighFive (yet).
+				// The below code selects the hyperslab on the dataspace
+				hsize_t dataSelectMemDims[2]; // "count"
+				dataSelectMemDims[0] = ySizeIn; // all the pixels in the y dimension 
+				dataSelectMemDims[1] = 1;  // only 1 "element" in the "x" dimension - see dataSelectBlockSizeDims where the definition of a block is set
+
+				hsize_t dataOffDims[2]; // start
+				dataOffDims[0] = 0; // this is 0,0 because it is 
+				dataOffDims[1] = 0;
+
+				hsize_t dataSelectStrideDims[2];  // the stride.
+				dataSelectStrideDims[0] = 1;      // 1 in the y dimension
+				if(xSizeBuf == xSizeIn)
+				{
+					dataSelectStrideDims[1] = 1;  // we are reading all the way accross, so 1 in the x dimension
+				}
+				else
+				{
+					dataSelectStrideDims[1] = xSizeBuf - xSizeIn; // reading to the end of the image, so set the stride for
+					                   // each write into the dataspace - just the number of pixels we are reading. The remainder
+					                   // will stay the ignore
+				}
+
+				hsize_t dataSelectBlockSizeDims[2]; // the definition of what a block is
+				dataSelectBlockSizeDims[0] = 1;     // y dimension - 1 element
+				dataSelectBlockSizeDims[1] = xSizeIn;  // x dimension - one block is one row of image data - see dataSelectMemDims above
+				// now select the hyperslab for the dataspace
+				if( H5Sselect_hyperslab(dataSpace.getId(), H5S_SELECT_SET, dataOffDims, 
+				        dataSelectStrideDims, dataSelectMemDims, dataSelectBlockSizeDims) < 0 )
+				{
+					H5Eprint(H5E_DEFAULT, stderr);
+					throw KEAIOException("Error in H5Sselect_hyperslab 1");
+				}
+				
+				// now set the hyperslab for the dataset 
+				auto imgBandDataspace = dataset.getSpace();
+				hsize_t dataOffset[2];  // the offset into the dataset
+                dataOffset[0] = yPxlOff;
+                dataOffset[1] = xPxlOff;
+                hsize_t dataInDims[2];
+                dataInDims[0] = ySizeIn;  // the size
+                dataInDims[1] = xSizeIn;
+                // set the hyperslab
+                if( H5Sselect_hyperslab(imgBandDataspace.getId(), H5S_SELECT_SET, dataOffset, NULL, dataInDims, NULL) < 0 )
+                {
+					H5Eprint(H5E_DEFAULT, stderr);
+					throw KEAIOException("Error in H5Sselect_hyperslab 2");
+                }
+				
+				// now do the actual read
+                if( H5Dread(dataset.getId(), imgBandDT.getId(), dataSpace.getId(), imgBandDataspace.getId(), H5P_DEFAULT, data) < 0 )
+                {
+					H5Eprint(H5E_DEFAULT, stderr);
+					throw KEAIOException("Error in H5Dread");
+                }
+			}
+			else
+			{
+			    // we are doing a partial read but not over the edge of the image
+			    // HighFive can handle this no problems
+				std::vector<size_t> startOffset = {yPxlOff, xPxlOff};
+				std::vector<size_t> bufSize = {ySizeBuf, xSizeBuf};
+				dataset.select(startOffset, bufSize).read_raw(
+					data,
+					imgBandDT
+				);
+
+			}
+		}
+        else
+        {
+            std::cout << "reading band " << band << " from image." << std::endl;
+            std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
+                    << std::endl;
+            std::cout << "xSizeIn: " << xSizeIn << ", ySizeIn: " << ySizeIn <<
+                    std::endl;
+            std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
+                    std::endl;
+            // we are reading the whole image
+            dataset.read_raw(data, imgBandDT);
+        }
+        
+    }
 
     /**
      * Reads a block of image data for a specified band from the KEA image file.
@@ -398,142 +572,13 @@ namespace kealib{
                 throw KEAIOException("Band is not present within image.");
             }
 
-            uint64_t endXPxl = xPxlOff + xSizeIn;
-            uint64_t endYPxl = yPxlOff + ySizeIn;
-
-            if (xPxlOff > this->spatialInfoFile->xSize)
-            {
-                throw KEAIOException("Start X Pixel is not within image.");
-            }
-
-            if (endXPxl > this->spatialInfoFile->xSize)
-            {
-                throw KEAIOException("End X Pixel is not within image.");
-            }
-
-            if (yPxlOff > this->spatialInfoFile->ySize)
-            {
-                throw KEAIOException("Start Y Pixel is not within image.");
-            }
-
-            if (endYPxl > this->spatialInfoFile->ySize)
-            {
-                throw KEAIOException("End Y Pixel is not within image.");
-            }
-
-            // GET NATIVE DATASET
-            auto imgBandDT = convertDatatypeKeaToH5Native(inDataType);
-
             // OPEN BAND DATASET AND READ IMAGE DATA
             std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_DATA;
             if (this->keaImgFile->exist(imageBandPath))
             {
                 auto imgBandDataset = this->keaImgFile->getDataSet(imageBandPath);
-                if ((this->spatialInfoFile->ySize != ySizeBuf) || (
-                        this->spatialInfoFile->xSize != xSizeBuf))
-                {
-                    std::cout << "reading subset of band " << band << " from image." <<
-                            std::endl;
-                    std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
-                            << std::endl;
-                    std::cout << "xSizeIn: " << xSizeIn << ", ySizeIn: " << ySizeIn <<
-                            std::endl;
-                    std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
-                            std::endl;
-
-					if((ySizeBuf != ySizeIn) || (xSizeBuf != xSizeIn))
-					{
-						HighFive::DataSpace dataSpace = HighFive::DataSpace({ySizeBuf, xSizeBuf});
-						
-						void *pNoData = malloc(imgBandDT.getSize());
-						try
-						{
-						    this->getNoDataValue(band, pNoData, inDataType);
-						}
-						catch(const KEAIOException &e)
-						{
-						    free(pNoData);
-						    pNoData = NULL;  // H5Dfill defaults to 0 in this case
-						}
-						
-						// TODO: retrieve actual nodata value
-						if( H5Dfill(pNoData, imgBandDT.getId(), data, imgBandDT.getId(), dataSpace.getId()) < 0 )
-						{
-						    H5Eprint(H5E_DEFAULT, stderr);
-						    throw KEAIOException("Error in H5Dfill");
-						}
-						free(pNoData);
-							
-						hsize_t dataSelectMemDims[2];
-						dataSelectMemDims[0] = ySizeIn;
-						dataSelectMemDims[1] = 1;
-
-						hsize_t dataOffDims[2];
-						dataOffDims[0] = 0;
-						dataOffDims[1] = 0;
-
-						hsize_t dataSelectStrideDims[2];
-						dataSelectStrideDims[0] = 1;
-						if(xSizeBuf == xSizeIn)
-						{
-							dataSelectStrideDims[1] = 1;
-						}
-						else
-						{
-							dataSelectStrideDims[1] = xSizeBuf - xSizeIn;
-						}
-
-						hsize_t dataSelectBlockSizeDims[2];
-						dataSelectBlockSizeDims[0] = 1;
-						dataSelectBlockSizeDims[1] = xSizeIn;
-						if( H5Sselect_hyperslab(dataSpace.getId(), H5S_SELECT_SET, dataOffDims, dataSelectStrideDims, dataSelectMemDims, dataSelectBlockSizeDims) < 0 )
-						{
-						    H5Eprint(H5E_DEFAULT, stderr);
-						    throw KEAIOException("Error in H5Sselect_hyperslab 1");
-						}
-						
-						auto imgBandDataspace = imgBandDataset.getSpace();
-						hsize_t dataOffset[2];
-                        dataOffset[0] = yPxlOff;
-                        dataOffset[1] = xPxlOff;
-                        hsize_t dataInDims[2];
-                        dataInDims[0] = ySizeIn;
-                        dataInDims[1] = xSizeIn;
-                        if( H5Sselect_hyperslab(imgBandDataspace.getId(), H5S_SELECT_SET, dataOffset, NULL, dataInDims, NULL) < 0 )
-                        {
-						    H5Eprint(H5E_DEFAULT, stderr);
-						    throw KEAIOException("Error in H5Sselect_hyperslab 2");
-                        }
-						
-                        if( H5Dread(imgBandDataset.getId(), imgBandDT.getId(), dataSpace.getId(), imgBandDataspace.getId(), H5P_DEFAULT, data) < 0 )
-                        {
-						    H5Eprint(H5E_DEFAULT, stderr);
-						    throw KEAIOException("Error in H5Dread");
-                        }
-					}
-					else
-					{
-						std::vector<size_t> startOffset = {yPxlOff, xPxlOff};
-						std::vector<size_t> bufSize = {ySizeBuf, xSizeBuf};
-						imgBandDataset.select(startOffset, bufSize).read_raw(
-							data,
-							imgBandDT
-						);
-
-					}
-				}
-                else
-                {
-                    std::cout << "reading band " << band << " from image." << std::endl;
-                    std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
-                            << std::endl;
-                    std::cout << "xSizeIn: " << xSizeIn << ", ySizeIn: " << ySizeIn <<
-                            std::endl;
-                    std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
-                            std::endl;
-
-                    imgBandDataset.read_raw(data, imgBandDT);
-                }
+                readImageFromDataset(imgBandDataset, band, data, xPxlOff,yPxlOff, xSizeIn,
+                    ySizeIn, xSizeBuf, ySizeBuf, inDataType);            
             }
             else
             {
@@ -577,6 +622,13 @@ namespace kealib{
                 imgBandDataSetProps.add(HighFive::Chunking(blockSize2Use, blockSize2Use));
                 imgBandDataSetProps.add(HighFive::Deflate(deflate));
                 imgBandDataSetProps.add(HighFive::Shuffle());
+                int initFillVal = 255;
+                // HighFive doesn't appear to support this (yet)
+                if( H5Pset_fill_value(imgBandDataSetProps.getId(), H5T_NATIVE_INT, &initFillVal) < 0 )
+                {
+    				H5Eprint(H5E_DEFAULT, stderr);
+    				throw KEAIOException("Error in H5Pset_fill_value");
+                }
             
                 HighFive::DataSetAccessProps imgBandAccessProps =
                         HighFive::DataSetAccessProps::Default();
@@ -2171,7 +2223,13 @@ namespace kealib{
             HighFive::DataSetCreateProps imgBandDataSetProps;
             imgBandDataSetProps.add(HighFive::Chunking(blockSize2Use, blockSize2Use));
             imgBandDataSetProps.add(HighFive::Shuffle());
-            // HOW TO Add a FILL VALUE?
+            int initFillVal = 0;
+            // HighFive doesn't appear to support this (yet)
+            if( H5Pset_fill_value(imgBandDataSetProps.getId(), H5T_NATIVE_INT, &initFillVal) < 0 )
+            {
+				H5Eprint(H5E_DEFAULT, stderr);
+				throw KEAIOException("Error in H5Pset_fill_value");
+            }
 
             HighFive::DataSetAccessProps imgBandAccessProps =
                     HighFive::DataSetAccessProps::Default();
@@ -3414,7 +3472,7 @@ namespace kealib{
         // TODO: dataspace instead of scalar to be compatible with old KEA
         auto oldKeaDataSpace = HighFive::DataSpace({1});
 
-        //int initFillVal = 0;
+        int initFillVal = 0;
         std::string bandDescrip = bandDescripIn; // may be updated below
 
         // Find the smallest axis of the image.
@@ -3431,7 +3489,12 @@ namespace kealib{
             imgBandDataSetProps.add(HighFive::Chunking(blockSize2Use, blockSize2Use));
             imgBandDataSetProps.add(HighFive::Deflate(deflate));
             imgBandDataSetProps.add(HighFive::Shuffle());
-            // HOW TO Add a FILL VALUE?
+            // HighFive doesn't appear to support this (yet)
+            if( H5Pset_fill_value(imgBandDataSetProps.getId(), H5T_NATIVE_INT, &initFillVal) < 0 )
+            {
+				H5Eprint(H5E_DEFAULT, stderr);
+				throw KEAIOException("Error in H5Pset_fill_value");
+            }
 
             HighFive::DataSetAccessProps imgBandAccessProps =
                     HighFive::DataSetAccessProps::Default();
