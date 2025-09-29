@@ -122,8 +122,6 @@ int main()
             return 1;
         }
         
-        free(pUnsetData);
-                
         // write some mask data - note always uint8_t here
         uint8_t *pMaskData = createDataForType<uint8_t>(subXSize, subYSize);
         io.writeImageBlock2BandMask(1, pMaskData, subXOff, subYOff, subXSize, subYSize,
@@ -246,6 +244,17 @@ int main()
         }
         
         io.createOverview(1, 1, OV_XSIZE, OV_YSIZE);
+
+        // set to zero?
+        io.readFromOverview(1, 1, pUnsetData, 0, 0, 100, 100, 100, 100, keatype);
+        if(!compareDataConstant<KEA_DTYPE>(pUnsetData, 0, 100, 100))
+        {
+            return 1;
+        }
+        
+        free(pUnsetData);
+        
+        
         io.createOverview(1, 2, OV2_XSIZE, OV2_YSIZE);
         if( io.getNumOfOverviews(1) != 2 )
         {

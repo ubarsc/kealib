@@ -107,6 +107,23 @@ int main()
         
         std::cout << "bottom right edge compared" << std::endl;
         
+        std::cout << "reading out of range" << std::endl;
+        bool exception = false;
+        try
+        {
+            io.readImageBlock2Band(1, pSubData, IMG_XSIZE + 50, 0, 100, 100, 100, 100, keatype);
+        }
+        catch(const kealib::KEAIOException &e)
+        {
+            exception = true;
+        }
+        if( !exception )
+        {
+            std::cout << "exception not raised" << std::endl;
+            return 1;
+        }
+        std::cout << "reading out of checked" << std::endl;
+        
         free(pSubData);
         free(pReadData);
         free(pCheckData);
@@ -133,6 +150,14 @@ int main()
         {
             return 1;
         }
+        
+        std::cout << "Reading right edge mask" << std::endl;
+        io.readImageBlock2BandMask(1, pReadMask, readinfo2->xSize - 50, 0, 50, 100, 100, 100, kealib::kea_8uint);
+        if( !compareDataSubsetEdge<uint8_t>(pMaskData, pReadMask, readinfo2->xSize - 50, 0, readinfo2->xSize, readinfo2->ySize, 100, 100, 50, 100, 255))
+        {
+            return 1;
+        }
+        
         std::cout << "Mask compared" << std::endl;
 
         if( io.getImageMetaData("Test1") != "Value1" )
@@ -373,6 +398,14 @@ int main()
         {
             return 1;
         }
+        
+        std::cout << "reading right edge overview" << std::endl;
+        io.readFromOverview(1, 1, pReadOvData, OV_XSIZE - 50, 0, 50, 100, 100, 100, keatype);
+        if( !compareDataSubsetEdge<KEA_DTYPE>(pTestOvData, pReadOvData, OV_XSIZE - 50, 0, OV_XSIZE, OV_YSIZE, 100, 100, 50, 100, 99))
+        {
+            return 1;
+        }
+        
         free(pTestOvData);
         free(pReadOvData);
         std::cout << "Overview compared" << std::endl;

@@ -426,7 +426,7 @@ namespace kealib{
                 else
                 {
                     // is a mask. Fill with 255
-                    int fill = 255;
+                    int fill = FILL_MASK_DATA;
     				if( H5Dfill(&fill, H5T_NATIVE_INT, data, imgBandDT.getId(), dataSpace.getId()) < 0 )
     				{
     					H5Eprint(H5E_DEFAULT, stderr);
@@ -577,7 +577,7 @@ namespace kealib{
             if (this->keaImgFile->exist(imageBandPath))
             {
                 auto imgBandDataset = this->keaImgFile->getDataSet(imageBandPath);
-                readImageFromDataset(imgBandDataset, band, data, xPxlOff,yPxlOff, xSizeIn,
+                readImageFromDataset(imgBandDataset, band, data, xPxlOff, yPxlOff, xSizeIn,
                     ySizeIn, xSizeBuf, ySizeBuf, inDataType);            
             }
             else
@@ -622,7 +622,7 @@ namespace kealib{
                 imgBandDataSetProps.add(HighFive::Chunking(blockSize2Use, blockSize2Use));
                 imgBandDataSetProps.add(HighFive::Deflate(deflate));
                 imgBandDataSetProps.add(HighFive::Shuffle());
-                int initFillVal = 255;
+                int initFillVal = FILL_MASK_DATA;
                 // HighFive doesn't appear to support this (yet)
                 if( H5Pset_fill_value(imgBandDataSetProps.getId(), H5T_NATIVE_INT, &initFillVal) < 0 )
                 {
@@ -817,75 +817,17 @@ namespace kealib{
                 throw KEAIOException("Band is not present within image.");
             }
 
-            uint64_t endXPxl = xPxlOff + xSizeIn;
-            uint64_t endYPxl = yPxlOff + ySizeIn;
-
-            if (xPxlOff > this->spatialInfoFile->xSize)
-            {
-                throw KEAIOException("Start X Pixel is not within image.");
-            }
-
-            if (endXPxl > this->spatialInfoFile->xSize)
-            {
-                throw KEAIOException("End X Pixel is not within image.");
-            }
-
-            if (yPxlOff > this->spatialInfoFile->ySize)
-            {
-                throw KEAIOException("Start Y Pixel is not within image.");
-            }
-
-            if (endYPxl > this->spatialInfoFile->ySize)
-            {
-                throw KEAIOException("End Y Pixel is not within image.");
-            }
-
-            // GET NATIVE DATASET
-            auto imgBandDT = convertDatatypeKeaToH5Native(inDataType);
-
             // OPEN BAND DATASET AND READ IMAGE DATA
-            std::string imageBandPath = KEA_DATASETNAME_BAND + uint2Str(band);
-            if (this->keaImgFile->exist(imageBandPath + KEA_BANDNAME_MASK))
+            std::string imageMaskBandPath = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_MASK;
+            if (this->keaImgFile->exist(imageMaskBandPath))
             {
-                auto imgBandDataset = this->keaImgFile->getDataSet(
-                    imageBandPath + KEA_BANDNAME_MASK
-                );
-                if ((this->spatialInfoFile->ySize != ySizeBuf) || (
-                        this->spatialInfoFile->xSize != xSizeBuf))
-                {
-                    std::cout << "Writing subset of mask band " << band << " to image." <<
-                            std::endl;
-                    std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
-                            << std::endl;
-                    std::cout << "xSizeIn: " << xSizeIn << ", ySizeIn: " << ySizeIn <<
-                            std::endl;
-                    std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
-                            std::endl;
-
-                    // TODO: stride
-                    std::vector<size_t> startOffset = {yPxlOff, xPxlOff};
-                    std::vector<size_t> bufSize = {ySizeBuf, xSizeBuf};
-                    imgBandDataset.select(startOffset, bufSize).read_raw(
-                        data,
-                        imgBandDT
-                    );
-                }
-                else
-                {
-                    std::cout << "Writing mask band " << band << " to image." << std::endl;
-                    std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
-                            << std::endl;
-                    std::cout << "xSizeIn: " << xSizeIn << ", ySizeIn: " << ySizeIn <<
-                            std::endl;
-                    std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
-                            std::endl;
-
-                    imgBandDataset.read_raw(data, imgBandDT);
-                }
+                auto imgBandDataset = this->keaImgFile->getDataSet(imageMaskBandPath);
+                readImageFromDataset(imgBandDataset, band, data, xPxlOff, yPxlOff, xSizeIn,
+                    ySizeIn, xSizeBuf, ySizeBuf, inDataType, true);            
             }
             else
             {
-                throw KEAIOException("Band image dataset does not exist.");
+                throw KEAIOException("Band image mask dataset does not exist.");
             }
         }
         catch (const KEAIOException &e)
@@ -2223,7 +2165,7 @@ namespace kealib{
             HighFive::DataSetCreateProps imgBandDataSetProps;
             imgBandDataSetProps.add(HighFive::Chunking(blockSize2Use, blockSize2Use));
             imgBandDataSetProps.add(HighFive::Shuffle());
-            int initFillVal = 0;
+            int initFillVal = FILL_IMAGE_DATA;
             // HighFive doesn't appear to support this (yet)
             if( H5Pset_fill_value(imgBandDataSetProps.getId(), H5T_NATIVE_INT, &initFillVal) < 0 )
             {
@@ -2474,40 +2416,8 @@ namespace kealib{
             if (this->keaImgFile->exist(overviewName))
             {
                 auto imgBandDataset = this->keaImgFile->getDataSet(overviewName);
-                std::vector<size_t> imgDataDims = imgBandDataset.getDimensions();
-                if ((imgDataDims[1] != ySizeBuf) || (
-                        imgDataDims[0] != xSizeBuf))
-                {
-                    std::cout << "Reading subset of band " << band << "overview" << overview << " from image." <<
-                            std::endl;
-                    std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
-                            << std::endl;
-                    std::cout << "xSizeIn: " << xSizeIn << ", ySizeIn: " << ySizeIn <<
-                            std::endl;
-                    std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
-                            std::endl;
-
-                    // TODO: stride
-
-                    std::vector<size_t> startOffset = {yPxlOff, xPxlOff};
-                    std::vector<size_t> bufSize = {ySizeBuf, xSizeBuf};
-                    imgBandDataset.select(startOffset, bufSize).read_raw(
-                        data,
-                        imgBandDT
-                    );
-                }
-                else
-                {
-                    std::cout << "Reading band " << band << "overview" << overview << " from image." << std::endl;
-                    std::cout << "xSizeBuf: " << xSizeBuf << ", ySizeBuf: " << ySizeBuf
-                            << std::endl;
-                    std::cout << "xSizeIn: " << xSizeIn << ", ySizeIn: " << ySizeIn <<
-                            std::endl;
-                    std::cout << "xPxlOff: " << xPxlOff << ", yPxlOff: " << yPxlOff <<
-                            std::endl;
-
-                    imgBandDataset.read_raw(data, imgBandDT);
-                }
+                readImageFromDataset(imgBandDataset, band, data, xPxlOff, yPxlOff, xSizeIn,
+                    ySizeIn, xSizeBuf, ySizeBuf, inDataType);            
             }
             else
             {
@@ -3472,7 +3382,7 @@ namespace kealib{
         // TODO: dataspace instead of scalar to be compatible with old KEA
         auto oldKeaDataSpace = HighFive::DataSpace({1});
 
-        int initFillVal = 0;
+        int initFillVal = FILL_IMAGE_DATA;
         std::string bandDescrip = bandDescripIn; // may be updated below
 
         // Find the smallest axis of the image.

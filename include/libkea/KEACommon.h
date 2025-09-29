@@ -142,6 +142,9 @@ namespace kealib{
     static const hsize_t KEA_IMAGE_CHUNK_SIZE( 512 );  // 512
     static const hsize_t KEA_ATT_CHUNK_SIZE( 10000 );  // 10000
     
+    static const int FILL_IMAGE_DATA(0);
+    static const int FILL_MASK_DATA(255);
+    
     enum KEADataType
     {
         kea_undefined = 0,
