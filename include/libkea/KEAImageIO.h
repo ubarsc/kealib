@@ -174,6 +174,13 @@ namespace kealib{
             void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn,
             uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType,
             bool ismask=false);
+            
+        /**
+          * helper to write part of an image form a HDF5 dataset
+          */        
+        void writeImageToDataset(HighFive::DataSet &dataset, uint32_t band, 
+            void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut,
+            uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType);
 
 
         

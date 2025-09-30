@@ -103,6 +103,11 @@ int main()
         KEA_DTYPE *pData = createDataForType<KEA_DTYPE>(subXSize, subYSize);
         io.writeImageBlock2Band(1, pData, subXOff, subYOff, subXSize, subYSize,
                     subXSize, subYSize, keatype);
+        io.writeImageBlock2Band(2, pData, subXOff, subYOff, subXSize, subYSize,
+                    subXSize, subYSize, keatype);
+        // over the edge of the file
+        io.writeImageBlock2Band(2, pData, IMG_XSIZE - 50, subYOff, 50, subYSize,
+                    subXSize, subYSize, keatype);
         free(pData);
         std::cout << "Written some image data" << std::endl;
         

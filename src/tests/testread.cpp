@@ -124,6 +124,23 @@ int main()
         }
         std::cout << "reading out of checked" << std::endl;
         
+        // check band 2 which as some data re-written at as offset
+        std::cout << "checking offset written data" << std::endl;
+        // first the normally written block
+        io.readImageBlock2Band(2, pReadData, 0, 0, readinfo2->xSize - 50, readinfo2->ySize, readinfo2->xSize - 50, readinfo2->ySize, keatype);
+        if( !compareDataSubset<KEA_DTYPE>(pCheckData, pReadData, 0, 0, readinfo2->xSize, readinfo2->ySize, readinfo2->xSize - 50, readinfo2->ySize))
+        {
+            return 1;
+        }
+        // then the bit where I reset the numbers again
+        io.readImageBlock2Band(2, pReadData, readinfo2->xSize - 50, 0, 50, readinfo2->ySize, 50, readinfo2->ySize, keatype);
+        if( !compareDataSubset<KEA_DTYPE>(pCheckData, pReadData, 0, 0, readinfo2->xSize, readinfo2->ySize, 50, readinfo2->ySize))
+        {
+            return 1;
+        }
+        
+        std::cout << "Checked offset written data" << std::endl;
+        
         free(pSubData);
         free(pReadData);
         free(pCheckData);

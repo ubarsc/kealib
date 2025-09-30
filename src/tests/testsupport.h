@@ -42,8 +42,8 @@ template <typename T>
 T* createDataForType(uint64_t xSize, uint64_t ySize)
 {
     T *pData = (T*)calloc(xSize * ySize, sizeof(T));
-    double dMin = std::numeric_limits<uint8_t>::min();
-    double dMax = std::numeric_limits<uint8_t>::max();
+    double dMin = std::numeric_limits<T>::min();
+    double dMax = std::numeric_limits<T>::max();
     double dMult = (dMax - dMin) / (xSize * ySize);
     for( uint64_t x = 0; x < xSize; x++ )
     {
