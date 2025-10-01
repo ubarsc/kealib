@@ -2983,7 +2983,8 @@ namespace kealib{
      */
     HighFive::File *KEAImageIO::openKeaH5RDOnly(
         const std::string &fileName, int mdcElmts, hsize_t rdccNElmts,
-        hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize
+        hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize,
+       	hid_t driver_id, const void* driver_info
     )
     {
         HighFive::File *keaImgH5File = nullptr;
@@ -3002,6 +3003,14 @@ namespace kealib{
             {
                 H5Eprint(H5E_DEFAULT, stderr);
 				throw KEAIOException("Error in H5Pset_cache");
+            }
+            if( driver_id != 0 )
+            {
+                if( H5Pset_driver(keaFileAccessProps.getId(), driver_id, driver_info) < 0 )
+                {
+                    H5Eprint(H5E_DEFAULT, stderr);
+    				throw kealib::KEAIOException("Error in H5Pset_driver");
+                }
             }
 
             keaImgH5File = new HighFive::File(

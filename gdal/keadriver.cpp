@@ -92,6 +92,12 @@ void GDALRegister_KEA()
         poDriver->SetMetadataItem(GDAL_DCAP_OPEN, "YES");
         poDriver->SetMetadataItem(GDAL_DCAP_CREATE, "YES");
         poDriver->SetMetadataItem(GDAL_DCAP_CREATECOPY, "YES");
+        poDriver->SetMetadataItem(GDAL_DCAP_UPDATE, "YES");
+        poDriver->SetMetadataItem(GDAL_DMD_UPDATE_ITEMS,
+                              "GeoTransform SRS GCPs NoData "
+                              "ColorInterpretation RasterValues "
+                              "DatasetMetadata BandMetadata");
+        poDriver->SetMetadataItem(GDAL_DMD_HELPTOPIC, "drivers/raster/kea.html");
     
         // pointer to open function
         poDriver->pfnOpen = KEADataset::Open;

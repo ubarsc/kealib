@@ -137,31 +137,9 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
             {
                 // use the virtual driver so we can open files using
                 // /vsicurl etc
-                // do this same as libkea
-                auto keaFileAccessProps = HighFive::FileAccessProps::Default();
-                keaFileAccessProps.add(HighFive::MetadataBlockSize(kealib::KEA_META_BLOCKSIZE));
-                // HighFive doesn't seem to support these ones now
-                if( H5Pset_sieve_buf_size(keaFileAccessProps.getId(), kealib::KEA_SIEVE_BUF) < 0 )
-                {
-                    H5Eprint(H5E_DEFAULT, stderr);
-    				throw kealib::KEAIOException("Error in H5Pset_sieve_buf_size");
-                }
-                if( H5Pset_cache(keaFileAccessProps.getId(), kealib::KEA_MDC_NELMTS, kealib::KEA_RDCC_NELMTS,
-                    kealib::KEA_RDCC_NBYTES, kealib::KEA_RDCC_W0) < 0 )
-                {
-                    H5Eprint(H5E_DEFAULT, stderr);
-    				throw kealib::KEAIOException("Error in H5Pset_cache");
-                }
-                if( H5Pset_driver(keaFileAccessProps.getId(), HDF5VFLGetFileDriver(), nullptr) < 0 )
-                {
-                    H5Eprint(H5E_DEFAULT, stderr);
-    				throw kealib::KEAIOException("Error in H5Pset_driver");
-                }
-                
-                pH5File = new HighFive::File(
-                    poOpenInfo->pszFilename,
-                    HighFive::File::ReadOnly,
-                    keaFileAccessProps);
+                pH5File = kealib::KEAImageIO::openKeaH5RDOnly( poOpenInfo->pszFilename,
+                    kealib::KEA_MDC_NELMTS, kealib::KEA_RDCC_NELMTS, kealib::KEA_RDCC_NBYTES, kealib::KEA_RDCC_W0, 
+                    kealib::KEA_SIEVE_BUF, kealib::KEA_META_BLOCKSIZE, HDF5VFLGetFileDriver());
             }
             else
             {
