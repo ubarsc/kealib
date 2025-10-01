@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <cstring>
 #include "libkea/KEAImageIO.h"
 #include "testsupport.h"
 
@@ -83,6 +84,15 @@ int main()
         
         auto spatialInfo2 = getSpatialInfo(10);
         io.setSpatialInfo(&spatialInfo2);
+        
+        // read image data (nothing written yet)
+        // is it all zero?
+        KEA_DTYPE *pUnsetData = (KEA_DTYPE*)calloc(100 * 100, sizeof(KEA_DTYPE));
+        io.readImageBlock2Band(1, pUnsetData, 0, 0, 100, 100, 100, 100, keatype);
+        if(!compareDataConstant<KEA_DTYPE>(pUnsetData, 0, 100, 100))
+        {
+            return 1;
+        }
 
         uint64_t subXSize = IMG_XSIZE;
         uint64_t subYSize = IMG_YSIZE;
@@ -94,13 +104,33 @@ int main()
         KEA_DTYPE *pData = createDataForType<KEA_DTYPE>(subXSize, subYSize);
         io.writeImageBlock2Band(1, pData, subXOff, subYOff, subXSize, subYSize,
                     subXSize, subYSize, keatype);
+        io.writeImageBlock2Band(2, pData, subXOff, subYOff, subXSize, subYSize,
+                    subXSize, subYSize, keatype);
+        // over write subset within the file
+        io.writeImageBlock2Band(2, pData, 0, IMG_YSIZE - 75, IMG_XSIZE, 75, subXSize, 75, keatype);
+        // over the edge of the file
+        io.writeImageBlock2Band(2, pData, IMG_XSIZE - 50, subYOff, 50, subYSize,
+                    subXSize, subYSize, keatype);
+        
         free(pData);
         std::cout << "Written some image data" << std::endl;
         
         io.createMask(1, 1);
 
         std::cout << "Created Mask" << std::endl;
-                
+
+        // is the mask band all 255?
+        io.readImageBlock2BandMask(1, pUnsetData, 0, 0, 100, 100, 100, 100, keatype);
+        KEA_DTYPE expected = 255;
+        if( strcmp(STRINGIFY(KEA_DTYPE), "int8_t") == 0 )
+        {
+            expected = 127; // gets truncated
+        }
+        if(!compareDataConstant<KEA_DTYPE>(pUnsetData, expected, 100, 100))
+        {
+            return 1;
+        }
+        
         // write some mask data - note always uint8_t here
         uint8_t *pMaskData = createDataForType<uint8_t>(subXSize, subYSize);
         io.writeImageBlock2BandMask(1, pMaskData, subXOff, subYOff, subXSize, subYSize,
@@ -168,7 +198,7 @@ int main()
         KEA_DTYPE expected_nodata = dnodata; // should cast to type of image
         io.setNoDataValue(2, &dnodata, kealib::kea_64float);
         io.getNoDataValue(2, &dnodata, kealib::kea_64float);
-        if( dnodata != expected_nodata )
+        if( dnodata != expected_nodata)
         {
             std::cout << "Nodata not written correctly" << std::endl;
             return 1;
@@ -223,6 +253,17 @@ int main()
         }
         
         io.createOverview(1, 1, OV_XSIZE, OV_YSIZE);
+
+        // set to zero?
+        io.readFromOverview(1, 1, pUnsetData, 0, 0, 100, 100, 100, 100, keatype);
+        if(!compareDataConstant<KEA_DTYPE>(pUnsetData, 0, 100, 100))
+        {
+            return 1;
+        }
+        
+        free(pUnsetData);
+        
+        
         io.createOverview(1, 2, OV2_XSIZE, OV2_YSIZE);
         if( io.getNumOfOverviews(1) != 2 )
         {

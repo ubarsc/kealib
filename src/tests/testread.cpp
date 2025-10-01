@@ -70,6 +70,7 @@ int main()
         }
         std::cout << "Data compared" << std::endl;
         
+        // below tests check reading off the edge ok
         std::cout << "Reading a Subset" << std::endl;
         KEA_DTYPE *pSubData = (KEA_DTYPE*)calloc(100 * 100, sizeof(KEA_DTYPE));
         io.readImageBlock2Band(1, pSubData, 200, 150, 100, 100, 100, 100, keatype);
@@ -78,6 +79,75 @@ int main()
             return 1;
         }
         std::cout << "subset compared" << std::endl;
+        
+        std::cout << "Reading right edge" << std::endl;
+        io.readImageBlock2Band(1, pSubData, IMG_XSIZE - 50, 0, 50, 100, 100, 100, keatype);
+        if( !compareDataSubsetEdge<KEA_DTYPE>(pReadData, pSubData, IMG_XSIZE - 50, 0, readinfo2->xSize, readinfo2->ySize, 100, 100, 50, 100, 99))
+        {
+            return 1;
+        }
+        
+        std::cout << "right edge compared" << std::endl;
+
+        std::cout << "Reading bottom edge" << std::endl;
+        io.readImageBlock2Band(1, pSubData, 0, IMG_YSIZE - 50, 100, 50, 100, 100, keatype);
+        if( !compareDataSubsetEdge<KEA_DTYPE>(pReadData, pSubData, 0, IMG_YSIZE - 50, readinfo2->xSize, readinfo2->ySize, 100, 100, 100, 50, 99))
+        {
+            return 1;
+        }
+        
+        std::cout << "bottom edge compared" << std::endl;
+
+        std::cout << "Reading bottom right edge" << std::endl;
+        io.readImageBlock2Band(1, pSubData, IMG_XSIZE - 50, IMG_YSIZE - 50, 50, 50, 100, 100, keatype);
+        if( !compareDataSubsetEdge<KEA_DTYPE>(pReadData, pSubData, IMG_XSIZE - 50, IMG_YSIZE - 50, readinfo2->xSize, readinfo2->ySize, 100, 100, 50, 50, 99))
+        {
+            return 1;
+        }
+        
+        std::cout << "bottom right edge compared" << std::endl;
+        
+        std::cout << "reading out of range" << std::endl;
+        bool exception = false;
+        try
+        {
+            io.readImageBlock2Band(1, pSubData, IMG_XSIZE + 50, 0, 100, 100, 100, 100, keatype);
+        }
+        catch(const kealib::KEAIOException &e)
+        {
+            exception = true;
+        }
+        if( !exception )
+        {
+            std::cout << "exception not raised" << std::endl;
+            return 1;
+        }
+        std::cout << "reading out of checked" << std::endl;
+        
+        // check band 2 which as some data re-written at as offset
+        std::cout << "checking offset written data" << std::endl;
+        // first the normally written block (minus the bit at the bottom and the bit at the right where it has been re-written)
+        io.readImageBlock2Band(2, pReadData, 0, 0, readinfo2->xSize - 50, readinfo2->ySize - 75, readinfo2->xSize - 50, readinfo2->ySize - 75, keatype);
+        if( !compareDataSubset<KEA_DTYPE>(pCheckData, pReadData, 0, 0, readinfo2->xSize, readinfo2->ySize, readinfo2->xSize - 50, readinfo2->ySize - 75))
+        {
+            return 1;
+        }
+        std::cout << "checking the right edge" << std::endl;
+        // then the bit where I reset the numbers again (over the right edge)
+        io.readImageBlock2Band(2, pReadData, readinfo2->xSize - 50, 0, 50, readinfo2->ySize, 50, readinfo2->ySize, keatype);
+        if( !compareDataSubset<KEA_DTYPE>(pCheckData, pReadData, 0, 0, readinfo2->xSize, readinfo2->ySize, 50, readinfo2->ySize))
+        {
+            return 1;
+        }
+        std::cout << "checking the bottom edge" << std::endl;
+        // and the within bounds overwrite (excluding over the edge). At the bottom
+        io.readImageBlock2Band(2, pReadData, 0, readinfo2->ySize - 75, readinfo2->xSize - 50, 75, readinfo2->xSize - 50, 75, keatype);
+        if( !compareDataSubset<KEA_DTYPE>(pCheckData, pReadData, 0, 0, readinfo2->xSize, readinfo2->ySize, readinfo2->xSize - 50, 75))
+        {
+            return 1;
+        }
+        
+        std::cout << "Checked offset written data" << std::endl;
         
         free(pSubData);
         free(pReadData);
@@ -105,6 +175,14 @@ int main()
         {
             return 1;
         }
+        
+        std::cout << "Reading right edge mask" << std::endl;
+        io.readImageBlock2BandMask(1, pReadMask, readinfo2->xSize - 50, 0, 50, 100, 100, 100, kealib::kea_8uint);
+        if( !compareDataSubsetEdge<uint8_t>(pMaskData, pReadMask, readinfo2->xSize - 50, 0, readinfo2->xSize, readinfo2->ySize, 100, 100, 50, 100, 255))
+        {
+            return 1;
+        }
+        
         std::cout << "Mask compared" << std::endl;
 
         if( io.getImageMetaData("Test1") != "Value1" )
@@ -220,11 +298,11 @@ int main()
         std::cout << "Read band descriptions ok" << std::endl;
         
         // read nodata back as different type
-        uint16_t u32nodata = 0;
-        io.getNoDataValue(1, &u32nodata, kealib::kea_16uint);
+        uint32_t u32nodata = 0;
+        io.getNoDataValue(1, &u32nodata, kealib::kea_32uint);
         if( u32nodata != 99 )
         {
-            std::cout << "Wrong nodata value read " << u32nodata << std::endl;
+            std::cout << "Wrong nodata value read" << std::endl;
             return 1;
         }
         // band 2 nodata is undefined
@@ -240,7 +318,7 @@ int main()
         }
         if( bNoDataSet )
         {
-            std::cout << "Nodata not properly undefined " << dnodata << std::endl;
+            std::cout << "Nodata not properly undefined" << std::endl;
             return 1;
         }
         std::cout << "Read nodata ok" << std::endl;
@@ -345,6 +423,14 @@ int main()
         {
             return 1;
         }
+        
+        std::cout << "reading right edge overview" << std::endl;
+        io.readFromOverview(1, 1, pReadOvData, OV_XSIZE - 50, 0, 50, 100, 100, 100, keatype);
+        if( !compareDataSubsetEdge<KEA_DTYPE>(pTestOvData, pReadOvData, OV_XSIZE - 50, 0, OV_XSIZE, OV_YSIZE, 100, 100, 50, 100, 99))
+        {
+            return 1;
+        }
+        
         free(pTestOvData);
         free(pReadOvData);
         std::cout << "Overview compared" << std::endl;

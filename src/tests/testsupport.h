@@ -42,8 +42,8 @@ template <typename T>
 T* createDataForType(uint64_t xSize, uint64_t ySize)
 {
     T *pData = (T*)calloc(xSize * ySize, sizeof(T));
-    double dMin = std::numeric_limits<uint8_t>::min();
-    double dMax = std::numeric_limits<uint8_t>::max();
+    double dMin = std::numeric_limits<T>::min();
+    double dMax = std::numeric_limits<T>::max();
     double dMult = (dMax - dMin) / (xSize * ySize);
     for( uint64_t x = 0; x < xSize; x++ )
     {
@@ -88,6 +88,58 @@ bool compareDataSubset(T *p1, T *pSubset, uint64_t xOff, uint64_t yOff,
             if( p1[idx_full] != pSubset[idx_subset])
             {
                 std::cout << "Error comparing values at" << x << "," << y << std::endl;
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+template <typename T>
+bool compareDataSubsetEdge(T *p1, T *pSubset, uint64_t xOff, uint64_t yOff, 
+    uint64_t xSize, uint64_t ySize, uint64_t xSubsetSize, uint64_t ySubsetSize, 
+    uint64_t xNonEdge, uint64_t yNonEdge, T nodata)
+{
+    for( uint64_t x = 0; x < xSubsetSize; x++ )
+    {
+        for( uint64_t y = 0; y < ySubsetSize; y++ )
+        {
+            uint64_t idx_full = ((y + yOff) * xSize) + (x + xOff);
+            uint64_t idx_subset = (y * xSubsetSize) + x;
+            
+            if( (x < xNonEdge) && (y < yNonEdge) )
+            {
+                if( p1[idx_full] != pSubset[idx_subset])
+                {
+                    std::cout << "Error comparing values at " << x << "," << y << std::endl;
+                    return false;
+                }
+            }
+            /*else Old kealib doesn't do this properly
+            {
+                // over the edge. Fill value?
+                if( pSubset[idx_subset] != nodata )
+                {
+                    std::cout << "Edge pixel not zero at " << x << "," << y << " " << pSubset[idx_subset] << std::endl;
+                    return false;
+                }
+            }*/
+        }
+    }
+    return true;
+}
+
+template <typename T>
+bool compareDataConstant(T *p, T val, uint64_t xSize, uint64_t ySize)
+{
+    for( uint64_t x = 0; x < xSize; x++ )
+    {
+        for( uint64_t y = 0; y < ySize; y++ )
+        {
+            uint64_t idx = (y * xSize) + x;
+            if( p[idx] != val)
+            {
+                std::cout << "Pixel not " << int(val) << " is " << int(p[idx]) << " at " << x << "," << y << std::endl;
                 return false;
             }
         }
