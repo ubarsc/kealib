@@ -136,16 +136,13 @@ kealib::KEAImageSpatialInfo getSpatialInfo(double version)
     kealib::KEAImageSpatialInfo spatialInfo;
     spatialInfo.tlX = 10.0 + version;
     spatialInfo.tlY = 100.0 + version;
-    spatialInfo.xRes = 1.0;// + version;
-    spatialInfo.yRes = -1.0;// + version;
-    /*spatialInfo.xRot = 5.0 + version;
+    spatialInfo.xRes = 1.0 + version;
+    spatialInfo.yRes = -1.0 + version;
+    spatialInfo.xRot = 5.0 + version;
     spatialInfo.yRot = 2.0 + version;
     std::ostringstream stringStream;
     stringStream << "Hello World" << version;
-    spatialInfo.wktString = stringStream.str();*/
-    spatialInfo.xRot = 0;
-    spatialInfo.yRot = 0;
-    spatialInfo.wktString = "";
+    spatialInfo.wktString = stringStream.str();
     return spatialInfo;
 }
 
