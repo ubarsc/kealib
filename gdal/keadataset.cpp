@@ -138,26 +138,30 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
                 // use the virtual driver so we can open files using
                 // /vsicurl etc
                 // do this same as libkea
-                /*H5::FileAccPropList keaAccessPlist =
-                    H5::FileAccPropList(H5::FileAccPropList::DEFAULT);
-                keaAccessPlist.setCache(
-                    kealib::KEA_MDC_NELMTS, kealib::KEA_RDCC_NELMTS,
-                    kealib::KEA_RDCC_NBYTES, kealib::KEA_RDCC_W0);
-                keaAccessPlist.setSieveBufSize(kealib::KEA_SIEVE_BUF);
-                hsize_t blockSize = kealib::KEA_META_BLOCKSIZE;
-                keaAccessPlist.setMetaBlockSize(blockSize);
-                // but set the driver
-                keaAccessPlist.setDriver(HDF5VFLGetFileDriver(), nullptr);
-
-                const H5std_string keaImgFilePath(poOpenInfo->pszFilename);
-                pH5File = new H5::H5File(keaImgFilePath, H5F_ACC_RDONLY,
-                                         H5::FileCreatPropList::DEFAULT,
-                                         keaAccessPlist);*/
-                //auto keaFileAccessProps = HighFive::FileAccessProps::Default();
-                //pH5File = new HighFive::File(poOpenInfo->pszFilename,
-                //    HighFive::File::ReadOnly,
-                //    keaFileAccessProps);
-                pH5File = kealib::KEAImageIO::openKeaH5RDOnly(poOpenInfo->pszFilename);
+                auto keaFileAccessProps = HighFive::FileAccessProps::Default();
+                keaFileAccessProps.add(HighFive::MetadataBlockSize(kealib::KEA_META_BLOCKSIZE));
+                // HighFive doesn't seem to support these ones now
+                if( H5Pset_sieve_buf_size(keaFileAccessProps.getId(), kealib::KEA_SIEVE_BUF) < 0 )
+                {
+                    H5Eprint(H5E_DEFAULT, stderr);
+    				throw kealib::KEAIOException("Error in H5Pset_sieve_buf_size");
+                }
+                if( H5Pset_cache(keaFileAccessProps.getId(), kealib::KEA_MDC_NELMTS, kealib::KEA_RDCC_NELMTS,
+                    kealib::KEA_RDCC_NBYTES, kealib::KEA_RDCC_W0) < 0 )
+                {
+                    H5Eprint(H5E_DEFAULT, stderr);
+    				throw kealib::KEAIOException("Error in H5Pset_cache");
+                }
+                if( H5Pset_driver(keaFileAccessProps.getId(), HDF5VFLGetFileDriver(), nullptr) < 0 )
+                {
+                    H5Eprint(H5E_DEFAULT, stderr);
+    				throw kealib::KEAIOException("Error in H5Pset_driver");
+                }
+                
+                pH5File = new HighFive::File(
+                    poOpenInfo->pszFilename,
+                    HighFive::File::ReadOnly,
+                    keaFileAccessProps);
             }
             else
             {

@@ -127,7 +127,7 @@ namespace kealib{
             {
                 throw KEAIOException("The TL coordinate is not specified.");
             }
-            std::cout << "TL: " << this->spatialInfoFile->tlX << ", " << this->spatialInfoFile->tlY << std::endl;
+            //std::cout << "TL: " << this->spatialInfoFile->tlX << ", " << this->spatialInfoFile->tlY << std::endl;
 
             
             // READ RESOLUTION
@@ -143,7 +143,7 @@ namespace kealib{
             {
                 throw KEAIOException("The pixel resolution was not specified.");
             }
-            std::cout << "Res: " << this->spatialInfoFile->xRes << ", " << this->spatialInfoFile->yRes << std::endl;
+            //std::cout << "Res: " << this->spatialInfoFile->xRes << ", " << this->spatialInfoFile->yRes << std::endl;
 
             
             // READ ROTATION
@@ -159,7 +159,7 @@ namespace kealib{
             {
                 throw KEAIOException("The image rotation was not specified.");
             }
-            std::cout << "Rot: " << this->spatialInfoFile->xRot << ", " << this->spatialInfoFile->yRot << std::endl;
+            //std::cout << "Rot: " << this->spatialInfoFile->xRot << ", " << this->spatialInfoFile->yRot << std::endl;
 
             // READ IMAGE SIZE
             if (keaImgH5File->exist(KEA_DATASETNAME_HEADER_SIZE))
@@ -185,7 +185,7 @@ namespace kealib{
             {
                 throw KEAIOException("The spatial reference (WKT String) was not specified.");
             }
-            std::cout << "WKT: " << this->spatialInfoFile->wktString << std::endl;
+            //std::cout << "WKT: " << this->spatialInfoFile->wktString << std::endl;
         }
         catch ( const KEAIOException &e)
         {
@@ -2731,9 +2731,18 @@ namespace kealib{
         try
         {
             auto keaFileAccessProps = HighFive::FileAccessProps::Default();
-            //keaAccessPlist.setCache(mdcElmts, rdccNElmts, rdccNBytes, rdccW0);
-            //keaAccessPlist.setSieveBufSize(sieveBuf);
-            //keaAccessPlist.setMetaBlockSize(metaBlockSize);
+            keaFileAccessProps.add(HighFive::MetadataBlockSize(metaBlockSize));
+            // HighFive doesn't seem to support these ones now
+            if( H5Pset_sieve_buf_size(keaFileAccessProps.getId(), sieveBuf) < 0 )
+            {
+                H5Eprint(H5E_DEFAULT, stderr);
+				throw KEAIOException("Error in H5Pset_sieve_buf_size");
+            }
+            if( H5Pset_cache(keaFileAccessProps.getId(), mdcElmts, rdccNElmts, rdccNBytes, rdccW0) < 0 )
+            {
+                H5Eprint(H5E_DEFAULT, stderr);
+				throw KEAIOException("Error in H5Pset_cache");
+            }
 
             keaImgH5File = new HighFive::File(
                 fileName,
@@ -2982,9 +2991,18 @@ namespace kealib{
         try
         {
             auto keaFileAccessProps = HighFive::FileAccessProps::Default();
-            //keaAccessPlist.setCache(mdcElmts, rdccNElmts, rdccNBytes, rdccW0);
-            //keaAccessPlist.setSieveBufSize(sieveBuf);
-            //keaAccessPlist.setMetaBlockSize(metaBlockSize);
+            keaFileAccessProps.add(HighFive::MetadataBlockSize(metaBlockSize));
+            // HighFive doesn't seem to support these ones now
+            if( H5Pset_sieve_buf_size(keaFileAccessProps.getId(), sieveBuf) < 0 )
+            {
+                H5Eprint(H5E_DEFAULT, stderr);
+				throw KEAIOException("Error in H5Pset_sieve_buf_size");
+            }
+            if( H5Pset_cache(keaFileAccessProps.getId(), mdcElmts, rdccNElmts, rdccNBytes, rdccW0) < 0 )
+            {
+                H5Eprint(H5E_DEFAULT, stderr);
+				throw KEAIOException("Error in H5Pset_cache");
+            }
 
             keaImgH5File = new HighFive::File(
                 fileName,
