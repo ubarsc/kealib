@@ -105,9 +105,12 @@ int main()
                     subXSize, subYSize, keatype);
         io.writeImageBlock2Band(2, pData, subXOff, subYOff, subXSize, subYSize,
                     subXSize, subYSize, keatype);
+        // over write subset within the file
+        io.writeImageBlock2Band(2, pData, 0, IMG_YSIZE - 75, IMG_XSIZE, 75, subXSize, 75, keatype);
         // over the edge of the file
         io.writeImageBlock2Band(2, pData, IMG_XSIZE - 50, subYOff, 50, subYSize,
                     subXSize, subYSize, keatype);
+        
         free(pData);
         std::cout << "Written some image data" << std::endl;
         

@@ -126,15 +126,23 @@ int main()
         
         // check band 2 which as some data re-written at as offset
         std::cout << "checking offset written data" << std::endl;
-        // first the normally written block
-        io.readImageBlock2Band(2, pReadData, 0, 0, readinfo2->xSize - 50, readinfo2->ySize, readinfo2->xSize - 50, readinfo2->ySize, keatype);
-        if( !compareDataSubset<KEA_DTYPE>(pCheckData, pReadData, 0, 0, readinfo2->xSize, readinfo2->ySize, readinfo2->xSize - 50, readinfo2->ySize))
+        // first the normally written block (minus the bit at the bottom and the bit at the right where it has been re-written)
+        io.readImageBlock2Band(2, pReadData, 0, 0, readinfo2->xSize - 50, readinfo2->ySize - 75, readinfo2->xSize - 50, readinfo2->ySize - 75, keatype);
+        if( !compareDataSubset<KEA_DTYPE>(pCheckData, pReadData, 0, 0, readinfo2->xSize, readinfo2->ySize, readinfo2->xSize - 50, readinfo2->ySize - 75))
         {
             return 1;
         }
-        // then the bit where I reset the numbers again
+        std::cout << "checking the right edge" << std::endl;
+        // then the bit where I reset the numbers again (over the right edge)
         io.readImageBlock2Band(2, pReadData, readinfo2->xSize - 50, 0, 50, readinfo2->ySize, 50, readinfo2->ySize, keatype);
         if( !compareDataSubset<KEA_DTYPE>(pCheckData, pReadData, 0, 0, readinfo2->xSize, readinfo2->ySize, 50, readinfo2->ySize))
+        {
+            return 1;
+        }
+        std::cout << "checking the bottom edge" << std::endl;
+        // and the within bounds overwrite (excluding over the edge). At the bottom
+        io.readImageBlock2Band(2, pReadData, 0, readinfo2->ySize - 75, readinfo2->xSize - 50, 75, readinfo2->xSize - 50, 75, keatype);
+        if( !compareDataSubset<KEA_DTYPE>(pCheckData, pReadData, 0, 0, readinfo2->xSize, readinfo2->ySize, readinfo2->xSize - 50, 75))
         {
             return 1;
         }
