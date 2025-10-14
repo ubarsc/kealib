@@ -37,16 +37,6 @@ HIGHFIVE_REGISTER_TYPE(kealib::KEAImageGCP_HDF5, kealib::KEAImageIO::createGCPCo
 
 namespace kealib{
 
-    static void* kealibmalloc(size_t nSize, void* ignored)
-    {
-        return malloc(nSize);
-    }
-
-    static void kealibfree(void* ptr, void* ignored)
-    {
-        free(ptr);
-    }
-
     KEAImageIO::KEAImageIO()
     {
         this->fileOpen = false;
@@ -2511,7 +2501,6 @@ namespace kealib{
     
     KEAAttributeTable* KEAImageIO::getAttributeTable(KEAATTType type, uint32_t band)
     {
-        /*
         KEAAttributeTable *att = nullptr;
         try 
         {
@@ -2542,8 +2531,6 @@ namespace kealib{
         }
         
         return att;
-        */
-        return nullptr;
     }
     
     void KEAImageIO::setAttributeTable(KEAAttributeTable* att, uint32_t band, uint32_t chunkSize, uint32_t deflate)
@@ -2578,7 +2565,6 @@ namespace kealib{
     
     bool KEAImageIO::attributeTablePresent(uint32_t band)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2590,18 +2576,15 @@ namespace kealib{
         try 
         {
             std::string bandPathBase = KEA_DATASETNAME_BAND + uint2Str(band);
-            hsize_t attSize[5];
-            try 
-            {   
-                hsize_t dimsValue[1];
-                dimsValue[0] = 5;
-                H5::DataSpace valueDataSpace(1, dimsValue);
-                H5::DataSet datasetAttSize = this->keaImgFile->openDataSet( bandPathBase + KEA_ATT_SIZE_HEADER );
-                datasetAttSize.read(attSize, H5::PredType::STD_U64LE, valueDataSpace);
-                datasetAttSize.close();
-                valueDataSpace.close();
-            } 
-            catch (const H5::Exception &e) 
+            
+            // Read header size.
+            std::vector<uint64_t> attSize;
+            try
+            {
+                auto datasetAttSize = this->keaImgFile->getDataSet( bandPathBase + KEA_ATT_SIZE_HEADER );
+                datasetAttSize.read(attSize);
+            }
+            catch (const HighFive::Exception &e)
             {
                 throw KEAIOException("The attribute table size field is not present.");
             }
@@ -2619,17 +2602,11 @@ namespace kealib{
         {
             throw e;
         }
-        catch( const H5::Exception &e )
-		{
-			throw KEAIOException(e.getCDetailMsg());
-		}
         catch ( const std::exception &e)
         {
             throw KEAIOException(e.what());
         }
         return attPresent;
-        */
-        return false;
     }
 
     /**
@@ -3505,11 +3482,11 @@ namespace kealib{
 
             // SET ATTRIBUTE TABLE SIZE
             std::vector<uint64_t> attSize = {0, 0, 0, 0, 0};
-            auto spatialTLDataset = keaImgH5File->createDataSet<uint64_t>(
+            auto attSizeDataset = keaImgH5File->createDataSet<uint64_t>(
                 (bandName + KEA_ATT_SIZE_HEADER),
                 HighFive::DataSpace::From(attSize)
             );
-            spatialTLDataset.write(attSize);
+            attSizeDataset.write(attSize);
         }
         catch (const HighFive::DataSetException &e)
         {

@@ -46,7 +46,7 @@ namespace kealib{
     class KEA_EXPORT KEAAttributeTableInMem : public KEAAttributeTable
     {
     public:
-        KEAAttributeTableInMem(const std::shared_ptr<kealib::kea_mutex>& mutex);
+        KEAAttributeTableInMem(KEAAttributeTable *pBaseAtt, const std::shared_ptr<kealib::kea_mutex>& mutex);
         
         bool getBoolField(size_t fid, const std::string &name) const;
         int64_t getIntField(size_t fid, const std::string &name) const;

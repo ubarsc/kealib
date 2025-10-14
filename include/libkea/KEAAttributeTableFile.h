@@ -46,7 +46,7 @@ namespace kealib{
     class KEA_EXPORT KEAAttributeTableFile : public KEAAttributeTable
     {
     public:
-        KEAAttributeTableFile(HighFive::File *keaImgIn, const std::shared_ptr<kealib::kea_mutex>& mutex, const std::string &bandPathBaseIn, size_t numRowsIn, size_t chunkSizeIn, unsigned int deflateIn=KEA_DEFLATE);
+        KEAAttributeTableFile(HighFive::File *keaImgIn, KEAAttributeTable *pBaseAtt, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int deflateIn=KEA_DEFLATE);
         
         bool getBoolField(size_t fid, const std::string &name) const;
         int64_t getIntField(size_t fid, const std::string &name) const;
@@ -82,8 +82,6 @@ namespace kealib{
 
         KEAATTFeature* getFeature(size_t fid) const;
         
-        size_t getSize() const;
-        
         void addAttBoolField(KEAATTField field, bool val);
         void addAttIntField(KEAATTField field, int64_t val);
         void addAttFloatField(KEAATTField field, float val);
@@ -96,11 +94,9 @@ namespace kealib{
         
         ~KEAAttributeTableFile();
     protected:
-        size_t numRows;
         size_t chunkSize;
         unsigned int deflate;
         HighFive::File *keaImg;
-        std::string bandPathBase;
 
         void updateSizeHeader(hsize_t nbools, hsize_t nints, hsize_t nfloats, hsize_t nstrings);
 };

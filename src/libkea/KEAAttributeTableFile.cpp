@@ -35,25 +35,20 @@
 
 namespace kealib{
 
-    static void* kealibmalloc(size_t nSize, void* ignored)
+    KEAAttributeTableFile::KEAAttributeTableFile(HighFive::File *keaImgIn, KEAAttributeTable *pBaseAtt, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int deflateIn) : KEAAttributeTable(kea_att_file, mutex)
     {
-        return malloc(nSize);
-    }
-
-    static void kealibfree(void* ptr, void* ignored)
-    {
-        free(ptr);
-    }
-
-    KEAAttributeTableFile::KEAAttributeTableFile(HighFive::File *keaImgIn, const std::shared_ptr<kealib::kea_mutex>& mutex, const std::string &bandPathBaseIn, size_t numRowsIn, size_t chunkSizeIn, unsigned int deflateIn) : KEAAttributeTable(kea_att_file, mutex)
-    {
-        numRows = numRowsIn;
-        chunkSize = chunkSizeIn;
-        deflate = deflateIn;
         keaImg = keaImgIn;
-        bandPathBase = bandPathBaseIn;
+        numRows = pBaseAtt->getSize();
+        numOfCols = pBaseAtt->getMaxGlobalColIdx();
+        numBoolFields = pBaseAtt->getNumBoolFields();
+        numIntFields = pBaseAtt->getNumIntFields();
+        numFloatFields = pBaseAtt->getNumFloatFields();
+        numStringFields = pBaseAtt->getNumStringFields();
+        bandPathBase = pBaseAtt->getBandPathBase();
+        chunkSize = pBaseAtt->getChunkSize();
+        deflate = deflateIn;
     }
-    
+
     bool KEAAttributeTableFile::getBoolField(size_t fid, const std::string &name) const
     {
         bool value = false;
@@ -1390,61 +1385,30 @@ namespace kealib{
         return nullptr;
     }
     
-    size_t KEAAttributeTableFile::getSize() const
-    {
-        return numRows;
-    }
-    
     void KEAAttributeTableFile::updateSizeHeader(hsize_t nbools, hsize_t nints, hsize_t nfloats, hsize_t nstrings)
     {
-        /*
         try
         {
             kealib::kea_lock lock(*this->m_mutex); 
             KEAStackPrintState printState;
             // WRITE THE ATT SIZE USED TO THE FILE.
-            hsize_t sizeDataOffset[1];
-            sizeDataOffset[0] = 0;
-            hsize_t sizeDataDims[1];
-            sizeDataDims[0] = 5;
             
-            H5::DataSet sizeDataset = keaImg->openDataSet(bandPathBase + KEA_ATT_SIZE_HEADER);
-            H5::DataSpace sizeWriteDataSpace = sizeDataset.getSpace();
-            sizeWriteDataSpace.selectHyperslab(H5S_SELECT_SET, sizeDataDims, sizeDataOffset);
-            H5::DataSpace newSizeDataspace = H5::DataSpace(1, sizeDataDims);
-            
-            hsize_t attSize[5];
+            std::vector<uint64_t> attSize(5);
             attSize[0] = this->numRows;
             attSize[1] = nbools;
             attSize[2] = nints;
             attSize[3] = nfloats;
             attSize[4] = nstrings;
+            auto attSizeDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_CHUNKSIZE_HEADER);
+            attSizeDataset.write(attSize);
             
-            sizeDataset.write(attSize, H5::PredType::NATIVE_HSIZE, newSizeDataspace, sizeWriteDataSpace);
-            sizeDataset.close();
-            sizeWriteDataSpace.close();
-            newSizeDataspace.close();
-            
-            // WRITE THE CHUNK SIZE USED TO THE FILE.
-            hsize_t chunkSizeDataOffset[1];
-            chunkSizeDataOffset[0] = 0;
-            hsize_t chunkSizeDataDims[1];
-            chunkSizeDataDims[0] = 1;
-            
-            H5::DataSet chunkSizeDataset = keaImg->openDataSet(bandPathBase + KEA_ATT_CHUNKSIZE_HEADER);
-            H5::DataSpace chunkSizeWriteDataSpace = chunkSizeDataset.getSpace();
-            chunkSizeWriteDataSpace.selectHyperslab(H5S_SELECT_SET, chunkSizeDataDims, chunkSizeDataOffset);
-            H5::DataSpace newChunkSizeDataspace = H5::DataSpace(1, chunkSizeDataDims);
-            chunkSizeDataset.write(&chunkSize, H5::PredType::NATIVE_UINT, newChunkSizeDataspace, chunkSizeWriteDataSpace);
-            chunkSizeDataset.close();
-            chunkSizeWriteDataSpace.close();
-            newChunkSizeDataspace.close();
+            auto datasetAttSize = keaImg->getDataSet( bandPathBase + KEA_ATT_CHUNKSIZE_HEADER);
+            datasetAttSize.write(chunkSize);
         }
-        catch(const H5::Exception &e)
+        catch(const HighFive::Exception &e)
         {
-            throw KEAATTException(e.getDetailMsg());
+            throw KEAATTException(e.what());
         }
-        */
     }
     
     void KEAAttributeTableFile::addAttBoolField(KEAATTField field, bool val)
@@ -2011,7 +1975,6 @@ namespace kealib{
     
     void KEAAttributeTableFile::addRows(size_t numRowsIn)
     {
-        /*
         if( numRowsIn > 0 )
         {
             kealib::kea_lock lock(*this->m_mutex); 
@@ -2021,417 +1984,66 @@ namespace kealib{
             updateSizeHeader(numBoolFields, numIntFields, numFloatFields, numStringFields);
             
             // extend the various data tables if they exist
-            hsize_t extendDatasetTo[2];
+            std::vector<size_t> extendDatasetTo(2);
             extendDatasetTo[0] = this->numRows;
             try
             {
-                H5::DataSet *boolDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_BOOL_DATA));
+                auto boolDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_BOOL_DATA);
                 extendDatasetTo[1] = this->numBoolFields;
-                boolDataset->extend(extendDatasetTo);
-                boolDataset->close();
-                delete boolDataset;
+                boolDataset.resize(extendDatasetTo);
             }
-            catch(const H5::Exception &e)
+            catch(const HighFive::Exception &e)
             {
                 // can't exist
             }
             
             try
             {
-                H5::DataSet *intDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_INT_DATA));
+                auto intDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_INT_DATA);
                 extendDatasetTo[1] = this->numIntFields;
-                intDataset->extend(extendDatasetTo);
-                intDataset->close();
-                delete intDataset;
+                intDataset.resize(extendDatasetTo);
             }
-            catch(const H5::Exception &e)
+            catch(const HighFive::Exception &e)
             {
                 // can't exist
             }
             
             try
             {
-                H5::DataSet *floatDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_FLOAT_DATA));
+                auto floatDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_FLOAT_DATA);
                 extendDatasetTo[1] = this->numFloatFields;
-                floatDataset->extend(extendDatasetTo);
-                floatDataset->close();
-                delete floatDataset;
+                floatDataset.resize(extendDatasetTo);
             }
-            catch(const H5::Exception &e)
+            catch(const HighFive::Exception &e)
             {
                 // can't exist
             }
             
             try
             {
-                H5::DataSet *stringDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_STRING_DATA));
+                auto stringDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_STRING_DATA);
                 extendDatasetTo[1] = this->numStringFields;
-                stringDataset->extend(extendDatasetTo);
-                stringDataset->close();
-                delete stringDataset;
+                stringDataset.resize(extendDatasetTo);
             }
             catch(const H5::Exception &e)
             {
                 // can't exist
             }
+            
+            keaImg->flush();
         }
-        */
     }
     
     KEAAttributeTable* KEAAttributeTableFile::createKeaAtt(HighFive::File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band, unsigned int chunkSizeIn, unsigned int deflate)
     {
-        /*
-        // Create instance of class to populate and return.
-        std::string bandPathBase = KEA_DATASETNAME_BAND + uint2Str(band);
-        KEAAttributeTableFile *att = nullptr;
-        // no lock needed - should be done by caller
+        // create an instance of the base class with the number of cols etc
+        KEAAttributeTable *pBaseAtt = KEAAttributeTable::createKeaAtt(keaImg, mutex, band, chunkSizeIn);
         
-        try
-        {
-            // Read header size.
-            hsize_t attSize[5];
-            try
-            {
-                hsize_t dimsValue[1];
-                dimsValue[0] = 5;
-                H5::DataSpace valueDataSpace(1, dimsValue);
-                H5::DataSet datasetAttSize = keaImg->openDataSet( bandPathBase + KEA_ATT_SIZE_HEADER );
-                datasetAttSize.read(attSize, H5::PredType::NATIVE_HSIZE, valueDataSpace);
-                datasetAttSize.close();
-                valueDataSpace.close();
-            }
-            catch (const H5::Exception &e)
-            {
-                throw KEAIOException("The attribute table size field is not present.");
-            }
-            
-            size_t numRows = attSize[0];
-            // READ ATTRIBUTE TABLE FROM KEA IMAGE BAND...
-            
-            // READ THE CHUNK SIZE - default to given
-            size_t chunkSize = chunkSizeIn;
-            try
-            {
-                hsize_t dimsValue[1];
-                dimsValue[0] = 1;
-                H5::DataSpace valueDataSpace(1, dimsValue);
-                H5::DataSet datasetAttSize = keaImg->openDataSet( bandPathBase + KEA_ATT_CHUNKSIZE_HEADER );
-                hsize_t hChunkSize = 0;
-                datasetAttSize.read(&hChunkSize, H5::PredType::NATIVE_HSIZE, valueDataSpace);
-                datasetAttSize.close();
-                valueDataSpace.close();
-                if(hChunkSize > 0)
-                {
-                    chunkSize = hChunkSize;
-                }
-            }
-            catch(const H5::Exception &e)
-            {
-                throw KEAIOException("The attribute table size field is not present.");
-            }
-            
-            att = new KEAAttributeTableFile(keaImg, mutex, bandPathBase, numRows, chunkSize, deflate);
-            
-            // READ TABLE HEADERS
-            H5::CompType *fieldCompTypeMem = KEAAttributeTable::createAttibuteIdxCompTypeMem();
-            
-            bool firstColNum = true;
-            
-            // READ BOOLEAN HEADERS
-            att->numBoolFields = attSize[1];
-            if(att->numBoolFields > 0)
-            {
-                try
-                {
-                    H5::DataSet boolFieldsDataset = keaImg->openDataSet( bandPathBase + KEA_ATT_BOOL_FIELDS_HEADER );
-                    
-                    H5::DataSpace boolFieldsDataspace = boolFieldsDataset.getSpace();
-                    hsize_t boolFieldOff[1];
-                    boolFieldOff[0] = 0;
-                    
-                    hsize_t boolFieldsDims[1];
-                    boolFieldsDims[0] = att->numBoolFields;
-                    H5::DataSpace boolFieldsMemspace(1, boolFieldsDims);
-                    
-                    boolFieldsDataspace.selectHyperslab( H5S_SELECT_SET, boolFieldsDims, boolFieldOff );
-                    
-                    KEAAttributeIdx *inFields = new KEAAttributeIdx[att->numBoolFields];
-                    
-                    boolFieldsDataset.read(inFields, *fieldCompTypeMem, boolFieldsMemspace, boolFieldsDataspace);
-                    
-                    KEAATTField field;
-                    for(unsigned int i = 0; i < att->numBoolFields; ++i)
-                    {
-                        field = KEAATTField();
-                        field.name = std::string(inFields[i].name);
-                        field.dataType = kea_att_bool;
-                        field.idx = inFields[i].idx;
-                        field.usage = std::string(inFields[i].usage);
-                        field.colNum = inFields[i].colNum;
-                        
-                        if(firstColNum)
-                        {
-                            if(field.colNum == 0)
-                            {
-                                att->numOfCols = 1;
-                            }
-                            else
-                            {
-                                att->numOfCols = field.colNum + 1;
-                            }
-                            firstColNum = false;
-                        }
-                        else if(field.colNum >= att->numOfCols)
-                        {
-                            att->numOfCols = field.colNum + 1;
-                        }
-                        
-                        att->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
-                    }
-                    
-                    boolFieldsDataset.close();
-                    boolFieldsDataspace.close();
-                    boolFieldsMemspace.close();
-                    
-                    delete[] inFields;
-                }
-                catch( const H5::Exception &e )
-                {
-                    throw KEAIOException(e.getDetailMsg());
-                }
-            }
-            
-            // READ INTEGER HEADERS
-            att->numIntFields = attSize[2];
-            if(att->numIntFields > 0)
-            {
-                try
-                {
-                    H5::DataSet intFieldsDataset = keaImg->openDataSet( bandPathBase + KEA_ATT_INT_FIELDS_HEADER );
-                    H5::DataSpace intFieldsDataspace = intFieldsDataset.getSpace();
-                    
-                    hsize_t intFieldOff[1];
-                    intFieldOff[0] = 0;
-                    
-                    hsize_t intFieldsDims[1];
-                    intFieldsDims[0] = att->numIntFields;
-                    H5::DataSpace intFieldsMemspace(1, intFieldsDims);
-                    
-                    intFieldsDataspace.selectHyperslab( H5S_SELECT_SET, intFieldsDims, intFieldOff );
-                    
-                    KEAAttributeIdx *inFields = new KEAAttributeIdx[att->numIntFields];
-                    
-                    H5::DSetMemXferPropList xfer;
-                    // Ensures that malloc()/free() are from the same C runtime
-                    xfer.setVlenMemManager(kealibmalloc, nullptr, kealibfree, nullptr);
-                    intFieldsDataset.read(inFields, *fieldCompTypeMem, intFieldsMemspace, intFieldsDataspace, xfer);
-                    
-                    KEAATTField field;
-                    for(unsigned int i = 0; i < att->numIntFields; ++i)
-                    {
-                        field = KEAATTField();
-                        field.name = std::string(inFields[i].name);
-                        free(inFields[i].name);
-                        field.dataType = kea_att_int;
-                        field.idx = inFields[i].idx;
-                        field.usage = std::string(inFields[i].usage);
-                        free(inFields[i].usage);
-                        field.colNum = inFields[i].colNum;
-                        
-                        if(firstColNum)
-                        {
-                            if(field.colNum == 0)
-                            {
-                                att->numOfCols = 1;
-                            }
-                            else
-                            {
-                                att->numOfCols = field.colNum + 1;
-                            }
-                            firstColNum = false;
-                        }
-                        else if(field.colNum >= att->numOfCols)
-                        {
-                            att->numOfCols = field.colNum + 1;
-                        }
-                        
-                        
-                        att->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
-                    }
-                    
-                    intFieldsDataset.close();
-                    intFieldsDataspace.close();
-                    intFieldsMemspace.close();
-                    
-                    delete[] inFields;
-                }
-                catch( const H5::Exception &e )
-                {
-                    throw KEAIOException(e.getDetailMsg());
-                }
-            }
-            
-            // READ FLOAT HEADERS
-            att->numFloatFields = attSize[3];
-            if(att->numFloatFields > 0)
-            {
-                try
-                {
-                    H5::DataSet floatFieldsDataset = keaImg->openDataSet( bandPathBase + KEA_ATT_FLOAT_FIELDS_HEADER );
-                    H5::DataSpace floatFieldsDataspace = floatFieldsDataset.getSpace();
-                    
-                    hsize_t floatFieldOff[1];
-                    floatFieldOff[0] = 0;
-                    
-                    hsize_t floatFieldsDims[1];
-                    floatFieldsDims[0] = att->numFloatFields;
-                    H5::DataSpace floatFieldsMemspace(1, floatFieldsDims);
-                    
-                    floatFieldsDataspace.selectHyperslab( H5S_SELECT_SET, floatFieldsDims, floatFieldOff );
-                    
-                    KEAAttributeIdx *inFields = new KEAAttributeIdx[att->numFloatFields];
-                    
-                    H5::DSetMemXferPropList xfer;
-                    // Ensures that malloc()/free() are from the same C runtime
-                    xfer.setVlenMemManager(kealibmalloc, nullptr, kealibfree, nullptr);
-                    floatFieldsDataset.read(inFields, *fieldCompTypeMem, floatFieldsMemspace, floatFieldsDataspace, xfer);
-                    
-                    KEAATTField field;
-                    for(unsigned int i = 0; i < att->numFloatFields; ++i)
-                    {
-                        field = KEAATTField();
-                        field.name = std::string(inFields[i].name);
-                        free(inFields[i].name);
-                        field.dataType = kea_att_float;
-                        field.idx = inFields[i].idx;
-                        field.usage = std::string(inFields[i].usage);
-                        free(inFields[i].usage);
-                        field.colNum = inFields[i].colNum;
-                        
-                        if(firstColNum)
-                        {
-                            if(field.colNum == 0)
-                            {
-                                att->numOfCols = 1;
-                            }
-                            else
-                            {
-                                att->numOfCols = field.colNum + 1;
-                            }
-                            firstColNum = false;
-                        }
-                        else if(field.colNum >= att->numOfCols)
-                        {
-                            att->numOfCols = field.colNum + 1;
-                        }
-                        
-                        
-                        att->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
-                    }
-                    
-                    floatFieldsDataset.close();
-                    floatFieldsDataspace.close();
-                    floatFieldsMemspace.close();
-                    
-                    delete[] inFields;
-                }
-                catch( const H5::Exception &e )
-                {
-                    throw KEAIOException(e.getDetailMsg());
-                }
-            }
-            
-            // READ STRING HEADERS
-            att->numStringFields = attSize[4];
-            if(att->numStringFields > 0)
-            {
-                try
-                {
-                    H5::DataSet strFieldsDataset = keaImg->openDataSet( bandPathBase + KEA_ATT_STRING_FIELDS_HEADER );
-                    H5::DataSpace strFieldsDataspace = strFieldsDataset.getSpace();
-                    
-                    hsize_t strFieldOff[1];
-                    strFieldOff[0] = 0;
-                    
-                    hsize_t strFieldsDims[1];
-                    strFieldsDims[0] = att->numStringFields;
-                    H5::DataSpace strFieldsMemspace(1, strFieldsDims);
-                    
-                    strFieldsDataspace.selectHyperslab( H5S_SELECT_SET, strFieldsDims, strFieldOff );
-                    
-                    KEAAttributeIdx *inFields = new KEAAttributeIdx[att->numStringFields];
-                    
-                    H5::DSetMemXferPropList xfer;
-                    // Ensures that malloc()/free() are from the same C runtime
-                    xfer.setVlenMemManager(kealibmalloc, nullptr, kealibfree, nullptr);
-                    strFieldsDataset.read(inFields, *fieldCompTypeMem, strFieldsMemspace, strFieldsDataspace, xfer);
-                    
-                    KEAATTField field;
-                    for(unsigned int i = 0; i < att->numStringFields; ++i)
-                    {
-                        field = KEAATTField();
-                        field.name = std::string(inFields[i].name);
-                        free(inFields[i].name);
-                        field.dataType = kea_att_string;
-                        field.idx = inFields[i].idx;
-                        field.usage = std::string(inFields[i].usage);
-                        free(inFields[i].usage);
-                        field.colNum = inFields[i].colNum;
-                        
-                        if(firstColNum)
-                        {
-                            if(field.colNum == 0)
-                            {
-                                att->numOfCols = 1;
-                            }
-                            else
-                            {
-                                att->numOfCols = field.colNum + 1;
-                            }
-                            firstColNum = false;
-                        }
-                        else if(field.colNum >= att->numOfCols)
-                        {
-                            att->numOfCols = field.colNum + 1;
-                        }
-                        
-                        
-                        att->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
-                    }
-                    
-                    strFieldsDataset.close();
-                    strFieldsDataspace.close();
-                    strFieldsMemspace.close();
-                    
-                    delete[] inFields;
-                }
-                catch( const H5::Exception &e )
-                {
-                    throw KEAIOException(e.getDetailMsg());
-                }
-            }
-            
-            delete fieldCompTypeMem;
-        }
-        catch(const H5::Exception &e)
-        {
-            throw KEAIOException(e.getDetailMsg());
-        }
-        catch (const KEAATTException &e)
-        {
-            throw e;
-        }
-        catch (const KEAIOException &e)
-        {
-            throw e;
-        }
-        catch(const std::exception &e)
-        {
-            throw KEAIOException(e.what());
-        }
-        
-        return att;
-        */
+        // now create an instance of KEAAttributeTableFile with the copy constructor
+        KEAAttributeTable *pAtt = new KEAAttributeTableFile(keaImg, pBaseAtt, mutex, deflate);
+        delete pBaseAtt;
+
+        return pAtt;
     }
     
     void KEAAttributeTableFile::exportToKeaFile(HighFive::File *keaImg, unsigned int band, unsigned int chunkSize, unsigned int deflate)
@@ -2441,8 +2053,7 @@ namespace kealib{
     
     KEAAttributeTableFile::~KEAAttributeTableFile()
     {
-        // because we don't flush on each operation, let's do it here so any changes are written
-        //keaImg->flush(H5F_SCOPE_GLOBAL);
+
     }
     
 }

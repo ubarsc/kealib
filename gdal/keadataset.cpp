@@ -139,7 +139,7 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
                 // /vsicurl etc
                 pH5File = kealib::KEAImageIO::openKeaH5RDOnly( poOpenInfo->pszFilename,
                     kealib::KEA_MDC_NELMTS, kealib::KEA_RDCC_NELMTS, kealib::KEA_RDCC_NBYTES, kealib::KEA_RDCC_W0, 
-                    kealib::KEA_SIEVE_BUF, kealib::KEA_META_BLOCKSIZE, HDF5VFLGetFileDriver());
+                    kealib::KEA_SIEVE_BUF, kealib::KEA_META_BLOCKSIZE, HDF5VFLGetFileDriver(), nullptr);
             }
             else
             {

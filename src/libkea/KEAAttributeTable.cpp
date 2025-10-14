@@ -30,6 +30,8 @@
 
 #include "libkea/KEAAttributeTable.h"
 
+HIGHFIVE_REGISTER_TYPE(kealib::KEAAttributeIdx, kealib::KEAAttributeTable::createAttibuteIdxCompType)
+
 namespace kealib{
     
     KEAAttributeTable::KEAAttributeTable(KEAATTType keaAttType, const std::shared_ptr<kealib::kea_mutex>& mutex)
@@ -41,6 +43,7 @@ namespace kealib{
         numFloatFields = 0;
         numStringFields = 0;
         numOfCols = 0;
+        numRows = 0;
         
         fields = new std::map<std::string, KEAATTField>();
     }
@@ -48,6 +51,46 @@ namespace kealib{
     KEAATTType KEAAttributeTable::getKEAATTType() const
     {
         return this->attType;
+    }
+    
+    bool KEAAttributeTable::getBoolField(size_t fid, const std::string &name) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    int64_t KEAAttributeTable::getIntField(size_t fid, const std::string &name) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    double KEAAttributeTable::getFloatField(size_t fid, const std::string &name) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    std::string KEAAttributeTable::getStringField(size_t fid, const std::string &name) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::setBoolField(size_t fid, const std::string &name, bool value)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::setIntField(size_t fid, const std::string &name, int64_t value)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::setFloatField(size_t fid, const std::string &name, double value)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::setStringField(size_t fid, const std::string &name, const std::string &value)
+    {
+        throw KEAATTException("Unimplemented");
     }
     
     void KEAAttributeTable::setBoolValue(const std::string &name, bool value)
@@ -128,46 +171,117 @@ namespace kealib{
     
     void KEAAttributeTable::setBoolValue(size_t colIdx, bool value)
     {
-        if(colIdx > numBoolFields)
-        {
-            std::string message = std::string("Requested boolean column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
-            throw KEAATTException(message);
-        }
-        
-        throw KEAATTException("Setting all has not be implemented yet as needs an iterator...");
+        throw KEAATTException("Unimplemented");
     }
     
     void KEAAttributeTable::setIntValue(size_t colIdx, int64_t value)
     {
-        if(colIdx > numIntFields)
-        {
-            std::string message = std::string("Requested integer column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
-            throw KEAATTException(message);
-        }
-        
-        throw KEAATTException("Setting all has not be implemented yet as needs an iterator...");
+         throw KEAATTException("Unimplemented");
     }
     
     void KEAAttributeTable::setFloatValue(size_t colIdx, double value)
     {
-        if(colIdx > numFloatFields)
-        {
-            std::string message = std::string("Requested float column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
-            throw KEAATTException(message);
-        }
-        
-        throw KEAATTException("Setting all has not be implemented yet as needs an iterator...");
+         throw KEAATTException("Unimplemented");
     }
     
     void KEAAttributeTable::setStringValue(size_t colIdx, const std::string &value)
     {
-        if(colIdx > numStringFields)
-        {
-            std::string message = std::string("Requested string column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
-            throw KEAATTException(message);
-        }
-        
-        throw KEAATTException("Setting all has not be implemented yet as needs an iterator...");
+        throw KEAATTException("Unimplemented");
+    }
+    
+    bool KEAAttributeTable::getBoolField(size_t fid, size_t colIdx) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    int64_t KEAAttributeTable::getIntField(size_t fid, size_t colIdx) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    double KEAAttributeTable::getFloatField(size_t fid, size_t colIdx) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+
+    std::string KEAAttributeTable::getStringField(size_t fid, size_t colIdx) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::getIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::getStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *psBuffer) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::getNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::setBoolField(size_t fid, size_t colIdx, bool value)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::setIntField(size_t fid, size_t colIdx, int64_t value)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::setFloatField(size_t fid, size_t colIdx, double value)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::setStringField(size_t fid, size_t colIdx, const std::string &value)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+
+    void KEAAttributeTable::setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::setStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *papszStrList)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    KEAATTFeature* KEAAttributeTable::getFeature(size_t fid) const
+    {
+        throw KEAATTException("Unimplemented");
     }
     
     KEAFieldDataType KEAAttributeTable::getDataFieldType(const std::string &name) const
@@ -268,6 +382,11 @@ namespace kealib{
         return this->numStringFields;
     }
     
+    size_t KEAAttributeTable::getSize() const
+    {
+        return numRows;
+    }
+    
     size_t KEAAttributeTable::getTotalNumOfCols() const
     {
         return this->numBoolFields + this->numIntFields + this->numFloatFields + this->numStringFields;
@@ -276,6 +395,26 @@ namespace kealib{
     size_t KEAAttributeTable::getMaxGlobalColIdx() const
     {
         return numOfCols;
+    }
+    
+    std::string KEAAttributeTable::getBandPathBase() const
+    {
+        return bandPathBase;
+    }
+    
+    size_t KEAAttributeTable::getChunkSize() const
+    {
+        return chunkSize;
+    }
+    
+    void KEAAttributeTable::addRows(size_t numRows)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::exportToKeaFile(HighFive::File *keaImg, unsigned int band, unsigned int chunkSize, unsigned int deflate)
+    {
+        throw KEAATTException("Unimplemented");
     }
     
     void KEAAttributeTable::addAttBoolField(const std::string &name, bool val, std::string usage)
@@ -524,7 +663,7 @@ namespace kealib{
     
     void KEAAttributeTable::exportToASCII(const std::string &outputFile)
     {
-        
+        throw KEAATTException("Unimplemented");
     }
     
     void KEAAttributeTable::printAttributeTableHeaderInfo()
@@ -572,69 +711,24 @@ namespace kealib{
         
         std::cout << "Max. Column Index: " << this->numOfCols << std::endl;
     }
+
+    HighFive::CompoundType KEAAttributeTable::createAttibuteIdxCompType()
+    {
+        try
+        {
+            std::vector<HighFive::CompoundType::member_def> members;
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_NAME_FIELD, HighFive::VariableLengthStringType()));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_INDEX_FIELD, HighFive::AtomicType<uint32_t>()));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_USAGE_FIELD, HighFive::VariableLengthStringType()));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_COLNUM_FIELD, HighFive::AtomicType<uint32_t>()));
+            return HighFive::CompoundType(members);
+        }
+        catch( const HighFive::Exception &e)
+        {
+            throw kealib::KEAIOException(e.what());
+        }
+    }
     /*
-    H5::CompType* KEAAttributeTable::createAttibuteIdxCompTypeDisk()
-    {
-        try
-        {
-            H5::StrType strTypeDisk(0, H5T_VARIABLE);
-            
-            H5::CompType *attIdxDataType = new H5::CompType( sizeof(KEAAttributeIdx) );
-            attIdxDataType->insertMember(KEA_ATT_NAME_FIELD, HOFFSET(KEAAttributeIdx, name), strTypeDisk);
-            attIdxDataType->insertMember(KEA_ATT_INDEX_FIELD, HOFFSET(KEAAttributeIdx, idx), H5::PredType::STD_U32LE);
-            attIdxDataType->insertMember(KEA_ATT_USAGE_FIELD, HOFFSET(KEAAttributeIdx, usage), strTypeDisk);
-            attIdxDataType->insertMember(KEA_ATT_COLNUM_FIELD, HOFFSET(KEAAttributeIdx, colNum), H5::PredType::STD_U32LE);
-            return attIdxDataType;
-        }
-        catch( const H5::FileIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataSetIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataSpaceIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataTypeIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-    }
-    
-    H5::CompType* KEAAttributeTable::createAttibuteIdxCompTypeMem()
-    {
-        try
-        {
-            H5::StrType strTypeMem(0, H5T_VARIABLE);
-            
-            H5::CompType *attIdxDataType = new H5::CompType( sizeof(KEAAttributeIdx) );
-            attIdxDataType->insertMember(KEA_ATT_NAME_FIELD, HOFFSET(KEAAttributeIdx, name), strTypeMem);
-            attIdxDataType->insertMember(KEA_ATT_INDEX_FIELD, HOFFSET(KEAAttributeIdx, idx), H5::PredType::NATIVE_UINT);
-            attIdxDataType->insertMember(KEA_ATT_USAGE_FIELD, HOFFSET(KEAAttributeIdx, usage), strTypeMem);
-            attIdxDataType->insertMember(KEA_ATT_COLNUM_FIELD, HOFFSET(KEAAttributeIdx, colNum), H5::PredType::NATIVE_UINT);
-            return attIdxDataType;
-        }
-        catch( const H5::FileIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataSetIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataSpaceIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataTypeIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-    }
-    
     H5::CompType* KEAAttributeTable::createKeaStringCompTypeDisk()
     {
         try
@@ -691,6 +785,304 @@ namespace kealib{
         }
     }
     */
+    KEAAttributeTable* KEAAttributeTable::createKeaAtt(HighFive::File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band, unsigned int chunkSizeIn)
+    {
+        // Create instance of class to populate and return.
+        std::string bandPathBase = KEA_DATASETNAME_BAND + uint2Str(band);
+        // no lock needed - should be done by caller
+        KEAAttributeTable *pAtt = nullptr;
+        
+        try
+        {
+            // Read header size.
+            std::vector<uint64_t> attSize;
+            try
+            {
+                auto datasetAttSize = keaImg->getDataSet( bandPathBase + KEA_ATT_SIZE_HEADER );
+                datasetAttSize.read(attSize);
+            }
+            catch (const HighFive::Exception &e)
+            {
+                throw KEAIOException("The attribute table size field is not present.");
+            }
+            
+            // READ ATTRIBUTE TABLE FROM KEA IMAGE BAND...
+            
+            // READ THE CHUNK SIZE - default to given
+            size_t chunkSize = chunkSizeIn;
+            try
+            {
+                uint32_t hChunkSize = 0;
+                auto datasetAttSize = keaImg->getDataSet( bandPathBase + KEA_ATT_CHUNKSIZE_HEADER );
+                datasetAttSize.read(hChunkSize);
+                if(hChunkSize > 0)
+                {
+                    chunkSize = hChunkSize;
+                }
+            }
+            catch(const H5::Exception &e)
+            {
+                throw KEAIOException("The attribute table size field is not present.");
+            }
+            
+            pAtt = new KEAAttributeTable(KEAATTType::kea_att_undefined, mutex);
+            pAtt->numRows = attSize[0];
+            pAtt->bandPathBase = bandPathBase;
+            pAtt->chunkSize = chunkSize;
+            
+            // READ TABLE HEADERS
+            auto fieldCompTypeMem = KEAAttributeTable::createAttibuteIdxCompType();
+            
+            bool firstColNum = true;
+            
+            // READ BOOLEAN HEADERS
+            pAtt->numBoolFields = attSize[1];
+            if(pAtt->numBoolFields > 0)
+            {
+                try
+                {
+                    auto boolFieldsDataset = keaImg->getDataSet( bandPathBase + KEA_ATT_BOOL_FIELDS_HEADER );
+                    
+                    KEAAttributeIdx *inFields = new KEAAttributeIdx[pAtt->numBoolFields];
+                    boolFieldsDataset.read_raw(inFields);
+                    
+                    KEAATTField field;
+                    for(unsigned int i = 0; i < pAtt->numBoolFields; ++i)
+                    {
+                        field = KEAATTField();
+                        field.name = std::string(inFields[i].name);
+                        free(inFields[i].name);
+                        field.dataType = kea_att_bool;
+                        field.idx = inFields[i].idx;
+                        field.usage = std::string(inFields[i].usage);
+                        free(inFields[i].usage);
+                        field.colNum = inFields[i].colNum;
+                        
+                        if(firstColNum)
+                        {
+                            // TODO: can this be made clearer?
+                            if(field.colNum == 0)
+                            {
+                                pAtt->numOfCols = 1;
+                            }
+                            else
+                            {
+                                pAtt->numOfCols = field.colNum + 1;
+                            }
+                            firstColNum = false;
+                        }
+                        else if(field.colNum >= pAtt->numOfCols)
+                        {
+                            pAtt->numOfCols = field.colNum + 1;
+                        }
+                        
+                        pAtt->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
+                    }
+                    
+                    delete[] inFields;
+                }
+                catch( const HighFive::Exception &e )
+                {
+                    throw KEAIOException(e.what());
+                }
+            }
+            
+            // READ INTEGER HEADERS
+            pAtt->numIntFields = attSize[2];
+            if(pAtt->numIntFields > 0)
+            {
+                try
+                {
+                    auto intFieldsDataset = keaImg->getDataSet( bandPathBase + KEA_ATT_INT_FIELDS_HEADER );
+                    KEAAttributeIdx *inFields = new KEAAttributeIdx[pAtt->numIntFields];
+                    
+                    intFieldsDataset.read_raw(inFields);
+                    
+                    KEAATTField field;
+                    for(unsigned int i = 0; i < pAtt->numIntFields; ++i)
+                    {
+                        field = KEAATTField();
+                        field.name = std::string(inFields[i].name);
+                        free(inFields[i].name);
+                        field.dataType = kea_att_int;
+                        field.idx = inFields[i].idx;
+                        field.usage = std::string(inFields[i].usage);
+                        free(inFields[i].usage);
+                        field.colNum = inFields[i].colNum;
+                        
+                        if(firstColNum)
+                        {
+                            // TODO: can this be made clearer?
+                            if(field.colNum == 0)
+                            {
+                                pAtt->numOfCols = 1;
+                            }
+                            else
+                            {
+                                pAtt->numOfCols = field.colNum + 1;
+                            }
+                            firstColNum = false;
+                        }
+                        else if(field.colNum >= pAtt->numOfCols)
+                        {
+                            pAtt->numOfCols = field.colNum + 1;
+                        }
+                        
+                        
+                        pAtt->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
+                    }
+                    
+                    delete[] inFields;
+                }
+                catch( const HighFive::Exception &e )
+                {
+                    throw KEAIOException(e.what());
+                }
+            }
+            
+            // READ FLOAT HEADERS
+            pAtt->numFloatFields = attSize[3];
+            if(pAtt->numFloatFields > 0)
+            {
+                try
+                {
+                    auto floatFieldsDataset = keaImg->getDataSet( bandPathBase + KEA_ATT_FLOAT_FIELDS_HEADER );
+                    KEAAttributeIdx *inFields = new KEAAttributeIdx[pAtt->numFloatFields];
+                    floatFieldsDataset.read_raw(inFields);
+                    
+                    KEAATTField field;
+                    for(unsigned int i = 0; i < pAtt->numFloatFields; ++i)
+                    {
+                        field = KEAATTField();
+                        field.name = std::string(inFields[i].name);
+                        free(inFields[i].name);
+                        field.dataType = kea_att_float;
+                        field.idx = inFields[i].idx;
+                        field.usage = std::string(inFields[i].usage);
+                        free(inFields[i].usage);
+                        field.colNum = inFields[i].colNum;
+                        
+                        if(firstColNum)
+                        {
+                            // TODO: can this be made clearer?
+                            if(field.colNum == 0)
+                            {
+                                pAtt->numOfCols = 1;
+                            }
+                            else
+                            {
+                                pAtt->numOfCols = field.colNum + 1;
+                            }
+                            firstColNum = false;
+                        }
+                        else if(field.colNum >= pAtt->numOfCols)
+                        {
+                            pAtt->numOfCols = field.colNum + 1;
+                        }
+                        
+                        pAtt->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
+                    }
+                    
+                    delete[] inFields;
+                }
+                catch( const HighFive::Exception &e )
+                {
+                    throw KEAIOException(e.what());
+                }
+            }
+            
+            // READ STRING HEADERS
+            pAtt->numStringFields = attSize[4];
+            if(pAtt->numStringFields > 0)
+            {
+                try
+                {
+                    auto strFieldsDataset = keaImg->getDataSet( bandPathBase + KEA_ATT_STRING_FIELDS_HEADER );
+                    KEAAttributeIdx *inFields = new KEAAttributeIdx[pAtt->numStringFields];
+                    strFieldsDataset.read_raw(inFields);
+
+                    KEAATTField field;
+                    for(unsigned int i = 0; i < pAtt->numStringFields; ++i)
+                    {
+                        field = KEAATTField();
+                        field.name = std::string(inFields[i].name);
+                        free(inFields[i].name);
+                        field.dataType = kea_att_string;
+                        field.idx = inFields[i].idx;
+                        field.usage = std::string(inFields[i].usage);
+                        free(inFields[i].usage);
+                        field.colNum = inFields[i].colNum;
+                        
+                        if(firstColNum)
+                        {
+                            // TODO: can this be made clearer?
+                            if(field.colNum == 0)
+                            {
+                                pAtt->numOfCols = 1;
+                            }
+                            else
+                            {
+                                pAtt->numOfCols = field.colNum + 1;
+                            }
+                            firstColNum = false;
+                        }
+                        else if(field.colNum >= pAtt->numOfCols)
+                        {
+                            pAtt->numOfCols = field.colNum + 1;
+                        }
+                        
+                        
+                        pAtt->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
+                    }
+                    
+                    delete[] inFields;
+                }
+                catch( const HighFive::Exception &e )
+                {
+                    throw KEAIOException(e.what());
+                }
+            }
+            
+        }
+        catch(const HighFive::Exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
+        catch (const KEAATTException &e)
+        {
+            throw e;
+        }
+        catch (const KEAIOException &e)
+        {
+            throw e;
+        }
+        catch(const std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
+        
+        return pAtt;
+    }
+    
+    void KEAAttributeTable::addAttBoolField(KEAATTField field, bool val)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::addAttIntField(KEAATTField field, int64_t val)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::addAttFloatField(KEAATTField field, float val)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::addAttStringField(KEAATTField field, const std::string &val)
+    {
+        throw KEAATTException("Unimplemented");
+    }
         
     KEAAttributeTable::~KEAAttributeTable()
     {
