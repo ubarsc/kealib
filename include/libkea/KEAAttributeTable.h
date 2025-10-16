@@ -87,10 +87,10 @@ namespace kealib{
         unsigned int colNum;
     };
     
-    /*struct KEAAttString
+    struct KEAAttString
     {
         char *str;
-    };*/
+    };
     
     typedef struct 
     {
@@ -187,12 +187,12 @@ namespace kealib{
 
         // for cross heap use in Windows
         static void destroyAttributeTable(KEAAttributeTable *pTable);
+        
         static HighFive::CompoundType createAttibuteIdxCompType();
+        static HighFive::CompoundType createKeaStringCompType();
         
     protected:
         static KEAAttributeTable* createKeaAtt(HighFive::File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band, unsigned int chunkSizeIn);
-        //static H5::CompType* createKeaStringCompTypeDisk();
-        //static H5::CompType* createKeaStringCompTypeMem();
         virtual void addAttBoolField(KEAATTField field, bool val);
         virtual void addAttIntField(KEAATTField field, int64_t val);
         virtual void addAttFloatField(KEAATTField field, float val);

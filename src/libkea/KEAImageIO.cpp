@@ -1585,7 +1585,7 @@ namespace kealib{
                 creationGCPsDSPList.add(HighFive::Deflate(KEA_DEFLATE));
                 creationGCPsDSPList.add(HighFive::Shuffle());
                 
-                // don't commit data type - HDF5 will but data type in file right here
+                // don't commit data type - HDF5 will put data type in file right here
 
                 auto gcpsDataset = this->keaImgFile->createDataSet(KEA_GCPS_DATA, gcpsDataSpace, fieldDtMem, creationGCPsDSPList);
                 gcpsDataset.write(gcpsHDF);

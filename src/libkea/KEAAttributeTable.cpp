@@ -31,6 +31,7 @@
 #include "libkea/KEAAttributeTable.h"
 
 HIGHFIVE_REGISTER_TYPE(kealib::KEAAttributeIdx, kealib::KEAAttributeTable::createAttibuteIdxCompType)
+HIGHFIVE_REGISTER_TYPE(kealib::KEAAttString, kealib::KEAAttributeTable::createKeaStringCompType)
 
 namespace kealib{
     
@@ -728,63 +729,21 @@ namespace kealib{
             throw kealib::KEAIOException(e.what());
         }
     }
-    /*
-    H5::CompType* KEAAttributeTable::createKeaStringCompTypeDisk()
+
+    HighFive::CompoundType KEAAttributeTable::createKeaStringCompType()
     {
         try
         {
-            H5::StrType strTypeDisk(0, H5T_VARIABLE);
-            
-            H5::CompType *keaStrDataType = new H5::CompType( sizeof(KEAString) );
-            keaStrDataType->insertMember(KEA_ATT_STRING_FIELD, HOFFSET(KEAString, str), strTypeDisk);
-            return keaStrDataType;
+            std::vector<HighFive::CompoundType::member_def> members;
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_STRING_FIELD, HighFive::VariableLengthStringType()));
+            return HighFive::CompoundType(members);
         }
-        catch( const H5::FileIException &e )
+        catch( const HighFive::Exception &e)
         {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataSetIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataSpaceIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataTypeIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
+            throw kealib::KEAIOException(e.what());
         }
     }
-    
-    H5::CompType* KEAAttributeTable::createKeaStringCompTypeMem()
-    {
-        try
-        {
-            H5::StrType strTypeMem(0, H5T_VARIABLE);
-            
-            H5::CompType *keaStrDataType = new H5::CompType( sizeof(KEAString) );
-            keaStrDataType->insertMember(KEA_ATT_STRING_FIELD, HOFFSET(KEAString, str), strTypeMem);
-            return keaStrDataType;
-        }
-        catch( const H5::FileIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataSetIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataSpaceIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-        catch( const H5::DataTypeIException &e )
-        {
-            throw KEAATTException(e.getDetailMsg());
-        }
-    }
-    */
+
     KEAAttributeTable* KEAAttributeTable::createKeaAtt(HighFive::File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band, unsigned int chunkSizeIn)
     {
         // Create instance of class to populate and return.

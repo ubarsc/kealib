@@ -1692,13 +1692,14 @@ namespace kealib{
     
     void KEAAttributeTableFile::addAttFloatField(KEAATTField field, float val)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
         updateSizeHeader(numBoolFields, numIntFields, numFloatFields+1, numStringFields);
         
-        // update FLOAT_FIELDS
+        auto floatFieldsHeaderPath = bandPathBase + KEA_ATT_FLOAT_FIELDS_HEADER;
+        
+        // update fields
         KEAAttributeIdx *floatFields = new KEAAttributeIdx[this->numFloatFields+1];
         unsigned int floatFieldsIdx = 0;
         for(auto iterField = fields->begin(); iterField != fields->end(); ++iterField)
@@ -1717,125 +1718,108 @@ namespace kealib{
         floatFields[floatFieldsIdx].idx = field.idx;
         floatFields[floatFieldsIdx].usage = const_cast<char*>(field.usage.c_str());
         floatFields[floatFieldsIdx].colNum = field.colNum;
-        
-        H5::CompType *fieldDtMem = this->createAttibuteIdxCompTypeMem();
+
+        auto fieldCompTypeMem = KEAAttributeTable::createAttibuteIdxCompType();
         
         try
-        {
-            H5::DataSet floatFieldsDataset = keaImg->openDataSet(bandPathBase + KEA_ATT_FLOAT_FIELDS_HEADER);
-            H5::DataSpace floatFieldsWriteDataSpace = floatFieldsDataset.getSpace();
-            
-            hsize_t floatFieldsDataDims[1];
-            floatFieldsWriteDataSpace.getSimpleExtentDims(floatFieldsDataDims);
-            
-            if(this->numFloatFields+1 > floatFieldsDataDims[0])
+        {   
+            if( !keaImg->exist(floatFieldsHeaderPath) )
             {
-                hsize_t extendfloatFieldsDatasetTo[1];
-                extendfloatFieldsDatasetTo[0] = this->numFloatFields+1;
-                floatFieldsDataset.extend( extendfloatFieldsDatasetTo );
+                // create it first
+                // allow the number of fields to grow
+                std::vector<size_t> dims;
+                dims.push_back(this->numFloatFields+1);
+                std::vector<size_t> maxdims;
+                maxdims.push_back(HighFive::DataSpace::UNLIMITED);
+                HighFive::DataSpace floatFieldsDataSpace = HighFive::DataSpace(dims, maxdims);
+                
+                HighFive::DataSetCreateProps creationFloatFieldsDSPList;
+                creationFloatFieldsDSPList.add(HighFive::Chunking(chunkSize));
+                creationFloatFieldsDSPList.add(HighFive::Deflate(deflate));
+                creationFloatFieldsDSPList.add(HighFive::Shuffle());
+                
+                this->keaImg->createDataSet(floatFieldsHeaderPath, 
+                    floatFieldsDataSpace, fieldCompTypeMem, creationFloatFieldsDSPList);
             }
-            
-            hsize_t floatFieldsOffset[1];
-            floatFieldsOffset[0] = 0;
-            floatFieldsDataDims[0] = this->numFloatFields+1;
-            
-            floatFieldsWriteDataSpace.close();
-            floatFieldsWriteDataSpace = floatFieldsDataset.getSpace();
-            floatFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, floatFieldsDataDims, floatFieldsOffset);
-            H5::DataSpace newfloatFieldsDataspace = H5::DataSpace(1, floatFieldsDataDims);
-            
-            floatFieldsDataset.write(floatFields, *fieldDtMem, newfloatFieldsDataspace, floatFieldsWriteDataSpace);
-            
-            floatFieldsWriteDataSpace.close();
-            newfloatFieldsDataspace.close();
-            floatFieldsDataset.close();
-            
+            else
+            {
+                auto floatFieldsDataset = keaImg->getDataSet(floatFieldsHeaderPath);
+                
+                auto floatFieldsDataDims = floatFieldsDataset.getDimensions();
+                
+                if((this->numFloatFields+1) > floatFieldsDataDims[0])
+                {
+                    floatFieldsDataDims[0] = this->numFloatFields+1;
+                    floatFieldsDataset.resize(floatFieldsDataDims);
+                }
+                
+                floatFieldsDataset.write_raw(floatFields);
+            }
         }
-        catch (const H5::Exception &e)
+        catch (const HighFive::Exception &e)
         {
-            hsize_t initDimsfloatFieldsDS[1];
-            initDimsfloatFieldsDS[0] = this->numFloatFields+1;
-            hsize_t maxDimsfloatFieldsDS[1];
-            maxDimsfloatFieldsDS[0] = H5S_UNLIMITED;
-            H5::DataSpace floatFieldsDataSpace = H5::DataSpace(1, initDimsfloatFieldsDS, maxDimsfloatFieldsDS);
-            
-            hsize_t dimsfloatFieldsChunk[1];
-            dimsfloatFieldsChunk[0] = chunkSize;
-            
-            H5::DSetCreatPropList creationfloatFieldsDSPList;
-            creationfloatFieldsDSPList.setChunk(1, dimsfloatFieldsChunk);
-            creationfloatFieldsDSPList.setShuffle();
-            creationfloatFieldsDSPList.setDeflate(deflate);
-            H5::DataSet floatFieldsDataset = keaImg->createDataSet((bandPathBase + KEA_ATT_FLOAT_FIELDS_HEADER), *fieldDtMem, floatFieldsDataSpace, creationfloatFieldsDSPList);
-            
-            hsize_t floatFieldsOffset[1];
-            floatFieldsOffset[0] = 0;
-            hsize_t floatFieldsDataDims[1];
-            floatFieldsDataDims[0] = this->numFloatFields+1;
-            
-            H5::DataSpace floatFieldsWriteDataSpace = floatFieldsDataset.getSpace();
-            floatFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, floatFieldsDataDims, floatFieldsOffset);
-            H5::DataSpace newfloatFieldsDataspace = H5::DataSpace(1, floatFieldsDataDims);
-            
-            floatFieldsDataset.write(floatFields, *fieldDtMem, newfloatFieldsDataspace, floatFieldsWriteDataSpace);
-            
-            floatFieldsDataSpace.close();
-            floatFieldsWriteDataSpace.close();
-            newfloatFieldsDataspace.close();
-            floatFieldsDataset.close();
-            
+            throw KEAIOException(e.what());
         }
         delete[] floatFields;
-        delete fieldDtMem;
+
+        // now extend the data area        
+        auto floatDataPath = bandPathBase + KEA_ATT_FLOAT_DATA;
         
-        // expand or create float_DATA
-        H5::DataSet *floatDataset = nullptr;
         try
         {
-            floatDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_FLOAT_DATA));
-            
-            hsize_t extendDatasetTo[2];
-            extendDatasetTo[0] = this->numRows;
-            extendDatasetTo[1] = this->numFloatFields+1;
-            floatDataset->extend(extendDatasetTo);
-            // TODO: don't know how to set reset the fill value
-            
+            if( !keaImg->exist(floatDataPath))
+            {
+                std::vector<size_t> dims;
+                dims.push_back(this->numRows);
+                dims.push_back(this->numFloatFields+1);
+                std::vector<size_t> maxdims;
+                maxdims.push_back(HighFive::DataSpace::UNLIMITED);
+                maxdims.push_back(HighFive::DataSpace::UNLIMITED);
+                HighFive::DataSpace floatDataSpace = HighFive::DataSpace(dims, maxdims);
+                
+                HighFive::DataSetCreateProps creationFloatDataDSPList;
+                creationFloatDataDSPList.add(HighFive::Chunking(chunkSize, 1));
+                creationFloatDataDSPList.add(HighFive::Deflate(deflate));
+                creationFloatDataDSPList.add(HighFive::Shuffle());
+                if( H5Pset_fill_value(creationFloatDataDSPList.getId(), H5T_NATIVE_FLOAT, &val) < 0 )
+                {
+    				H5Eprint(H5E_DEFAULT, stderr);
+    				throw KEAIOException("Error in H5Pset_fill_value");
+                }
+                
+                // don't commit data type - HDF5 will put data type in file right here
+
+                this->keaImg->createDataSet(floatDataPath, 
+                    floatDataSpace, HighFive::AtomicType<double>(), creationFloatDataDSPList);                
+            }
+            else
+            {
+        
+                auto floatDataset = keaImg->getDataSet(floatDataPath);
+                
+                std::vector<size_t> extendDatasetTo(2);
+                extendDatasetTo[0] = this->numRows;
+                extendDatasetTo[1] = this->numFloatFields+1;
+                floatDataset.resize(extendDatasetTo);
+                // TODO: don't know how to set reset the fill value
+            }            
         }
-        catch(const H5::Exception &e)
+        catch(const HighFive::Exception &e)
         {
-            hsize_t initDimsfloats[2];
-            initDimsfloats[0] = numRows;
-            initDimsfloats[1] = this->numFloatFields+1;
-            hsize_t maxDimsfloat[2];
-            maxDimsfloat[0] = H5S_UNLIMITED;
-            maxDimsfloat[1] = H5S_UNLIMITED;
-            H5::DataSpace floatDataSpace = H5::DataSpace(2, initDimsfloats, maxDimsfloat);
-            
-            hsize_t dimsfloatChunk[2];
-            dimsfloatChunk[0] = chunkSize;
-            dimsfloatChunk[1] = 1;
-            
-            H5::DSetCreatPropList creationfloatDSPList;
-            creationfloatDSPList.setChunk(2, dimsfloatChunk);
-            creationfloatDSPList.setShuffle();
-            creationfloatDSPList.setDeflate(deflate);
-            creationfloatDSPList.setFillValue( H5::PredType::NATIVE_FLOAT, &val);
-            
-            floatDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_FLOAT_DATA), H5::PredType::IEEE_F64LE, floatDataSpace, creationfloatDSPList));
-            floatDataSpace.close();
+            throw KEAIOException(e.what());
         }
-        floatDataset->close();
-        delete floatDataset;
-        */
+
+        keaImg->flush();
     }
     
     void KEAAttributeTableFile::addAttStringField(KEAATTField field, const std::string &val)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
         updateSizeHeader(numBoolFields, numIntFields, numFloatFields, numStringFields+1);
+        
+        auto stringFieldsHeaderPath = bandPathBase + KEA_ATT_STRING_FIELDS_HEADER;
         
         // update string_FIELDS
         KEAAttributeIdx *stringFields = new KEAAttributeIdx[this->numStringFields+1];
@@ -1857,120 +1841,104 @@ namespace kealib{
         stringFields[stringFieldsIdx].usage = const_cast<char*>(field.usage.c_str());
         stringFields[stringFieldsIdx].colNum = field.colNum;
         
-        H5::CompType *fieldDtMem = this->createAttibuteIdxCompTypeMem();
+        auto fieldCompTypeMem = KEAAttributeTable::createAttibuteIdxCompType();
         
         try
-        {
-            H5::DataSet stringFieldsDataset = keaImg->openDataSet(bandPathBase + KEA_ATT_STRING_FIELDS_HEADER);
-            H5::DataSpace stringFieldsWriteDataSpace = stringFieldsDataset.getSpace();
-            
-            hsize_t stringFieldsDataDims[1];
-            stringFieldsWriteDataSpace.getSimpleExtentDims(stringFieldsDataDims);
-            
-            if(this->numStringFields+1 > stringFieldsDataDims[0])
+        {   
+            if( !keaImg->exist(stringFieldsHeaderPath) )
             {
-                hsize_t extendstringFieldsDatasetTo[1];
-                extendstringFieldsDatasetTo[0] = this->numStringFields+1;
-                stringFieldsDataset.extend( extendstringFieldsDatasetTo );
+                // create it first
+                // allow the number of fields to grow
+                std::vector<size_t> dims;
+                dims.push_back(this->numStringFields+1);
+                std::vector<size_t> maxdims;
+                maxdims.push_back(HighFive::DataSpace::UNLIMITED);
+                HighFive::DataSpace stringFieldsDataSpace = HighFive::DataSpace(dims, maxdims);
+                
+                HighFive::DataSetCreateProps creationStringFieldsDSPList;
+                creationStringFieldsDSPList.add(HighFive::Chunking(chunkSize));
+                creationStringFieldsDSPList.add(HighFive::Deflate(deflate));
+                creationStringFieldsDSPList.add(HighFive::Shuffle());
+                
+                // don't commit data type - HDF5 will put data type in file right here
+
+                this->keaImg->createDataSet(stringFieldsHeaderPath, 
+                    stringFieldsDataSpace, fieldCompTypeMem, creationStringFieldsDSPList);
             }
-            
-            hsize_t stringFieldsOffset[1];
-            stringFieldsOffset[0] = 0;
-            stringFieldsDataDims[0] = this->numStringFields+1;
-            
-            stringFieldsWriteDataSpace.close();
-            stringFieldsWriteDataSpace = stringFieldsDataset.getSpace();
-            stringFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, stringFieldsDataDims, stringFieldsOffset);
-            H5::DataSpace newstringFieldsDataspace = H5::DataSpace(1, stringFieldsDataDims);
-            
-            stringFieldsDataset.write(stringFields, *fieldDtMem, newstringFieldsDataspace, stringFieldsWriteDataSpace);
-            
-            stringFieldsWriteDataSpace.close();
-            newstringFieldsDataspace.close();
-            stringFieldsDataset.close();
-            
+            else
+            {
+                auto stringFieldsDataset = keaImg->getDataSet(stringFieldsHeaderPath);
+                
+                auto stringFieldsDataDims = stringFieldsDataset.getDimensions();
+                
+                if((this->numStringFields+1) > stringFieldsDataDims[0])
+                {
+                    stringFieldsDataDims[0] = this->numStringFields+1;
+                    stringFieldsDataset.resize(stringFieldsDataDims);
+                }
+                
+                stringFieldsDataset.write_raw(stringFields);
+            }
         }
-        catch (const H5::Exception &e)
+        catch (const HighFive::Exception &e)
         {
-            hsize_t initDimsstringFieldsDS[1];
-            initDimsstringFieldsDS[0] = this->numStringFields+1;
-            hsize_t maxDimsstringFieldsDS[1];
-            maxDimsstringFieldsDS[0] = H5S_UNLIMITED;
-            H5::DataSpace stringFieldsDataSpace = H5::DataSpace(1, initDimsstringFieldsDS, maxDimsstringFieldsDS);
-            
-            hsize_t dimsstringFieldsChunk[1];
-            dimsstringFieldsChunk[0] = chunkSize;
-            
-            H5::DSetCreatPropList creationstringFieldsDSPList;
-            creationstringFieldsDSPList.setChunk(1, dimsstringFieldsChunk);
-            creationstringFieldsDSPList.setShuffle();
-            creationstringFieldsDSPList.setDeflate(deflate);
-            H5::DataSet stringFieldsDataset = keaImg->createDataSet((bandPathBase + KEA_ATT_STRING_FIELDS_HEADER), *fieldDtMem, stringFieldsDataSpace, creationstringFieldsDSPList);
-            
-            hsize_t stringFieldsOffset[1];
-            stringFieldsOffset[0] = 0;
-            hsize_t stringFieldsDataDims[1];
-            stringFieldsDataDims[0] = this->numStringFields+1;
-            
-            H5::DataSpace stringFieldsWriteDataSpace = stringFieldsDataset.getSpace();
-            stringFieldsWriteDataSpace.selectHyperslab(H5S_SELECT_SET, stringFieldsDataDims, stringFieldsOffset);
-            H5::DataSpace newstringFieldsDataspace = H5::DataSpace(1, stringFieldsDataDims);
-            
-            stringFieldsDataset.write(stringFields, *fieldDtMem, newstringFieldsDataspace, stringFieldsWriteDataSpace);
-            
-            stringFieldsDataSpace.close();
-            stringFieldsWriteDataSpace.close();
-            newstringFieldsDataspace.close();
-            stringFieldsDataset.close();
-            
+            throw KEAIOException(e.what());
         }
         delete[] stringFields;
-        delete fieldDtMem;
+
+        // now extend the data area        
+        auto strTypeMem = this->createKeaStringCompType();
         
-        H5::CompType *strTypeMem = this->createKeaStringCompTypeMem();
+        auto stringDataPath = bandPathBase + KEA_ATT_STRING_DATA;
         
-        // expand or create string_DATA
-        H5::DataSet *stringDataset = nullptr;
         try
         {
-            stringDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_STRING_DATA));
-            
-            hsize_t extendDatasetTo[2];
-            extendDatasetTo[0] = this->numRows;
-            extendDatasetTo[1] = this->numStringFields+1;
-            stringDataset->extend(extendDatasetTo);
-            // TODO: don't know how to set reset the fill value
-            
+            if( !keaImg->exist(stringDataPath))
+            {
+                std::vector<size_t> dims;
+                dims.push_back(this->numRows);
+                dims.push_back(this->numStringFields+1);
+                std::vector<size_t> maxdims;
+                maxdims.push_back(HighFive::DataSpace::UNLIMITED);
+                maxdims.push_back(HighFive::DataSpace::UNLIMITED);
+                HighFive::DataSpace stringDataSpace = HighFive::DataSpace(dims, maxdims);
+                
+                KEAString fillValueStr = KEAString();
+                fillValueStr.str = const_cast<char*>(val.c_str());
+
+                HighFive::DataSetCreateProps creationStringDataDSPList;
+                creationStringDataDSPList.add(HighFive::Chunking(chunkSize, 1));
+                creationStringDataDSPList.add(HighFive::Deflate(deflate));
+                creationStringDataDSPList.add(HighFive::Shuffle());
+                if( H5Pset_fill_value(creationStringDataDSPList.getId(), strTypeMem.getId(), &fillValueStr) < 0 )
+                {
+    				H5Eprint(H5E_DEFAULT, stderr);
+    				throw KEAIOException("Error in H5Pset_fill_value");
+                }
+                
+                // don't commit data type - HDF5 will put data type in file right here
+
+                this->keaImg->createDataSet(stringDataPath, 
+                    stringDataSpace, strTypeMem, creationStringDataDSPList);                
+            }
+            else
+            {
+        
+                auto stringDataset = keaImg->getDataSet(stringDataPath);
+                
+                std::vector<size_t> extendDatasetTo(2);
+                extendDatasetTo[0] = this->numRows;
+                extendDatasetTo[1] = this->numStringFields+1;
+                stringDataset.resize(extendDatasetTo);
+                // TODO: don't know how to set reset the fill value
+            }            
         }
-        catch(const H5::Exception &e)
+        catch(const HighFive::Exception &e)
         {
-            hsize_t initDimsstrings[2];
-            initDimsstrings[0] = numRows;
-            initDimsstrings[1] = this->numStringFields+1;
-            hsize_t maxDimsstring[2];
-            maxDimsstring[0] = H5S_UNLIMITED;
-            maxDimsstring[1] = H5S_UNLIMITED;
-            H5::DataSpace stringDataSpace = H5::DataSpace(2, initDimsstrings, maxDimsstring);
-            
-            hsize_t dimsstringChunk[2];
-            dimsstringChunk[0] = chunkSize;
-            dimsstringChunk[1] = 1;
-            
-            KEAString fillValueStr = KEAString();
-            fillValueStr.str = const_cast<char*>(val.c_str());
-            H5::DSetCreatPropList creationstringDSPList;
-            creationstringDSPList.setChunk(2, dimsstringChunk);
-            creationstringDSPList.setShuffle();
-            creationstringDSPList.setDeflate(deflate);
-            creationstringDSPList.setFillValue( *strTypeMem, &fillValueStr);
-            
-            stringDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_STRING_DATA), *strTypeMem, stringDataSpace, creationstringDSPList));
-            stringDataSpace.close();
+            throw KEAIOException(e.what());
         }
-        stringDataset->close();
-        delete stringDataset;
-        delete strTypeMem;
-        */
+
+        keaImg->flush();
     }
     
     void KEAAttributeTableFile::addRows(size_t numRowsIn)
