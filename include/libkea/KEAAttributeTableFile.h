@@ -82,6 +82,7 @@ namespace kealib{
 
         KEAATTFeature* getFeature(size_t fid) const;
         
+        // called by base class implementations of addAttXXXField
         void addAttBoolField(KEAATTField field, bool val);
         void addAttIntField(KEAATTField field, int64_t val);
         void addAttFloatField(KEAATTField field, float val);
@@ -99,6 +100,8 @@ namespace kealib{
         HighFive::File *keaImg;
 
         void updateSizeHeader(hsize_t nbools, hsize_t nints, hsize_t nfloats, hsize_t nstrings);
+        void addAttField(KEAATTField field, const std::string &headerPath, const std::string &dataPath, 
+            unsigned int nfields, HighFive::DataType data_type, hid_t fill_type, const void *fill_value);
 };
     
 }

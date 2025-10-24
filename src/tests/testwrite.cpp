@@ -284,6 +284,21 @@ int main()
         io.writeToOverview(1, 1, pOvData, 0, 0, OV_XSIZE, OV_YSIZE, OV_XSIZE, OV_YSIZE, keatype);
         free(pOvData);
         
+        if( io.attributeTablePresent(1) || io.attributeTablePresent(2) )
+        {
+            std::cout << "Attribute table present when it shouldn't be" << std::endl;
+            return 1;
+        }
+        
+        std::cout << "create RAT" << std::endl;
+        auto *rat1 = io.getAttributeTable(kealib::kea_att_file, 1);
+        rat1->addRows(100);
+        rat1->addAttBoolField("FirstBool", false);
+        rat1->addAttIntField("FirstInt", 3);
+        rat1->addAttIntField("SecondInt", 4);
+        rat1->addAttFloatField("FirstFloat", 3.1);
+        rat1->addAttStringField("FirstString", "hello");
+        
         io.close();
         
     }

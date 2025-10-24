@@ -1577,7 +1577,7 @@ namespace kealib{
                 std::vector<size_t> dims;
                 dims.push_back(numGCPs);
                 std::vector<size_t> maxdims;
-                maxdims.push_back(HighFive::DataSpace::UNLIMITED);
+                maxdims.push_back(SIZE_MAX);
                 HighFive::DataSpace gcpsDataSpace = HighFive::DataSpace(dims, maxdims);
                 
                 HighFive::DataSetCreateProps creationGCPsDSPList;

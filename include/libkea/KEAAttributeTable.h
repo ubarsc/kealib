@@ -78,25 +78,19 @@ namespace kealib{
         std::string usage;
         size_t colNum;
     };
-    
+
     struct KEAAttributeIdx
     {
         char *name;
-        unsigned int idx;
+        uint32_t idx;
         char *usage;
-        unsigned int colNum;
+        uint32_t colNum;
     };
-    
+
     struct KEAAttString
     {
         char *str;
     };
-    
-    typedef struct 
-    {
-        size_t length;
-        void   *p;
-    } VarLenFieldHDF;
     
     class KEA_EXPORT KEAAttributeTable : public KEABase
     {

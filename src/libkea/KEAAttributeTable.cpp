@@ -717,12 +717,14 @@ namespace kealib{
     {
         try
         {
+            // note HOFFSET - layout of struct is not packed so we need to tell HighFive the actual offsets or it will
+            // calculate different...
             std::vector<HighFive::CompoundType::member_def> members;
-            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_NAME_FIELD, HighFive::VariableLengthStringType()));
-            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_INDEX_FIELD, HighFive::AtomicType<uint32_t>()));
-            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_USAGE_FIELD, HighFive::VariableLengthStringType()));
-            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_COLNUM_FIELD, HighFive::AtomicType<uint32_t>()));
-            return HighFive::CompoundType(members);
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_NAME_FIELD, HighFive::VariableLengthStringType(), HOFFSET(KEAAttributeIdx, name)));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_INDEX_FIELD, HighFive::AtomicType<uint32_t>(), HOFFSET(KEAAttributeIdx, idx)));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_USAGE_FIELD, HighFive::VariableLengthStringType(), HOFFSET(KEAAttributeIdx, usage)));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_COLNUM_FIELD, HighFive::AtomicType<uint32_t>(), HOFFSET(KEAAttributeIdx, colNum)));
+            return HighFive::CompoundType(members, sizeof(KEAAttributeIdx));
         }
         catch( const HighFive::Exception &e)
         {
