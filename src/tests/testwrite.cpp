@@ -292,12 +292,48 @@ int main()
         
         std::cout << "create RAT" << std::endl;
         auto *rat1 = io.getAttributeTable(kealib::kea_att_file, 1);
-        rat1->addRows(100);
+        rat1->addRows(RAT_SIZE);
         rat1->addAttBoolField("FirstBool", false);
         rat1->addAttIntField("FirstInt", 3);
-        rat1->addAttIntField("SecondInt", 4);
+        rat1->addAttIntField("SecondInt", 4);  // 4 will get ignored as you can only set fill value once...
         rat1->addAttFloatField("FirstFloat", 3.1);
         rat1->addAttStringField("FirstString", "hello");
+        
+        std::cout << "created columns" << std::endl;
+        std::cout << "checking bool fill" << std::endl;
+        bool boolBuffer[RAT_SIZE]; 
+        rat1->getBoolFields(0, RAT_SIZE, 0, boolBuffer);
+        if( !compareRatConstant<bool>(boolBuffer, false, RAT_SIZE) )
+        {
+            return 1;
+        }
+        std::cout << "checking int fill" << std::endl;
+        int64_t intBuffer[RAT_SIZE];
+        rat1->getIntFields(0, RAT_SIZE, 0, intBuffer);
+        if( !compareRatConstant<int64_t>(intBuffer, 3, RAT_SIZE))
+        {
+            return 1;
+        }
+        std::cout << "checking float fill" << std::endl;
+        double floatBuffer[RAT_SIZE];
+        rat1->getFloatFields(0, RAT_SIZE, 0, floatBuffer);
+        if( !compareRatConstant<double>(floatBuffer, 3.1, RAT_SIZE))
+        {
+            return 1;
+        }
+        
+        std::cout << "checking string fill" << std::endl;
+        std::vector<std::string> stringBuffer;
+        rat1->getStringFields(0, RAT_SIZE, 0, &stringBuffer);
+        if( stringBuffer.size() != RAT_SIZE )
+        {
+            std::cout << "wrong number of strings read" << std::endl;
+            return 1;
+        }
+        if( !compareRatConstantString(&stringBuffer, "hello"))
+        {
+            return 1;
+        }
         
         io.close();
         

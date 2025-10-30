@@ -1466,7 +1466,6 @@ namespace kealib{
             try
             {
                 // Open the GCPs dataset 
-                auto fieldDtMem = this->createGCPCompType();
                 if( this->keaImgFile->exist(KEA_GCPS_DATA))
                 {
                     auto gcpsDataset = this->keaImgFile->getDataSet(KEA_GCPS_DATA);
@@ -1574,10 +1573,8 @@ namespace kealib{
             {
                 // https://github.com/highfive-devs/highfive/blob/main/src/examples/create_datatype.cpp
                 // allow the number of GCPs to grow
-                std::vector<size_t> dims;
-                dims.push_back(numGCPs);
-                std::vector<size_t> maxdims;
-                maxdims.push_back(SIZE_MAX);
+                std::vector<size_t> dims = {numGCPs};
+                std::vector<size_t> maxdims = {HighFive::DataSpace::UNLIMITED};
                 HighFive::DataSpace gcpsDataSpace = HighFive::DataSpace(dims, maxdims);
                 
                 HighFive::DataSetCreateProps creationGCPsDSPList;

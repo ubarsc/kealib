@@ -31,7 +31,6 @@
 #include "libkea/KEAAttributeTable.h"
 
 HIGHFIVE_REGISTER_TYPE(kealib::KEAAttributeIdx, kealib::KEAAttributeTable::createAttibuteIdxCompType)
-HIGHFIVE_REGISTER_TYPE(kealib::KEAAttString, kealib::KEAAttributeTable::createKeaStringCompType)
 
 namespace kealib{
     
@@ -737,7 +736,7 @@ namespace kealib{
         try
         {
             std::vector<HighFive::CompoundType::member_def> members;
-            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_STRING_FIELD, HighFive::VariableLengthStringType()));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_STRING_FIELD, HighFive::VariableLengthStringType(), HOFFSET(KEAAttString, str)));
             return HighFive::CompoundType(members);
         }
         catch( const HighFive::Exception &e)

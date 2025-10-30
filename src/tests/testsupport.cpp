@@ -204,3 +204,15 @@ void freeGCPData(std::vector<kealib::KEAImageGCP*> *pGCPS)
     }
     delete pGCPS;
 }
+
+bool compareRatConstantString(std::vector<std::string> *psBuffer, const std::string &val)
+{
+    for( auto itr = psBuffer->begin(); itr != psBuffer->end(); itr++ )
+    {
+        if( (*itr) != val )
+        {
+            return false;
+        }
+    }
+    return true;
+}

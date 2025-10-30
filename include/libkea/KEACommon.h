@@ -222,11 +222,6 @@ namespace kealib{
         double dfGCPZ;
     };
     
-    struct KEAString
-    {
-        char *str;
-    };
-    
     inline std::string int2Str(int32_t num)
     {
         std::ostringstream convert;

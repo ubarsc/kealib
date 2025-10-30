@@ -33,6 +33,8 @@
 #include <string.h>
 #include <algorithm>
 
+HIGHFIVE_REGISTER_TYPE(kealib::KEAAttString, kealib::KEAAttributeTable::createKeaStringCompType)
+
 namespace kealib{
 
     KEAAttributeTableFile::KEAAttributeTableFile(HighFive::File *keaImgIn, KEAAttributeTable *pBaseAtt, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int deflateIn) : KEAAttributeTable(kea_att_file, mutex)
@@ -466,15 +468,14 @@ namespace kealib{
         
         try
         {
-            KEAString *stringVals = new KEAString[len];
+            KEAAttString *stringVals = new KEAAttString[len];
             
-            auto strTypeMem = this->createKeaStringCompType();
             auto stringDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_STRING_DATA);
 
 			std::vector<size_t> startOffset = {startfid, colIdx};
 			std::vector<size_t> bufSize = {len, 1};
-            
-            stringDataset.select(startOffset, bufSize).write_raw(stringVals);
+			
+            stringDataset.select(startOffset, bufSize).read_raw(stringVals);
             psBuffer->clear();
             psBuffer->reserve(len);
             for( size_t i = 0; i < len; i++ )
@@ -818,14 +819,13 @@ namespace kealib{
         try
         {
 
-            KEAString *stringVals = new KEAString[len];
+            KEAAttString *stringVals = new KEAAttString[len];
             for( size_t i = 0; i < len; i++ )
             {
                 // set up the hdf structures
                 stringVals[i].str = const_cast<char*>(papszStrList->at(i).c_str());
             }
             
-            auto strTypeMem = this->createKeaStringCompType();
             auto stringDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_STRING_DATA);
 
 			std::vector<size_t> startOffset = {startfid, colIdx};
@@ -1043,7 +1043,7 @@ namespace kealib{
         
         auto strTypeMem = this->createKeaStringCompType();
 
-        KEAString fillValueStr;
+        KEAAttString fillValueStr;
         fillValueStr.str = const_cast<char*>(val.c_str());
         
         addAttField(field, bandPathBase + KEA_ATT_STRING_FIELDS_HEADER, bandPathBase + KEA_ATT_STRING_DATA, 
@@ -1081,10 +1081,8 @@ namespace kealib{
             {
                 // create it first
                 // allow the number of fields to grow
-                std::vector<size_t> dims;
-                dims.push_back(nfields);
-                std::vector<size_t> maxdims;
-                maxdims.push_back(SIZE_MAX);
+                std::vector<size_t> dims = {nfields};
+                std::vector<size_t> maxdims = {HighFive::DataSpace::UNLIMITED};
                 HighFive::DataSpace fieldsDataSpace = HighFive::DataSpace(dims, maxdims);
                 
                 HighFive::DataSetCreateProps creationFeldsDSPList;
@@ -1121,19 +1119,15 @@ namespace kealib{
         {
             if( !keaImg->exist(dataPath))
             {
-                std::vector<size_t> dims;
-                dims.push_back(this->numRows);
-                dims.push_back(nfields);
-                std::vector<size_t> maxdims;
-                maxdims.push_back(SIZE_MAX);
-                maxdims.push_back(SIZE_MAX);
+                std::vector<size_t> dims = {this->numRows, nfields};
+                std::vector<size_t> maxdims = {HighFive::DataSpace::UNLIMITED, HighFive::DataSpace::UNLIMITED};
                 HighFive::DataSpace dataSpace = HighFive::DataSpace(dims, maxdims);
                 
                 HighFive::DataSetCreateProps creationDataDSPList;
                 creationDataDSPList.add(HighFive::Chunking(chunkSize, 1));
                 creationDataDSPList.add(HighFive::Deflate(deflate));
                 creationDataDSPList.add(HighFive::Shuffle());
-                if( H5Pset_fill_value(creationDataDSPList.getId(), fill_type, &fill_value) < 0 )
+                if( H5Pset_fill_value(creationDataDSPList.getId(), fill_type, fill_value) < 0 )
                 {
     				H5Eprint(H5E_DEFAULT, stderr);
     				throw KEAIOException("Error in H5Pset_fill_value");

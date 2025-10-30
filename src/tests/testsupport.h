@@ -37,6 +37,7 @@ kealib::KEAImageSpatialInfo getSpatialInfo(double version);
 kealib::KEADataType CTypeStringToKEAType(const std::string &s);
 std::vector<kealib::KEAImageGCP*>* getGCPData();
 void freeGCPData(std::vector<kealib::KEAImageGCP*> *pGCPS);
+bool compareRatConstantString(std::vector<std::string> *psBuffer, const std::string &val);
 
 template <typename T>
 T* createDataForType(uint64_t xSize, uint64_t ySize)
@@ -146,6 +147,76 @@ bool compareDataConstant(T *p, T val, uint64_t xSize, uint64_t ySize)
     }
     return true;
 }
+
+template <typename T>
+bool compareRatConstant(T *p, T val, uint64_t len)
+{
+    for( uint64_t i = 0; i < len; i++ )
+    {
+        if( std::fabs(p[i] - val) > 0.1 ) 
+        {
+            std::cout << "index not " << val << " is " << p[i] << " at " << i << std::endl; 
+            return false;
+        }
+    }
+    return true;
+}
+
+template <typename T>
+bool compareRat(T *p1, T* p2, uint64_t len)
+{
+    for( uint64_t i = 0; i < len; i++ )
+    {
+        if( p1[i] != p2[i] )
+        {
+            std::cout << "index not " << p1[i] << " is " << p2[i] << " at " << i << std::endl; 
+            return false;
+        }
+    }
+    return true;
+}
+
+template <typename T>
+bool compareRatSubset(T *p, uint64_t len, T *pSubset, uint64_t subsetoffset, uint64_t subsetlen)
+{
+    for( uint64_t i = 0; i < subsetlen; i++ )
+    {
+        if( p[subsetoffset + i] != pSubset[i])
+        {
+            std::cout << "subset not " << p[subsetoffset + i] << " is " << pSubset[i] << " at " << i;
+            return false;
+        }
+    }
+    return true;
+}
+
+template <typename T>
+T* createRatDataForType(uint64_t len)
+{
+    T *pData = (T*)calloc(len, sizeof(T));
+    for( uint64_t i = 0; i < len; i++ )
+    {
+        pData[i] = i;        
+    }
+
+    return pData;
+}
+
+template <>
+bool* createRatDataForType<bool>(uint64_t len)
+{
+    bool *pData = (bool*)calloc(len, sizeof(bool));
+    bool state = false;
+    for( uint64_t i = 0; i < len; i++ )
+    {
+        pData[i] = state;
+        state = !state;
+    }
+    
+    return pData;
+}
+
+
 
 const uint64_t IMG_XSIZE = 600;
 const uint64_t IMG_YSIZE = 700;
