@@ -319,6 +319,7 @@ namespace kealib{
     {
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
+
         if((startfid+len) > numRows)
         {
             std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
@@ -987,7 +988,7 @@ namespace kealib{
             attSize[2] = nints;
             attSize[3] = nfloats;
             attSize[4] = nstrings;
-            auto attSizeDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_CHUNKSIZE_HEADER);
+            auto attSizeDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_SIZE_HEADER);
             attSizeDataset.write(attSize);
             
             auto datasetAttSize = keaImg->getDataSet( bandPathBase + KEA_ATT_CHUNKSIZE_HEADER);

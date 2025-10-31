@@ -38,6 +38,8 @@ kealib::KEADataType CTypeStringToKEAType(const std::string &s);
 std::vector<kealib::KEAImageGCP*>* getGCPData();
 void freeGCPData(std::vector<kealib::KEAImageGCP*> *pGCPS);
 bool compareRatConstantString(std::vector<std::string> *psBuffer, const std::string &val);
+void createRatDataForString(std::vector<std::string> *psBuffer);
+bool compareRatDataString(std::vector<std::string> *psBuffer1, std::vector<std::string> *psBuffer2);
 
 template <typename T>
 T* createDataForType(uint64_t xSize, uint64_t ySize)
@@ -183,7 +185,7 @@ bool compareRatSubset(T *p, uint64_t len, T *pSubset, uint64_t subsetoffset, uin
     {
         if( p[subsetoffset + i] != pSubset[i])
         {
-            std::cout << "subset not " << p[subsetoffset + i] << " is " << pSubset[i] << " at " << i;
+            std::cout << "subset not " << p[subsetoffset + i] << " is " << pSubset[i] << " at " << i << std::endl;
             return false;
         }
     }
@@ -191,29 +193,23 @@ bool compareRatSubset(T *p, uint64_t len, T *pSubset, uint64_t subsetoffset, uin
 }
 
 template <typename T>
-T* createRatDataForType(uint64_t len)
+void createRatDataForType(T *pData, uint64_t len)
 {
-    T *pData = (T*)calloc(len, sizeof(T));
     for( uint64_t i = 0; i < len; i++ )
     {
         pData[i] = i;        
     }
-
-    return pData;
 }
 
 template <>
-bool* createRatDataForType<bool>(uint64_t len)
+void createRatDataForType(bool *pData, uint64_t len)
 {
-    bool *pData = (bool*)calloc(len, sizeof(bool));
     bool state = false;
     for( uint64_t i = 0; i < len; i++ )
     {
         pData[i] = state;
         state = !state;
     }
-    
-    return pData;
 }
 
 

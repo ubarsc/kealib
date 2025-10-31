@@ -435,6 +435,53 @@ int main()
         free(pReadOvData);
         std::cout << "Overview compared" << std::endl;
         
+        std::cout << "Reading bool col" << std::endl;
+        auto *rat1 = io.getAttributeTable(kealib::kea_att_file, 1);
+        bool boolFields[RAT_SIZE];
+        bool boolFieldsTruth[RAT_SIZE];
+        createRatDataForType(boolFieldsTruth, RAT_SIZE);
+        
+        rat1->getBoolFields(0, RAT_SIZE, 0, boolFields);
+        if( !compareRat(boolFields, boolFieldsTruth, RAT_SIZE))
+        {
+            return 1;
+        }
+
+        std::cout << "Reading int col 1" << std::endl;
+        int64_t intFields[RAT_SIZE];
+        int64_t intFieldsTruth[RAT_SIZE];
+        createRatDataForType(intFieldsTruth, RAT_SIZE);
+        
+        rat1->getIntFields(0, RAT_SIZE, 0, intFields);
+        if( !compareRat(intFields, intFieldsTruth, RAT_SIZE))
+        {
+            return 1;
+        }
+
+        std::cout << "Reading int col 2 with subset" << std::endl;
+        rat1->getIntFields(0, RAT_SIZE - 10, 1, intFields);
+        if( !compareRat(intFields, intFieldsTruth, RAT_SIZE - 10))
+        {
+            return 1;
+        }
+
+        rat1->getIntFields(RAT_SIZE - 10, 10, 1, intFields);
+        if( !compareRat(intFields, intFieldsTruth, 10))
+        {
+            return 1;
+        }
+        
+        std::cout << "reading string col" << std::endl;
+        std::vector<std::string> stringBuffer;
+        std::vector<std::string> stringBufferTruth(RAT_SIZE);
+        createRatDataForString(&stringBufferTruth);
+        
+        rat1->getStringFields(0, RAT_SIZE, 0, &stringBuffer);
+        if( !compareRatDataString(&stringBuffer, &stringBufferTruth))
+        {
+            return 1;
+        }
+        
         io.close();
     }
     catch(const kealib::KEAException &e)

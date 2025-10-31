@@ -335,6 +335,29 @@ int main()
             return 1;
         }
         
+        std::cout << "writing bool col" << std::endl;
+        createRatDataForType<bool>(boolBuffer, RAT_SIZE);
+        rat1->setBoolFields(0, RAT_SIZE, 0, boolBuffer);
+        
+        std::cout << "writing int col 1" << std::endl;
+        createRatDataForType<int64_t>(intBuffer, RAT_SIZE);
+        rat1->setIntFields(0, RAT_SIZE, 0, intBuffer);
+
+        std::cout << "writing int col 2" << std::endl;
+        createRatDataForType<int64_t>(intBuffer, RAT_SIZE);
+        rat1->setIntFields(0, RAT_SIZE, 1, intBuffer);
+
+        std::cout << "writing int col 2 subset" << std::endl;
+        rat1->setIntFields(RAT_SIZE - 10, 10, 1, intBuffer);
+        
+        std::cout << "writing float col" << std::endl;
+        createRatDataForType<double>(floatBuffer, RAT_SIZE);
+        rat1->setFloatFields(0, 10, 0, floatBuffer);
+        
+        std::cout << "writing string col" << std::endl;
+        createRatDataForString(&stringBuffer);
+        rat1->setStringFields(0, RAT_SIZE, 0, &stringBuffer);
+        
         io.close();
         
     }

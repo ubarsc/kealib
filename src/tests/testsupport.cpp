@@ -216,3 +216,34 @@ bool compareRatConstantString(std::vector<std::string> *psBuffer, const std::str
     }
     return true;
 }
+
+bool compareRatDataString(std::vector<std::string> *psBuffer1, std::vector<std::string> *psBuffer2)
+{
+    if( psBuffer1->size() != psBuffer2->size())
+    {
+        std::cout << "buffers are different sizes" << std::endl;
+        return false;
+    }
+    
+    for( uint64_t i = 0; i < psBuffer1->size(); i++)
+    {
+        if( psBuffer1->at(i) != psBuffer2->at(i) )
+        {
+            std::cout << "values differ at index " << i << std::endl;
+            return false;
+        }
+    }
+    return true;
+}
+
+void createRatDataForString(std::vector<std::string> *psBuffer)
+{
+    uint64_t i = 0;
+    while( i < psBuffer->size() )
+    {
+        char c = 'a' + (i % ('z' - 'a'));
+        psBuffer->at(i) = std::string(1, c);
+        i++;
+    }
+}
+
