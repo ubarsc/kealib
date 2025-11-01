@@ -40,6 +40,7 @@ void freeGCPData(std::vector<kealib::KEAImageGCP*> *pGCPS);
 bool compareRatConstantString(std::vector<std::string> *psBuffer, const std::string &val);
 void createRatDataForString(std::vector<std::string> *psBuffer);
 bool compareRatDataString(std::vector<std::string> *psBuffer1, std::vector<std::string> *psBuffer2);
+bool compareRatDataStringSubset(std::vector<std::string> *psBuffer1, std::vector<std::string> *psBuffer2, uint64_t subsetoffset);
 
 template <typename T>
 T* createDataForType(uint64_t xSize, uint64_t ySize)

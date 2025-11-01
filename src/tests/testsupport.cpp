@@ -236,6 +236,19 @@ bool compareRatDataString(std::vector<std::string> *psBuffer1, std::vector<std::
     return true;
 }
 
+bool compareRatDataStringSubset(std::vector<std::string> *psBuffer1, std::vector<std::string> *psBuffer2, uint64_t subsetoffset)
+{
+    for( uint64_t i = 0; i < psBuffer2->size(); i++)
+    {
+        if( psBuffer1->at(subsetoffset + i) != psBuffer2->at(i) )
+        {
+            std::cout << "values differ at index " << i << std::endl;
+            return false;
+        }
+    }
+    return true;
+}
+
 void createRatDataForString(std::vector<std::string> *psBuffer)
 {
     uint64_t i = 0;

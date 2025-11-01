@@ -447,6 +447,13 @@ int main()
             return 1;
         }
 
+        std::cout << "Reading bool col subset" << std::endl;
+        rat1->getBoolFields(101, 21, 0, boolFields);
+        if( !compareRatSubset(boolFieldsTruth, RAT_SIZE, boolFields, 101, 21))
+        {
+            return 1;
+        }
+
         std::cout << "Reading int col 1" << std::endl;
         int64_t intFields[RAT_SIZE];
         int64_t intFieldsTruth[RAT_SIZE];
@@ -454,6 +461,13 @@ int main()
         
         rat1->getIntFields(0, RAT_SIZE, 0, intFields);
         if( !compareRat(intFields, intFieldsTruth, RAT_SIZE))
+        {
+            return 1;
+        }
+
+        std::cout << "Reading int col 1 subset" << std::endl;
+        rat1->getIntFields(101, 21, 0, intFields);
+        if( !compareRatSubset(intFieldsTruth, RAT_SIZE, intFields, 101, 21))
         {
             return 1;
         }
@@ -478,6 +492,13 @@ int main()
         
         rat1->getStringFields(0, RAT_SIZE, 0, &stringBuffer);
         if( !compareRatDataString(&stringBuffer, &stringBufferTruth))
+        {
+            return 1;
+        }
+
+        std::cout << "Reading int string subset" << std::endl;
+        rat1->getStringFields(101, 21, 0, &stringBuffer);
+        if( !compareRatDataStringSubset(&stringBufferTruth, &stringBuffer, 101))
         {
             return 1;
         }
