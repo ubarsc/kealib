@@ -222,7 +222,7 @@ const uint64_t OV_YSIZE = 350;
 const uint64_t OV2_XSIZE = 25;
 const uint64_t OV2_YSIZE = 50;
 const std::string TEST_FIELD = "test";
-const uint64_t RAT_SIZE = 256;
+const uint64_t RAT_SIZE = kealib::KEA_ATT_CHUNK_SIZE + 100;
 #define STRINGIFY(x) XSTRINGIFY(x)
 #define XSTRINGIFY(x) #x
 

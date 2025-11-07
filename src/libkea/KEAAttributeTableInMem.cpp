@@ -1987,33 +1987,44 @@ namespace kealib{
             KEAATTFeature *feat = nullptr;
             size_t cFid = 0;
             size_t rowOff = 0;
+
+            // memory space for reading
+            HighFive::DataSet boolDataset; 
+            uint8_t *boolVals = nullptr;
+            if(pAtt->numBoolFields > 0)
+            {
+                boolVals = new uint8_t[pAtt->chunkSize * pAtt->numBoolFields];
+                boolDataset = keaImg->getDataSet(pAtt->bandPathBase + KEA_ATT_BOOL_DATA);
+            }
+            HighFive::DataSet intDataset;
+            int64_t *intVals = nullptr;
+            if(pAtt->numIntFields > 0 )
+            {
+                intVals = new int64_t[pAtt->chunkSize * pAtt->numIntFields];
+                intDataset = keaImg->getDataSet(pAtt->bandPathBase + KEA_ATT_INT_DATA);
+            }
+            HighFive::DataSet floatDataset;
+            double *floatVals = nullptr;
+            if(pAtt->numFloatFields > 0)
+            {
+                floatVals = new double[pAtt->chunkSize * pAtt->numFloatFields];
+                floatDataset = keaImg->getDataSet(pAtt->bandPathBase + KEA_ATT_FLOAT_DATA);
+            }
+            HighFive::DataSet stringDataset;
+            KEAAttString *stringVals = nullptr;
+            if(pAtt->numStringFields > 0)
+            {
+                stringVals = new KEAAttString[pAtt->chunkSize * pAtt->numStringFields];
+                stringDataset = keaImg->getDataSet(pAtt->bandPathBase + KEA_ATT_STRING_DATA);
+            }
                                     
             if(numOfBlocks > 0)
             {
             
-                uint8_t *boolVals = nullptr;
-                if(pAtt->numBoolFields > 0)
-                {
-                    boolVals = new uint8_t[pAtt->chunkSize * pAtt->numBoolFields];
-                }
-                int64_t *intVals = nullptr;
-                if(pAtt->numIntFields > 0 )
-                {
-                    intVals = new int64_t[pAtt->chunkSize * pAtt->numIntFields];
-                }
-                double *floatVals = nullptr;
-                if(pAtt->numFloatFields > 0)
-                {
-                    floatVals = new double[pAtt->chunkSize * pAtt->numFloatFields];
-                }
-                KEAAttString *stringVals = nullptr;
-                if(pAtt->numStringFields > 0)
-                {
-                    stringVals = new KEAAttString[pAtt->chunkSize * pAtt->numStringFields];
-                }
                 for(size_t n = 0; n < numOfBlocks; ++n)
                 {
                     rowOff = n * pAtt->chunkSize;
+                    
                     // Read data.
                     //neighboursOffset[0] = rowOff;
                     //neighboursDataspace.selectHyperslab( H5S_SELECT_SET, neighboursCount, neighboursOffset );
@@ -2021,30 +2032,30 @@ namespace kealib{
                     
                     if(pAtt->numBoolFields > 0)
                     {
-                    	std::vector<size_t> startOffset = {rowOff, pAtt->numBoolFields};
+                    	std::vector<size_t> startOffset = {rowOff, 0};
     			        std::vector<size_t> bufSize = {pAtt->chunkSize, pAtt->numBoolFields};
-                        keaImg->getDataSet(pAtt->bandPathBase + KEA_ATT_BOOL_DATA).select(startOffset, bufSize).read_raw(boolVals);
+                        boolDataset.select(startOffset, bufSize).read_raw(boolVals);
                     }
                     
                     if(pAtt->numIntFields > 0)
                     {
-                    	std::vector<size_t> startOffset = {rowOff, pAtt->numIntFields};
+                    	std::vector<size_t> startOffset = {rowOff, 0};
     			        std::vector<size_t> bufSize = {pAtt->chunkSize, pAtt->numIntFields};
-                        keaImg->getDataSet(pAtt->bandPathBase + KEA_ATT_INT_DATA).select(startOffset, bufSize).read_raw(intVals);
+                        intDataset.select(startOffset, bufSize).read_raw(intVals);
                     }
                     
                     if(pAtt->numFloatFields > 0)
                     {
-                    	std::vector<size_t> startOffset = {rowOff, pAtt->numFloatFields};
+                    	std::vector<size_t> startOffset = {rowOff, 0};
     			        std::vector<size_t> bufSize = {pAtt->chunkSize, pAtt->numFloatFields};
-                        keaImg->getDataSet(pAtt->bandPathBase + KEA_ATT_FLOAT_DATA).select(startOffset, bufSize).read_raw(floatVals);
+                        floatDataset.select(startOffset, bufSize).read_raw(floatVals);
                     }
                     
                     if(pAtt->numStringFields > 0)
                     {
-                    	std::vector<size_t> startOffset = {rowOff, pAtt->numStringFields};
+                    	std::vector<size_t> startOffset = {rowOff, 0};
     			        std::vector<size_t> bufSize = {pAtt->chunkSize, pAtt->numStringFields};
-                        keaImg->getDataSet(pAtt->bandPathBase + KEA_ATT_STRING_DATA).select(startOffset, bufSize).read_raw(stringVals);
+                        stringDataset.select(startOffset, bufSize).read_raw(stringVals);
                     }
                     
                     // Write data into KEAATTFeatures
@@ -2103,36 +2114,13 @@ namespace kealib{
                         pAtt->attRows->push_back(feat);
                     }                        
                 }
-                delete[] boolVals;
-                delete[] intVals;
-                delete[] floatVals;
-                delete[] stringVals;
             }
                     
             if(remainRows > 0)
             {
-                uint8_t *boolVals = nullptr;
-                if(pAtt->numBoolFields > 0)
-                {
-                    boolVals = new uint8_t[remainRows * pAtt->numBoolFields];
-                }
-                int64_t *intVals = nullptr;
-                if(pAtt->numIntFields > 0 )
-                {
-                    intVals = new int64_t[remainRows * pAtt->numIntFields];
-                }
-                double *floatVals = nullptr;
-                if(pAtt->numFloatFields > 0)
-                {
-                    floatVals = new double[remainRows * pAtt->numFloatFields];
-                }
-                KEAAttString *stringVals = nullptr;
-                if(pAtt->numStringFields > 0)
-                {
-                    stringVals = new KEAAttString[remainRows * pAtt->numStringFields];
-                }
+                // use same buffers as above
             
-                rowOff = (numOfBlocks*pAtt->chunkSize);
+                rowOff = numOfBlocks * pAtt->chunkSize;
                 // Read data.
                 /*neighboursOffset[0] = rowOff;
                 neighboursCount[0] = remainRows;
@@ -2144,30 +2132,30 @@ namespace kealib{
                 
                 if(pAtt->numBoolFields > 0)
                 {
-    				std::vector<size_t> startOffset = {rowOff, pAtt->numBoolFields};
+    				std::vector<size_t> startOffset = {rowOff, 0};
     				std::vector<size_t> bufSize = {remainRows, pAtt->numBoolFields};
-                    keaImg->getDataSet(pAtt->bandPathBase + KEA_ATT_BOOL_DATA).select(startOffset, bufSize).read_raw(boolVals);
+                    boolDataset.select(startOffset, bufSize).read_raw(boolVals);
                 }
                 
                 if(pAtt->numIntFields > 0)
                 {
-    				std::vector<size_t> startOffset = {rowOff, pAtt->numIntFields};
+    				std::vector<size_t> startOffset = {rowOff, 0};
     				std::vector<size_t> bufSize = {remainRows, pAtt->numIntFields};
-                    keaImg->getDataSet(pAtt->bandPathBase + KEA_ATT_INT_DATA).select(startOffset, bufSize).read_raw(intVals);
+                    intDataset.select(startOffset, bufSize).read_raw(intVals);
                 }
                 
                 if(pAtt->numFloatFields > 0)
                 {
-    				std::vector<size_t> startOffset = {rowOff, pAtt->numFloatFields};
+    				std::vector<size_t> startOffset = {rowOff, 0};
     				std::vector<size_t> bufSize = {remainRows, pAtt->numFloatFields};
-                    keaImg->getDataSet(pAtt->bandPathBase + KEA_ATT_FLOAT_DATA).select(startOffset, bufSize).read_raw(floatVals);
+                    floatDataset.select(startOffset, bufSize).read_raw(floatVals);
                 }
                 
                 if(pAtt->numStringFields > 0)
                 {
-    				std::vector<size_t> startOffset = {rowOff, pAtt->numStringFields};
+    				std::vector<size_t> startOffset = {rowOff, 0};
     				std::vector<size_t> bufSize = {remainRows, pAtt->numStringFields};
-                    keaImg->getDataSet(pAtt->bandPathBase + KEA_ATT_STRING_DATA).select(startOffset, bufSize).read_raw(stringVals);
+                    stringDataset.select(startOffset, bufSize).read_raw(stringVals);
                 }
                 
                 // Write data into KEAATTFeatures
@@ -2225,11 +2213,12 @@ namespace kealib{
                     
                     pAtt->attRows->push_back(feat);
                 }
-                delete[] boolVals;
-                delete[] intVals;
-                delete[] floatVals;
-                delete[] stringVals;
             }    
+
+            delete[] boolVals;
+            delete[] intVals;
+            delete[] floatVals;
+            delete[] stringVals;
         }
         catch(const HighFive::Exception &e)
         {
