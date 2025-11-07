@@ -95,7 +95,6 @@ namespace kealib{
         
         ~KEAAttributeTableFile();
     protected:
-        size_t chunkSize;
         unsigned int deflate;
         HighFive::File *keaImg;
 

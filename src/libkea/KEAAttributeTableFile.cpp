@@ -1227,13 +1227,9 @@ namespace kealib{
         // now create an instance of KEAAttributeTableFile with the copy constructor
         KEAAttributeTable *pAtt = new KEAAttributeTableFile(keaImg, pBaseAtt, mutex, deflate);
         delete pBaseAtt;
+        
 
         return pAtt;
-    }
-    
-    void KEAAttributeTableFile::exportToKeaFile(HighFive::File *keaImg, unsigned int band, unsigned int chunkSize, unsigned int deflate)
-    {
-        throw KEAIOException("KEAAttributeTableFile does not support exporting to file");
     }
     
     KEAAttributeTableFile::~KEAAttributeTableFile()

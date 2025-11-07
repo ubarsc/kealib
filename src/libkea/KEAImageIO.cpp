@@ -2532,7 +2532,6 @@ namespace kealib{
     
     void KEAImageIO::setAttributeTable(KEAAttributeTable* att, uint32_t band, uint32_t chunkSize, uint32_t deflate)
     {
-        /*
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         if(!this->fileOpen)
@@ -2542,8 +2541,9 @@ namespace kealib{
         
         try 
         {
-            att->exportToKeaFile(this->keaImgFile, band, chunkSize, deflate);
-            this->keaImgFile->flush(H5F_SCOPE_GLOBAL);
+            auto rat_to = kealib::KEAAttributeTableFile::createKeaAtt(this->keaImgFile, this->m_mutex, band, chunkSize, deflate);
+            kealib::KEAAttributeTable::copyRAT(att, rat_to);
+            delete rat_to;
         }
         catch(const KEAATTException &e)
         {
@@ -2557,7 +2557,6 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     bool KEAImageIO::attributeTablePresent(uint32_t band)

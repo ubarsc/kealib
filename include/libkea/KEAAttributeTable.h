@@ -172,8 +172,7 @@ namespace kealib{
         virtual size_t getChunkSize() const;
         virtual void addRows(size_t numRows);
         
-        virtual void exportToKeaFile(HighFive::File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE);
-        virtual void exportToASCII(const std::string &outputFile);
+        static void copyRAT(const KEAAttributeTable *pFrom, KEAAttributeTable *pTo);
         
         virtual void printAttributeTableHeaderInfo();
         

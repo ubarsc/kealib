@@ -412,11 +412,6 @@ namespace kealib{
         throw KEAATTException("Unimplemented");
     }
     
-    void KEAAttributeTable::exportToKeaFile(HighFive::File *keaImg, unsigned int band, unsigned int chunkSize, unsigned int deflate)
-    {
-        throw KEAATTException("Unimplemented");
-    }
-    
     void KEAAttributeTable::addAttBoolField(const std::string &name, bool val, std::string usage)
     {
         try 
@@ -661,16 +656,138 @@ namespace kealib{
         delete feat;
     }
     
-    void KEAAttributeTable::exportToASCII(const std::string &outputFile)
+    void KEAAttributeTable::copyRAT(const KEAAttributeTable *pFrom, KEAAttributeTable *pTo)
     {
-        throw KEAATTException("Unimplemented");
+        try
+        {
+            // add the fields
+            for(auto iterField = pFrom->fields->begin(); iterField != pFrom->fields->end(); ++iterField)
+            {
+                // TODO: haven't worried about copying fill value over
+                if((*iterField).second.dataType == kea_att_bool)
+                {
+                    pTo->addAttBoolField((*iterField).second.name, false, (*iterField).second.usage);
+                }
+                else if((*iterField).second.dataType == kea_att_int)
+                {
+                    pTo->addAttIntField((*iterField).second.name, 0, (*iterField).second.usage);
+                }
+                else if((*iterField).second.dataType == kea_att_float)
+                {
+                    pTo->addAttFloatField((*iterField).second.name, 0.0, (*iterField).second.usage);
+                }
+                else if((*iterField).second.dataType == kea_att_string)
+                {
+                    pTo->addAttStringField((*iterField).second.name, "", (*iterField).second.usage);
+                }
+            }
+            
+            pTo->addRows(pFrom->getSize());
+            
+            // copy the data
+            size_t numOfBlocks = std::floor(((double)pTo->numRows / pTo->chunkSize));
+            size_t remainRows = pTo->numRows - (numOfBlocks * pTo->chunkSize);
+            bool *boolVals = nullptr;
+            if(pFrom->getNumBoolFields() > 0)
+            {
+                boolVals = new bool[pTo->chunkSize];
+            }
+            int64_t *intVals = nullptr;
+            if(pFrom->getNumIntFields() > 0 )
+            {
+                intVals = new int64_t[pTo->chunkSize];
+            }
+            double *floatVals = nullptr;
+            if(pFrom->getNumFloatFields() > 0)
+            {
+                floatVals = new double[pTo->chunkSize];
+            }
+            std::vector<std::string> stringVals;
+            
+            if(numOfBlocks > 0)
+            {
+                for(size_t n = 0; n < numOfBlocks; ++n)
+                {
+                    size_t rowOff = n * pTo->chunkSize;
+                    for( size_t f = 0; f < pFrom->getNumBoolFields(); f++ )
+                    {
+                        pFrom->getBoolFields(rowOff, pTo->chunkSize, f, boolVals);
+                        pTo->setBoolFields(rowOff, pTo->chunkSize, f, boolVals);
+                    }
+                    for( size_t f = 0; f < pFrom->getNumIntFields(); f++ )
+                    {
+                        pFrom->getIntFields(rowOff, pTo->chunkSize, f, intVals);
+                        pTo->setIntFields(rowOff, pTo->chunkSize, f, intVals);
+                    }
+                    for( size_t f = 0; f < pFrom->getNumFloatFields(); f++ )
+                    {
+                        pFrom->getFloatFields(rowOff, pTo->chunkSize, f, floatVals);
+                        pTo->getFloatFields(rowOff, pTo->chunkSize, f, floatVals);
+                    }
+                    for( size_t f = 0; f < pFrom->getNumBoolFields(); f++ )
+                    {
+                        pFrom->getStringFields(rowOff, pTo->chunkSize, f, &stringVals);
+                        pTo->getStringFields(rowOff, pTo->chunkSize, f, &stringVals);
+                    }
+                }
+            }            
+            if(remainRows > 0)
+            {
+                // use same buffers as above
+                size_t rowOff = numOfBlocks * pTo->chunkSize;
+                for( size_t f = 0; f < pFrom->getNumBoolFields(); f++ )
+                {
+                    pFrom->getBoolFields(rowOff, remainRows, f, boolVals);
+                    pTo->setBoolFields(rowOff, remainRows, f, boolVals);
+                }
+                for( size_t f = 0; f < pFrom->getNumIntFields(); f++ )
+                {
+                    pFrom->getIntFields(rowOff, remainRows, f, intVals);
+                    pTo->setIntFields(rowOff, remainRows, f, intVals);
+                }
+                for( size_t f = 0; f < pFrom->getNumFloatFields(); f++ )
+                {
+                    pFrom->getFloatFields(rowOff, remainRows, f, floatVals);
+                    pTo->getFloatFields(rowOff, remainRows, f, floatVals);
+                }
+                for( size_t f = 0; f < pFrom->getNumStringFields(); f++ )
+                {
+                    pFrom->getStringFields(rowOff, remainRows, f, &stringVals);
+                    pTo->getStringFields(rowOff, remainRows, f, &stringVals);
+                }
+            }
+            delete[] boolVals;
+            delete[] intVals;
+            delete[] floatVals;
+        }
+        catch(const HighFive::Exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
+        catch (const KEAATTException &e)
+        {
+            throw e;
+        }
+        catch (const KEAIOException &e)
+        {
+            throw e;
+        }
+        catch(const std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
     }
+
     
     void KEAAttributeTable::printAttributeTableHeaderInfo()
     {
         if(this->attType == kea_att_mem)
         {
             std::cout << "Using an in memory attribute table\n";
+        }
+        else if(this->attType == kea_att_file)
+        {
+            std::cout << "Using an file attribute table\n";
         }
         else
         {
@@ -780,7 +897,7 @@ namespace kealib{
                     chunkSize = hChunkSize;
                 }
             }
-            catch(const H5::Exception &e)
+            catch(const HighFive::Exception &e)
             {
                 throw KEAIOException("The attribute table size field is not present.");
             }

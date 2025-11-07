@@ -298,6 +298,7 @@ int main()
         rat1->addAttIntField("SecondInt", 4);  // 4 will get ignored as you can only set fill value once...
         rat1->addAttFloatField("FirstFloat", 3.1);
         rat1->addAttStringField("FirstString", "hello");
+        rat1->printAttributeTableHeaderInfo();
         
         std::cout << "created columns" << std::endl;
         std::cout << "checking bool fill" << std::endl;
@@ -357,6 +358,10 @@ int main()
         std::cout << "writing string col" << std::endl;
         createRatDataForString(&stringBuffer);
         rat1->setStringFields(0, RAT_SIZE, 0, &stringBuffer);
+        
+        // now copy to the other band
+        std::cout << "copying RAT" << std::endl;
+        io.setAttributeTable(rat1, 2);
         
         io.close();
         
