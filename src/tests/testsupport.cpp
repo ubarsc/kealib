@@ -229,7 +229,7 @@ bool compareRatDataString(std::vector<std::string> *psBuffer1, std::vector<std::
     {
         if( psBuffer1->at(i) != psBuffer2->at(i) )
         {
-            std::cout << "values differ at index " << i << std::endl;
+            std::cout << "values differ at index " << i << " " << psBuffer1->at(i) << " vs " << psBuffer2->at(i) << std::endl;
             return false;
         }
     }
@@ -242,7 +242,7 @@ bool compareRatDataStringSubset(std::vector<std::string> *psBuffer1, std::vector
     {
         if( psBuffer1->at(subsetoffset + i) != psBuffer2->at(i) )
         {
-            std::cout << "values differ at index " << i << std::endl;
+            std::cout << "values differ at index " << i << " " << psBuffer1->at(subsetoffset + i) << " vs " << psBuffer2->at(i) << std::endl;
             return false;
         }
     }

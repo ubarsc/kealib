@@ -722,12 +722,12 @@ namespace kealib{
                     for( size_t f = 0; f < pFrom->getNumFloatFields(); f++ )
                     {
                         pFrom->getFloatFields(rowOff, pTo->chunkSize, f, floatVals);
-                        pTo->getFloatFields(rowOff, pTo->chunkSize, f, floatVals);
+                        pTo->setFloatFields(rowOff, pTo->chunkSize, f, floatVals);
                     }
-                    for( size_t f = 0; f < pFrom->getNumBoolFields(); f++ )
+                    for( size_t f = 0; f < pFrom->getNumStringFields(); f++ )
                     {
                         pFrom->getStringFields(rowOff, pTo->chunkSize, f, &stringVals);
-                        pTo->getStringFields(rowOff, pTo->chunkSize, f, &stringVals);
+                        pTo->setStringFields(rowOff, pTo->chunkSize, f, &stringVals);
                     }
                 }
             }            
@@ -748,12 +748,12 @@ namespace kealib{
                 for( size_t f = 0; f < pFrom->getNumFloatFields(); f++ )
                 {
                     pFrom->getFloatFields(rowOff, remainRows, f, floatVals);
-                    pTo->getFloatFields(rowOff, remainRows, f, floatVals);
+                    pTo->setFloatFields(rowOff, remainRows, f, floatVals);
                 }
                 for( size_t f = 0; f < pFrom->getNumStringFields(); f++ )
                 {
                     pFrom->getStringFields(rowOff, remainRows, f, &stringVals);
-                    pTo->getStringFields(rowOff, remainRows, f, &stringVals);
+                    pTo->setStringFields(rowOff, remainRows, f, &stringVals);
                 }
             }
             delete[] boolVals;

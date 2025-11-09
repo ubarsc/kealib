@@ -435,7 +435,7 @@ int main()
         free(pReadOvData);
         std::cout << "Overview compared" << std::endl;
         
-        std::vector<uint32_t> bands = {1};//, 2};
+        std::vector<uint32_t> bands = {1, 2};
         std::vector<kealib::KEAATTType> ratTypes = {kealib::kea_att_file, kealib::kea_att_mem};
         for( const uint32_t& band_num : bands )
         {
@@ -505,7 +505,7 @@ int main()
                     return 1;
                 }
         
-                std::cout << "Reading int string subset" << std::endl;
+                std::cout << "Reading string subset" << std::endl;
                 rat1->getStringFields(101, 21, 0, &stringBuffer);
                 if( !compareRatDataStringSubset(&stringBufferTruth, &stringBuffer, 101))
                 {
