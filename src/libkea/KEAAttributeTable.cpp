@@ -73,6 +73,11 @@ namespace kealib{
         throw KEAATTException("Unimplemented");
     }
     
+    struct tm KEAAttributeTable::getDateTimeField(size_t fid, const std::string &name) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
     void KEAAttributeTable::setBoolField(size_t fid, const std::string &name, bool value)
     {
         throw KEAATTException("Unimplemented");
@@ -89,6 +94,11 @@ namespace kealib{
     }
     
     void KEAAttributeTable::setStringField(size_t fid, const std::string &name, const std::string &value)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::setDateTimeField(size_t fid, const std::string &name, const struct tm &value)
     {
         throw KEAATTException("Unimplemented");
     }
@@ -169,6 +179,11 @@ namespace kealib{
         }
     }
     
+    void KEAAttributeTable::setDateTimeValue(const std::string &name, const struct tm &value)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
     void KEAAttributeTable::setBoolValue(size_t colIdx, bool value)
     {
         throw KEAATTException("Unimplemented");
@@ -185,6 +200,11 @@ namespace kealib{
     }
     
     void KEAAttributeTable::setStringValue(size_t colIdx, const std::string &value)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+
+    void KEAAttributeTable::setDateTimeValue(size_t colIdx, const struct tm &value)
     {
         throw KEAATTException("Unimplemented");
     }
@@ -209,6 +229,11 @@ namespace kealib{
         throw KEAATTException("Unimplemented");
     }
     
+    struct tm KEAAttributeTable::getDateTimeField(size_t fid, size_t colIdx) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
     void KEAAttributeTable::getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const
     {
         throw KEAATTException("Unimplemented");
@@ -225,6 +250,11 @@ namespace kealib{
     }
     
     void KEAAttributeTable::getStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *psBuffer) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::getDateTimeFields(size_t startfid, size_t len, size_t colIdx, struct tm *pBuffer) const
     {
         throw KEAATTException("Unimplemented");
     }
@@ -254,6 +284,11 @@ namespace kealib{
         throw KEAATTException("Unimplemented");
     }
     
+    void KEAAttributeTable::setDateTimeField(size_t fid, size_t colIdx, const struct tm &value)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
     void KEAAttributeTable::setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer)
     {
         throw KEAATTException("Unimplemented");
@@ -270,6 +305,11 @@ namespace kealib{
     }
     
     void KEAAttributeTable::setStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *papszStrList)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+
+    void KEAAttributeTable::setDateTimeFields(size_t startfid, size_t len, size_t colIdx, struct tm *pBuffer)
     {
         throw KEAATTException("Unimplemented");
     }
@@ -380,6 +420,11 @@ namespace kealib{
     size_t KEAAttributeTable::getNumStringFields() const
     {
         return this->numStringFields;
+    }
+    
+    size_t KEAAttributeTable::getNumDateTimeFields() const
+    {
+        throw KEAATTException("Unimplemented");
     }
     
     size_t KEAAttributeTable::getSize() const
@@ -544,6 +589,12 @@ namespace kealib{
         }
     }
     
+    void KEAAttributeTable::addAttDateTimeField(const std::string &name, const struct tm &val, std::string usage)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    // not needed?
     void KEAAttributeTable::addFields(std::vector<KEAATTField*> *inFields)
     {
         try 
@@ -583,6 +634,7 @@ namespace kealib{
         }
     }
     
+    // not needed?
     void KEAAttributeTable::addFields(std::vector<KEAATTField> inFields)
     {
         try 
@@ -617,6 +669,7 @@ namespace kealib{
         }
     }
     
+    // move to mem?
     KEAATTFeature* KEAAttributeTable::createKeaFeature()
     {
         KEAATTFeature *feat = new KEAATTFeature();
@@ -1160,6 +1213,12 @@ namespace kealib{
     {
         throw KEAATTException("Unimplemented");
     }
+
+    // for future versions of KEA
+    void KEAAttributeTable::addAttDateTimeField(KEAATTField field, const struct tm &val)
+    {
+        throw KEAATTException("Unimplemented");
+    }
         
     KEAAttributeTable::~KEAAttributeTable()
     {
@@ -1170,4 +1229,260 @@ namespace kealib{
     {
         delete pTable;
     }
+    
+    // helper for variable length structures - HighFive doesn't currently support
+    void KEAAttributeTable::readNeighbours(const HighFive::DataSet &dataset, size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const
+    {
+    
+        if(!neighbours->empty())
+        {
+            for(auto iterNeigh = neighbours->begin(); iterNeigh != neighbours->end(); ++iterNeigh)
+            {
+                delete *iterNeigh;
+            }
+            neighbours->clear();
+        }
+        neighbours->reserve(len);
+    
+        hid_t mem_vlen_type = H5Tvlen_create(H5T_NATIVE_HSIZE);
+        if( mem_vlen_type == H5I_INVALID_HID)
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Tcreate");
+        } 
+
+        hid_t dataspace_id = H5Dget_space(dataset.getId());
+        if( dataspace_id == H5I_INVALID_HID)
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Tcreate");
+        }
+        hsize_t neighboursOffset[1];
+        neighboursOffset[0] = startfid;
+        hsize_t neighboursCount[1];
+        neighboursCount[0] = len;
+        if( H5Sselect_hyperslab(dataspace_id, H5S_SELECT_SET, neighboursOffset, nullptr, neighboursCount, nullptr) < 0 )
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Sselect_hyperslab");
+        }
+        
+        hsize_t neighboursDimsRead[1];
+        neighboursDimsRead[0] = len;
+        hid_t memspace_id = H5Screate_simple(1, neighboursDimsRead, nullptr);
+        if( memspace_id == H5I_INVALID_HID)
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Screate_simple");
+        }
+
+        hsize_t neighboursOffset_out[1];
+        neighboursOffset_out[0] = 0;
+        hsize_t neighboursCount_out[1];
+        neighboursCount_out[0] = len;
+
+        if( H5Sselect_hyperslab(memspace_id, H5S_SELECT_SET, neighboursOffset_out, nullptr, neighboursCount_out, nullptr) < 0 )
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Sselect_hyperslab");
+        }
+        
+        hvl_t *neighbourVals = (hvl_t *)malloc(len * sizeof(hvl_t));
+        if( H5Dread(dataset.getId(), mem_vlen_type, memspace_id, dataspace_id, H5P_DEFAULT, neighbourVals) < 0 )
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Dread");
+        }
+
+        for(size_t i = 0; i < len; ++i)
+        {
+            neighbours->push_back(new std::vector<size_t>());
+            if(neighbourVals[i].len > 0)
+            {
+                neighbours->back()->reserve(neighbourVals[i].len);
+                for(hsize_t n = 0; n < neighbourVals[i].len; ++n)
+                {
+                    neighbours->back()->push_back(((size_t*)neighbourVals[i].p)[n]);
+                }
+            }
+        }
+        
+        if( H5Treclaim(mem_vlen_type, dataspace_id, H5P_DEFAULT, neighbourVals) < 0 )
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Treclaim");
+        }
+        free(neighbourVals);
+        H5Tclose(mem_vlen_type);
+        H5Sclose(dataspace_id);
+        H5Sclose(memspace_id);
+    }
+    
+    // helper for variable length structures - HighFive doesn't currently support
+    void KEAAttributeTable::writeNeighbours(const HighFive::DataSet &dataset, size_t startfid, size_t len, const std::vector<std::vector<size_t>* > *neighbours)
+    {
+        hid_t mem_vlen_type = H5Tvlen_create(H5T_NATIVE_HSIZE);
+        if( mem_vlen_type == H5I_INVALID_HID)
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Tcreate");
+        } 
+
+        hid_t dataspace_id = H5Dget_space(dataset.getId());
+        if( dataspace_id == H5I_INVALID_HID)
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Tcreate");
+        }
+        hsize_t neighboursOffset[1];
+        neighboursOffset[0] = startfid;
+        hsize_t neighboursCount[1];
+        neighboursCount[0] = len;
+        if( H5Sselect_hyperslab(dataspace_id, H5S_SELECT_SET, neighboursOffset, nullptr, neighboursCount, nullptr) < 0 )
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Sselect_hyperslab");
+        }
+
+        hsize_t neighboursOffset_in[1];
+        neighboursOffset_in[0] = 0;
+        hsize_t neighboursCount_in[1];
+        neighboursCount_in[0] = len;
+        
+        hsize_t neighboursDimsRead[1];
+        neighboursDimsRead[0] = len;
+        hid_t memspace_id = H5Screate_simple(1, neighboursDimsRead, nullptr);
+        if( memspace_id == H5I_INVALID_HID)
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Screate_simple");
+        }
+
+        if( H5Sselect_hyperslab(memspace_id, H5S_SELECT_SET, neighboursOffset_in, nullptr, neighboursCount_in, nullptr) < 0 )
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Sselect_hyperslab");
+        }
+
+        // copy the neighbours into HDF5 structure
+        hvl_t *neighbourVals = (hvl_t *)malloc(len * sizeof(hvl_t));
+        size_t i = 0;
+        for(auto iterClumps = neighbours->begin(); iterClumps != neighbours->end(); ++iterClumps)
+        {
+            neighbourVals[i].len = 0;
+            neighbourVals[i].p = nullptr;
+            if((*iterClumps)->size() > 0)
+            {
+                neighbourVals[i].len = (*iterClumps)->size();
+                neighbourVals[i].p = new hsize_t[(*iterClumps)->size()];
+                for(unsigned int k = 0; k < (*iterClumps)->size(); ++k)
+                {
+                    ((hsize_t*)neighbourVals[i].p)[k] = (*iterClumps)->at(k);
+                }
+            }
+            
+            ++i;
+        }
+        
+        if( H5Dwrite(dataset.getId(), mem_vlen_type, memspace_id, dataspace_id, H5P_DEFAULT, neighbourVals) < 0 )
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Dwrite");
+        }
+        
+        for(size_t i = 0; i < len; ++i)
+        {
+            if(neighbourVals[i].len > 0)
+            {
+                neighbourVals[i].len = 0;
+                delete[] ((hsize_t*)neighbourVals[i].p);
+            }
+        }
+
+        free(neighbourVals);
+        H5Tclose(mem_vlen_type);
+        H5Sclose(dataspace_id);
+        H5Sclose(memspace_id);
+    }
+
+    // workaround for HighFive::DataSet(hid_t) constructor being protected
+    class KEAHighFiveDataset : public HighFive::DataSet
+    {
+    public:
+        KEAHighFiveDataset(hid_t id) : HighFive::DataSet(id)
+        {
+            
+        }
+          
+    };
+    
+    // helper for variable length structures - HighFive doesn't currently support
+    HighFive::DataSet KEAAttributeTable::createNeighboursDataset(HighFive::File *keaImg, const std::string &datasetname, unsigned int deflate)
+    {
+        hsize_t initDimsNeighboursDS[1];
+        initDimsNeighboursDS[0] = this->getSize();
+        hsize_t maxDimsNeighboursDS[1];
+        maxDimsNeighboursDS[0] = H5S_UNLIMITED;
+        
+        hsize_t dimsNeighboursChunk[1];
+        dimsNeighboursChunk[0] = chunkSize;
+        
+        hid_t mem_vlen_type = H5Tvlen_create(H5T_NATIVE_HSIZE);
+        if( mem_vlen_type == H5I_INVALID_HID)
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Tcreate");
+        }
+        
+        hid_t memspace_id = H5Screate_simple(1, initDimsNeighboursDS, maxDimsNeighboursDS);
+        if( memspace_id == H5I_INVALID_HID)
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Screate_simple");
+        }
+        
+        hid_t plist_id = H5Pcreate(H5P_DATASET_CREATE);
+        if( plist_id == H5I_INVALID_HID )
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Pcreate");
+        }
+        if( H5Pset_chunk(plist_id, 1, dimsNeighboursChunk) < 0 )
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Pset_chunk");
+        }
+        if( H5Pset_shuffle(plist_id) < 0 )
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Pset_shuffle");
+        }
+        if( H5Pset_deflate(plist_id, deflate) < 0)
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Pset_deflate");
+        }
+        hvl_t neighboursDataFillVal[1];
+        neighboursDataFillVal[0].p = nullptr;
+        neighboursDataFillVal[0].len = 0;
+        if( H5Pset_fill_value(plist_id, mem_vlen_type, &neighboursDataFillVal) < 0)
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Pset_fill_value");
+        }
+        
+        hid_t dataset_id = H5Dcreate1(keaImg->getId(), datasetname.c_str(), mem_vlen_type, memspace_id, plist_id);
+        if( dataset_id == H5I_INVALID_HID )
+        {
+    		H5Eprint(H5E_DEFAULT, stderr);
+        	throw KEAIOException("Error in H5Dcreate1");
+        }
+        
+        H5Tclose(mem_vlen_type);
+        H5Sclose(memspace_id);
+        H5Pclose(plist_id);
+        
+        return KEAHighFiveDataset(dataset_id);
+    }
+
 }
