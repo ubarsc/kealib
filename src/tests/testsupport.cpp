@@ -325,3 +325,33 @@ bool compareNeighbours(std::vector<std::vector<size_t>* > *neighbours1, std::vec
     
     return true;
 }
+
+bool compareNeighboursSubset(std::vector<std::vector<size_t>* > *neighbours1, size_t offset, std::vector<std::vector<size_t>* > *neighbours2)
+{
+    if( neighbours2->size() > (neighbours1->size() - offset) )
+    {
+        std::cout << "Not enough space for subset" << std::endl;
+        return false;
+    }
+    
+    for( size_t i = 0; i < neighbours2->size(); i++)
+    {
+        auto v1 = neighbours1->at(i + offset);
+        auto v2 = neighbours2->at(i);
+        if( v1->size() != v2->size() )
+        {
+            std::cout << "neighbour size does not match for fid " << i << std::endl;
+            return false;
+        }
+        for( size_t j = 0; j < v1->size(); j++ )
+        {
+            if( v1->at(j) != v2->at(j) )
+            {
+                std::cout << "numbers differ at fid " << i << " neighbour idx " << j << std::endl;
+                return false;
+            }
+        }
+    }
+    
+    return true;
+}

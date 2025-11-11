@@ -44,7 +44,7 @@ bool compareRatDataStringSubset(std::vector<std::string> *psBuffer1, std::vector
 void clearNeighbours(std::vector<std::vector<size_t>* > *neighbours);
 void createNeighbours(size_t len, std::vector<std::vector<size_t>* > *neighbours);
 bool compareNeighbours(std::vector<std::vector<size_t>* > *neighbours1, std::vector<std::vector<size_t>* > *neighbours2);
-
+bool compareNeighboursSubset(std::vector<std::vector<size_t>* > *neighbours1, size_t offset, std::vector<std::vector<size_t>* > *neighbours2);
 
 template <typename T>
 T* createDataForType(uint64_t xSize, uint64_t ySize)

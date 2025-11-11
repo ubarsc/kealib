@@ -521,6 +521,14 @@ int main()
                 {
                     return 1;
                 }
+                
+                std::cout << "Reading neighbours subset" << std::endl;
+                rat1->getNeighbours(101, 21, &neighbours);
+                if( !compareNeighboursSubset(&neighboursTruth, 101, &neighbours))
+                {
+                    return 1;
+                }
+                
                 clearNeighbours(&neighbours);
                 clearNeighbours(&neighboursTruth);
             }
