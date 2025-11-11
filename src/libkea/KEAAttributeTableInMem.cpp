@@ -370,7 +370,29 @@ namespace kealib{
     
     void KEAAttributeTableInMem::getNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const
     {
-        throw KEAATTException("KEAAttributeTableInMem::getNeighbours(size_t startfid, size_t len, std::vector<size_t> neighbours) is not implemented.");
+        if((startfid+len) > attRows->size())
+        {
+            std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        
+        if(!neighbours->empty())
+        {
+            for(auto iterNeigh = neighbours->begin(); iterNeigh != neighbours->end(); ++iterNeigh)
+            {
+                delete *iterNeigh;
+            }
+            neighbours->clear();
+        }
+        neighbours->reserve(len);
+        
+        for( size_t n = 0; n < len; n++)
+        {
+            auto row = attRows->at(n+startfid);
+            auto fid_neighbours = new std::vector<size_t>;
+            fid_neighbours->assign(row->neighbours->begin(), row->neighbours->end());
+            neighbours->push_back(fid_neighbours);
+        }
     }
 
     void KEAAttributeTableInMem::setBoolField(size_t fid, size_t colIdx, bool value)
@@ -537,7 +559,17 @@ namespace kealib{
     
     void KEAAttributeTableInMem::setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours)
     {
-        throw KEAATTException("KEAAttributeTableInMem::setNeighbours(size_t startfid, size_t len, std::vector<size_t> neighbours) is not implemented.");
+        if((startfid+len) >= attRows->size())
+        {
+            std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        
+        for( size_t n = 0; n < len; n++)
+        {
+            auto row = attRows->at(n+startfid);
+            row->neighbours->assign(neighbours->at(n)->begin(), neighbours->at(n)->end());
+        }
     }
     
     KEAATTFeature* KEAAttributeTableInMem::getFeature(size_t fid) const
@@ -658,6 +690,15 @@ namespace kealib{
                 stringVals = new KEAAttString[pAtt->chunkSize * pAtt->numStringFields];
                 stringDataset = keaImg->getDataSet(pAtt->bandPathBase + KEA_ATT_STRING_DATA);
             }
+            bool hasNeighbours = false;
+            HighFive::DataSet neighboursDataset;
+            auto neighboursDatasetName = pAtt->bandPathBase + KEA_ATT_NEIGHBOURS_DATA;
+            if(keaImg->exist(neighboursDatasetName))
+            {
+                hasNeighbours = true;
+                neighboursDataset = keaImg->getDataSet(neighboursDatasetName);
+            } 
+            std::vector<std::vector<size_t>* > neighbours;
                                     
             if(numOfBlocks > 0)
             {
@@ -667,9 +708,10 @@ namespace kealib{
                     rowOff = n * pAtt->chunkSize;
                     
                     // Read data.
-                    //neighboursOffset[0] = rowOff;
-                    //neighboursDataspace.selectHyperslab( H5S_SELECT_SET, neighboursCount, neighboursOffset );
-                    //neighboursDataset.read(neighbourVals, intVarLenMemDT, neighboursMemspace, neighboursDataspace);
+                    if(hasNeighbours)
+                    {
+                        pAtt->readNeighbours(neighboursDataset, rowOff, pAtt->chunkSize, &neighbours);
+                    }
                     
                     if(pAtt->numBoolFields > 0)
                     {
@@ -741,16 +783,12 @@ namespace kealib{
                                 free(stringVals[(i*pAtt->numStringFields)+j].str);
                             }
                         }
-                        
-                        /*if(neighbourVals[i].length > 0)
+
+                        if(hasNeighbours)
                         {
-                            feat->neighbours->reserve(neighbourVals[i].length);
-                            for(hsize_t n = 0; n < neighbourVals[i].length; ++n)
-                            {
-                                feat->neighbours->push_back(((size_t*)neighbourVals[i].p)[n]);
-                            }
-                            delete[] ((size_t*)neighbourVals[i].p);
-                        }*/
+                            feat->neighbours->assign(neighbours[i]->begin(), neighbours[i]->end());
+                        }
+                        
                                                     
                         pAtt->attRows->push_back(feat);
                     }                        
@@ -763,13 +801,10 @@ namespace kealib{
             
                 rowOff = numOfBlocks * pAtt->chunkSize;
                 // Read data.
-                /*neighboursOffset[0] = rowOff;
-                neighboursCount[0] = remainRows;
-                neighboursDataspace.selectHyperslab( H5S_SELECT_SET, neighboursCount, neighboursOffset );
-                
-                neighboursDimsRead[0] = remainRows;
-                neighboursMemspace = H5::DataSpace( 1, neighboursDimsRead );
-                neighboursDataset.read(neighbourVals, intVarLenMemDT, neighboursMemspace, neighboursDataspace);*/
+                if(hasNeighbours)
+                {
+                    pAtt->readNeighbours(neighboursDataset, rowOff, remainRows, &neighbours);
+                }
                 
                 if(pAtt->numBoolFields > 0)
                 {
@@ -842,15 +877,10 @@ namespace kealib{
                         }
                     }
                     
-                    /*if(neighbourVals[i].length > 0)
+                    if(hasNeighbours)
                     {
-                        feat->neighbours->reserve(neighbourVals[i].length);
-                        for(hsize_t n = 0; n < neighbourVals[i].length; ++n)
-                        {
-                            feat->neighbours->push_back(((size_t*)neighbourVals[i].p)[n]);
-                        }
-                        delete[] ((size_t*)neighbourVals[i].p);
-                    }*/
+                        feat->neighbours->assign(neighbours[i]->begin(), neighbours[i]->end());
+                    }
                     
                     pAtt->attRows->push_back(feat);
                 }
@@ -860,6 +890,11 @@ namespace kealib{
             delete[] intVals;
             delete[] floatVals;
             delete[] stringVals;
+            for(auto iterNeigh = neighbours.begin(); iterNeigh != neighbours.end(); ++iterNeigh)
+            {
+                delete *iterNeigh;
+            }
+            neighbours.clear();
         }
         catch(const HighFive::Exception &e)
         {

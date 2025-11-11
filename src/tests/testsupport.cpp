@@ -260,3 +260,68 @@ void createRatDataForString(std::vector<std::string> *psBuffer)
     }
 }
 
+void clearNeighbours(std::vector<std::vector<size_t>* > *neighbours)
+{
+    for(auto iterNeigh = neighbours->begin(); iterNeigh != neighbours->end(); ++iterNeigh)
+    {
+        delete *iterNeigh;
+    }
+    neighbours->clear();
+}
+
+void createNeighbours(size_t len, std::vector<std::vector<size_t>* > *neighbours)
+{
+    clearNeighbours(neighbours);
+    neighbours->reserve(len);
+    for( size_t i = 0; i < len; i++ )
+    {
+        auto this_el_neighbours = new std::vector<size_t>;
+        if( i != 0 )
+        {
+            this_el_neighbours->push_back(i - 1);
+        }
+        if( i < (len - 1))
+        {
+            this_el_neighbours->push_back(i + 1);
+        }
+        // just occassionally add some other numbers
+        if( (i % 100) == 0 )
+        {
+            this_el_neighbours->push_back(1);
+            this_el_neighbours->push_back(2);
+            this_el_neighbours->push_back(3);
+            this_el_neighbours->push_back(4);
+        }
+        neighbours->push_back(this_el_neighbours);
+    }
+}
+
+bool compareNeighbours(std::vector<std::vector<size_t>* > *neighbours1, std::vector<std::vector<size_t>* > *neighbours2)
+{
+    if( neighbours1->size() != neighbours2->size() )
+    {
+        std::cout << "Size does not match" << std::endl;
+        return false;
+    }
+    
+    for( size_t i = 0; i < neighbours1->size(); i++)
+    {
+        auto v1 = neighbours1->at(i);
+        auto v2 = neighbours2->at(i);
+        if( v1->size() != v2->size() )
+        {
+            std::cout << "neighbour size does not match for fid " << i << std::endl;
+            return false;
+        }
+        for( size_t j = 0; j < v1->size(); j++ )
+        {
+            if( v1->at(j) != v2->at(j) )
+            {
+                std::cout << "numbers differ at fid " << i << " neighbour idx " << j << std::endl;
+                return false;
+            }
+        }
+    }
+    
+    return true;
+}

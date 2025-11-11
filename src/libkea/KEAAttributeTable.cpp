@@ -757,6 +757,9 @@ namespace kealib{
             }
             std::vector<std::string> stringVals;
             
+            bool hasNeighbours = true;
+            std::vector<std::vector<size_t>* > neighbours;
+            
             if(numOfBlocks > 0)
             {
                 for(size_t n = 0; n < numOfBlocks; ++n)
@@ -781,6 +784,21 @@ namespace kealib{
                     {
                         pFrom->getStringFields(rowOff, pTo->chunkSize, f, &stringVals);
                         pTo->setStringFields(rowOff, pTo->chunkSize, f, &stringVals);
+                    }
+                    
+                    // try neighbours the first time
+                    if(hasNeighbours)
+                    {
+                        try
+                        {
+                            pFrom->getNeighbours(rowOff, pTo->chunkSize, &neighbours);
+                            pTo->setNeighbours(rowOff, pTo->chunkSize, &neighbours);
+                        }
+                        catch(const KEAIOException &e)
+                        {
+                            // no neighbours
+                            hasNeighbours = false;
+                        }
                     }
                 }
             }            
@@ -808,10 +826,28 @@ namespace kealib{
                     pFrom->getStringFields(rowOff, remainRows, f, &stringVals);
                     pTo->setStringFields(rowOff, remainRows, f, &stringVals);
                 }
+                if(hasNeighbours)
+                {
+                    try
+                    {
+                        pFrom->getNeighbours(rowOff, remainRows, &neighbours);
+                        pTo->setNeighbours(rowOff, remainRows, &neighbours);
+                    }
+                    catch(const KEAIOException &e)
+                    {
+                        // no neighbours
+                        hasNeighbours = false;
+                    }
+                }
             }
             delete[] boolVals;
             delete[] intVals;
             delete[] floatVals;
+            for(auto iterNeigh = neighbours.begin(); iterNeigh != neighbours.end(); ++iterNeigh)
+            {
+                delete *iterNeigh;
+            }
+            neighbours.clear();
         }
         catch(const HighFive::Exception &e)
         {
@@ -1307,7 +1343,7 @@ namespace kealib{
             }
         }
         
-        if( H5Treclaim(mem_vlen_type, dataspace_id, H5P_DEFAULT, neighbourVals) < 0 )
+        if( H5Treclaim(mem_vlen_type, memspace_id, H5P_DEFAULT, neighbourVals) < 0 )
         {
     		H5Eprint(H5E_DEFAULT, stderr);
         	throw KEAIOException("Error in H5Treclaim");

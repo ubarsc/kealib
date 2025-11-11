@@ -443,9 +443,9 @@ int main()
             {
                 // bands should have the same RAT because we copy them
                 std::cout << "Testing RAT type " << rat_type << " for band " << band_num << std::endl; 
+                auto *rat1 = io.getAttributeTable(rat_type, band_num);
             
                 std::cout << "Reading bool col" << std::endl;
-                auto *rat1 = io.getAttributeTable(rat_type, band_num);
                 bool boolFields[RAT_SIZE];
                 bool boolFieldsTruth[RAT_SIZE];
                 createRatDataForType(boolFieldsTruth, RAT_SIZE);
@@ -511,6 +511,18 @@ int main()
                 {
                     return 1;
                 }
+                
+                std::cout << "Reading neighbours" << std::endl;
+                std::vector<std::vector<size_t>* > neighbours;
+                rat1->getNeighbours(0, RAT_SIZE, &neighbours);
+                std::vector<std::vector<size_t>* > neighboursTruth;
+                createNeighbours(RAT_SIZE, &neighboursTruth);
+                if( !compareNeighbours(&neighbours, &neighboursTruth))
+                {
+                    return 1;
+                }
+                clearNeighbours(&neighbours);
+                clearNeighbours(&neighboursTruth);
             }
         }
         

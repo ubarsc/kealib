@@ -126,7 +126,7 @@ namespace kealib{
         virtual std::string getStringField(size_t fid, size_t colIdx) const;
         virtual struct tm getDateTimeField(size_t fid, size_t colIdx) const;
 
-        // RFC40 methods
+        // RFC40 methods for reading
         virtual void getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const;
         virtual void getIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) const;
         virtual void getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const;
@@ -141,7 +141,7 @@ namespace kealib{
         virtual void setStringField(size_t fid, size_t colIdx, const std::string &value);
         virtual void setDateTimeField(size_t fid, size_t colIdx, const struct tm &value);
 
-        // RFC40 methods
+        // RFC40 methods for writing
         virtual void setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer);
         virtual void setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer);
         virtual void setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer);

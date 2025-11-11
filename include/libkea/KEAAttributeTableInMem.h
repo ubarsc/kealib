@@ -91,8 +91,6 @@ namespace kealib{
         
         void addRows(size_t numRows);
         
-        void exportToKeaFile(HighFive::File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE);
-        
         static KEAAttributeTable* createKeaAtt(HighFive::File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band);
         
         ~KEAAttributeTableInMem();

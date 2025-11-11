@@ -359,6 +359,12 @@ int main()
         createRatDataForString(&stringBuffer);
         rat1->setStringFields(0, RAT_SIZE, 0, &stringBuffer);
         
+        std::cout << "writing neighbours" << std::endl;
+        std::vector<std::vector<size_t>* > neighbours;
+        createNeighbours(RAT_SIZE, &neighbours);
+        rat1->setNeighbours(0, RAT_SIZE, &neighbours);
+        clearNeighbours(&neighbours);
+        
         // now copy to the other band
         std::cout << "copying RAT" << std::endl;
         io.setAttributeTable(rat1, 2);

@@ -506,76 +506,17 @@ namespace kealib{
     
     void KEAAttributeTableFile::getNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const
     {
-        /*
         try
         {
             kealib::kea_lock lock(*this->m_mutex); 
             KEAStackPrintState printState;
-            if(!neighbours->empty())
-            {
-                for(auto iterNeigh = neighbours->begin(); iterNeigh != neighbours->end(); ++iterNeigh)
-                {
-                    delete *iterNeigh;
-                }
-                neighbours->clear();
-            }
-            neighbours->reserve(len);
             
-            H5::DataSet neighboursDataset = keaImg->openDataSet( (bandPathBase + KEA_ATT_NEIGHBOURS_DATA) );
-            H5::DataSpace neighboursDataspace = neighboursDataset.getSpace();
-            
-            int neighboursNDims = neighboursDataspace.getSimpleExtentNdims();
-            if(neighboursNDims != 1)
-            {
-                throw KEAIOException("The neighbours datasets needs to have 1 dimension.");
-            }
-            
-            hsize_t *neighboursDims = new hsize_t[neighboursNDims];
-            neighboursDataspace.getSimpleExtentDims(neighboursDims);
-            if(this->getSize() > neighboursDims[0])
-            {
-                throw KEAIOException("The number of features in neighbours dataset smaller than expected.");
-            }
-            delete[] neighboursDims;
-            
-            VarLenFieldHDF *neighbourVals = new VarLenFieldHDF[len];
-            H5::DataType intVarLenMemDT = H5::VarLenType(&H5::PredType::NATIVE_HSIZE);
-            hsize_t neighboursOffset[1];
-            neighboursOffset[0] = 0;
-            hsize_t neighboursCount[1];
-            neighboursCount[0] = len;
-            neighboursDataspace.selectHyperslab( H5S_SELECT_SET, neighboursCount, neighboursOffset );
-            
-            hsize_t neighboursDimsRead[1];
-            neighboursDimsRead[0] = len;
-            H5::DataSpace neighboursMemspace( 1, neighboursDimsRead );
-            
-            hsize_t neighboursOffset_out[1];
-            neighboursOffset_out[0] = 0;
-            hsize_t neighboursCount_out[1];
-            neighboursCount_out[0] = len;
-            neighboursMemspace.selectHyperslab( H5S_SELECT_SET, neighboursCount_out, neighboursOffset_out );
-            
-            neighboursOffset[0] = startfid;
-            neighboursDataspace.selectHyperslab( H5S_SELECT_SET, neighboursCount, neighboursOffset );
-            neighboursDataset.read(neighbourVals, intVarLenMemDT, neighboursMemspace, neighboursDataspace);
-            
-            for(size_t i = 0; i < len; ++i)
-            {
-                neighbours->push_back(new std::vector<size_t>());
-                if(neighbourVals[i].length > 0)
-                {
-                    neighbours->back()->reserve(neighbourVals[i].length);
-                    for(hsize_t n = 0; n < neighbourVals[i].length; ++n)
-                    {
-                        neighbours->back()->push_back(((size_t*)neighbourVals[i].p)[n]);
-                    }
-                }
-            }
+            auto neighboursDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_NEIGHBOURS_DATA);
+            readNeighbours(neighboursDataset, startfid, len, neighbours);
         }
-        catch(const H5::Exception &e)
+        catch(const HighFive::Exception &e)
         {
-            throw KEAATTException(e.getDetailMsg());
+            throw KEAATTException(e.what());
         }
         catch (const KEAATTException &e)
         {
@@ -589,7 +530,6 @@ namespace kealib{
         {
             throw KEAATTException(e.what());
         }
-        */
     }
     
     void KEAAttributeTableFile::setBoolField(size_t fid, size_t colIdx, bool value)
@@ -855,103 +795,30 @@ namespace kealib{
     
     void KEAAttributeTableFile::setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours)
     {
-        /*
         try
         {
             kealib::kea_lock lock(*this->m_mutex); 
             KEAStackPrintState printState;
-            H5::DataSet *neighboursDataset = nullptr;
-            try
+            
+            auto datasetName = bandPathBase + KEA_ATT_NEIGHBOURS_DATA;
+            HighFive::DataSet neighboursDataset;
+            
+            if( !keaImg->exist(datasetName))
             {
-                neighboursDataset = new H5::DataSet(keaImg->openDataSet(bandPathBase + KEA_ATT_NEIGHBOURS_DATA));
-                H5::DataSpace dimsDataSpace = neighboursDataset->getSpace();
-                
-                hsize_t dataDims[1];
-                dimsDataSpace.getSimpleExtentDims(dataDims);
-                hsize_t extendDatasetTo[1];
-                
-                if(this->getSize() > dataDims[0])
-                {
-                    extendDatasetTo[0] = this->getSize();
-                    neighboursDataset->extend(extendDatasetTo);
-                }
-                
-                dimsDataSpace.close();
+                neighboursDataset = createNeighboursDataset(keaImg, datasetName, deflate);
             }
-            catch(const H5::Exception &e)
+            else
             {
-                // Create Neighbours dataset
-                hsize_t initDimsNeighboursDS[1];
-                initDimsNeighboursDS[0] = this->getSize();
-                hsize_t maxDimsNeighboursDS[1];
-                maxDimsNeighboursDS[0] = H5S_UNLIMITED;
-                H5::DataSpace neighboursDataspace = H5::DataSpace(1, initDimsNeighboursDS, maxDimsNeighboursDS);
-                
-                hsize_t dimsNeighboursChunk[1];
-                dimsNeighboursChunk[0] = chunkSize;
-                
-                H5::DataType intVarLenDiskDT = H5::VarLenType(&H5::PredType::STD_U64LE);
-                H5::DataType intVarLenMemDT = H5::VarLenType(&H5::PredType::NATIVE_HSIZE);
-                VarLenFieldHDF neighboursDataFillVal[1];
-                neighboursDataFillVal[0].p = nullptr;
-                neighboursDataFillVal[0].length = 0;
-                H5::DSetCreatPropList creationNeighboursDSPList;
-                creationNeighboursDSPList.setChunk(1, dimsNeighboursChunk);
-                creationNeighboursDSPList.setShuffle();
-                creationNeighboursDSPList.setDeflate(deflate);
-                creationNeighboursDSPList.setFillValue( intVarLenMemDT, &neighboursDataFillVal);
-                
-                neighboursDataset = new H5::DataSet(keaImg->createDataSet((bandPathBase + KEA_ATT_NEIGHBOURS_DATA), intVarLenDiskDT, neighboursDataspace, creationNeighboursDSPList));
-                neighboursDataspace.close();
+                neighboursDataset = keaImg->getDataSet(datasetName);
             }
             
-            VarLenFieldHDF *neighbourVals = new VarLenFieldHDF[len];
-            
-            hsize_t neighboursDataOffset[1];
-            neighboursDataOffset[0] = startfid;
-            hsize_t neighboursDataDims[1];
-            neighboursDataDims[0] = len;
-            H5::DataType intVarLenMemDT = H5::VarLenType(&H5::PredType::NATIVE_HSIZE);
-            H5::DataSpace memNeighboursDataspace = H5::DataSpace(1, neighboursDataDims);
-            
-            
-            unsigned int i = 0;
-            for(auto iterClumps = neighbours->begin(); iterClumps != neighbours->end(); ++iterClumps)
-            {
-                neighbourVals[i].length = 0;
-                neighbourVals[i].p = nullptr;
-                if((*iterClumps)->size() > 0)
-                {
-                    neighbourVals[i].length = (*iterClumps)->size();
-                    neighbourVals[i].p = new hsize_t[(*iterClumps)->size()];
-                    for(unsigned int k = 0; k < (*iterClumps)->size(); ++k)
-                    {
-                        ((hsize_t*)neighbourVals[i].p)[k] = (*iterClumps)->at(k);
-                    }
-                }
-                
-                ++i;
-            }
-            
-            H5::DataSpace neighboursWriteDataSpace = neighboursDataset->getSpace();
-            neighboursWriteDataSpace.selectHyperslab(H5S_SELECT_SET, neighboursDataDims, neighboursDataOffset);
-            neighboursDataset->write(neighbourVals, intVarLenMemDT, memNeighboursDataspace, neighboursWriteDataSpace);
-            neighboursWriteDataSpace.close();
-            
-            for(size_t i = 0; i < len; ++i)
-            {
-                if(neighbourVals[i].length > 0)
-                {
-                    neighbourVals[i].length = 0;
-                    delete[] ((hsize_t*)neighbourVals[i].p);
-                }
-            }
-            neighboursDataset->close();
-            delete neighboursDataset;
+            writeNeighbours(neighboursDataset, startfid, len, neighbours);
+
+            keaImg->flush();
         }
-        catch(const H5::Exception &e)
+        catch(const HighFive::Exception &e)
         {
-            throw KEAIOException(e.getDetailMsg());
+            throw KEAIOException(e.what());
         }
         catch (const KEAATTException &e)
         {
@@ -965,7 +832,6 @@ namespace kealib{
         {
             throw KEAIOException(e.what());
         }
-        */
     }
     
     KEAATTFeature* KEAAttributeTableFile::getFeature(size_t fid) const
@@ -1169,8 +1035,7 @@ namespace kealib{
             updateSizeHeader(numBoolFields, numIntFields, numFloatFields, numStringFields);
             
             // extend the various data tables if they exist
-            std::vector<size_t> extendDatasetTo(2);
-            extendDatasetTo[0] = this->numRows;
+            std::vector<size_t> extendDatasetTo = {this->numRows, 0};
             try
             {
                 auto boolDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_BOOL_DATA);
@@ -1209,6 +1074,17 @@ namespace kealib{
                 auto stringDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_STRING_DATA);
                 extendDatasetTo[1] = this->numStringFields;
                 stringDataset.resize(extendDatasetTo);
+            }
+            catch(const HighFive::Exception &e)
+            {
+                // can't exist
+            }
+
+            try
+            {
+                auto neighboursDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_NEIGHBOURS_DATA);
+                std::vector<size_t> neighboursExtendDatasetTo = {this->numRows}; // is 1d
+                neighboursDataset.resize(neighboursExtendDatasetTo);
             }
             catch(const HighFive::Exception &e)
             {
