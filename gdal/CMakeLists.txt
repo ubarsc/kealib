@@ -1,4 +1,5 @@
 cmake_minimum_required (VERSION 3.5)
+set(CMAKE_CXX_STANDARD 17)
 ###############################################################################
 # set file locations
 set(LIBKEA_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../src CACHE PATH "Path to KEA library")

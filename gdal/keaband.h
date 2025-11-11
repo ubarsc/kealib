@@ -46,6 +46,13 @@
     #pragma message ("HAVE_64BITIMAGES not present")
 #endif
 
+#if (GDAL_VERSION_MAJOR > 3) || ((GDAL_VERSION_MAJOR == 3) && (GDAL_VERSION_MINOR >= 12))
+    #define HAVE_SETVALUE_CPLERR
+    #pragma message ("defining HAVE_SETVALUE_CPLERR")
+#else
+    #pragma message ("HAVE_SETVALUE_CPLERR not present")
+#endif
+
 #include "keadataset.h"
 
 class KEAOverview;
