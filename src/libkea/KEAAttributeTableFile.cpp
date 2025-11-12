@@ -49,6 +49,7 @@ namespace kealib{
         bandPathBase = pBaseAtt->getBandPathBase();
         chunkSize = pBaseAtt->getChunkSize();
         deflate = deflateIn;
+        m_pFeature = createKeaFeature();
     }
 
     bool KEAAttributeTableFile::getBoolField(size_t fid, size_t colIdx) const
@@ -676,8 +677,28 @@ namespace kealib{
     
     KEAATTFeature* KEAAttributeTableFile::getFeature(size_t fid) const
     {
-        throw KEAATTException("KEAAttributeTableFile::getFeature(size_t fid) has not been implemented.");
-        return nullptr;
+        for( size_t i = 0; i < numBoolFields; i++)
+        {
+            m_pFeature->boolFields->at(i) = getBoolField(fid, i);
+        }
+        for( size_t i = 0; i < numIntFields; i++)
+        {
+            m_pFeature->intFields->at(i) = getIntField(fid, i);
+        }
+        for( size_t i = 0; i < numFloatFields; i++)
+        {
+            m_pFeature->floatFields->at(i) = getFloatField(fid, i);
+        }
+        for( size_t i = 0; i < numStringFields; i++)
+        {
+            m_pFeature->strFields->at(i) = getStringField(fid, i);
+        }
+        for( size_t i = 0; i < numDatetimeFields; i++)
+        {
+            m_pFeature->datetimeFields->at(i) = getDateTimeField(fid, i);
+        }
+    
+        return m_pFeature;
     }
     
     void KEAAttributeTableFile::updateSizeHeader(hsize_t nbools, hsize_t nints, hsize_t nfloats, hsize_t nstrings)
@@ -950,7 +971,7 @@ namespace kealib{
     
     KEAAttributeTableFile::~KEAAttributeTableFile()
     {
-
+        deleteKeaFeature(m_pFeature);
     }
     
 }

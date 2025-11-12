@@ -405,6 +405,19 @@ int main()
                     return 1;
                 }
                 rat->setIntField(10, 0, intBuffer[10]);
+
+                if( rat->getFloatField(3, 0) != floatBuffer[3])
+                {
+                    std::cout << "float field not read correctly" << std::endl;
+                    return 1;
+                }
+                rat->setFloatField(3, 0, 9.1);
+                if( std::fabs(rat->getIntField(3, 0) - 9.1) < 0.1)
+                {
+                    std::cout << "updated float field not read correctly" << std::endl;
+                    return 1;
+                }
+                rat->setFloatField(3, 0, floatBuffer[3]);
                 
                 if( rat->getStringField(8, 0) != stringBuffer[8])
                 {
@@ -418,6 +431,29 @@ int main()
                     return 1;
                 }
                 rat->setStringField(8, 0, stringBuffer[8]);
+                
+                std::cout << "doing feature check" << std::endl;
+                kealib::KEAATTFeature* pFeature = rat->getFeature(9);
+                if( pFeature->boolFields->at(0) != boolBuffer[9])
+                {
+                    std::cout << "error with bool feature" << std::endl;
+                    return 1;
+                }
+                if( pFeature->intFields->at(0) != intBuffer[9])
+                {
+                    std::cout << "error with int feature" << std::endl;
+                    return 1;
+                }
+                if( pFeature->floatFields->at(0) != floatBuffer[9])
+                {
+                    std::cout << "error with float feature" << std::endl;
+                    return 1;
+                }
+                if( pFeature->strFields->at(0) != stringBuffer[9])
+                {
+                    std::cout << "error with string feature" << std::endl;
+                    return 1;
+                }
             }
         }
         

@@ -87,6 +87,7 @@ namespace kealib{
     protected:
         unsigned int deflate;
         HighFive::File *keaImg;
+        KEAATTFeature *m_pFeature; // see GetFeature()
 
         void updateSizeHeader(hsize_t nbools, hsize_t nints, hsize_t nfloats, hsize_t nstrings);
         void addAttField(KEAATTField field, const std::string &headerPath, const std::string &dataPath, 
