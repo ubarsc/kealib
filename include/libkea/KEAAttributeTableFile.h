@@ -48,16 +48,6 @@ namespace kealib{
     public:
         KEAAttributeTableFile(HighFive::File *keaImgIn, KEAAttributeTable *pBaseAtt, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int deflateIn=KEA_DEFLATE);
         
-        bool getBoolField(size_t fid, const std::string &name) const;
-        int64_t getIntField(size_t fid, const std::string &name) const;
-        double getFloatField(size_t fid, const std::string &name) const;
-        std::string getStringField(size_t fid, const std::string &name) const;
-
-        void setBoolField(size_t fid, const std::string &name, bool value);
-        void setIntField(size_t fid, const std::string &name, int64_t value);
-        void setFloatField(size_t fid, const std::string &name, double value);
-        void setStringField(size_t fid, const std::string &name, const std::string &value);
-        
         bool getBoolField(size_t fid, size_t colIdx) const;
         int64_t getIntField(size_t fid, size_t colIdx) const;
         double getFloatField(size_t fid, size_t colIdx) const;

@@ -58,6 +58,7 @@ namespace kealib{
         std::vector<int64_t> *intFields;
         std::vector<double> *floatFields;
         std::vector<std::string> *strFields;
+        std::vector<struct tm> *datetimeFields;
         std::vector<size_t> *neighbours;
     };
     
@@ -67,7 +68,8 @@ namespace kealib{
         kea_att_bool = 1,
         kea_att_int = 2,
         kea_att_float = 3,
-        kea_att_string = 4
+        kea_att_string = 4,
+        kea_att_datetime = 5
     };
     
     struct KEAATTField
@@ -105,20 +107,6 @@ namespace kealib{
         virtual std::string getStringField(size_t fid, const std::string &name) const;
         virtual struct tm getDateTimeField(size_t fid, const std::string &name) const;
         
-        // set a single value by column name
-        virtual void setBoolField(size_t fid, const std::string &name, bool value);
-        virtual void setIntField(size_t fid, const std::string &name, int64_t value);
-        virtual void setFloatField(size_t fid, const std::string &name, double value);
-        virtual void setStringField(size_t fid, const std::string &name, const std::string &value);
-        virtual void setDateTimeField(size_t fid, const std::string &name, const struct tm &value);
-        
-        // set the whole named column to a value
-        virtual void setBoolValue(const std::string &name, bool value);
-        virtual void setIntValue(const std::string &name, int64_t value);
-        virtual void setFloatValue(const std::string &name, double value);
-        virtual void setStringValue(const std::string &name, const std::string &value);
-        virtual void setDateTimeValue(const std::string &name, const struct tm &value);
-        
         // get a single value by column index
         virtual bool getBoolField(size_t fid, size_t colIdx) const;
         virtual int64_t getIntField(size_t fid, size_t colIdx) const;
@@ -149,13 +137,6 @@ namespace kealib{
         virtual void setDateTimeFields(size_t startfid, size_t len, size_t colIdx, struct tm *pBuffer);
         virtual void setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours);
         
-        // set whole column to a given value
-        virtual void setBoolValue(size_t colIdx, bool value);
-        virtual void setIntValue(size_t colIdx, int64_t value);
-        virtual void setFloatValue(size_t colIdx, double value);
-        virtual void setStringValue(size_t colIdx, const std::string &value);
-        virtual void setDateTimeValue(size_t colIdx, const struct tm &value);
-        
         // get the whole feature
         virtual KEAATTFeature* getFeature(size_t fid) const;
         
@@ -166,8 +147,8 @@ namespace kealib{
         virtual void addAttStringField(const std::string &name, const std::string &val, std::string usage="");
         virtual void addAttDateTimeField(const std::string &name, const struct tm &val, std::string usage="");
         // TODO: necessary?
-        virtual void addFields(std::vector<KEAATTField*> *inFields);
-        virtual void addFields(std::vector<KEAATTField> inFields);
+        virtual void addFields(const std::vector<KEAATTField*> *inFields);
+        virtual void addFields(const std::vector<KEAATTField> &inFields);
         
         virtual KEAFieldDataType getDataFieldType(const std::string &name) const;
         virtual size_t getFieldIndex(const std::string &name) const;
@@ -220,6 +201,7 @@ namespace kealib{
         size_t numIntFields;
         size_t numFloatFields;
         size_t numStringFields;
+        size_t numDatetimeFields;
         size_t numOfCols;
         size_t numRows;
         std::string bandPathBase;

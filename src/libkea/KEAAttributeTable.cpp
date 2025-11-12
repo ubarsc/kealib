@@ -42,6 +42,7 @@ namespace kealib{
         numIntFields = 0;
         numFloatFields = 0;
         numStringFields = 0;
+        numDatetimeFields = 0;
         numOfCols = 0;
         numRows = 0;
         
@@ -55,56 +56,7 @@ namespace kealib{
     
     bool KEAAttributeTable::getBoolField(size_t fid, const std::string &name) const
     {
-        throw KEAATTException("Unimplemented");
-    }
-    
-    int64_t KEAAttributeTable::getIntField(size_t fid, const std::string &name) const
-    {
-        throw KEAATTException("Unimplemented");
-    }
-    
-    double KEAAttributeTable::getFloatField(size_t fid, const std::string &name) const
-    {
-        throw KEAATTException("Unimplemented");
-    }
-    
-    std::string KEAAttributeTable::getStringField(size_t fid, const std::string &name) const
-    {
-        throw KEAATTException("Unimplemented");
-    }
-    
-    struct tm KEAAttributeTable::getDateTimeField(size_t fid, const std::string &name) const
-    {
-        throw KEAATTException("Unimplemented");
-    }
-    
-    void KEAAttributeTable::setBoolField(size_t fid, const std::string &name, bool value)
-    {
-        throw KEAATTException("Unimplemented");
-    }
-    
-    void KEAAttributeTable::setIntField(size_t fid, const std::string &name, int64_t value)
-    {
-        throw KEAATTException("Unimplemented");
-    }
-    
-    void KEAAttributeTable::setFloatField(size_t fid, const std::string &name, double value)
-    {
-        throw KEAATTException("Unimplemented");
-    }
-    
-    void KEAAttributeTable::setStringField(size_t fid, const std::string &name, const std::string &value)
-    {
-        throw KEAATTException("Unimplemented");
-    }
-    
-    void KEAAttributeTable::setDateTimeField(size_t fid, const std::string &name, const struct tm &value)
-    {
-        throw KEAATTException("Unimplemented");
-    }
-    
-    void KEAAttributeTable::setBoolValue(const std::string &name, bool value)
-    {
+        bool value = false;
         try 
         {
             KEAATTField field = this->getField(name);
@@ -114,16 +66,18 @@ namespace kealib{
                 throw KEAATTException(message);
             }
             
-            this->setBoolValue(field.idx, value);
+            value = this->getBoolField(fid, field.idx);
         }
         catch (const KEAATTException &e)
         {
             throw e;
         }
+        return value;
     }
     
-    void KEAAttributeTable::setIntValue(const std::string &name, int64_t value)
+    int64_t KEAAttributeTable::getIntField(size_t fid, const std::string &name) const
     {
+        int64_t value = 0;
         try 
         {
             KEAATTField field = this->getField(name);
@@ -133,80 +87,76 @@ namespace kealib{
                 throw KEAATTException(message);
             }
             
-            this->setIntValue(field.idx, value);
+            value = this->getIntField(fid, field.idx);
         }
         catch (const KEAATTException &e)
         {
             throw e;
         }
+        return value;
     }
     
-    void KEAAttributeTable::setFloatValue(const std::string &name, double value)
+    double KEAAttributeTable::getFloatField(size_t fid, const std::string &name) const
     {
+        double value = 0.;
         try 
         {
             KEAATTField field = this->getField(name);
             if(field.dataType != kea_att_float)
             {
-                std::string message = std::string("Field \'") + name + std::string("\' is not of type float.");
+                std::string message = std::string("Field \'") + name + std::string("\' is not of type double.");
                 throw KEAATTException(message);
             }
             
-            this->setFloatValue(field.idx, value);
+            value = this->getFloatField(fid, field.idx);
         }
         catch (const KEAATTException &e)
         {
             throw e;
         }
+        return value;
     }
     
-    void KEAAttributeTable::setStringValue(const std::string &name, const std::string &value)
+    std::string KEAAttributeTable::getStringField(size_t fid, const std::string &name) const
     {
-        try 
+        std::string value = "";
+        try
         {
             KEAATTField field = this->getField(name);
-            if(field.dataType != kea_att_bool)
+            if(field.dataType != kea_att_string)
             {
                 std::string message = std::string("Field \'") + name + std::string("\' is not of type string.");
                 throw KEAATTException(message);
             }
             
-            this->setStringValue(field.idx, value);
+            value = this->getStringField(fid, field.idx);
         }
         catch (const KEAATTException &e)
         {
             throw e;
         }
+        return value;
     }
     
-    void KEAAttributeTable::setDateTimeValue(const std::string &name, const struct tm &value)
+    struct tm KEAAttributeTable::getDateTimeField(size_t fid, const std::string &name) const
     {
-        throw KEAATTException("Unimplemented");
-    }
-    
-    void KEAAttributeTable::setBoolValue(size_t colIdx, bool value)
-    {
-        throw KEAATTException("Unimplemented");
-    }
-    
-    void KEAAttributeTable::setIntValue(size_t colIdx, int64_t value)
-    {
-         throw KEAATTException("Unimplemented");
-    }
-    
-    void KEAAttributeTable::setFloatValue(size_t colIdx, double value)
-    {
-         throw KEAATTException("Unimplemented");
-    }
-    
-    void KEAAttributeTable::setStringValue(size_t colIdx, const std::string &value)
-    {
-        throw KEAATTException("Unimplemented");
-    }
-
-    void KEAAttributeTable::setDateTimeValue(size_t colIdx, const struct tm &value)
-    {
-        throw KEAATTException("Unimplemented");
+        struct tm value = {0};
+        try
+        {
+            KEAATTField field = this->getField(name);
+            if(field.dataType != kea_att_datetime)
+            {
+                std::string message = std::string("Field \'") + name + std::string("\' is not of type datetime.");
+                throw KEAATTException(message);
+            }
+            
+            value = this->getDateTimeField(fid, field.idx);
+        }
+        catch (const KEAATTException &e)
+        {
+            throw e;
+        }
+        return value;
     }
     
     bool KEAAttributeTable::getBoolField(size_t fid, size_t colIdx) const
@@ -424,7 +374,7 @@ namespace kealib{
     
     size_t KEAAttributeTable::getNumDateTimeFields() const
     {
-        throw KEAATTException("Unimplemented");
+        return this->numDatetimeFields;
     }
     
     size_t KEAAttributeTable::getSize() const
@@ -595,7 +545,7 @@ namespace kealib{
     }
     
     // not needed?
-    void KEAAttributeTable::addFields(std::vector<KEAATTField*> *inFields)
+    void KEAAttributeTable::addFields(const std::vector<KEAATTField*> *inFields)
     {
         try 
         {
@@ -618,6 +568,10 @@ namespace kealib{
                 {
                     this->addAttStringField((*iterFields)->name, "", (*iterFields)->usage);
                 }
+                else if((*iterFields)->dataType == kea_att_datetime)
+                {
+                    this->addAttDateTimeField((*iterFields)->name, {0}, (*iterFields)->usage);
+                }
                 else
                 {
                     throw KEAATTException("Data type was not recognised.");
@@ -635,7 +589,7 @@ namespace kealib{
     }
     
     // not needed?
-    void KEAAttributeTable::addFields(std::vector<KEAATTField> inFields)
+    void KEAAttributeTable::addFields(const std::vector<KEAATTField> &inFields)
     {
         try 
         {
@@ -657,6 +611,10 @@ namespace kealib{
                 {
                     this->addAttStringField((*iterFields).name, "", (*iterFields).usage);
                 }
+                else if((*iterFields).dataType == kea_att_datetime)
+                {
+                    this->addAttDateTimeField((*iterFields).name, {0}, (*iterFields).usage);
+                }
                 else
                 {
                     throw KEAATTException("Data type was not recognised.");
@@ -669,7 +627,6 @@ namespace kealib{
         }
     }
     
-    // move to mem?
     KEAATTFeature* KEAAttributeTable::createKeaFeature()
     {
         KEAATTFeature *feat = new KEAATTFeature();
@@ -693,6 +650,7 @@ namespace kealib{
         {
             feat->strFields->push_back("");
         }
+        feat->datetimeFields = new std::vector<struct tm>();
         feat->neighbours = new std::vector<size_t>();
         feat->fid = 0;
         
@@ -705,6 +663,7 @@ namespace kealib{
         delete feat->intFields;
         delete feat->floatFields;
         delete feat->strFields;
+        delete feat->datetimeFields;
         delete feat->neighbours;
         delete feat;
     }

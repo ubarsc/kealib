@@ -368,6 +368,58 @@ int main()
         // now copy to the other band
         std::cout << "copying RAT" << std::endl;
         io.setAttributeTable(rat1, 2);
+
+        std::cout << "testing single element RAT functions" << std::endl;
+        std::vector<uint32_t> bands = {1, 2};
+        std::vector<kealib::KEAATTType> ratTypes = {kealib::kea_att_file, kealib::kea_att_mem};
+        for( const uint32_t& band_num : bands )
+        {
+            for( const kealib::KEAATTType& rat_type : ratTypes )
+            {
+                // bands should have the same RAT because we copy them
+                std::cout << "Testing RAT type " << rat_type << " for band " << band_num << std::endl; 
+                auto *rat = io.getAttributeTable(rat_type, band_num);
+                // some testing of the individual fields code
+                if( rat->getBoolField(3, 0) != boolBuffer[3] )
+                {
+                    std::cout << "bool field not read correctly" << std::endl;
+                    return 1;
+                }
+                rat->setBoolField(3, 0, !boolBuffer[3]);
+                if( rat->getBoolField(3, 0) == boolBuffer[3])
+                {
+                    std::cout << "updated bool field not read correctly" << std::endl;
+                    return 1;
+                }
+                rat->setBoolField(3, 0, boolBuffer[3]);
+                
+                if( rat->getIntField(10, 0) != intBuffer[10])
+                {
+                    std::cout << "int field not read correctly" << std::endl;
+                    return 1;
+                }
+                rat->setIntField(10, 0, 99);
+                if( rat->getIntField(10, 0) != 99)
+                {
+                    std::cout << "updated int field not read correctly" << std::endl;
+                    return 1;
+                }
+                rat->setIntField(10, 0, intBuffer[10]);
+                
+                if( rat->getStringField(8, 0) != stringBuffer[8])
+                {
+                    std::cout << "string field not read correctly" << std::endl;
+                    return 1;
+                }
+                rat->setStringField(8, 0, "abcdef");
+                if( rat->getStringField(8, 0) != "abcdef")
+                {
+                    std::cout << "updated string field not read correctly" << std::endl;
+                    return 1;
+                }
+                rat->setStringField(8, 0, stringBuffer[8]);
+            }
+        }
         
         io.close();
         
