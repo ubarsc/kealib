@@ -42,6 +42,9 @@ private:
     CPLString osWorkingResult;
     KEARasterBand *m_poBand;
     CPLMutex            *m_hMutex;
+#ifdef HAVE_SETVALUE_CPLERR 
+    mutable std::vector<GByte> m_abyCachedWKB{};
+#endif
 
 public:
     KEARasterAttributeTable(kealib::KEAAttributeTable *poKEATable, KEARasterBand *poBand);
@@ -63,14 +66,37 @@ public:
     virtual int           GetValueAsInt( int iRow, int iField ) const;
     virtual double        GetValueAsDouble( int iRow, int iField ) const;
 
-    virtual void          SetValue( int iRow, int iField, const char *pszValue );
-    virtual void          SetValue( int iRow, int iField, double dfValue);
-    virtual void          SetValue( int iRow, int iField, int nValue );
-
+#ifdef HAVE_SETVALUE_CPLERR 
+    bool GetValueAsBoolean(int iRow, int iField) const override;
+    GDALRATDateTime GetValueAsDateTime(int iRow, int iField) const override;
+    const GByte *GetValueAsWKBGeometry(int iRow, int iField,
+                                       size_t &nWKBSize) const override;
+                                       
+    virtual CPLErr SetValue(int iRow, int iField,
+                            const char *pszValue) override;
+    virtual CPLErr SetValue(int iRow, int iField, double dfValue) override;
+    virtual CPLErr SetValue(int iRow, int iField, int nValue) override;
+    CPLErr SetValue(int iRow, int iField,
+                    const GDALRATDateTime &sDateTime) override;
+    CPLErr SetValue(int iRow, int iField, const void *pabyWKB,
+                    size_t nWKBSize) override;
+    CPLErr SetValue(int iRow, int iField, bool nValue) override;
+#else
+    virtual void          SetValue( int iRow, int iField, const char *pszValue ) override;
+    virtual void          SetValue( int iRow, int iField, double dfValue) override;
+    virtual void          SetValue( int iRow, int iField, int nValue ) override;
+#endif
     virtual CPLErr        ValuesIO(GDALRWFlag eRWFlag, int iField, int iStartRow, int iLength, double *pdfData);
     virtual CPLErr        ValuesIO(GDALRWFlag eRWFlag, int iField, int iStartRow, int iLength, int *pnData);
     virtual CPLErr        ValuesIO(GDALRWFlag eRWFlag, int iField, int iStartRow, int iLength, char **papszStrList);
-
+#ifdef HAVE_SETVALUE_CPLERR
+    CPLErr ValuesIO(GDALRWFlag eRWFlag, int iField, int iStartRow, int iLength,
+                    bool *pbData) override;
+    CPLErr ValuesIO(GDALRWFlag eRWFlag, int iField, int iStartRow, int iLength,
+                    GDALRATDateTime *pasDateTime) override;
+    CPLErr ValuesIO(GDALRWFlag eRWFlag, int iField, int iStartRow, int iLength,
+                    GByte **ppabyWKB, size_t *pnWKBSize) override;
+#endif
     virtual int           ChangesAreWrittenToFile();
     virtual void          SetRowCount( int iCount );
 
