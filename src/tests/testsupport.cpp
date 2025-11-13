@@ -204,3 +204,154 @@ void freeGCPData(std::vector<kealib::KEAImageGCP*> *pGCPS)
     }
     delete pGCPS;
 }
+
+bool compareRatConstantString(std::vector<std::string> *psBuffer, const std::string &val)
+{
+    for( auto itr = psBuffer->begin(); itr != psBuffer->end(); itr++ )
+    {
+        if( (*itr) != val )
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool compareRatDataString(std::vector<std::string> *psBuffer1, std::vector<std::string> *psBuffer2)
+{
+    if( psBuffer1->size() != psBuffer2->size())
+    {
+        std::cout << "buffers are different sizes" << std::endl;
+        return false;
+    }
+    
+    for( uint64_t i = 0; i < psBuffer1->size(); i++)
+    {
+        if( psBuffer1->at(i) != psBuffer2->at(i) )
+        {
+            std::cout << "values differ at index " << i << " " << psBuffer1->at(i) << " vs " << psBuffer2->at(i) << std::endl;
+            return false;
+        }
+    }
+    return true;
+}
+
+bool compareRatDataStringSubset(std::vector<std::string> *psBuffer1, std::vector<std::string> *psBuffer2, uint64_t subsetoffset)
+{
+    for( uint64_t i = 0; i < psBuffer2->size(); i++)
+    {
+        if( psBuffer1->at(subsetoffset + i) != psBuffer2->at(i) )
+        {
+            std::cout << "values differ at index " << i << " " << psBuffer1->at(subsetoffset + i) << " vs " << psBuffer2->at(i) << std::endl;
+            return false;
+        }
+    }
+    return true;
+}
+
+void createRatDataForString(std::vector<std::string> *psBuffer)
+{
+    uint64_t i = 0;
+    while( i < psBuffer->size() )
+    {
+        char c = 'a' + (i % ('z' - 'a'));
+        psBuffer->at(i) = std::string(1, c);
+        i++;
+    }
+}
+
+void clearNeighbours(std::vector<std::vector<size_t>* > *neighbours)
+{
+    for(auto iterNeigh = neighbours->begin(); iterNeigh != neighbours->end(); ++iterNeigh)
+    {
+        delete *iterNeigh;
+    }
+    neighbours->clear();
+}
+
+void createNeighbours(size_t len, std::vector<std::vector<size_t>* > *neighbours)
+{
+    clearNeighbours(neighbours);
+    neighbours->reserve(len);
+    for( size_t i = 0; i < len; i++ )
+    {
+        auto this_el_neighbours = new std::vector<size_t>;
+        if( i != 0 )
+        {
+            this_el_neighbours->push_back(i - 1);
+        }
+        if( i < (len - 1))
+        {
+            this_el_neighbours->push_back(i + 1);
+        }
+        // just occassionally add some other numbers
+        if( (i % 100) == 0 )
+        {
+            this_el_neighbours->push_back(1);
+            this_el_neighbours->push_back(2);
+            this_el_neighbours->push_back(3);
+            this_el_neighbours->push_back(4);
+        }
+        neighbours->push_back(this_el_neighbours);
+    }
+}
+
+bool compareNeighbours(std::vector<std::vector<size_t>* > *neighbours1, std::vector<std::vector<size_t>* > *neighbours2)
+{
+    if( neighbours1->size() != neighbours2->size() )
+    {
+        std::cout << "Size does not match" << std::endl;
+        return false;
+    }
+    
+    for( size_t i = 0; i < neighbours1->size(); i++)
+    {
+        auto v1 = neighbours1->at(i);
+        auto v2 = neighbours2->at(i);
+        if( v1->size() != v2->size() )
+        {
+            std::cout << "neighbour size does not match for fid " << i << std::endl;
+            return false;
+        }
+        for( size_t j = 0; j < v1->size(); j++ )
+        {
+            if( v1->at(j) != v2->at(j) )
+            {
+                std::cout << "numbers differ at fid " << i << " neighbour idx " << j << std::endl;
+                return false;
+            }
+        }
+    }
+    
+    return true;
+}
+
+bool compareNeighboursSubset(std::vector<std::vector<size_t>* > *neighbours1, size_t offset, std::vector<std::vector<size_t>* > *neighbours2)
+{
+    if( neighbours2->size() > (neighbours1->size() - offset) )
+    {
+        std::cout << "Not enough space for subset" << std::endl;
+        return false;
+    }
+    
+    for( size_t i = 0; i < neighbours2->size(); i++)
+    {
+        auto v1 = neighbours1->at(i + offset);
+        auto v2 = neighbours2->at(i);
+        if( v1->size() != v2->size() )
+        {
+            std::cout << "neighbour size does not match for fid " << i << std::endl;
+            return false;
+        }
+        for( size_t j = 0; j < v1->size(); j++ )
+        {
+            if( v1->at(j) != v2->at(j) )
+            {
+                std::cout << "numbers differ at fid " << i << " neighbour idx " << j << std::endl;
+                return false;
+            }
+        }
+    }
+    
+    return true;
+}

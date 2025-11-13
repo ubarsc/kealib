@@ -45,7 +45,8 @@
 #include <stdint.h>
 
 namespace kealib{
-        
+    static const std::string KEA_VERSION( "1.1" );
+
     static const std::string KEA_DATASETNAME_HEADER( "/HEADER" );
     static const std::string KEA_DATASETNAME_HEADER_NUMBANDS( "/HEADER/NUMBANDS" );
     static const std::string KEA_DATASETNAME_HEADER_BLOCKSIZE( "/HEADER/BLOCKSIZE" );

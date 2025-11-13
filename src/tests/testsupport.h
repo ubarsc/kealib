@@ -37,6 +37,14 @@ kealib::KEAImageSpatialInfo getSpatialInfo(double version);
 kealib::KEADataType CTypeStringToKEAType(const std::string &s);
 std::vector<kealib::KEAImageGCP*>* getGCPData();
 void freeGCPData(std::vector<kealib::KEAImageGCP*> *pGCPS);
+bool compareRatConstantString(std::vector<std::string> *psBuffer, const std::string &val);
+void createRatDataForString(std::vector<std::string> *psBuffer);
+bool compareRatDataString(std::vector<std::string> *psBuffer1, std::vector<std::string> *psBuffer2);
+bool compareRatDataStringSubset(std::vector<std::string> *psBuffer1, std::vector<std::string> *psBuffer2, uint64_t subsetoffset);
+void clearNeighbours(std::vector<std::vector<size_t>* > *neighbours);
+void createNeighbours(size_t len, std::vector<std::vector<size_t>* > *neighbours);
+bool compareNeighbours(std::vector<std::vector<size_t>* > *neighbours1, std::vector<std::vector<size_t>* > *neighbours2);
+bool compareNeighboursSubset(std::vector<std::vector<size_t>* > *neighbours1, size_t offset, std::vector<std::vector<size_t>* > *neighbours2);
 
 template <typename T>
 T* createDataForType(uint64_t xSize, uint64_t ySize)
@@ -115,15 +123,16 @@ bool compareDataSubsetEdge(T *p1, T *pSubset, uint64_t xOff, uint64_t yOff,
                     return false;
                 }
             }
-            /*else Old kealib doesn't do this properly
+            else
             {
+                // not supported on old kealib
                 // over the edge. Fill value?
-                if( pSubset[idx_subset] != nodata )
-                {
-                    std::cout << "Edge pixel not zero at " << x << "," << y << " " << pSubset[idx_subset] << std::endl;
-                    return false;
-                }
-            }*/
+                //if( pSubset[idx_subset] != nodata )
+                //{
+                //    std::cout << "Edge pixel not zero at " << x << "," << y << " " << pSubset[idx_subset] << std::endl;
+                //    return false;
+                //}
+            }
         }
     }
     return true;
@@ -147,6 +156,70 @@ bool compareDataConstant(T *p, T val, uint64_t xSize, uint64_t ySize)
     return true;
 }
 
+template <typename T>
+bool compareRatConstant(T *p, T val, uint64_t len)
+{
+    for( uint64_t i = 0; i < len; i++ )
+    {
+        if( std::fabs(p[i] - val) > 0.1 ) 
+        {
+            std::cout << "index not " << val << " is " << p[i] << " at " << i << std::endl; 
+            return false;
+        }
+    }
+    return true;
+}
+
+template <typename T>
+bool compareRat(T *p1, T* p2, uint64_t len)
+{
+    for( uint64_t i = 0; i < len; i++ )
+    {
+        if( p1[i] != p2[i] )
+        {
+            std::cout << "index not " << p1[i] << " is " << p2[i] << " at " << i << std::endl; 
+            return false;
+        }
+    }
+    return true;
+}
+
+template <typename T>
+bool compareRatSubset(T *p, uint64_t len, T *pSubset, uint64_t subsetoffset, uint64_t subsetlen)
+{
+    for( uint64_t i = 0; i < subsetlen; i++ )
+    {
+        if( p[subsetoffset + i] != pSubset[i])
+        {
+            std::cout << "subset not " << p[subsetoffset + i] << " is " << pSubset[i] << " at " << i << std::endl;
+            return false;
+        }
+    }
+    return true;
+}
+
+template <typename T>
+void createRatDataForType(T *pData, uint64_t len)
+{
+    for( uint64_t i = 0; i < len; i++ )
+    {
+        pData[i] = i;        
+    }
+}
+
+template <>
+void createRatDataForType(bool *pData, uint64_t len)
+{
+    bool state = false;
+    for( uint64_t i = 0; i < len; i++ )
+    {
+        pData[i] = state;
+        state = !state;
+    }
+}
+
+
+
 const uint64_t IMG_XSIZE = 600;
 const uint64_t IMG_YSIZE = 700;
 const uint64_t OV_XSIZE = 300;
@@ -154,7 +227,7 @@ const uint64_t OV_YSIZE = 350;
 const uint64_t OV2_XSIZE = 25;
 const uint64_t OV2_YSIZE = 50;
 const std::string TEST_FIELD = "test";
-const uint64_t RAT_SIZE = 256;
+const uint64_t RAT_SIZE = kealib::KEA_ATT_CHUNK_SIZE + 100;
 #define STRINGIFY(x) XSTRINGIFY(x)
 #define XSTRINGIFY(x) #x
 

@@ -30,8 +30,8 @@
  
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
 #include <cstring>
+#include <iostream>
 #include "libkea/KEAImageIO.h"
 #include "testsupport.h"
 
@@ -234,7 +234,7 @@ int main()
             return 1;
         }
         
-        if( io.getKEAImageVersion() != "1.1")
+        if( io.getKEAImageVersion() != kealib::KEA_VERSION)
         {
             std::cout << "wrong kealib version string" << std::endl;
             return 1;
@@ -284,6 +284,182 @@ int main()
         std::cout << "write to overview" << std::endl;
         io.writeToOverview(1, 1, pOvData, 0, 0, OV_XSIZE, OV_YSIZE, OV_XSIZE, OV_YSIZE, keatype);
         free(pOvData);
+        
+        if( io.attributeTablePresent(1) || io.attributeTablePresent(2) )
+        {
+            std::cout << "Attribute table present when it shouldn't be" << std::endl;
+            return 1;
+        }
+        
+        std::cout << "create RAT" << std::endl;
+        std::vector<uint32_t> bands = {1, 2};
+        
+        // note: cannot export a kea_att_file to the other band
+        // so do this twice
+        bool boolBuffer[RAT_SIZE]; 
+        int64_t intBuffer[RAT_SIZE];
+        double floatBuffer[RAT_SIZE];
+        std::vector<std::string> stringBuffer;
+        for( const uint32_t& band_num : bands )
+        {
+            auto *rat1 = io.getAttributeTable(kealib::kea_att_file, band_num);
+            rat1->addRows(RAT_SIZE);
+            rat1->addAttBoolField("FirstBool", false);
+            rat1->addAttIntField("FirstInt", 3);
+            rat1->addAttIntField("SecondInt", 4);  // 4 will get ignored as you can only set fill value once...
+            rat1->addAttFloatField("FirstFloat", 3.1);
+            rat1->addAttStringField("FirstString", "hello");
+            rat1->printAttributeTableHeaderInfo();
+        
+            std::cout << "created columns" << std::endl;
+            std::cout << "checking bool fill" << std::endl;
+            rat1->getBoolFields(0, RAT_SIZE, 0, boolBuffer);
+            if( !compareRatConstant<bool>(boolBuffer, false, RAT_SIZE) )
+            {
+                return 1;
+            }
+            std::cout << "checking int fill" << std::endl;
+            rat1->getIntFields(0, RAT_SIZE, 0, intBuffer);
+            if( !compareRatConstant<int64_t>(intBuffer, 3, RAT_SIZE))
+            {
+                return 1;
+            }
+            std::cout << "checking float fill" << std::endl;
+            rat1->getFloatFields(0, RAT_SIZE, 0, floatBuffer);
+            if( !compareRatConstant<double>(floatBuffer, 3.1, RAT_SIZE))
+            {
+                return 1;
+            }
+            
+            std::cout << "checking string fill" << std::endl;
+            rat1->getStringFields(0, RAT_SIZE, 0, &stringBuffer);
+            if( stringBuffer.size() != RAT_SIZE )
+            {
+                std::cout << "wrong number of strings read" << std::endl;
+                return 1;
+            }
+            if( !compareRatConstantString(&stringBuffer, "hello"))
+            {
+                return 1;
+            }
+            
+            std::cout << "writing bool col" << std::endl;
+            createRatDataForType<bool>(boolBuffer, RAT_SIZE);
+            rat1->setBoolFields(0, RAT_SIZE, 0, boolBuffer);
+            
+            std::cout << "writing int col 1" << std::endl;
+            createRatDataForType<int64_t>(intBuffer, RAT_SIZE);
+            rat1->setIntFields(0, RAT_SIZE, 0, intBuffer);
+    
+            std::cout << "writing int col 2" << std::endl;
+            createRatDataForType<int64_t>(intBuffer, RAT_SIZE);
+            rat1->setIntFields(0, RAT_SIZE, 1, intBuffer);
+
+            std::cout << "writing int col 2 subset" << std::endl;
+            rat1->setIntFields(RAT_SIZE - 10, 10, 1, intBuffer);
+        
+            std::cout << "writing float col" << std::endl;
+            createRatDataForType<double>(floatBuffer, RAT_SIZE);
+            rat1->setFloatFields(0, 10, 0, floatBuffer);
+        
+            std::cout << "writing string col" << std::endl;
+            createRatDataForString(&stringBuffer);
+            rat1->setStringFields(0, RAT_SIZE, 0, &stringBuffer);
+        
+            std::cout << "writing neighbours" << std::endl;
+            std::vector<std::vector<size_t>* > neighbours;
+            createNeighbours(RAT_SIZE, &neighbours);
+            rat1->setNeighbours(0, RAT_SIZE, &neighbours);
+            clearNeighbours(&neighbours);
+        }        
+
+        std::cout << "testing single element RAT functions" << std::endl;
+        std::vector<kealib::KEAATTType> ratTypes = {kealib::kea_att_file, kealib::kea_att_mem};
+        for( const uint32_t& band_num : bands )
+        {
+            for( const kealib::KEAATTType& rat_type : ratTypes )
+            {
+                // bands should have the same RAT because we copy them
+                std::cout << "Testing RAT type " << rat_type << " for band " << band_num << std::endl; 
+                auto *rat = io.getAttributeTable(rat_type, band_num);
+                // some testing of the individual fields code
+                if( rat->getBoolField(3, 0) != boolBuffer[3] )
+                {
+                    std::cout << "bool field not read correctly" << std::endl;
+                    return 1;
+                }
+                rat->setBoolField(3, 0, !boolBuffer[3]);
+                if( rat->getBoolField(3, 0) == boolBuffer[3])
+                {
+                    std::cout << "updated bool field not read correctly" << std::endl;
+                    return 1;
+                }
+                rat->setBoolField(3, 0, boolBuffer[3]);
+                
+                if( rat->getIntField(10, 0) != intBuffer[10])
+                {
+                    std::cout << "int field not read correctly" << std::endl;
+                    return 1;
+                }
+                rat->setIntField(10, 0, 99);
+                if( rat->getIntField(10, 0) != 99)
+                {
+                    std::cout << "updated int field not read correctly" << std::endl;
+                    return 1;
+                }
+                rat->setIntField(10, 0, intBuffer[10]);
+
+                if( rat->getFloatField(3, 0) != floatBuffer[3])
+                {
+                    std::cout << "float field not read correctly" << std::endl;
+                    return 1;
+                }
+                rat->setFloatField(3, 0, 9.1);
+                if( std::fabs(rat->getIntField(3, 0) - 9.1) < 0.1)
+                {
+                    std::cout << "updated float field not read correctly" << std::endl;
+                    return 1;
+                }
+                rat->setFloatField(3, 0, floatBuffer[3]);
+                
+                if( rat->getStringField(8, 0) != stringBuffer[8])
+                {
+                    std::cout << "string field not read correctly" << std::endl;
+                    return 1;
+                }
+                rat->setStringField(8, 0, "abcdef");
+                if( rat->getStringField(8, 0) != "abcdef")
+                {
+                    std::cout << "updated string field not read correctly" << std::endl;
+                    return 1;
+                }
+                rat->setStringField(8, 0, stringBuffer[8]);
+                
+                // not supported on old kealib
+                /*std::cout << "doing feature check" << std::endl;
+                kealib::KEAATTFeature* pFeature = rat->getFeature(9);
+                if( pFeature->boolFields->at(0) != boolBuffer[9])
+                {
+                    std::cout << "error with bool feature" << std::endl;
+                    return 1;
+                }
+                if( pFeature->intFields->at(0) != intBuffer[9])
+                {
+                    std::cout << "error with int feature" << std::endl;
+                    return 1;
+                }
+                if( pFeature->floatFields->at(0) != floatBuffer[9])
+                {
+                    std::cout << "error with float feature" << std::endl;
+                    return 1;
+                }
+                if( pFeature->strFields->at(0) != stringBuffer[9])
+                {
+                    std::cout << "error with string feature" << std::endl;
+                    return 1;
+                }*/
+            }
+        }
         
         io.close();
         
