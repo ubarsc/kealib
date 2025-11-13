@@ -344,6 +344,288 @@ double KEARasterAttributeTable::GetValueAsDouble( int iRow, int iField ) const
     return dfValue;
 }
 
+
+#ifdef HAVE_SETVALUE_CPLERR
+
+bool KEARasterAttributeTable::GetValueAsBoolean(int iRow, int iField) const
+{
+    // Let ValuesIO do the work.
+    bool bValue = false;
+    if ((const_cast<KEARasterAttributeTable *>(this))
+            ->ValuesIO(GF_Read, iField, iRow, 1, &bValue) != CE_None)
+    {
+        return false;
+    }
+
+    return bValue;
+}
+
+GDALRATDateTime KEARasterAttributeTable::GetValueAsDateTime(int iRow,
+                                                            int iField) const
+{
+    // Let ValuesIO do the work.
+    GDALRATDateTime value;
+    const_cast<KEARasterAttributeTable *>(this)->ValuesIO(GF_Read, iField, iRow,
+                                                          1, &value);
+    return value;
+}
+
+const GByte *
+KEARasterAttributeTable::GetValueAsWKBGeometry(int iRow, int iField,
+                                               size_t &nWKBSize) const
+{
+    // Let ValuesIO do the work.
+    GByte *pabyWKB = nullptr;
+    const_cast<KEARasterAttributeTable *>(this)->ValuesIO(
+        GF_Read, iField, iRow, 1, &pabyWKB, &nWKBSize);
+    if (nWKBSize)
+        m_abyCachedWKB.assign(pabyWKB, pabyWKB + nWKBSize);
+    VSIFree(pabyWKB);
+    return nWKBSize ? m_abyCachedWKB.data() : nullptr;
+}
+
+CPLErr KEARasterAttributeTable::SetValue(int iRow, int iField,
+                                         const char *pszValue)
+{
+    return ValuesIO(GF_Write, iField, iRow, 1, const_cast<char**>(&pszValue) );
+}
+
+CPLErr KEARasterAttributeTable::SetValue( int iRow, int iField, double dfValue)
+{
+    // Get ValuesIO do do the work
+    return ValuesIO(GF_Write, iField, iRow, 1, &dfValue );
+}
+
+CPLErr KEARasterAttributeTable::SetValue( int iRow, int iField, int nValue )
+{
+    // Get ValuesIO do do the work
+    return ValuesIO(GF_Write, iField, iRow, 1, &nValue );
+}
+
+CPLErr KEARasterAttributeTable::SetValue(int iRow, int iField, bool bValue)
+{
+    // Let ValuesIO do the work.
+    return ValuesIO(GF_Write, iField, iRow, 1, &bValue);
+}
+
+CPLErr KEARasterAttributeTable::SetValue(int iRow, int iField,
+                                         const GDALRATDateTime &sDateTime)
+{
+    // Let ValuesIO do the work.
+    return ValuesIO(GF_Write, iField, iRow, 1,
+                    const_cast<GDALRATDateTime *>(&sDateTime));
+}
+
+CPLErr KEARasterAttributeTable::SetValue(int iRow, int iField,
+                                         const void *pabyWKB, size_t nWKBSize)
+{
+    // Let ValuesIO do the work.
+    const GByte **ppabyWKB = reinterpret_cast<const GByte **>(&pabyWKB);
+    return ValuesIO(GF_Write, iField, iRow, 1, const_cast<GByte **>(ppabyWKB),
+                    &nWKBSize);
+}
+
+CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField,
+                                         int iStartRow, int iLength,
+                                         bool *pbData)
+{
+    /*if( ( eRWFlag == GF_Write ) && ( this->eAccess == GA_ReadOnly ) )
+    {
+        CPLError( CE_Failure, CPLE_NoWriteAccess,
+            "Dataset not open in update mode");
+        return CE_Failure;
+    }*/
+    CPLMutexHolderD(&m_hMutex);
+
+    if (iField < 0 || iField >= (int)m_aoFields.size())
+    {
+        CPLError(CE_Failure, CPLE_AppDefined, "iField (%d) out of range.",
+                 iField);
+
+        return CE_Failure;
+    }
+
+    if (iStartRow < 0 || (iStartRow + iLength) > (int)m_poKEATable->getSize())
+    {
+        CPLError(CE_Failure, CPLE_AppDefined,
+                 "iStartRow (%d) + iLength(%d) out of range.", iStartRow,
+                 iLength);
+
+        return CE_Failure;
+    }
+
+    switch (m_aoFields[iField].dataType)
+    {
+        case kealib::kea_att_bool:
+        {
+            try
+            {
+                if (eRWFlag == GF_Read)
+                    m_poKEATable->getBoolFields(iStartRow, iLength,
+                                                m_aoFields[iField].idx, pbData);
+                else
+                    m_poKEATable->setBoolFields(iStartRow, iLength,
+                                                m_aoFields[iField].idx, pbData);
+            }
+            catch (kealib::KEAException &e)
+            {
+                CPLError(CE_Failure, CPLE_AppDefined,
+                         "Failed to read/write attribute table: %s", e.what());
+                return CE_Failure;
+            }
+        }
+        break;
+        case kealib::kea_att_int:
+        {
+            // need to convert to/from int64_t
+            int64_t *panColData =
+                (int64_t *)VSI_MALLOC2_VERBOSE(iLength, sizeof(int64_t));
+            if (panColData == nullptr)
+            {
+                return CE_Failure;
+            }
+
+            if (eRWFlag == GF_Write)
+            {
+                // copy the application supplied bools to int64t
+                for (int i = 0; i < iLength; i++)
+                    panColData[i] = pbData[i];
+            }
+
+            try
+            {
+                if (eRWFlag == GF_Read)
+                    m_poKEATable->getIntFields(
+                        iStartRow, iLength, m_aoFields[iField].idx, panColData);
+                else
+                    m_poKEATable->setIntFields(
+                        iStartRow, iLength, m_aoFields[iField].idx, panColData);
+            }
+            catch (kealib::KEAException &e)
+            {
+                // fprintf(stderr,"Failed to read/write attribute table: %s %d
+                // %d %ld\n", e.what(), iStartRow, iLength,
+                // m_poKEATable->getSize() );
+                CPLError(CE_Failure, CPLE_AppDefined,
+                         "Failed to read/write attribute table: %s", e.what());
+                return CE_Failure;
+            }
+
+            if (eRWFlag == GF_Read)
+            {
+                // copy them back to bools
+                for (int i = 0; i < iLength; i++)
+                    pbData[i] = panColData[i] != 0;
+            }
+            CPLFree(panColData);
+        }
+        break;
+        case kealib::kea_att_float:
+        {
+            // allocate space for doubles
+            double *padfColData =
+                (double *)VSI_MALLOC2_VERBOSE(iLength, sizeof(double));
+            if (padfColData == nullptr)
+            {
+                return CE_Failure;
+            }
+
+            if (eRWFlag == GF_Write)
+            {
+                // copy the application supplied ints to doubles
+                for (int i = 0; i < iLength; i++)
+                    padfColData[i] = pbData[i];
+            }
+
+            // do the ValuesIO as doubles
+            CPLErr eVal =
+                ValuesIO(eRWFlag, iField, iStartRow, iLength, padfColData);
+            if (eVal != CE_None)
+            {
+                CPLFree(padfColData);
+                return eVal;
+            }
+
+            if (eRWFlag == GF_Read)
+            {
+                // copy them back to ints
+                for (int i = 0; i < iLength; i++)
+                    pbData[i] = padfColData[i] != 0;
+            }
+
+            CPLFree(padfColData);
+        }
+        break;
+        case kealib::kea_att_string:
+        {
+            // allocate space for string pointers
+            char **papszColData =
+                (char **)VSI_MALLOC2_VERBOSE(iLength, sizeof(char *));
+            if (papszColData == nullptr)
+            {
+                return CE_Failure;
+            }
+
+            if (eRWFlag == GF_Write)
+            {
+                // copy the application supplied ints to strings
+                for (int i = 0; i < iLength; i++)
+                {
+                    papszColData[i] = CPLStrdup(pbData[i] ? "true" : "false");
+                }
+            }
+
+            // do the ValuesIO as strings
+            CPLErr eVal =
+                ValuesIO(eRWFlag, iField, iStartRow, iLength, papszColData);
+            if (eVal != CE_None)
+            {
+                if (eRWFlag == GF_Write)
+                {
+                    for (int i = 0; i < iLength; i++)
+                        CPLFree(papszColData[i]);
+                }
+                CPLFree(papszColData);
+                return eVal;
+            }
+
+            if (eRWFlag == GF_Read)
+            {
+                // copy them back to ints
+                for (int i = 0; i < iLength; i++)
+                    pbData[i] = CPLTestBool(papszColData[i]);
+            }
+
+            // either we allocated them for write, or they were allocated
+            // by ValuesIO on read
+            for (int i = 0; i < iLength; i++)
+                CPLFree(papszColData[i]);
+
+            CPLFree(papszColData);
+        }
+        break;
+        default:
+            break;
+    }
+    return CE_None;
+}
+
+CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField,
+                                         int iStartRow, int iLength,
+                                         GDALRATDateTime *psDateTime)
+{
+    return ValuesIODateTimeFromIntoString(eRWFlag, iField, iStartRow, iLength,
+                                          psDateTime);
+}
+
+CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField,
+                                         int iStartRow, int iLength,
+                                         GByte **ppabyWKB, size_t *pnWKBSize)
+{
+    return ValuesIOWKBGeometryFromIntoString(eRWFlag, iField, iStartRow,
+                                             iLength, ppabyWKB, pnWKBSize);
+}
+#else
 void KEARasterAttributeTable::SetValue( int iRow, int iField, const char *pszValue )
 {
     // Get ValuesIO do do the work
@@ -361,6 +643,7 @@ void KEARasterAttributeTable::SetValue( int iRow, int iField, int nValue )
     // Get ValuesIO do do the work
     ValuesIO(GF_Write, iField, iRow, 1, &nValue );
 }
+#endif
 
 CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField, int iStartRow, int iLength, double *pdfData)
 {

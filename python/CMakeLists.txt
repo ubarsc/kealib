@@ -17,8 +17,8 @@
 #  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 #  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-cmake_minimum_required(VERSION 3.22)
-cmake_policy(VERSION 3.22)
+cmake_minimum_required(VERSION 3.28)
+cmake_policy(VERSION 3.28)
 project(extrat LANGUAGES CXX)
 
 # No GDAL since we only depend on it at run time
@@ -42,12 +42,13 @@ FetchContent_Declare(
   awkward
   DOWNLOAD_EXTRACT_TIMESTAMP true
   URL      https://github.com/scikit-hep/awkward/releases/download/v${AWKWARD_VERSION}/header-only.zip
+  EXCLUDE_FROM_ALL
 )
-# don't use FetchContent_MakeAvailable(awkward) - it will install - see https://stackoverflow.com/questions/65527126/disable-install-for-fetchcontent
+FetchContent_MakeAvailable(awkward)
+
 FetchContent_GetProperties(awkward)
 if(NOT awkward_POPULATED)
   FetchContent_Populate(awkward)
-  add_subdirectory(${awkward_SOURCE_DIR} ${awkward_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
 find_package(pybind11 CONFIG REQUIRED)

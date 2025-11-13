@@ -473,6 +473,7 @@ namespace kealib{
             
             boolDataset.select(startOffset, bufSize).write_raw(boolVals);
             delete[] boolVals;
+            keaImg->flush();
         }
         catch(const HighFive::Exception &e)
         {
@@ -515,6 +516,7 @@ namespace kealib{
 			std::vector<size_t> bufSize = {len, 1};
             
             intDataset.select(startOffset, bufSize).write_raw(pnBuffer);
+            keaImg->flush();
         }
         catch(const HighFive::Exception &e)
         {
@@ -558,6 +560,7 @@ namespace kealib{
 			std::vector<size_t> bufSize = {len, 1};
             
             floatDataset.select(startOffset, bufSize).write_raw(pfBuffer);
+            keaImg->flush();
         }
         catch(const HighFive::Exception &e)
         {
@@ -615,6 +618,7 @@ namespace kealib{
             
             stringDataset.select(startOffset, bufSize).write_raw(stringVals);
             delete[] stringVals;
+            keaImg->flush();
         }
         catch(const HighFive::Exception &e)
         {
@@ -964,7 +968,6 @@ namespace kealib{
         // now create an instance of KEAAttributeTableFile with the copy constructor
         KEAAttributeTable *pAtt = new KEAAttributeTableFile(keaImg, pBaseAtt, mutex, deflate);
         delete pBaseAtt;
-        
 
         return pAtt;
     }

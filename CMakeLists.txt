@@ -15,7 +15,7 @@
 
 ###############################################################################
 # Set Project name and version
-cmake_minimum_required (VERSION 3.5)
+cmake_minimum_required (VERSION 3.10)
 if (POLICY CMP0018)
   # position independent code policy
   cmake_policy(SET CMP0018 NEW)
