@@ -593,6 +593,7 @@ namespace kealib{
     {
         try 
         {
+            // now process the sorted fields
             for(auto iterFields = inFields.begin(); iterFields != inFields.end(); ++iterFields)
             {
                 if((*iterFields).dataType == kea_att_bool)
@@ -672,25 +673,42 @@ namespace kealib{
     {
         try
         {
+            // need to sort by colnum to make things easier for test script
+            std::vector<KEAATTField> fieldvec;
+        
+            for(auto iterFields = pFrom->fields->begin(); iterFields != pFrom->fields->end(); ++iterFields)
+            {
+                fieldvec.push_back((*iterFields).second);
+            }
+            
+            std::sort(fieldvec.begin(), fieldvec.end(), [](const KEAATTField &a, const KEAATTField &b)
+            {
+                return a.colNum < b.colNum;
+            });
+            
             // add the fields
-            for(auto iterField = pFrom->fields->begin(); iterField != pFrom->fields->end(); ++iterField)
+            for(auto iterField = fieldvec.begin(); iterField != fieldvec.end(); ++iterField)
             {
                 // TODO: haven't worried about copying fill value over
-                if((*iterField).second.dataType == kea_att_bool)
+                if((*iterField).dataType == kea_att_bool)
                 {
-                    pTo->addAttBoolField((*iterField).second.name, false, (*iterField).second.usage);
+                    pTo->addAttBoolField((*iterField).name, false, (*iterField).usage);
                 }
-                else if((*iterField).second.dataType == kea_att_int)
+                else if((*iterField).dataType == kea_att_int)
                 {
-                    pTo->addAttIntField((*iterField).second.name, 0, (*iterField).second.usage);
+                    pTo->addAttIntField((*iterField).name, 0, (*iterField).usage);
                 }
-                else if((*iterField).second.dataType == kea_att_float)
+                else if((*iterField).dataType == kea_att_float)
                 {
-                    pTo->addAttFloatField((*iterField).second.name, 0.0, (*iterField).second.usage);
+                    pTo->addAttFloatField((*iterField).name, 0.0, (*iterField).usage);
                 }
-                else if((*iterField).second.dataType == kea_att_string)
+                else if((*iterField).dataType == kea_att_string)
                 {
-                    pTo->addAttStringField((*iterField).second.name, "", (*iterField).second.usage);
+                    pTo->addAttStringField((*iterField).name, "", (*iterField).usage);
+                }
+                else if((*iterField).dataType == kea_att_datetime)
+                {
+                    pTo->addAttDateTimeField((*iterField).name, {0}, (*iterField).usage);
                 }
             }
             
@@ -715,6 +733,11 @@ namespace kealib{
                 floatVals = new double[pTo->chunkSize];
             }
             std::vector<std::string> stringVals;
+            struct tm *datetimeVals = nullptr;
+            if(pFrom->getNumDateTimeFields() > 0)
+            {
+                datetimeVals = new struct tm[pTo->chunkSize];
+            }
             
             bool hasNeighbours = true;
             std::vector<std::vector<size_t>* > neighbours;
@@ -743,6 +766,11 @@ namespace kealib{
                     {
                         pFrom->getStringFields(rowOff, pTo->chunkSize, f, &stringVals);
                         pTo->setStringFields(rowOff, pTo->chunkSize, f, &stringVals);
+                    }
+                    for( size_t f = 0; f < pFrom->getNumDateTimeFields(); f++ )
+                    {
+                        pFrom->getDateTimeFields(rowOff, pTo->chunkSize, f, datetimeVals);
+                        pTo->setDateTimeFields(rowOff, pTo->chunkSize, f, datetimeVals);
                     }
                     
                     // try neighbours the first time
@@ -785,6 +813,11 @@ namespace kealib{
                     pFrom->getStringFields(rowOff, remainRows, f, &stringVals);
                     pTo->setStringFields(rowOff, remainRows, f, &stringVals);
                 }
+                for( size_t f = 0; f < pFrom->getNumDateTimeFields(); f++ )
+                {
+                    pFrom->getDateTimeFields(rowOff, remainRows, f, datetimeVals);
+                    pTo->setDateTimeFields(rowOff, remainRows, f, datetimeVals);
+                }
                 if(hasNeighbours)
                 {
                     try
@@ -802,6 +835,7 @@ namespace kealib{
             delete[] boolVals;
             delete[] intVals;
             delete[] floatVals;
+            delete[] datetimeVals;
             for(auto iterNeigh = neighbours.begin(); iterNeigh != neighbours.end(); ++iterNeigh)
             {
                 delete *iterNeigh;

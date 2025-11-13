@@ -685,8 +685,8 @@ namespace kealib{
     
                 HighFive::DataSetCreateProps imgBandDataSetProps;
                 imgBandDataSetProps.add(HighFive::Chunking(blockSize2Use, blockSize2Use));
-                imgBandDataSetProps.add(HighFive::Deflate(deflate));
                 imgBandDataSetProps.add(HighFive::Shuffle());
+                imgBandDataSetProps.add(HighFive::Deflate(deflate));
                 int initFillVal = FILL_MASK_DATA;
                 // HighFive doesn't appear to support this (yet)
                 if( H5Pset_fill_value(imgBandDataSetProps.getId(), H5T_NATIVE_INT, &initFillVal) < 0 )
@@ -1579,8 +1579,8 @@ namespace kealib{
                 
                 HighFive::DataSetCreateProps creationGCPsDSPList;
                 creationGCPsDSPList.add(HighFive::Chunking(numGCPs));
-                creationGCPsDSPList.add(HighFive::Deflate(KEA_DEFLATE));
                 creationGCPsDSPList.add(HighFive::Shuffle());
+                creationGCPsDSPList.add(HighFive::Deflate(KEA_DEFLATE));
                 
                 // don't commit data type - HDF5 will put data type in file right here
 
@@ -2167,6 +2167,7 @@ namespace kealib{
             HighFive::DataSetCreateProps imgBandDataSetProps;
             imgBandDataSetProps.add(HighFive::Chunking(blockSize2Use, blockSize2Use));
             imgBandDataSetProps.add(HighFive::Shuffle());
+            imgBandDataSetProps.add(HighFive::Deflate(KEA_DEFLATE));
             int initFillVal = FILL_IMAGE_DATA;
             // HighFive doesn't appear to support this (yet)
             if( H5Pset_fill_value(imgBandDataSetProps.getId(), H5T_NATIVE_INT, &initFillVal) < 0 )
@@ -3376,8 +3377,8 @@ namespace kealib{
 
             HighFive::DataSetCreateProps imgBandDataSetProps;
             imgBandDataSetProps.add(HighFive::Chunking(blockSize2Use, blockSize2Use));
-            imgBandDataSetProps.add(HighFive::Deflate(deflate));
             imgBandDataSetProps.add(HighFive::Shuffle());
+            imgBandDataSetProps.add(HighFive::Deflate(deflate));
             // HighFive doesn't appear to support this (yet)
             if( H5Pset_fill_value(imgBandDataSetProps.getId(), H5T_NATIVE_INT, &initFillVal) < 0 )
             {

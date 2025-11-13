@@ -815,8 +815,8 @@ namespace kealib{
                 
                 HighFive::DataSetCreateProps creationFeldsDSPList;
                 creationFeldsDSPList.add(HighFive::Chunking(chunkSize));
-                creationFeldsDSPList.add(HighFive::Deflate(deflate));
                 creationFeldsDSPList.add(HighFive::Shuffle());
+                creationFeldsDSPList.add(HighFive::Deflate(deflate));
                 
                 auto fieldsDataset = this->keaImg->createDataSet(headerPath, 
                     fieldsDataSpace, fieldCompTypeMem, creationFeldsDSPList);
@@ -853,8 +853,8 @@ namespace kealib{
                 
                 HighFive::DataSetCreateProps creationDataDSPList;
                 creationDataDSPList.add(HighFive::Chunking(chunkSize, 1));
-                creationDataDSPList.add(HighFive::Deflate(deflate));
                 creationDataDSPList.add(HighFive::Shuffle());
+                creationDataDSPList.add(HighFive::Deflate(deflate));
                 if( H5Pset_fill_value(creationDataDSPList.getId(), fill_type, fill_value) < 0 )
                 {
     				H5Eprint(H5E_DEFAULT, stderr);
