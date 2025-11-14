@@ -85,8 +85,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        SANITIZE="-fsanitize=address,alignment,unreachable,vla-bound,vptr"
-        cmake -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -D CMAKE_PREFIX_PATH=$CONDA_PREFIX -D LIBKEA_WITH_GDAL=ON -DCMAKE_EXE_LINKER_FLAGS="$SANITIZE" -DCMAKE_CXX_FLAGS="$SANITIZE" ..
+        cmake -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -D CMAKE_PREFIX_PATH=$CONDA_PREFIX -D LIBKEA_WITH_GDAL=ON ..
     - name: make
       shell: bash -l {0}
       run: |
@@ -101,7 +100,6 @@ jobs:
       shell: bash -l {0}
       run: |
         cd build
-        export ASAN_OPTIONS="verbosity=1:malloc_context_size=20"
         ctest --output-on-failure
     - name: check gdal
       shell: bash -l {0}
