@@ -305,10 +305,10 @@ int main()
             auto *rat1 = io.getAttributeTable(kealib::kea_att_file, band_num);
             rat1->addRows(RAT_SIZE);
             rat1->addAttBoolField("FirstBool", false);
-            rat1->addAttIntField("FirstInt", 3);
-            rat1->addAttIntField("SecondInt", 4);  // 4 will get ignored as you can only set fill value once...
-            rat1->addAttFloatField("FirstFloat", 3.1);
-            rat1->addAttStringField("FirstString", "hello");
+            rat1->addAttIntField("FirstInt", 3, "first");
+            rat1->addAttIntField("SecondInt", 4, "second");  // 4 will get ignored as you can only set fill value once...
+            rat1->addAttFloatField("FirstFloat", 3.1, "third");
+            rat1->addAttStringField("FirstString", "hello", "fourth");
             rat1->printAttributeTableHeaderInfo();
         
             std::cout << "created columns" << std::endl;

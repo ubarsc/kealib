@@ -355,3 +355,9 @@ bool compareNeighboursSubset(std::vector<std::vector<size_t>* > *neighbours1, si
     
     return true;
 }
+
+void dumpAttField(const kealib::KEAATTField &field)
+{
+    std::cout << "name: " << field.name << " dataType: " << field.dataType << " idx: " << field.idx
+        << " usage: " << field.usage << " colNum: " << field.colNum << std::endl; 
+}

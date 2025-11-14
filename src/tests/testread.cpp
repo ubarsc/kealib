@@ -444,6 +444,54 @@ int main()
                 // bands should have the same RAT because we copy them
                 std::cout << "Testing RAT type " << rat_type << " for band " << band_num << std::endl; 
                 auto *rat1 = io.getAttributeTable(rat_type, band_num);
+                if( rat1->getMaxGlobalColIdx() != 5)
+                {
+                    std::cout << "wrong number of global idx" << std::endl;
+                    return 1;
+                }
+                
+                std::cout << "reading fields" << std::endl;
+                kealib::KEAATTField sKEAField;
+                sKEAField = rat1->getField(0);
+                if( (sKEAField.name != "FirstBool") || (sKEAField.dataType != kealib::kea_att_bool) ||
+                    (sKEAField.idx != 0) || (sKEAField.usage != "") || (sKEAField.colNum != 0))
+                {
+                    std::cout << "First field info wrong" << std::endl;
+                    dumpAttField(sKEAField);
+                    return 1;
+                }
+                sKEAField = rat1->getField(1);
+                if( (sKEAField.name != "FirstInt") || (sKEAField.dataType != kealib::kea_att_int) ||
+                    (sKEAField.idx != 0) || (sKEAField.usage != "first") || (sKEAField.colNum != 1))
+                {
+                    std::cout << "Second field info wrong" << std::endl;
+                    dumpAttField(sKEAField);
+                    return 1;
+                }
+                sKEAField = rat1->getField(2);
+                if( (sKEAField.name != "SecondInt") || (sKEAField.dataType != kealib::kea_att_int) ||
+                    (sKEAField.idx != 1) || (sKEAField.usage != "second") || (sKEAField.colNum != 2))
+                {
+                    std::cout << "third field info wrong" << std::endl;
+                    dumpAttField(sKEAField);
+                    return 1;
+                }
+                sKEAField = rat1->getField(3);
+                if( (sKEAField.name != "FirstFloat") || (sKEAField.dataType != kealib::kea_att_float) ||
+                    (sKEAField.idx != 0) || (sKEAField.usage != "third") || (sKEAField.colNum != 3))
+                {
+                    std::cout << "fourth field info wrong" << std::endl;
+                    dumpAttField(sKEAField);
+                    return 1;
+                }
+                sKEAField = rat1->getField(4);
+                if( (sKEAField.name != "FirstString") || (sKEAField.dataType != kealib::kea_att_string) ||
+                    (sKEAField.idx != 0) || (sKEAField.usage != "fourth") || (sKEAField.colNum != 4))
+                {
+                    std::cout << "fifth field info wrong" << std::endl;
+                    dumpAttField(sKEAField);
+                    return 1;
+                }
             
                 std::cout << "Reading bool col" << std::endl;
                 bool boolFields[RAT_SIZE];
