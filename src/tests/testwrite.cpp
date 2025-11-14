@@ -200,7 +200,7 @@ int main()
         io.getNoDataValue(2, &dnodata, kealib::kea_64float);
         if( std::fabs(dnodata - expected_nodata) > 0.1)
         {
-            std::cout << "Nodata not written correctly" << std::endl;
+            std::cout << "Nodata not written correctly " << dnodata " vs " << expected_nodata << std::endl;
             return 1;
         }
         io.undefineNoDataValue(2);
