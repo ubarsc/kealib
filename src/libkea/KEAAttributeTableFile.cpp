@@ -34,6 +34,7 @@
 #include <algorithm>
 
 HIGHFIVE_REGISTER_TYPE(kealib::KEAAttString, kealib::KEAAttributeTable::createKeaStringCompType)
+HIGHFIVE_REGISTER_TYPE(kealib::KEAAttributeIdx, kealib::KEAAttributeTable::createAttributeIdxCompType)
 
 namespace kealib{
 
