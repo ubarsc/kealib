@@ -19,7 +19,7 @@ jobs:
     - name: Install Dependencies
       shell: bash -l {0}
       run: |
-        conda install cmake awkward cxx-compiler hdf5 python numpy libgdal pybind11
+        conda install cmake awkward cxx-compiler hdf5 python numpy libgdal pybind11 highfive
     - name: Cmake
       shell: bash -l {0}
       run: |
@@ -79,7 +79,7 @@ jobs:
     - name: Install Dependencies
       shell: bash -l {0}
       run: |
-        conda install cmake awkward cxx-compiler hdf5 python numpy libgdal pybind11
+        conda install cmake awkward cxx-compiler hdf5 python numpy libgdal pybind11 highfive
     - name: Cmake
       shell: bash -l {0}
       run: |
@@ -144,7 +144,7 @@ jobs:
     - name: Install Dependencies
       shell: bash -el {0}
       run: |
-        conda install cmake "awkward>=2.5.0" hdf5 python numpy libgdal pybind11
+        conda install cmake "awkward>=2.5.0" hdf5 python numpy libgdal pybind11 highfive
     - name: Cmake
       shell: bash -el {0}
       run: |
