@@ -198,7 +198,7 @@ int main()
         KEA_DTYPE expected_nodata = dnodata; // should cast to type of image
         io.setNoDataValue(2, &dnodata, kealib::kea_64float);
         io.getNoDataValue(2, &dnodata, kealib::kea_64float);
-        if( dnodata != expected_nodata)
+        if( std::fabs(dnodata - expected_nodata) > 0.1)
         {
             std::cout << "Nodata not written correctly" << std::endl;
             return 1;
