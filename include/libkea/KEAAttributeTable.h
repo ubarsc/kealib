@@ -146,9 +146,9 @@ namespace kealib{
         virtual void addAttFloatField(const std::string &name, double val, std::string usage="");
         virtual void addAttStringField(const std::string &name, const std::string &val, std::string usage="");
         virtual void addAttDateTimeField(const std::string &name, const struct tm &val, std::string usage="");
-        // TODO: necessary?
+
         virtual void addFields(const std::vector<KEAATTField*> *inFields);
-        virtual void addFields(const std::vector<KEAATTField> &inFields);
+        virtual void addField(const KEAATTField *inFields);
         
         virtual KEAFieldDataType getDataFieldType(const std::string &name) const;
         virtual size_t getFieldIndex(const std::string &name) const;
@@ -178,7 +178,7 @@ namespace kealib{
         // for cross heap use in Windows
         static void destroyAttributeTable(KEAAttributeTable *pTable);
         
-        static HighFive::CompoundType createAttibuteIdxCompType();
+        static HighFive::CompoundType createAttributeIdxCompType();
         static HighFive::CompoundType createKeaStringCompType();
         
     protected:

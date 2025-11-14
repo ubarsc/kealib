@@ -45,6 +45,7 @@ void clearNeighbours(std::vector<std::vector<size_t>* > *neighbours);
 void createNeighbours(size_t len, std::vector<std::vector<size_t>* > *neighbours);
 bool compareNeighbours(std::vector<std::vector<size_t>* > *neighbours1, std::vector<std::vector<size_t>* > *neighbours2);
 bool compareNeighboursSubset(std::vector<std::vector<size_t>* > *neighbours1, size_t offset, std::vector<std::vector<size_t>* > *neighbours2);
+void dumpAttField(const kealib::KEAATTField &field);
 
 template <typename T>
 T* createDataForType(uint64_t xSize, uint64_t ySize)

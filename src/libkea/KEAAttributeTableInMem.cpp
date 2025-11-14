@@ -45,6 +45,11 @@ namespace kealib{
         numStringFields = pBaseAtt->getNumStringFields();
         bandPathBase = pBaseAtt->getBandPathBase();
         chunkSize = pBaseAtt->getChunkSize();
+        for(size_t i = 0; i < pBaseAtt->getMaxGlobalColIdx(); i++)
+        {
+            auto field = pBaseAtt->getField(i);
+            fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
+        }
 
         attRows = new std::vector<KEAATTFeature*>();
     }

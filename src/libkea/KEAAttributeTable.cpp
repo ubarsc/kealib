@@ -30,7 +30,7 @@
 
 #include "libkea/KEAAttributeTable.h"
 
-HIGHFIVE_REGISTER_TYPE(kealib::KEAAttributeIdx, kealib::KEAAttributeTable::createAttibuteIdxCompType)
+HIGHFIVE_REGISTER_TYPE(kealib::KEAAttributeIdx, kealib::KEAAttributeTable::createAttributeIdxCompType)
 
 namespace kealib{
     
@@ -544,7 +544,6 @@ namespace kealib{
         throw KEAATTException("Unimplemented");
     }
     
-    // not needed?
     void KEAAttributeTable::addFields(const std::vector<KEAATTField*> *inFields)
     {
         try 
@@ -552,34 +551,7 @@ namespace kealib{
             KEAATTField field;
             for(auto iterFields = inFields->begin(); iterFields != inFields->end(); ++iterFields)
             {
-                if((*iterFields)->dataType == kea_att_bool)
-                {
-                    this->addAttBoolField((*iterFields)->name, false, (*iterFields)->usage);
-                }
-                else if((*iterFields)->dataType == kea_att_int)
-                {
-                    this->addAttIntField((*iterFields)->name, 0, (*iterFields)->usage);
-                }
-                else if((*iterFields)->dataType == kea_att_float)
-                {
-                    this->addAttFloatField((*iterFields)->name, 0.0, (*iterFields)->usage);
-                }
-                else if((*iterFields)->dataType == kea_att_string)
-                {
-                    this->addAttStringField((*iterFields)->name, "", (*iterFields)->usage);
-                }
-                else if((*iterFields)->dataType == kea_att_datetime)
-                {
-                    this->addAttDateTimeField((*iterFields)->name, {0}, (*iterFields)->usage);
-                }
-                else
-                {
-                    throw KEAATTException("Data type was not recognised.");
-                }
-                
-                field = this->getField((*iterFields)->name);
-                (*iterFields)->idx = field.idx;
-                (*iterFields)->colNum = field.colNum;
+                addField((*iterFields));
             }
         }
         catch (const KEAATTException &e)
@@ -588,39 +560,35 @@ namespace kealib{
         }
     }
     
-    // not needed?
-    void KEAAttributeTable::addFields(const std::vector<KEAATTField> &inFields)
+    void KEAAttributeTable::addField(const KEAATTField *inField)
     {
         try 
         {
-            // now process the sorted fields
-            for(auto iterFields = inFields.begin(); iterFields != inFields.end(); ++iterFields)
+            if(inField->dataType == kea_att_bool)
             {
-                if((*iterFields).dataType == kea_att_bool)
-                {
-                    this->addAttBoolField((*iterFields).name, false, (*iterFields).usage);
-                }
-                else if((*iterFields).dataType == kea_att_int)
-                {
-                    this->addAttIntField((*iterFields).name, 0, (*iterFields).usage);
-                }
-                else if((*iterFields).dataType == kea_att_float)
-                {
-                    this->addAttFloatField((*iterFields).name, 0.0, (*iterFields).usage);
-                }
-                else if((*iterFields).dataType == kea_att_string)
-                {
-                    this->addAttStringField((*iterFields).name, "", (*iterFields).usage);
-                }
-                else if((*iterFields).dataType == kea_att_datetime)
-                {
-                    this->addAttDateTimeField((*iterFields).name, {0}, (*iterFields).usage);
-                }
-                else
-                {
-                    throw KEAATTException("Data type was not recognised.");
-                }
+                this->addAttBoolField(inField->name, false, inField->usage);
             }
+            else if(inField->dataType == kea_att_int)
+            {
+                this->addAttIntField(inField->name, 0, inField->usage);
+            }
+            else if(inField->dataType == kea_att_float)
+            {
+                this->addAttFloatField(inField->name, 0.0, inField->usage);
+            }
+            else if(inField->dataType == kea_att_string)
+            {
+                this->addAttStringField(inField->name, "", inField->usage);
+            }
+            else if(inField->dataType == kea_att_datetime)
+            {
+                this->addAttDateTimeField(inField->name, {0}, inField->usage);
+            }
+            else
+            {
+                throw KEAATTException("Data type was not recognised.");
+            }
+            
         }
         catch (const KEAATTException &e)
         {
@@ -900,6 +868,10 @@ namespace kealib{
             {
                 std::cout << " string ";
             }
+            else if((*iterField).second.dataType == kea_att_datetime)
+            {
+                std::cout << " datetime ";
+            }
             else
             {
                 std::cout << " UNKNOWN!! ";
@@ -911,7 +883,7 @@ namespace kealib{
         std::cout << "Max. Column Index: " << this->numOfCols << std::endl;
     }
 
-    HighFive::CompoundType KEAAttributeTable::createAttibuteIdxCompType()
+    HighFive::CompoundType KEAAttributeTable::createAttributeIdxCompType()
     {
         try
         {
@@ -990,7 +962,7 @@ namespace kealib{
             pAtt->chunkSize = chunkSize;
             
             // READ TABLE HEADERS
-            auto fieldCompTypeMem = KEAAttributeTable::createAttibuteIdxCompType();
+            auto fieldCompTypeMem = KEAAttributeTable::createAttributeIdxCompType();
             
             bool firstColNum = true;
             

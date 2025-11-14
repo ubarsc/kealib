@@ -50,6 +50,11 @@ namespace kealib{
         chunkSize = pBaseAtt->getChunkSize();
         deflate = deflateIn;
         m_pFeature = createKeaFeature();
+        for(size_t i = 0; i < pBaseAtt->getMaxGlobalColIdx(); i++)
+        {
+            auto field = pBaseAtt->getField(i);
+            fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
+        }
     }
 
     bool KEAAttributeTableFile::getBoolField(size_t fid, size_t colIdx) const
@@ -805,7 +810,7 @@ namespace kealib{
         newfields[fieldsIdx].usage = const_cast<char*>(field.usage.c_str());
         newfields[fieldsIdx].colNum = field.colNum;
 
-        auto fieldCompTypeMem = KEAAttributeTable::createAttibuteIdxCompType();
+        auto fieldCompTypeMem = KEAAttributeTable::createAttributeIdxCompType();
         
         try
         {   
@@ -968,7 +973,7 @@ namespace kealib{
         // now create an instance of KEAAttributeTableFile with the copy constructor
         KEAAttributeTable *pAtt = new KEAAttributeTableFile(keaImg, pBaseAtt, mutex, deflate);
         delete pBaseAtt;
-
+        
         return pAtt;
     }
     
