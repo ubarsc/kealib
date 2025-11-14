@@ -98,7 +98,7 @@ static int fakeGDAL_init(FakeGDALObject *self, PyObject *args, PyObject *kwds)
     self->pImageIO = new kealib::KEAImageIO();
     try
     {
-        H5::H5File *pH5File = kealib::KEAImageIO::openKeaH5RW( pszFilename );
+        HighFive::File *pH5File = kealib::KEAImageIO::openKeaH5RW( pszFilename );
         self->pImageIO->openKEAImageHeader(pH5File);
     }
     catch (const kealib::KEAIOException &e)
