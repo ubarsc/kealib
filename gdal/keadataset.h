@@ -57,7 +57,11 @@ public:
                                 GDALProgressFunc pfnProgress, void *pProgressData );
 
     // virtual methods for dealing with transform and projection
+#ifdef HAVE_SETVALUE_CPLERR
+    CPLErr      GetGeoTransform(GDALGeoTransform &gt ) const override;
+#else    
     CPLErr      GetGeoTransform( double * padfTransform );
+#endif
     CPLErr  SetGeoTransform (double *padfTransform );
 
     const OGRSpatialReference* GetSpatialRef() const override;
