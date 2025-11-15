@@ -556,6 +556,31 @@ void KEADataset::UpdateMetadataList()
 }
 
 // read in the geotransform
+#ifdef HAVE_SETVALUE_CPLERR
+CPLErr KEADataset::GetGeoTransform(GDALGeoTransform &gt) const
+{
+    try
+    {
+        kealib::KEAImageSpatialInfo *pSpatialInfo =
+            m_pImageIO->getSpatialInfo();
+        // GDAL uses an array format
+        gt[0] = pSpatialInfo->tlX;
+        gt[1] = pSpatialInfo->xRes;
+        gt[2] = pSpatialInfo->xRot;
+        gt[3] = pSpatialInfo->tlY;
+        gt[4] = pSpatialInfo->yRot;
+        gt[5] = pSpatialInfo->yRes;
+
+        return CE_None;
+    }
+    catch (const kealib::KEAIOException &e)
+    {
+        CPLError(CE_Warning, CPLE_AppDefined, "Unable to read geotransform: %s",
+                 e.what());
+        return CE_Failure;
+    }
+}
+#else
 CPLErr KEADataset::GetGeoTransform( double * padfTransform )
 {
     try
@@ -578,6 +603,7 @@ CPLErr KEADataset::GetGeoTransform( double * padfTransform )
         return CE_Failure;
     }
 }
+#endif
 
 const OGRSpatialReference* KEADataset::GetSpatialRef() const
 {
