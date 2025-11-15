@@ -62,8 +62,15 @@ add_library(Kealib::Kealib ALIAS ${LIBKEA_LIB_NAME})
 ###############################################################################
 # Testing
 # exe needs to be in 'src' otherwise it doesn't work
-add_executable (test1 ${PROJECT_SOURCE_DIR}/src/tests/test1.cpp)
-target_link_libraries (test1 ${LIBKEA_LIB_NAME})
+foreach(typename IN LISTS KEA_TEST_TYPES)
+    add_executable (testwrite${typename} ${PROJECT_SOURCE_DIR}/src/tests/testwrite.cpp ${PROJECT_SOURCE_DIR}/src/tests/testsupport.cpp)
+    target_link_libraries (testwrite${typename} ${LIBKEA_LIB_NAME} ${HDF5_LIBRARIES})
+    target_compile_definitions (testwrite${typename} PRIVATE KEA_DTYPE=${typename})
+
+    add_executable (testread${typename} ${PROJECT_SOURCE_DIR}/src/tests/testread.cpp ${PROJECT_SOURCE_DIR}/src/tests/testsupport.cpp)
+    target_link_libraries (testread${typename} ${LIBKEA_LIB_NAME} ${HDF5_LIBRARIES})
+    target_compile_definitions (testread${typename} PRIVATE KEA_DTYPE=${typename})
+endforeach()
 ###############################################################################
 
 ###############################################################################
@@ -75,17 +82,6 @@ configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
 )
 write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/KealibConfigVersion.cmake"
-  VERSION "${LIBKEA_VERSION}"
-  COMPATIBILITY AnyNewerVersion
-)
-# Remove in release 1.6.0
-configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/Config.cmake.in
-  "${CMAKE_CURRENT_BINARY_DIR}/libkeaConfig.cmake"
-  INSTALL_DESTINATION lib/cmake/libkea
-)
-# Remove in release 1.6.0
-write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/libkeaConfigVersion.cmake"
   VERSION "${LIBKEA_VERSION}"
   COMPATIBILITY AnyNewerVersion
 )
@@ -106,14 +102,4 @@ install(FILES
           "${CMAKE_CURRENT_BINARY_DIR}/KealibConfig.cmake"
           "${CMAKE_CURRENT_BINARY_DIR}/KealibConfigVersion.cmake"
         DESTINATION lib/cmake/Kealib)
-# Remove in release 1.6.0
-install(EXPORT libkeaTargets
-        FILE libkeaTargets.cmake
-        NAMESPACE libkea::
-        DESTINATION lib/cmake/libkea)
-# Remove in release 1.6.0
-install(FILES
-          "${CMAKE_CURRENT_BINARY_DIR}/libkeaConfig.cmake"
-          "${CMAKE_CURRENT_BINARY_DIR}/libkeaConfigVersion.cmake"
-        DESTINATION lib/cmake/libkea)
 ###############################################################################

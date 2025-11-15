@@ -35,7 +35,7 @@
 #include <string>
 #include <vector>
 
-#include <H5Cpp.h>
+#include <highfive/highfive.hpp>
 
 #include "libkea/KEACommon.h"
 #include "libkea/KEAException.h"
@@ -50,7 +50,7 @@ namespace kealib{
     public:
         KEAImageIO();
                 
-        void openKEAImageHeader(H5::H5File *keaImgH5File);
+        void openKEAImageHeader(HighFive::File *keaImgH5File);
         
         void writeImageBlock2Band(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType);
         void readImageBlock2Band(uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn, uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType);
@@ -126,51 +126,69 @@ namespace kealib{
         // remove band from file
         virtual void removeImageBand(const uint32_t bandIndex);
 
-        static H5::H5File* createKEAImage(const std::string &fileName, KEADataType dataType, uint32_t xSize, uint32_t ySize, uint32_t numImgBands, std::vector<std::string> *bandDescrips=NULL, KEAImageSpatialInfo *spatialInfo=NULL, uint32_t imageBlockSize=KEA_IMAGE_CHUNK_SIZE, uint32_t attBlockSize=KEA_ATT_CHUNK_SIZE, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE, uint32_t deflate=KEA_DEFLATE);
+        static HighFive::File* createKEAImage(const std::string &fileName, KEADataType dataType, uint32_t xSize, uint32_t ySize, uint32_t numImgBands, std::vector<std::string> *bandDescrips=NULL, KEAImageSpatialInfo *spatialInfo=NULL, uint32_t imageBlockSize=KEA_IMAGE_CHUNK_SIZE, uint32_t attBlockSize=KEA_ATT_CHUNK_SIZE, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE, uint32_t deflate=KEA_DEFLATE);
         static bool isKEAImage(const std::string &fileName);
-        static H5::H5File* openKeaH5RW(const std::string &fileName, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE);
-        static H5::H5File* openKeaH5RDOnly(const std::string &fileName, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE);
+        static HighFive::File* openKeaH5RW(const std::string &fileName, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE);
+        static HighFive::File* openKeaH5RDOnly(const std::string &fileName, int mdcElmts=KEA_MDC_NELMTS, hsize_t rdccNElmts=KEA_RDCC_NELMTS, hsize_t rdccNBytes=KEA_RDCC_NBYTES, double rdccW0=KEA_RDCC_W0, hsize_t sieveBuf=KEA_SIEVE_BUF, hsize_t metaBlockSize=KEA_META_BLOCKSIZE, hid_t driver_id=0, const void* driver_info=nullptr);
         virtual ~KEAImageIO();
+        
+        static HighFive::CompoundType createGCPCompType();
 
     protected:
         /********** STATIC PROTECTED **********/
         /**
          * Converts KEA datatypes to the respective standard HDF5 datatypes.
          */
-        static H5::DataType convertDatatypeKeaToH5STD(const KEADataType dataType);
+        static HighFive::DataType convertDatatypeKeaToH5STD(const KEADataType dataType);
 
         /**
          * Converts KEA datatypes to the respective native HDF5 datatypes.
          */
-        static H5::DataType convertDatatypeKeaToH5Native( const KEADataType dataType);
+        static HighFive::DataType convertDatatypeKeaToH5Native( const KEADataType dataType);
+
+        static const std::string convertDatatypeKeaToCStdStr(const KEADataType dataType);
 
         /**
          * Adds an image band to the specified file. Does NOT flush the file
          * buffer.
          *
          */
-        static void addImageBandToFile(H5::H5File *keaImgH5File, const KEADataType dataType, const uint32_t xSize, const uint32_t ySize, const uint32_t bandIndex, const std::string &bandDescrip, const uint32_t imageBlockSize, const uint32_t attBlockSize, const uint32_t deflate);
+        static void addImageBandToFile(HighFive::File *keaImgH5File, const KEADataType dataType, const uint32_t xSize, const uint32_t ySize, const uint32_t bandIndex, const std::string &bandDescrip, const uint32_t imageBlockSize, const uint32_t attBlockSize, const uint32_t deflate);
         
         /**
          * Remove and image band and rename higher bands so everything is contiguous. Does NOT flush the file
          * buffer.
          */
-        static void removeImageBandFromFile(H5::H5File *keaImgH5File, const uint32_t bandIndex, const uint32_t numImgBands);
+        static void removeImageBandFromFile(HighFive::File *keaImgH5File, const uint32_t bandIndex, const uint32_t numImgBands);
 
         /**
          * Updates the number of image bands in the file metadata. Does NOT
          * flush the file buffer.
          */
-        static void setNumImgBandsInFileMetadata(H5::H5File *keaImgH5File, const uint32_t numImgBands);
+        static void setNumImgBandsInFileMetadata(HighFive::File *keaImgH5File, const uint32_t numImgBands);
 
-        static H5::CompType* createGCPCompTypeDisk();
-        static H5::CompType* createGCPCompTypeMem();
+        /**
+          * helper to read part of an image form a HDF5 dataset
+          */        
+        void readImageFromDataset(const HighFive::DataSet &dataset, uint32_t band, 
+            void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn,
+            uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType,
+            bool ismask=false);
+            
+        /**
+          * helper to write part of an image form a HDF5 dataset
+          */        
+        void writeImageToDataset(HighFive::DataSet &dataset, uint32_t band, 
+            void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut,
+            uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType);
+
+
         
-        static std::string readString(H5::DataSet& dataset, H5::DataType strDataType);
+        //static std::string readString(H5::DataSet& dataset, H5::DataType strDataType);
         
         /********** PROTECTED MEMBERS **********/
         bool fileOpen;
-        H5::H5File *keaImgFile;
+        HighFive::File *keaImgFile;
         KEAImageSpatialInfo *spatialInfoFile;
         uint32_t numImgBands;
         std::string keaVersion;

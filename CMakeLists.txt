@@ -27,8 +27,8 @@ endif ()
 project (LIBKEA)
 
 IF(NOT CMAKE_BUILD_TYPE)
-  #SET(CMAKE_BUILD_TYPE "DEBUG")
-  SET(CMAKE_BUILD_TYPE "RELEASE")
+  SET(CMAKE_BUILD_TYPE "DEBUG")
+  #SET(CMAKE_BUILD_TYPE "RELEASE")
   #SET(CMAKE_BUILD_TYPE "RELWITHDEBINFO")
   #SET(CMAKE_BUILD_TYPE "MINSIZEREL")
 ENDIF()
@@ -41,9 +41,9 @@ set (PROJECT_TOOLS_DIR tools)
 set (PROJECT_GDAL_DIR gdal)
 
 # The version number.
-set (LIBKEA_VERSION_MAJOR 1)
-set (LIBKEA_VERSION_MINOR 6)
-set (LIBKEA_VERSION_PATCH 2)
+set (LIBKEA_VERSION_MAJOR 2)
+set (LIBKEA_VERSION_MINOR 0)
+set (LIBKEA_VERSION_PATCH 0)
 set (LIBKEA_VERSION "${LIBKEA_VERSION_MAJOR}.${LIBKEA_VERSION_MINOR}.${LIBKEA_VERSION_PATCH}")
 set (LIBKEA_PACKAGE_VERSION "${LIBKEA_VERSION_MAJOR}.${LIBKEA_VERSION_MINOR}.${LIBKEA_VERSION_PATCH}")
 set (LIBKEA_PACKAGE_STRING "LibKEA ${LIBKEA_VERSION_MAJOR}.${LIBKEA_VERSION_MINOR}.${LIBKEA_VERSION_PATCH}")
@@ -52,6 +52,8 @@ set (LIBKEA_PACKAGE "LibKEA")
 set (LIBKEA_COPYRIGHT_YEAR 2013)
 
 set(LIBKEA_LIB_NAME kea)
+
+set(KEA_TEST_TYPES uint8_t int8_t uint16_t int16_t uint32_t int32_t uint64_t int64_t float double)
 
 include(CMakeDependentOption)
 # CMake global option valiable
@@ -78,23 +80,27 @@ option(HDF5_PREFER_PARALLEL "Prefer HDF5 parallel wrapper instead of serial one.
 if(NOT "x$ENV{HDF5_ROOT}" STREQUAL "x")
     message(STATUS "HDF5_ROOT environment variable specified: $ENV{HDF5_ROOT}")
 endif()
-find_package(HDF5 COMPONENTS C CXX REQUIRED)
+find_package(HDF5 COMPONENTS C REQUIRED)
 
 # https://support.hdfgroup.org/HDF5/doc/TechNotes/ThreadSafeLibrary.html
 include(CheckSymbolExists)
 SET(CMAKE_REQUIRED_INCLUDES ${HDF5_INCLUDE_DIRS})
 if(MSVC AND NOT HDF5_USE_STATIC_LIBRARIES)
-	# Needed so that correct result of threadsafe test is obtained
-	set(CMAKE_REQUIRED_DEFINITIONS -DH5_BUILT_AS_DYNAMIC_LIB)
+    # Needed so that correct result of threadsafe test is obtained
+    set(CMAKE_REQUIRED_DEFINITIONS -DH5_BUILT_AS_DYNAMIC_LIB)
 endif(MSVC AND NOT HDF5_USE_STATIC_LIBRARIES)
 
 check_symbol_exists(H5_HAVE_THREADSAFE "H5pubconf.h" HDF5_THREADSAFE)
 if( NOT HDF5_THREADSAFE )
-    message(NOTICE "") 
+    message(NOTICE "")
     message(NOTICE "*** HDF5 not built with HDF5_ENABLE_THREADSAFE=ON ***")
-    message(NOTICE "*** KEALib WILL NOT be threadsafe ***") 
+    message(NOTICE "*** KEALib WILL NOT be threadsafe ***")
     message(NOTICE "")
 endif()
+
+# Get HighFive library - HDF5
+# note: version 3 required
+find_package(HighFive 3 REQUIRED)
 
 # required to get compilation on Windows
 find_package(Threads)
@@ -102,6 +108,7 @@ find_package(Threads)
 find_package(GDAL)
 cmake_dependent_option(LIBKEA_WITH_GDAL  "Choose if .kea GDAL driver should be built" OFF "GDAL_FOUND" OFF)
 ###############################################################################
+
 # Code to change HDF5_LIBRARIES (from FindHDF5.cmake) into a form
 # that can be understood by libtool and put into kea-config
 
@@ -129,12 +136,12 @@ if(HDF5_LIBRARIES_NAMES)
     list(REMOVE_DUPLICATES HDF5_LIBRARIES_NAMES)
 endif()
 
-# Code below changes from arrays returned by FindHDF5.cmake 
+# Code below changes from arrays returned by FindHDF5.cmake
 # into strings as expected by kea-config.in and used by libtool
 # (otherwise things end up separated by semicolons etc)
 
 # variables "fixed" in this way have the _LIBTOOL suffix
-set(HDF5_LIBRARIES_LIBTOOL) 
+set(HDF5_LIBRARIES_LIBTOOL)
 foreach(dir_name ${HDF5_LIBRARIES_PATHS})
     string(CONCAT HDF5_LIBRARIES_LIBTOOL ${HDF5_LIBRARIES_LIBTOOL} " -L" ${dir_name})
 endforeach(dir_name)
@@ -173,11 +180,6 @@ if(MSVC)
     add_definitions(-D_CRT_NONSTDC_NO_WARNING)
     add_definitions(-D_SCL_SECURE_NO_WARNINGS)
 
-    if(NOT HDF5_USE_STATIC_LIBRARIES)
-        # for some reason FindHDF5.cmake doesn't always set this
-        add_definitions(-DH5_BUILT_AS_DYNAMIC_LIB)
-    endif(NOT HDF5_USE_STATIC_LIBRARIES)
-    
     # by default the compiler produces gratuitous warnings. Disable some of them
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4290 /wd4005 /wd4101 /wd4244 /wd4800 /wd4251 /wd4996")
 else()
@@ -216,7 +218,11 @@ endif(LIBKEA_WITH_GDAL)
 ###############################################################################
 # Tests
 enable_testing()
-add_test(NAME test1 COMMAND src/test1)
+foreach(typename IN LISTS KEA_TEST_TYPES)
+    add_test(NAME testwrite${typename} COMMAND src/testwrite${typename})
+    add_test(NAME testread${typename} COMMAND src/testread${typename})
+    set_tests_properties(testread${typename} PROPERTIES DEPENDS "testwrite${typename}")
+endforeach()
 ###############################################################################
 
 ###############################################################################

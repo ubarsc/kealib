@@ -19,7 +19,7 @@ jobs:
     - name: Install Dependencies
       shell: bash -l {0}
       run: |
-        conda install cmake awkward cxx-compiler hdf5 python numpy libgdal pybind11
+        conda install cmake awkward cxx-compiler hdf5 python numpy libgdal-core pybind11 highfive
     - name: Cmake
       shell: bash -l {0}
       run: |
@@ -40,7 +40,67 @@ jobs:
       shell: bash -l {0}
       run: |
         cd build
-        make test
+        ctest --output-on-failure
+    - name: check gdal
+      shell: bash -l {0}
+      run: gdal_translate --formats | grep KEA
+    - name: Cmake_Python
+      shell: bash -l {0}
+      run: |
+        cd python
+        mkdir build
+        cd build
+        cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -D CMAKE_PREFIX_PATH=$CONDA_PREFIX ..
+    - name: Make_Python
+      shell: bash -l {0}
+      run: |
+        cd python/build
+        make
+    - name: Install_Python
+      shell: bash -l {0}
+      run: |
+        cd python/build
+        make install
+    - name: Test_Python
+      shell: bash -l {0}
+      run: |
+        cd python/build
+        ctest --output-on-failure
+
+  build-osx:
+    name: Test OSX
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniforge-version: latest
+    - name: Install Dependencies
+      shell: bash -l {0}
+      run: |
+        conda install cmake "awkward>=2.5.0" cxx-compiler hdf5 python numpy libgdal-core pybind11 highfive
+    - name: Cmake
+      shell: bash -l {0}
+      run: |
+        mkdir build
+        cd build
+        cmake -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -D CMAKE_PREFIX_PATH=$CONDA_PREFIX -D LIBKEA_WITH_GDAL=ON ..
+    - name: make
+      shell: bash -l {0}
+      run: |
+        cd build
+        make
+    - name: make install
+      shell: bash -l {0}
+      run: |
+        cd build
+        make install
+    - name: make test
+      shell: bash -l {0}
+      run: |
+        cd build
+        ctest --output-on-failure
     - name: check gdal
       shell: bash -l {0}
       run: gdal_translate --formats | grep KEA
@@ -82,7 +142,7 @@ jobs:
     - name: Install Dependencies
       shell: bash -el {0}
       run: |
-        conda install cmake "awkward>=2.5.0" hdf5 python numpy libgdal pybind11
+        conda install cmake "awkward>=2.5.0" hdf5 python numpy libgdal-core pybind11 highfive
     - name: Cmake
       shell: bash -el {0}
       run: |
@@ -103,7 +163,7 @@ jobs:
       shell: bash -el {0}
       run: |
         cd build
-        nmake test
+        ctest --output-on-failure
     - name: check gdal
       shell: bash -el {0}
       run: gdal_translate --formats | grep KEA

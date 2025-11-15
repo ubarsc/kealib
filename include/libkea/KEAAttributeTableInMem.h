@@ -35,7 +35,7 @@
 #include <string>
 #include <vector>
 
-#include <H5Cpp.h>
+#include <highfive/highfive.hpp>
 
 #include "libkea/KEACommon.h"
 #include "libkea/KEAException.h"
@@ -46,17 +46,7 @@ namespace kealib{
     class KEA_EXPORT KEAAttributeTableInMem : public KEAAttributeTable
     {
     public:
-        KEAAttributeTableInMem(const std::shared_ptr<kealib::kea_mutex>& mutex);
-        
-        bool getBoolField(size_t fid, const std::string &name) const;
-        int64_t getIntField(size_t fid, const std::string &name) const;
-        double getFloatField(size_t fid, const std::string &name) const;
-        std::string getStringField(size_t fid, const std::string &name) const;
-
-        void setBoolField(size_t fid, const std::string &name, bool value);
-        void setIntField(size_t fid, const std::string &name, int64_t value);
-        void setFloatField(size_t fid, const std::string &name, double value);
-        void setStringField(size_t fid, const std::string &name, const std::string &value);
+        KEAAttributeTableInMem(KEAAttributeTable *pBaseAtt, const std::shared_ptr<kealib::kea_mutex>& mutex);
         
         bool getBoolField(size_t fid, size_t colIdx) const;
         int64_t getIntField(size_t fid, size_t colIdx) const;
@@ -91,9 +81,7 @@ namespace kealib{
         
         void addRows(size_t numRows);
         
-        void exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE);
-        
-        static KEAAttributeTable* createKeaAtt(H5::H5File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band);
+        static KEAAttributeTable* createKeaAtt(HighFive::File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band);
         
         ~KEAAttributeTableInMem();
     protected:
