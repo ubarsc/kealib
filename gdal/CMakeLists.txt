@@ -59,7 +59,7 @@ endif()
 
 find_package(GDAL REQUIRED)
 # Need to link to HDF5 also
-find_package(HDF5 COMPONENTS C CXX REQUIRED)
+find_package(HDF5 COMPONENTS C REQUIRED)
 if(KEA_PLUGIN_OUTOFTREE)
     if(MSVC)
         target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} ${HDF5_LIBRARIES} ${LIBKEA_LIB_PATH}/libkea.lib)

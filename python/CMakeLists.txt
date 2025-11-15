@@ -71,12 +71,7 @@ set(FAKEGDAL_NAME "fakegdal${FAKEGDAL_SUFFIX}")
 target_link_libraries(fakegdal PRIVATE Kealib::Kealib)
 
 add_executable(testseg testseg.cpp)
-target_link_libraries(testseg PRIVATE libkea::Kealib)
-
-# Remove in release 1.6.0
-find_package(libkea CONFIG REQUIRED)
-add_executable(testseg_libkea testseg.cpp)
-target_link_libraries(testseg_libkea PRIVATE libkea::Kealib)
+target_link_libraries(testseg PRIVATE Kealib::Kealib)
 
 # custom install step to create .pyc files
 install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} -m compileall ${PYKEA_INSTALL_DIR})")
