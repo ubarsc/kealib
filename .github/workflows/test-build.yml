@@ -115,7 +115,7 @@ jobs:
       shell: bash -l {0}
       run: |
         cd python/build
-        make
+        VERBOSE=1 make
     - name: Install_Python
       shell: bash -l {0}
       run: |
