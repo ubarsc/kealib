@@ -52,7 +52,8 @@ if(NOT awkward_POPULATED)
 endif()
 
 find_package(pybind11 CONFIG REQUIRED)
-find_package(Kealib CONFIG REQUIRED)
+find_package(Kealib 2 CONFIG REQUIRED)
+message(STATUS "Using kealib version ${Kealib_VERSION}")
 
 pybind11_add_module(extrat extrat.cpp)
 target_include_directories(extrat BEFORE PRIVATE "${KEALIB_INCLUDE}")
