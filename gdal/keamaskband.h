@@ -44,6 +44,11 @@ public:
     KEAMaskBand(GDALRasterBand *pParent, kealib::KEAImageIO *pImageIO, LockedRefCount *pRefCount );
     ~KEAMaskBand();
 
+    bool IsMaskBand() const override
+    {
+        return true;
+    }
+    
 protected:
     // we just override these functions from GDALRasterBand
     virtual CPLErr IReadBlock( int, int, void * );

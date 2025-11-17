@@ -59,10 +59,11 @@ public:
     // virtual methods for dealing with transform and projection
 #ifdef HAVE_SETVALUE_CPLERR
     CPLErr      GetGeoTransform(GDALGeoTransform &gt ) const override;
+    CPLErr SetGeoTransform(const GDALGeoTransform &gt) override;
 #else    
     CPLErr      GetGeoTransform( double * padfTransform );
-#endif
     CPLErr  SetGeoTransform (double *padfTransform );
+#endif
 
     const OGRSpatialReference* GetSpatialRef() const override;
     CPLErr SetSpatialRef(const OGRSpatialReference* poSRS) override;

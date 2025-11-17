@@ -41,7 +41,11 @@ GDALDataType KEA_to_GDAL_Type( kealib::KEADataType ekeaType )
     GDALDataType egdalType = GDT_Unknown;
     switch( ekeaType )
     {
+#ifdef HAVE_64BITIMAGES
         case kealib::kea_8int:
+            egdalType = GDT_Int8;
+            break;
+#endif
         case kealib::kea_8uint:
             egdalType = GDT_Byte;
             break;
@@ -89,6 +93,11 @@ kealib::KEADataType GDAL_to_KEA_Type( GDALDataType egdalType )
         case GDT_Byte:
             ekeaType = kealib::kea_8uint;
             break;
+#ifdef HAVE_64BITIMAGES
+        case GDT_Int8:
+            ekeaType = kealib::kea_8int;
+            break;
+#endif
         case GDT_Int16:
             ekeaType = kealib::kea_16int;
             break;
@@ -389,7 +398,9 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
     int nXSize = pSrcDs->GetRasterXSize();
     int nYSize = pSrcDs->GetRasterYSize();
     int nBands = pSrcDs->GetRasterCount();
-    GDALDataType eType = pSrcDs->GetRasterBand(1)->GetRasterDataType();
+    GDALDataType eType = (nBands == 0)
+                             ? GDT_Unknown
+                             : pSrcDs->GetRasterBand(1)->GetRasterDataType();
 
     try
     {
@@ -460,6 +471,7 @@ KEADataset::KEADataset( HighFive::File *keaImgH5File, GDALAccess eAccess )
 {
     this->m_hMutex = CPLCreateMutex();
     CPLReleaseMutex( this->m_hMutex );
+    m_papszMetadataList = nullptr;
     try
     {
         // create the image IO and initilize the refcount
@@ -489,7 +501,6 @@ KEADataset::KEADataset( HighFive::File *keaImgH5File, GDALAccess eAccess )
         }
 
         // read in the metadata
-        m_papszMetadataList = nullptr;
         this->UpdateMetadataList();
 
         // nullptr until we read them in 
@@ -567,7 +578,36 @@ CPLErr KEADataset::GetGeoTransform(GDALGeoTransform &gt) const
         return CE_Failure;
     }
 }
+
+// set the geotransform
+CPLErr KEADataset::SetGeoTransform(const GDALGeoTransform &gt)
+{
+    try
+    {
+        // get the spatial info and update it
+        kealib::KEAImageSpatialInfo *pSpatialInfo =
+            m_pImageIO->getSpatialInfo();
+        // convert back from GDAL's array format
+        pSpatialInfo->tlX = gt[0];
+        pSpatialInfo->xRes = gt[1];
+        pSpatialInfo->xRot = gt[2];
+        pSpatialInfo->tlY = gt[3];
+        pSpatialInfo->yRot = gt[4];
+        pSpatialInfo->yRes = gt[5];
+
+        m_pImageIO->setSpatialInfo(pSpatialInfo);
+        return CE_None;
+    }
+    catch (const kealib::KEAIOException &e)
+    {
+        CPLError(CE_Warning, CPLE_AppDefined,
+                 "Unable to write geotransform: %s", e.what());
+        return CE_Failure;
+    }
+}
+
 #else
+
 CPLErr KEADataset::GetGeoTransform( double * padfTransform )
 {
     try
@@ -588,25 +628,6 @@ CPLErr KEADataset::GetGeoTransform( double * padfTransform )
         CPLError( CE_Warning, CPLE_AppDefined,
                 "Unable to read geotransform: %s", e.what() );
         return CE_Failure;
-    }
-}
-#endif
-
-const OGRSpatialReference* KEADataset::GetSpatialRef() const
-{
-    if( !m_oSRS.IsEmpty() )
-        return &m_oSRS;
-
-    try
-    {
-        kealib::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
-        m_oSRS.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER);
-        m_oSRS.importFromWkt(pSpatialInfo->wktString.c_str());
-        return m_oSRS.IsEmpty() ? nullptr: &m_oSRS;
-    }
-    catch (const kealib::KEAIOException &e)
-    {
-        return nullptr;
     }
 }
 
@@ -633,6 +654,25 @@ CPLErr KEADataset::SetGeoTransform (double *padfTransform )
         CPLError( CE_Warning, CPLE_AppDefined,
                 "Unable to write geotransform: %s", e.what() );
         return CE_Failure;
+    }
+}
+#endif
+
+const OGRSpatialReference* KEADataset::GetSpatialRef() const
+{
+    if( !m_oSRS.IsEmpty() )
+        return &m_oSRS;
+
+    try
+    {
+        kealib::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
+        m_oSRS.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER);
+        m_oSRS.importFromWkt(pSpatialInfo->wktString.c_str());
+        return m_oSRS.IsEmpty() ? nullptr: &m_oSRS;
+    }
+    catch (const kealib::KEAIOException &e)
+    {
+        return nullptr;
     }
 }
 

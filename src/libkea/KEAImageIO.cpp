@@ -240,7 +240,7 @@ namespace kealib{
             // Is this a write off the edge?
 			if((ySizeBuf != ySizeOut) || (xSizeBuf != xSizeOut))
 			{
-			 std::cout << "write off edge" << std::endl;
+			     //std::cout << "write off edge" << std::endl;
                 // so we need to write a smaller part of image data from a larger buffer
                 // This goes beyond what HighFive can currently do so we must resort
                 // to the C API. This is a rough port of what happens in the old Kealib.
@@ -909,7 +909,7 @@ namespace kealib{
           		// TODO: dataspace instead of scalar to be compatible with old KEA
                 HighFive::DataSpace dataSpace = HighFive::DataSpace({1});
                 keaImgFile->createDataSet(metaDataH5Path, dataSpace, HighFive::VariableLengthStringType());
-                std::cout << "created dataset " << metaDataH5Path << std::endl;
+                //std::cout << "created dataset " << metaDataH5Path << std::endl;
             }
             auto dataset = this->keaImgFile->getDataSet(metaDataH5Path);
             dataset.write(value);
@@ -1068,7 +1068,7 @@ namespace kealib{
         {
             HighFive::DataSpace dataSpace = HighFive::DataSpace(1);
             keaImgFile->createDataSet(metaDataH5Path, dataSpace, HighFive::VariableLengthStringType());
-            std::cout << "created dataset " << metaDataH5Path << std::endl;
+            //std::cout << "created dataset " << metaDataH5Path << std::endl;
         }
         // WRITE IMAGE META DATA
         try 
@@ -1311,15 +1311,15 @@ namespace kealib{
         		// TODO: dataspace instead of scalar to be compatible with old KEA
                 HighFive::DataSpace dataSpace = HighFive::DataSpace({1});
                 keaImgFile->createDataSet(noDataValPath, dataSpace, imgBandDT);
-                std::cout << "created dataset " << noDataValPath << std::endl;
+                //std::cout << "created dataset " << noDataValPath << std::endl;
             }
             auto dataset = this->keaImgFile->getDataSet( noDataValPath );
             dataset.write_raw(data, hdfDataType);
-            std::cout << "wrote value" << std::endl;
+            //std::cout << "wrote value" << std::endl;
             // now set flag that says whether nodata set or not
             int8_t val = 1;
             dataset.createAttribute(KEA_NODATA_DEFINED, val);
-            std::cout << "wrote attr" << std::endl;
+            //std::cout << "wrote attr" << std::endl;
             // Flushing the dataset
             this->keaImgFile->flush();
         }
@@ -2740,7 +2740,7 @@ namespace kealib{
                 spatialInfo->yRot = 0.0;
                 spatialInfo->wktString = "";
                 deleteSpatialInfo = true;
-                std::cout << "Creating new spatial info object." << std::endl;
+                //std::cout << "Creating new spatial info object." << std::endl;
             }
 
             spatialInfo->xSize = xSize;
