@@ -840,56 +840,59 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
             }
 
             // ok now copy data
-            if( eFieldType == GFT_Integer )
+            if(numRows > 0)
             {
-                int *panIntData = (int*)VSIMalloc2(numRows, sizeof(int));
-                if( panIntData == nullptr )
+                if( eFieldType == GFT_Integer )
                 {
-                    CPLError( CE_Failure, CPLE_OutOfMemory,
-                        "Memory Allocation failed in KEARasterAttributeTable::SetDefaultRAT");
-                    return CE_Failure;
+                    int *panIntData = (int*)VSIMalloc2(numRows, sizeof(int));
+                    if( panIntData == nullptr )
+                    {
+                        CPLError( CE_Failure, CPLE_OutOfMemory,
+                            "Memory Allocation failed in KEARasterAttributeTable::SetDefaultRAT");
+                        return CE_Failure;
+                    }
+    
+                    if( ((GDALRasterAttributeTable*)poRAT)->ValuesIO(GF_Read, nGDALColumnIndex, 0, numRows, panIntData ) == CE_None )
+                    {
+                        pKEATable->ValuesIO(GF_Write, nKEAColumnIndex, 0, numRows, panIntData);
+                    }
+                    CPLFree(panIntData);
                 }
-
-                if( ((GDALRasterAttributeTable*)poRAT)->ValuesIO(GF_Read, nGDALColumnIndex, 0, numRows, panIntData ) == CE_None )
+                else if( eFieldType == GFT_Real )
                 {
-                    pKEATable->ValuesIO(GF_Write, nKEAColumnIndex, 0, numRows, panIntData);
+                    double *padfFloatData = (double*)VSIMalloc2(numRows, sizeof(double));
+                    if( padfFloatData == nullptr )
+                    {
+                        CPLError( CE_Failure, CPLE_OutOfMemory,
+                            "Memory Allocation failed in KEARasterAttributeTable::SetDefaultRAT");
+                        return CE_Failure;
+                    }
+    
+                    if( ((GDALRasterAttributeTable*)poRAT)->ValuesIO(GF_Read, nGDALColumnIndex, 0, numRows, padfFloatData ) == CE_None )
+                    {
+                        pKEATable->ValuesIO(GF_Write, nKEAColumnIndex, 0, numRows, padfFloatData);
+                    }
+                    CPLFree(padfFloatData);
                 }
-                CPLFree(panIntData);
-            }
-            else if( eFieldType == GFT_Real )
-            {
-                double *padfFloatData = (double*)VSIMalloc2(numRows, sizeof(double));
-                if( padfFloatData == nullptr )
+                else
                 {
-                    CPLError( CE_Failure, CPLE_OutOfMemory,
-                        "Memory Allocation failed in KEARasterAttributeTable::SetDefaultRAT");
-                    return CE_Failure;
+                    char **papszStringData = (char**)VSIMalloc2(numRows, sizeof(char*));
+                    if( papszStringData == nullptr )
+                    {
+                        CPLError( CE_Failure, CPLE_OutOfMemory,
+                            "Memory Allocation failed in KEARasterAttributeTable::SetDefaultRAT");
+                        return CE_Failure;
+                    }
+    
+                    if( ((GDALRasterAttributeTable*)poRAT)->ValuesIO(GF_Read, nGDALColumnIndex, 0, numRows, papszStringData ) == CE_None )
+                    {
+                        pKEATable->ValuesIO(GF_Write, nKEAColumnIndex, 0, numRows, papszStringData);
+                        for( int n = 0; n < numRows; n++ )
+                            CPLFree(papszStringData[n]);
+                    }
+                    CPLFree(papszStringData);
+    
                 }
-
-                if( ((GDALRasterAttributeTable*)poRAT)->ValuesIO(GF_Read, nGDALColumnIndex, 0, numRows, padfFloatData ) == CE_None )
-                {
-                    pKEATable->ValuesIO(GF_Write, nKEAColumnIndex, 0, numRows, padfFloatData);
-                }
-                CPLFree(padfFloatData);
-            }
-            else
-            {
-                char **papszStringData = (char**)VSIMalloc2(numRows, sizeof(char*));
-                if( papszStringData == nullptr )
-                {
-                    CPLError( CE_Failure, CPLE_OutOfMemory,
-                        "Memory Allocation failed in KEARasterAttributeTable::SetDefaultRAT");
-                    return CE_Failure;
-                }
-
-                if( ((GDALRasterAttributeTable*)poRAT)->ValuesIO(GF_Read, nGDALColumnIndex, 0, numRows, papszStringData ) == CE_None )
-                {
-                    pKEATable->ValuesIO(GF_Write, nKEAColumnIndex, 0, numRows, papszStringData);
-                    for( int n = 0; n < numRows; n++ )
-                        CPLFree(papszStringData[n]);
-                }
-                CPLFree(papszStringData);
-
             }
         }
     }
