@@ -377,7 +377,11 @@ void CopySpatialInfo(GDALDataset *pDataset, kealib::KEAImageIO *pImageIO)
 {
     kealib::KEAImageSpatialInfo *pSpatialInfo = pImageIO->getSpatialInfo();
 
+#ifdef HAVE_SETVALUE_CPLERR
     GDALGeoTransform gt;
+#else
+    double gt[6];
+#endif
     if (pDataset->GetGeoTransform(gt) == CE_None)
     {
         // convert back from GDAL's array format
