@@ -676,6 +676,26 @@ const OGRSpatialReference* KEADataset::GetSpatialRef() const
     }
 }
 
+#endif
+
+const OGRSpatialReference* KEADataset::GetSpatialRef() const
+{
+    if( !m_oSRS.IsEmpty() )
+        return &m_oSRS;
+
+    try
+    {
+        kealib::KEAImageSpatialInfo *pSpatialInfo = m_pImageIO->getSpatialInfo();
+        m_oSRS.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER);
+        m_oSRS.importFromWkt(pSpatialInfo->wktString.c_str());
+        return m_oSRS.IsEmpty() ? nullptr: &m_oSRS;
+    }
+    catch (const kealib::KEAIOException &e)
+    {
+        return nullptr;
+    }
+}
+
 // set the projection
 CPLErr KEADataset::SetSpatialRef(const OGRSpatialReference* poSRS)
 {
