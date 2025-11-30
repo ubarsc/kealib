@@ -70,19 +70,20 @@ GDALDefaultRasterAttributeTable *KEARasterAttributeTable::Clone() const
 
     for( int iCol = 0; iCol < (int)m_aoFields.size(); iCol++)
     {
-        CPLString sName = m_aoFields[iCol].name;
+        const auto &sName = m_aoFields[iCol].name;
+        const auto &sUsage = m_aoFields[iCol].usage;
         GDALRATFieldUsage eGDALUsage;
-        if( sName == "PixelCount" )
+        if( sUsage == "PixelCount" )
             eGDALUsage = GFU_PixelCount;
-        else if( sName == "Name" )
+        else if( sUsage == "Name" )
             eGDALUsage = GFU_Name;
-        else if( sName == "Red" )
+        else if( sUsage == "Red" )
             eGDALUsage = GFU_Red;
-        else if( sName == "Green" )
+        else if( sUsage == "Green" )
             eGDALUsage = GFU_Green;
-        else if( sName == "Blue" )
+        else if( sUsage == "Blue" )
             eGDALUsage = GFU_Blue;
-        else if( sName == "Alpha" )
+        else if( sUsage == "Alpha" )
             eGDALUsage = GFU_Alpha;
         else
         {
@@ -107,7 +108,7 @@ GDALDefaultRasterAttributeTable *KEARasterAttributeTable::Clone() const
                 eGDALType = GFT_Integer;
                 break;
         }
-        poRAT->CreateColumn(sName, eGDALType, eGDALUsage);
+        poRAT->CreateColumn(sName.c_str(), eGDALType, eGDALUsage);
         poRAT->SetRowCount(m_poKEATable->getSize());
 
         if( eGDALType == GFT_Integer )

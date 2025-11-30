@@ -837,6 +837,7 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
                     return CE_Failure;
                 }
                 nKEAColumnIndex = pKEATable->GetColumnCount() - 1;
+                fprintf(stderr, "created %s\n", pszColumnName);
             }
 
             // ok now copy data
@@ -1247,7 +1248,7 @@ int KEARasterBand::GetOverviewCount()
 // get a given overview
 GDALRasterBand* KEARasterBand::GetOverview(int nOverview)
 {
-    if( nOverview >= m_nOverviews )
+    if( nOverview < 0 || nOverview >= m_nOverviews )
     {
         return nullptr;
     }
