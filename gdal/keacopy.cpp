@@ -376,7 +376,6 @@ bool CopyBand( GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand, i
 void CopySpatialInfo(GDALDataset *pDataset, kealib::KEAImageIO *pImageIO)
 {
     kealib::KEAImageSpatialInfo *pSpatialInfo = pImageIO->getSpatialInfo();
-
 #ifdef HAVE_SETVALUE_CPLERR
     GDALGeoTransform gt;
 #else
