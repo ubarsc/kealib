@@ -1064,15 +1064,15 @@ namespace kealib{
         // FORM META-DATA PATH WITHIN THE H5 FILE 
         std::string metaDataH5Path = KEA_DATASETNAME_BAND + uint2Str(band) + KEA_BANDNAME_METADATA + std::string("/") + name;
 
-        if(!this->keaImgFile->exist(metaDataH5Path))
-        {
-            HighFive::DataSpace dataSpace = HighFive::DataSpace(1);
-            keaImgFile->createDataSet(metaDataH5Path, dataSpace, HighFive::VariableLengthStringType());
-            //std::cout << "created dataset " << metaDataH5Path << std::endl;
-        }
         // WRITE IMAGE META DATA
         try 
         {
+            if(!this->keaImgFile->exist(metaDataH5Path))
+            {
+                HighFive::DataSpace dataSpace = HighFive::DataSpace({1});
+                keaImgFile->createDataSet(metaDataH5Path, dataSpace, HighFive::VariableLengthStringType());
+                //std::cout << "created dataset " << metaDataH5Path << std::endl;
+            }
             auto dataset = this->keaImgFile->getDataSet(metaDataH5Path);
             dataset.write(value);
         
