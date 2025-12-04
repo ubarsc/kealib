@@ -837,7 +837,6 @@ CPLErr KEARasterBand::SetDefaultRAT(const GDALRasterAttributeTable *poRAT)
                     return CE_Failure;
                 }
                 nKEAColumnIndex = pKEATable->GetColumnCount() - 1;
-                fprintf(stderr, "created %s\n", pszColumnName);
             }
 
             // ok now copy data

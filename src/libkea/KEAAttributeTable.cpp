@@ -429,7 +429,7 @@ namespace kealib{
             // Get the implementation to created the new field
             this->addAttBoolField(nField, val);
             
-            // If no expection thrown added to header.
+            // If no exception thrown added to header.
             fields->insert(std::pair<std::string, KEAATTField>(name, nField));
             ++numBoolFields;
             ++numOfCols;
@@ -462,7 +462,7 @@ namespace kealib{
             // Get the implementation to created the new field
             this->addAttIntField(nField, val);
             
-            // If no expection thrown added to header.
+            // If no exception thrown added to header.
             fields->insert(std::pair<std::string, KEAATTField>(name, nField));
             ++numIntFields;
             ++numOfCols;
@@ -495,7 +495,7 @@ namespace kealib{
             // Get the implementation to created the new field
             this->addAttFloatField(nField, val);
             
-            // If no expection thrown added to header.
+            // If no exception thrown added to header.
             fields->insert(std::pair<std::string, KEAATTField>(name, nField));
             ++numFloatFields;
             ++numOfCols;
@@ -528,7 +528,7 @@ namespace kealib{
             // Get the implementation to created the new field
             this->addAttStringField(nField, val);
             
-            // If no expection thrown added to header.
+            // If no exception thrown added to header.
             fields->insert(std::pair<std::string, KEAATTField>(name, nField));
             ++numStringFields;
             ++numOfCols;
@@ -544,7 +544,7 @@ namespace kealib{
         throw KEAATTException("Unimplemented");
     }
     
-    void KEAAttributeTable::addFields(const std::vector<KEAATTField*> *inFields)
+    void KEAAttributeTable::addFields(std::vector<KEAATTField*> *inFields)
     {
         try 
         {
@@ -560,28 +560,34 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTable::addField(const KEAATTField *inField)
+    void KEAAttributeTable::addField(KEAATTField *inField)
     {
         try 
         {
             if(inField->dataType == kea_att_bool)
             {
+                // TODO: test for this behaviour which is expected by the GDAL driver
+                inField->idx = numBoolFields;
                 this->addAttBoolField(inField->name, false, inField->usage);
             }
             else if(inField->dataType == kea_att_int)
             {
+                inField->idx = numIntFields;
                 this->addAttIntField(inField->name, 0, inField->usage);
             }
             else if(inField->dataType == kea_att_float)
             {
+                inField->idx = numFloatFields;
                 this->addAttFloatField(inField->name, 0.0, inField->usage);
             }
             else if(inField->dataType == kea_att_string)
             {
+                inField->idx = numStringFields;
                 this->addAttStringField(inField->name, "", inField->usage);
             }
             else if(inField->dataType == kea_att_datetime)
             {
+                inField->idx = numDatetimeFields;
                 this->addAttDateTimeField(inField->name, {0}, inField->usage);
             }
             else

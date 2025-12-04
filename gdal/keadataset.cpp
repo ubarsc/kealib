@@ -433,6 +433,7 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
         }
         catch (const kealib::KEAIOException &e)
         {
+            fprintf(stderr, "error closing\n");
         }
         delete pImageIO;
 

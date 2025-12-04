@@ -147,8 +147,8 @@ namespace kealib{
         virtual void addAttStringField(const std::string &name, const std::string &val, std::string usage="");
         virtual void addAttDateTimeField(const std::string &name, const struct tm &val, std::string usage="");
 
-        virtual void addFields(const std::vector<KEAATTField*> *inFields);
-        virtual void addField(const KEAATTField *inFields);
+        virtual void addFields(std::vector<KEAATTField*> *inFields);
+        virtual void addField(KEAATTField *inFields);
         
         virtual KEAFieldDataType getDataFieldType(const std::string &name) const;
         virtual size_t getFieldIndex(const std::string &name) const;
