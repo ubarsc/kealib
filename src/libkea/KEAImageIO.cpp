@@ -1825,6 +1825,7 @@ namespace kealib{
     uint32_t KEAImageIO::getImageBlockSize(uint32_t band)
     {
         kealib::kea_lock lock(*this->m_mutex);
+        KEAStackPrintState printState;
         if (!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -1938,6 +1939,7 @@ namespace kealib{
     KEADataType KEAImageIO::getImageBandDataType(uint32_t band)
     {
         kealib::kea_lock lock(*this->m_mutex);
+        KEAStackPrintState printState;
         if (!this->fileOpen)
         {
             throw KEAIOException("Image was not open.");
@@ -2499,6 +2501,8 @@ namespace kealib{
     
     KEAAttributeTable* KEAImageIO::getAttributeTable(KEAATTType type, uint32_t band)
     {
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         KEAAttributeTable *att = nullptr;
         try 
         {
@@ -2626,6 +2630,7 @@ namespace kealib{
     void KEAImageIO::close()
     {
         kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
         if (this->fileOpen)
         {
             try
@@ -3124,6 +3129,7 @@ namespace kealib{
     )
     {
         kealib::kea_lock lock(*this->m_mutex);
+        KEAStackPrintState printState;
 
         if (!this->fileOpen)
         {
@@ -3168,6 +3174,7 @@ namespace kealib{
     void KEAImageIO::removeImageBand(const uint32_t bandIndex)
     {
         kealib::kea_lock lock(*this->m_mutex);
+        KEAStackPrintState printState;
 
         if (!this->fileOpen)
         {
