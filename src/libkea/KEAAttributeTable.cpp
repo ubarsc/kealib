@@ -588,7 +588,8 @@ namespace kealib{
             else if(inField->dataType == kea_att_datetime)
             {
                 inField->idx = numDatetimeFields;
-                this->addAttDateTimeField(inField->name, {0}, inField->usage);
+                struct tm val = {0};
+                this->addAttDateTimeField(inField->name, val, inField->usage);
             }
             else
             {
@@ -682,7 +683,8 @@ namespace kealib{
                 }
                 else if((*iterField).dataType == kea_att_datetime)
                 {
-                    pTo->addAttDateTimeField((*iterField).name, {0}, (*iterField).usage);
+                    struct tm val = {0};
+                    pTo->addAttDateTimeField((*iterField).name, val, (*iterField).usage);
                 }
             }
             
