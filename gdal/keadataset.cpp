@@ -41,11 +41,9 @@ GDALDataType KEA_to_GDAL_Type( kealib::KEADataType ekeaType )
     GDALDataType egdalType = GDT_Unknown;
     switch( ekeaType )
     {
-#ifdef HAVE_64BITIMAGES
         case kealib::kea_8int:
             egdalType = GDT_Int8;
             break;
-#endif
         case kealib::kea_8uint:
             egdalType = GDT_Byte;
             break;
@@ -55,22 +53,18 @@ GDALDataType KEA_to_GDAL_Type( kealib::KEADataType ekeaType )
         case kealib::kea_32int:
             egdalType = GDT_Int32;
             break;
-#ifdef HAVE_64BITIMAGES
         case kealib::kea_64int:
             egdalType = GDT_Int64;
             break;
-#endif
         case kealib::kea_16uint:
             egdalType = GDT_UInt16;
             break;
         case kealib::kea_32uint:
             egdalType = GDT_UInt32;
             break;
-#ifdef HAVE_64BITIMAGES
         case kealib::kea_64uint:
             egdalType = GDT_UInt64;
             break;
-#endif
         case kealib::kea_32float:
             egdalType = GDT_Float32;
             break;
@@ -93,33 +87,27 @@ kealib::KEADataType GDAL_to_KEA_Type( GDALDataType egdalType )
         case GDT_Byte:
             ekeaType = kealib::kea_8uint;
             break;
-#ifdef HAVE_64BITIMAGES
         case GDT_Int8:
             ekeaType = kealib::kea_8int;
             break;
-#endif
         case GDT_Int16:
             ekeaType = kealib::kea_16int;
             break;
         case GDT_Int32:
             ekeaType = kealib::kea_32int;
             break;
-#ifdef HAVE_64BITIMAGES
         case GDT_Int64:
             ekeaType = kealib::kea_64int;
             break;
-#endif
         case GDT_UInt16:
             ekeaType = kealib::kea_16uint;
             break;
         case GDT_UInt32:
             ekeaType = kealib::kea_32uint;
             break;
-#ifdef HAVE_64BITIMAGES
         case GDT_UInt64:
             ekeaType = kealib::kea_64uint;
             break;
-#endif
         case GDT_Float32:
             ekeaType = kealib::kea_32float;
             break;
@@ -717,15 +705,9 @@ void * KEADataset::GetInternalHandle(const char *)
 
 // this is called by GDALDataset::BuildOverviews. we implement this function to support
 // building of overviews
-#ifdef HAVE_OVERVIEWOPTIONS
 CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, const int *panOverviewList, 
                                     int nListBands, const int *panBandList, GDALProgressFunc pfnProgress, 
                                     void *pProgressData, CSLConstList papszOptions)
-#else
-CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, int *panOverviewList, 
-                                    int nListBands, int *panBandList, GDALProgressFunc pfnProgress, 
-                                    void *pProgressData)
-#endif
 {
     // go through the list of bands that have been passed in
     int nCurrentBand, nOK = 1;
@@ -740,13 +722,8 @@ CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, in
 
         // get GDAL to do the hard work. It will calculate the overviews and write them
         // back into the objects
-#ifdef HAVE_OVERVIEWOPTIONS
         if( GDALRegenerateOverviewsEx( (GDALRasterBandH)pBand, nOverviews, (GDALRasterBandH*)pBand->GetOverviewList(),
                                     pszResampling, pfnProgress, pProgressData, papszOptions) != CE_None )
-#else
-        if( GDALRegenerateOverviews( (GDALRasterBandH)pBand, nOverviews, (GDALRasterBandH*)pBand->GetOverviewList(),
-                                    pszResampling, pfnProgress, pProgressData ) != CE_None )
-#endif
         {
             nOK = 0;
         }

@@ -32,20 +32,6 @@
 
 #include "gdal_priv.h"
 
-#if (GDAL_VERSION_MAJOR > 3) || ((GDAL_VERSION_MAJOR == 3) && (GDAL_VERSION_MINOR >= 5))
-    #define HAVE_64BITIMAGES
-    #pragma message ("defining HAVE_64BITIMAGES")
-#else
-    #pragma message ("HAVE_64BITIMAGES not present")
-#endif
-
-#if (GDAL_VERSION_MAJOR > 3) || ((GDAL_VERSION_MAJOR == 3) && (GDAL_VERSION_MINOR >= 6))
-    #define HAVE_OVERVIEWOPTIONS
-    #pragma message ("defining HAVE_OVERVIEWOPTIONS")
-#else
-    #pragma message ("HAVE_64BITIMAGES not present")
-#endif
-
 #if (GDAL_VERSION_MAJOR > 3) || ((GDAL_VERSION_MAJOR == 3) && (GDAL_VERSION_MINOR >= 12))
     #define HAVE_SETVALUE_CPLERR
     #pragma message ("defining HAVE_SETVALUE_CPLERR")
@@ -136,11 +122,7 @@ public:
     // internal methods for overviews
     void readExistingOverviews();
     void deleteOverviewObjects();
-#ifdef HAVE_OVERVIEWOPTIONS
     void CreateOverviews(int nOverviews, const int *panOverviewList);
-#else
-    void CreateOverviews(int nOverviews, int *panOverviewList);
-#endif
     KEAOverview** GetOverviewList() { return m_panOverviewBands; }
 
     kealib::KEALayerType getLayerType() const;

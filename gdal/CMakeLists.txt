@@ -57,7 +57,8 @@ if(NOT KEA_PLUGIN_OUTOFTREE)
     add_dependencies(${LIBKEA_GDAL_DRIVER} ${LIBKEA_LIB_NAME})
 endif()
 
-find_package(GDAL REQUIRED)
+# minimum version 3.6
+find_package(GDAL 3.6 REQUIRED)
 # Need to link to HDF5 also
 find_package(HDF5 COMPONENTS C REQUIRED)
 if(KEA_PLUGIN_OUTOFTREE)
