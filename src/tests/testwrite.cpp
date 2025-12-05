@@ -297,6 +297,19 @@ int main()
         rat1->addAttBoolField("FirstBool", false);
         rat1->addAttIntField("FirstInt", 3, "first");
         rat1->addAttIntField("SecondInt", 4, "second");  // 4 will get ignored as you can only set fill value once...
+        kealib::KEAATTField fld;
+        fld.name = "ThirdInt";
+        fld.usage = "third";
+        fld.dataType = kealib::kea_att_int;
+        fld.idx = 255;  // check this gets reset to something sensible...
+        std::vector<kealib::KEAATTField*> fields;
+        fields.push_back(&fld);
+        rat1->addFields(&fields);
+        if( fld.idx != 2 )
+        {
+            std::cout << "idx not filled in correctly by addFields" << std::endl;
+            return 1;
+        }
         rat1->addAttFloatField("FirstFloat", 3.1, "third");
         rat1->addAttStringField("FirstString", "hello", "fourth");
         rat1->printAttributeTableHeaderInfo();
