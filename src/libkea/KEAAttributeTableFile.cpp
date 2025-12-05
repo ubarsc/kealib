@@ -707,6 +707,11 @@ namespace kealib{
         {
             m_pFeature->datetimeFields->at(i) = getDateTimeField(fid, i);
         }
+        for( size_t i = 0; i < numWKBFields; i++)
+        {
+            // TODO:
+            ///m_pFeature->wkb->at(i) = getWKBField(fid, i);
+        }
     
         return m_pFeature;
     }

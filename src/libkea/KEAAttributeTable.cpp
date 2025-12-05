@@ -43,6 +43,7 @@ namespace kealib{
         numFloatFields = 0;
         numStringFields = 0;
         numDatetimeFields = 0;
+        numWKBFields = 0;
         numOfCols = 0;
         numRows = 0;
         
@@ -158,6 +159,28 @@ namespace kealib{
         }
         return value;
     }
+
+    uint8_t* KEAAttributeTable::getWKBField(size_t fid, const std::string &name, size_t &nWKBSize) const
+    {
+        uint8_t *value = nullptr;
+        nWKBSize = 0;
+        try
+        {
+            KEAATTField field = this->getField(name);
+            if(field.dataType != kea_att_wkb)
+            {
+                std::string message = std::string("Field \'") + name + std::string("\' is not of type wkb.");
+                throw KEAATTException(message);
+            }
+            
+            value = this->getWKBField(fid, field.idx, nWKBSize);
+        }
+        catch (const KEAATTException &e)
+        {
+            throw e;
+        }
+        return value;
+    }
     
     bool KEAAttributeTable::getBoolField(size_t fid, size_t colIdx) const
     {
@@ -183,6 +206,11 @@ namespace kealib{
     {
         throw KEAATTException("Unimplemented");
     }
+
+    uint8_t* KEAAttributeTable::getWKBField(size_t fid, size_t colIdx, size_t &nWKBSize) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
     
     void KEAAttributeTable::getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const
     {
@@ -205,6 +233,11 @@ namespace kealib{
     }
     
     void KEAAttributeTable::getDateTimeFields(size_t startfid, size_t len, size_t colIdx, struct tm *pBuffer) const
+    {
+        throw KEAATTException("Unimplemented");
+    }
+
+    void KEAAttributeTable::getWKBFields(size_t startfid, size_t len, size_t colIdx, uint8_t **ppabyWKB, size_t *pnWKBSize) const
     {
         throw KEAATTException("Unimplemented");
     }
@@ -238,6 +271,11 @@ namespace kealib{
     {
         throw KEAATTException("Unimplemented");
     }
+
+    void KEAAttributeTable::setWKBField(size_t fid, size_t colIdx, uint8_t *wkb, size_t wkbsize)
+    {
+        throw KEAATTException("Unimplemented");
+    }
     
     void KEAAttributeTable::setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer)
     {
@@ -260,6 +298,11 @@ namespace kealib{
     }
 
     void KEAAttributeTable::setDateTimeFields(size_t startfid, size_t len, size_t colIdx, struct tm *pBuffer)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+
+    void KEAAttributeTable::setWKBFields(size_t startfid, size_t len, size_t colIdx, uint8_t **ppabyWKB, size_t *pnWKBSize)
     {
         throw KEAATTException("Unimplemented");
     }
@@ -376,6 +419,11 @@ namespace kealib{
     {
         return this->numDatetimeFields;
     }
+
+    size_t KEAAttributeTable::getNumWKBFields() const
+    {
+        return this->numWKBFields;
+    }
     
     size_t KEAAttributeTable::getSize() const
     {
@@ -407,7 +455,7 @@ namespace kealib{
         throw KEAATTException("Unimplemented");
     }
     
-    void KEAAttributeTable::addAttBoolField(const std::string &name, bool val, std::string usage)
+    void KEAAttributeTable::addAttBoolField(const std::string &name, bool val, const std::string &usage)
     {
         try 
         {
@@ -440,7 +488,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTable::addAttIntField(const std::string &name, int64_t val, std::string usage)
+    void KEAAttributeTable::addAttIntField(const std::string &name, int64_t val, const std::string &usage)
     {
         try 
         {
@@ -473,7 +521,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTable::addAttFloatField(const std::string &name, double val, std::string usage)
+    void KEAAttributeTable::addAttFloatField(const std::string &name, double val, const std::string &usage)
     {
         try 
         {
@@ -506,7 +554,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTable::addAttStringField(const std::string &name, const std::string &val, std::string usage)
+    void KEAAttributeTable::addAttStringField(const std::string &name, const std::string &val, const std::string &usage)
     {
         try 
         {
@@ -539,7 +587,12 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTable::addAttDateTimeField(const std::string &name, const struct tm &val, std::string usage)
+    void KEAAttributeTable::addAttDateTimeField(const std::string &name, const struct tm &val, const std::string &usage)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    
+    void KEAAttributeTable::addAttWKBField(const std::string &name, uint8_t *pData, size_t wkbsize, const std::string &usage)
     {
         throw KEAATTException("Unimplemented");
     }
@@ -590,6 +643,12 @@ namespace kealib{
                 inField->idx = numDatetimeFields;
                 struct tm val = {0};
                 this->addAttDateTimeField(inField->name, val, inField->usage);
+            }
+            else if(inField->dataType == kea_att_wkb)
+            {
+                inField->idx = numWKBFields;
+                // TODO: init value ok?
+                this->addAttWKBField(inField->name, nullptr, 0, inField->usage);
             }
             else
             {
@@ -685,6 +744,10 @@ namespace kealib{
                 {
                     struct tm val = {0};
                     pTo->addAttDateTimeField((*iterField).name, val, (*iterField).usage);
+                }
+                else if((*iterField).dataType == kea_att_wkb)
+                {
+                    pTo->addAttWKBField((*iterField).name, nullptr, 0, (*iterField).usage);
                 }
             }
             
@@ -879,6 +942,10 @@ namespace kealib{
             else if((*iterField).second.dataType == kea_att_datetime)
             {
                 std::cout << " datetime ";
+            }
+            else if((*iterField).second.dataType == kea_att_wkb)
+            {
+                std::cout << " WKB ";
             }
             else
             {
@@ -1225,6 +1292,10 @@ namespace kealib{
 
     // for future versions of KEA
     void KEAAttributeTable::addAttDateTimeField(KEAATTField field, const struct tm &val)
+    {
+        throw KEAATTException("Unimplemented");
+    }
+    void KEAAttributeTable::addAttWKBField(KEAATTField field, uint8_t *pData, size_t wkbsize)
     {
         throw KEAATTException("Unimplemented");
     }

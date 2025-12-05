@@ -69,7 +69,8 @@ namespace kealib{
         kea_att_int = 2,
         kea_att_float = 3,
         kea_att_string = 4,
-        kea_att_datetime = 5
+        kea_att_datetime = 5,
+        kea_att_wkb = 5
     };
     
     struct KEAATTField
@@ -106,6 +107,7 @@ namespace kealib{
         virtual double getFloatField(size_t fid, const std::string &name) const;
         virtual std::string getStringField(size_t fid, const std::string &name) const;
         virtual struct tm getDateTimeField(size_t fid, const std::string &name) const;
+        virtual uint8_t* getWKBField(size_t fid, const std::string &name, size_t &nWKBSize) const;
         
         // get a single value by column index
         virtual bool getBoolField(size_t fid, size_t colIdx) const;
@@ -113,6 +115,7 @@ namespace kealib{
         virtual double getFloatField(size_t fid, size_t colIdx) const;
         virtual std::string getStringField(size_t fid, size_t colIdx) const;
         virtual struct tm getDateTimeField(size_t fid, size_t colIdx) const;
+        virtual uint8_t* getWKBField(size_t fid, size_t colIdx, size_t &nWKBSize) const;
 
         // RFC40 methods for reading
         virtual void getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const;
@@ -120,6 +123,7 @@ namespace kealib{
         virtual void getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const;
         virtual void getStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *psBuffer) const;
         virtual void getDateTimeFields(size_t startfid, size_t len, size_t colIdx, struct tm *pBuffer) const;
+        virtual void getWKBFields(size_t startfid, size_t len, size_t colIdx, uint8_t **ppabyWKB, size_t *pnWKBSize) const;
         virtual void getNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const;
         
         // set a single value by column index
@@ -128,6 +132,7 @@ namespace kealib{
         virtual void setFloatField(size_t fid, size_t colIdx, double value);
         virtual void setStringField(size_t fid, size_t colIdx, const std::string &value);
         virtual void setDateTimeField(size_t fid, size_t colIdx, const struct tm &value);
+        virtual void setWKBField(size_t fid, size_t colIdx, uint8_t *wkb, size_t wkbsize);
 
         // RFC40 methods for writing
         virtual void setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer);
@@ -135,17 +140,19 @@ namespace kealib{
         virtual void setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer);
         virtual void setStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *papszStrList);
         virtual void setDateTimeFields(size_t startfid, size_t len, size_t colIdx, struct tm *pBuffer);
+        virtual void setWKBFields(size_t startfid, size_t len, size_t colIdx, uint8_t **ppabyWKB, size_t *pnWKBSize);
         virtual void setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours);
         
         // get the whole feature
         virtual KEAATTFeature* getFeature(size_t fid) const;
         
         // add columns
-        virtual void addAttBoolField(const std::string &name, bool val, std::string usage="");
-        virtual void addAttIntField(const std::string &name, int64_t val, std::string usage="");
-        virtual void addAttFloatField(const std::string &name, double val, std::string usage="");
-        virtual void addAttStringField(const std::string &name, const std::string &val, std::string usage="");
-        virtual void addAttDateTimeField(const std::string &name, const struct tm &val, std::string usage="");
+        virtual void addAttBoolField(const std::string &name, bool val, const std::string &usage="");
+        virtual void addAttIntField(const std::string &name, int64_t val, const std::string &usage="");
+        virtual void addAttFloatField(const std::string &name, double val, const std::string &usage="");
+        virtual void addAttStringField(const std::string &name, const std::string &val, const std::string &usage="");
+        virtual void addAttDateTimeField(const std::string &name, const struct tm &val, const std::string &usage="");
+        virtual void addAttWKBField(const std::string &name, uint8_t *pData, size_t wkbsize, const std::string &usage="");
 
         virtual void addFields(std::vector<KEAATTField*> *inFields);
         virtual void addField(KEAATTField *inFields);
@@ -161,6 +168,7 @@ namespace kealib{
         virtual size_t getNumFloatFields() const;
         virtual size_t getNumStringFields() const;
         virtual size_t getNumDateTimeFields() const;
+        virtual size_t getNumWKBFields() const;
         
         virtual size_t getSize() const;
         virtual size_t getTotalNumOfCols() const;
@@ -188,6 +196,7 @@ namespace kealib{
         virtual void addAttFloatField(KEAATTField field, float val);
         virtual void addAttStringField(KEAATTField field, const std::string &val);
         virtual void addAttDateTimeField(KEAATTField field, const struct tm &val);
+        virtual void addAttWKBField(KEAATTField field, uint8_t *pData, size_t wkbsize);
         virtual KEAATTFeature* createKeaFeature();
         virtual void deleteKeaFeature(KEAATTFeature *feat);
         // helper for variable length structures - HighFive doesn't currently support
@@ -202,6 +211,7 @@ namespace kealib{
         size_t numFloatFields;
         size_t numStringFields;
         size_t numDatetimeFields;
+        size_t numWKBFields;
         size_t numOfCols;
         size_t numRows;
         std::string bandPathBase;
