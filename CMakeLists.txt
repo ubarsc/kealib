@@ -25,6 +25,7 @@ if (POLICY CMP0074)
   cmake_policy(SET CMP0074 NEW)
 endif ()
 project (LIBKEA)
+set(CMAKE_CXX_STANDARD 14) # as required by HighFive
 
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE "DEBUG")
