@@ -408,7 +408,7 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
         pImageIO->openKEAImageHeader( keaImgH5File );
 
         // copy file
-        if( !CopyFile( pSrcDs, pImageIO, pfnProgress, pProgressData) )
+        if( !KEACopyFile( pSrcDs, pImageIO, pfnProgress, pProgressData) )
         {
             delete pImageIO;
             return nullptr;
