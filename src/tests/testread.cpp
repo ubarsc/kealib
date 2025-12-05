@@ -444,7 +444,7 @@ int main()
                 // bands should have the same RAT because we copy them
                 std::cout << "Testing RAT type " << rat_type << " for band " << band_num << std::endl; 
                 auto *rat1 = io.getAttributeTable(rat_type, band_num);
-                if( rat1->getMaxGlobalColIdx() != 5)
+                if( rat1->getMaxGlobalColIdx() != 6)
                 {
                     std::cout << "wrong number of global idx" << std::endl;
                     return 1;
@@ -477,16 +477,24 @@ int main()
                     return 1;
                 }
                 sKEAField = rat1->getField(3);
-                if( (sKEAField.name != "FirstFloat") || (sKEAField.dataType != kealib::kea_att_float) ||
-                    (sKEAField.idx != 0) || (sKEAField.usage != "third") || (sKEAField.colNum != 3))
+                if( (sKEAField.name != "ThirdInt") || (sKEAField.dataType != kealib::kea_att_int) ||
+                    (sKEAField.idx != 2) || (sKEAField.usage != "third") || (sKEAField.colNum != 3))
                 {
                     std::cout << "fourth field info wrong" << std::endl;
                     dumpAttField(sKEAField);
                     return 1;
                 }
                 sKEAField = rat1->getField(4);
+                if( (sKEAField.name != "FirstFloat") || (sKEAField.dataType != kealib::kea_att_float) ||
+                    (sKEAField.idx != 0) || (sKEAField.usage != "third") || (sKEAField.colNum != 4))
+                {
+                    std::cout << "fourth field info wrong" << std::endl;
+                    dumpAttField(sKEAField);
+                    return 1;
+                }
+                sKEAField = rat1->getField(5);
                 if( (sKEAField.name != "FirstString") || (sKEAField.dataType != kealib::kea_att_string) ||
-                    (sKEAField.idx != 0) || (sKEAField.usage != "fourth") || (sKEAField.colNum != 4))
+                    (sKEAField.idx != 0) || (sKEAField.usage != "fourth") || (sKEAField.colNum != 5))
                 {
                     std::cout << "fifth field info wrong" << std::endl;
                     dumpAttField(sKEAField);
