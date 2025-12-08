@@ -150,6 +150,7 @@ int main()
         
         // band metadata
         io.setImageBandMetaData(1, "BandTest1", "Value1");
+        io.setImageBandMetaData(1, "BandTest1", "Value1");  // set twice - has been a problem in the past
         io.setImageBandMetaData(1, "BandTest2", "Value2");
 
         std::vector< std::pair<std::string, std::string> > bandmetaData;
