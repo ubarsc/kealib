@@ -122,7 +122,7 @@ int main()
         // is the mask band all 255?
         io.readImageBlock2BandMask(1, pUnsetData, 0, 0, 100, 100, 100, 100, keatype);
         KEA_DTYPE expected;
-        if( strcmp(STRINGIFY(KEA_DTYPE), "int8_t") == 0 )
+        if( (strcmp(STRINGIFY(KEA_DTYPE), "int8_t") == 0 ) && (strcmp(STRINGIFY(KEA_DTYPE), "uint8_t") != 0) )
         {
             expected = 127; // 255 gets truncated
         }

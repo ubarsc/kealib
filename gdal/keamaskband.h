@@ -51,8 +51,8 @@ public:
     
 protected:
     // we just override these functions from GDALRasterBand
-    virtual CPLErr IReadBlock( int, int, void * );
-    virtual CPLErr IWriteBlock( int, int, void * );
+    virtual CPLErr IReadBlock( int, int, void * ) override;
+    virtual CPLErr IWriteBlock( int, int, void * ) override;
 
 };
 
