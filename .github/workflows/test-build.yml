@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: actions/checkout@v6
+    - uses: conda-incubator/setup-miniconda@v3
       with:
         miniforge-version: latest
     - name: Install Dependencies
@@ -72,8 +72,8 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: actions/checkout@v6
+    - uses: conda-incubator/setup-miniconda@v3
       with:
         miniforge-version: latest
     - name: Install Dependencies
@@ -132,8 +132,8 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v2
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: actions/checkout@v6
+    - uses: conda-incubator/setup-miniconda@v3
       with:
         miniforge-version: latest
     - uses: egor-tensin/vs-shell@v2
