@@ -69,23 +69,23 @@ public:
     CPLErr SetSpatialRef(const OGRSpatialReference* poSRS) override;
 
     // method to get a pointer to the imageio class
-    void *GetInternalHandle (const char *);
+    void *GetInternalHandle (const char *) override;
 
     // virtual methods for dealing with metadata
-    CPLErr SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain="");
-    const char *GetMetadataItem (const char *pszName, const char *pszDomain="");
+    CPLErr SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain="") override;
+    const char *GetMetadataItem (const char *pszName, const char *pszDomain="") override;
 
-    char **GetMetadata(const char *pszDomain="");
-    CPLErr SetMetadata(char **papszMetadata, const char *pszDomain="");
+    char **GetMetadata(const char *pszDomain="") override;
+    CPLErr SetMetadata(char **papszMetadata, const char *pszDomain="") override;
 
     // virtual method for adding new image bands
-    CPLErr AddBand(GDALDataType eType, char **papszOptions = NULL);
+    CPLErr AddBand(GDALDataType eType, char **papszOptions = NULL) override;
     // removing image bands (only after GDAL 2.0)
-    OGRErr DeleteLayer(int iLayer);
+    OGRErr DeleteLayer(int iLayer) override;
 
     // GCPs
-    int GetGCPCount();
-    const GDAL_GCP* GetGCPs();
+    int GetGCPCount() override;
+    const GDAL_GCP* GetGCPs() override;
     const OGRSpatialReference* GetGCPSpatialRef() const override;
     CPLErr SetGCPs( int nGCPCount, const GDAL_GCP *pasGCPList,
             const OGRSpatialReference* poSRS ) override;

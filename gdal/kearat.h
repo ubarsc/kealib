@@ -50,21 +50,21 @@ public:
     KEARasterAttributeTable(kealib::KEAAttributeTable *poKEATable, KEARasterBand *poBand);
     ~KEARasterAttributeTable();
 
-    GDALDefaultRasterAttributeTable *Clone() const;
+    GDALDefaultRasterAttributeTable *Clone() const override;
 
-    virtual int           GetColumnCount() const;
+    virtual int           GetColumnCount() const override;
 
-    virtual const char   *GetNameOfCol( int ) const;
-    virtual GDALRATFieldUsage GetUsageOfCol( int ) const;
-    virtual GDALRATFieldType GetTypeOfCol( int ) const;
+    virtual const char   *GetNameOfCol( int ) const override;
+    virtual GDALRATFieldUsage GetUsageOfCol( int ) const override;
+    virtual GDALRATFieldType GetTypeOfCol( int ) const override;
     
-    virtual int           GetColOfUsage( GDALRATFieldUsage ) const;
+    virtual int           GetColOfUsage( GDALRATFieldUsage ) const override;
 
-    virtual int           GetRowCount() const;
+    virtual int           GetRowCount() const override;
 
-    virtual const char   *GetValueAsString( int iRow, int iField ) const;
-    virtual int           GetValueAsInt( int iRow, int iField ) const;
-    virtual double        GetValueAsDouble( int iRow, int iField ) const;
+    virtual const char   *GetValueAsString( int iRow, int iField ) const override;
+    virtual int           GetValueAsInt( int iRow, int iField ) const override;
+    virtual double        GetValueAsDouble( int iRow, int iField ) const override;
 
 #ifdef HAVE_SETVALUE_CPLERR 
     bool GetValueAsBoolean(int iRow, int iField) const override;
@@ -86,9 +86,9 @@ public:
     virtual void          SetValue( int iRow, int iField, double dfValue) override;
     virtual void          SetValue( int iRow, int iField, int nValue ) override;
 #endif
-    virtual CPLErr        ValuesIO(GDALRWFlag eRWFlag, int iField, int iStartRow, int iLength, double *pdfData);
-    virtual CPLErr        ValuesIO(GDALRWFlag eRWFlag, int iField, int iStartRow, int iLength, int *pnData);
-    virtual CPLErr        ValuesIO(GDALRWFlag eRWFlag, int iField, int iStartRow, int iLength, char **papszStrList);
+    virtual CPLErr        ValuesIO(GDALRWFlag eRWFlag, int iField, int iStartRow, int iLength, double *pdfData) override;
+    virtual CPLErr        ValuesIO(GDALRWFlag eRWFlag, int iField, int iStartRow, int iLength, int *pnData) override;
+    virtual CPLErr        ValuesIO(GDALRWFlag eRWFlag, int iField, int iStartRow, int iLength, char **papszStrList) override;
 #ifdef HAVE_SETVALUE_CPLERR
     CPLErr ValuesIO(GDALRWFlag eRWFlag, int iField, int iStartRow, int iLength,
                     bool *pbData) override;
@@ -97,23 +97,23 @@ public:
     CPLErr ValuesIO(GDALRWFlag eRWFlag, int iField, int iStartRow, int iLength,
                     GByte **ppabyWKB, size_t *pnWKBSize) override;
 #endif
-    virtual int           ChangesAreWrittenToFile();
-    virtual void          SetRowCount( int iCount );
+    virtual int           ChangesAreWrittenToFile() override;
+    virtual void          SetRowCount( int iCount ) override;
 
     virtual CPLErr        CreateColumn( const char *pszFieldName, 
                                 GDALRATFieldType eFieldType, 
-                                GDALRATFieldUsage eFieldUsage );
+                                GDALRATFieldUsage eFieldUsage ) override;
 
     virtual CPLErr        SetLinearBinning( double dfRow0Min,
-                                            double dfBinSize );
+                                            double dfBinSize ) override;
     virtual int           GetLinearBinning( double *pdfRow0Min,
-                                            double *pdfBinSize ) const;
+                                            double *pdfBinSize ) const override;
 
-    virtual CPLXMLNode   *Serialize() const;
+    virtual CPLXMLNode   *Serialize() const override;
 
     virtual CPLErr        SetTableType(const GDALRATTableType eInTableType);
-    virtual GDALRATTableType GetTableType() const;
-    virtual void          RemoveStatistics();
+    virtual GDALRATTableType GetTableType() const override;
+    virtual void          RemoveStatistics() override;
 };
 
 #endif //KEARAT_H

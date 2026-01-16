@@ -67,57 +67,57 @@ public:
     ~KEARasterBand();
 
     // virtual methods for overview support
-    int GetOverviewCount();
-    GDALRasterBand* GetOverview(int nOverview);
+    int GetOverviewCount() override;
+    GDALRasterBand* GetOverview(int nOverview) override;
 
     // virtual methods for band names (aka description)
-    void SetDescription(const char *);
-    const char *GetDescription () const;
+    void SetDescription(const char *) override;
+    const char *GetDescription () const override;
 
     // virtual methods for handling the metadata
-    CPLErr SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain="");
-    const char *GetMetadataItem (const char *pszName, const char *pszDomain="");
-    char **GetMetadata(const char *pszDomain="");
-    CPLErr SetMetadata(char **papszMetadata, const char *pszDomain="");
+    CPLErr SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain="") override;
+    const char *GetMetadataItem (const char *pszName, const char *pszDomain="") override;
+    char **GetMetadata(const char *pszDomain="") override;
+    CPLErr SetMetadata(char **papszMetadata, const char *pszDomain="") override;
 
     // virtual methods for the no data value
-    double GetNoDataValue(int *pbSuccess=nullptr);
+    double GetNoDataValue(int *pbSuccess=nullptr) override;
     // the Int64/UInt64 versions are only used in gdal >= 3.5
     // but we define them in all cases anyway
-    int64_t GetNoDataValueAsInt64(int *pbSuccess=nullptr);
-    uint64_t GetNoDataValueAsUInt64(int *pbSuccess=nullptr);
+    int64_t GetNoDataValueAsInt64(int *pbSuccess=nullptr) override;
+    uint64_t GetNoDataValueAsUInt64(int *pbSuccess=nullptr) override;
 
-    CPLErr SetNoDataValue(double dfNoData);
-    CPLErr SetNoDataValueAsInt64(int64_t nNoData);
-    CPLErr SetNoDataValueAsUInt64(uint64_t nNoData);
+    CPLErr SetNoDataValue(double dfNoData) override;
+    CPLErr SetNoDataValueAsInt64(int64_t nNoData) override;
+    CPLErr SetNoDataValueAsUInt64(uint64_t nNoData) override;
 
-    virtual CPLErr DeleteNoDataValue();
+    virtual CPLErr DeleteNoDataValue() override;
 
     // histogram methods
     CPLErr GetDefaultHistogram( double *pdfMin, double *pdfMax,
                                         int *pnBuckets, GUIntBig ** ppanHistogram,
                                         int bForce,
-                                        GDALProgressFunc, void *pProgressData);
+                                        GDALProgressFunc, void *pProgressData) override;
     CPLErr SetDefaultHistogram( double dfMin, double dfMax,
-                                        int nBuckets, GUIntBig *panHistogram );
+                                        int nBuckets, GUIntBig *panHistogram ) override;
 
 
     // virtual methods for RATs
-    GDALRasterAttributeTable *GetDefaultRAT();
-    CPLErr SetDefaultRAT(const GDALRasterAttributeTable *poRAT);
+    GDALRasterAttributeTable *GetDefaultRAT() override;
+    CPLErr SetDefaultRAT(const GDALRasterAttributeTable *poRAT) override;
 
     // virtual methods for color tables
-    GDALColorTable *GetColorTable();
-    CPLErr SetColorTable(GDALColorTable *poCT);
+    GDALColorTable *GetColorTable() override;
+    CPLErr SetColorTable(GDALColorTable *poCT) override;
 
     // virtual methods for color interpretation
-    GDALColorInterp GetColorInterpretation();
-    CPLErr SetColorInterpretation(GDALColorInterp gdalinterp);
+    GDALColorInterp GetColorInterpretation() override;
+    CPLErr SetColorInterpretation(GDALColorInterp gdalinterp) override;
 
     // virtual mthods for band masks
-    CPLErr CreateMaskBand(int nFlags);
-    GDALRasterBand* GetMaskBand();
-    int GetMaskFlags();
+    CPLErr CreateMaskBand(int nFlags) override;
+    GDALRasterBand* GetMaskBand() override;
+    int GetMaskFlags() override;
 
     // internal methods for overviews
     void readExistingOverviews();
@@ -130,8 +130,8 @@ public:
     
 protected:
     // methods for accessing data as blocks
-    virtual CPLErr IReadBlock( int, int, void * );
-    virtual CPLErr IWriteBlock( int, int, void * );
+    virtual CPLErr IReadBlock( int, int, void * ) override;
+    virtual CPLErr IWriteBlock( int, int, void * ) override;
 
     // updates m_papszMetadataList
     void UpdateMetadataList();
