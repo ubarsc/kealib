@@ -42,20 +42,6 @@ namespace kealib{
         this->fileOpen = false;
     }
 
-    /**
-     * Opens the header of the KEA image file and initializes relevant spatial and metadata attributes.
-     *
-     * This method takes a pointer to a KEA HDF5 image file and reads the file's header information in
-     * order to initialize spatial metadata, such as the number of image bands, top-left coordinates,
-     * pixel resolution, image rotation, image size, and the spatial reference system in WKT format.
-     * The method also verifies the file type and format version to ensure compatibility.
-     *
-     * @param keaImgH5File A pointer to the HighFive::File object representing the KEA image file.
-     *                     This file must be an open HDF5 file containing a valid KEA image structure.
-     *
-     * @throws KEAIOException If the file is not a valid KEA file, required datasets are missing,
-     *                        or errors occur while reading any of the metadata attributes.
-     */
     void KEAImageIO::openKEAImageHeader(HighFive::File *keaImgH5File)
     {
         KEAStackPrintState printState;
@@ -193,7 +179,7 @@ namespace kealib{
         this->fileOpen = true;
     }
 
-    void KEAImageIO::writeImageToDataset(HighFive::DataSet &dataset, uint32_t band, 
+    void KEAImageIO::writeImageToDataset(HighFive::DataSet &dataset, 
         void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeOut,
         uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType)
     {
@@ -330,29 +316,6 @@ namespace kealib{
         
     }
 
-    /**
-     * Writes a block of image data to a specified band in the KEA image file.
-     *
-     * This method handles the writing of image data to a specific band while ensuring
-     * that the specified pixel offsets, dimensions, and buffer sizes fit within the
-     * bounds of the image dimensions. It supports writing subsets or entire blocks of
-     * data depending on the provided parameters. Metadata integrity and dataset
-     * existence are also verified within this function.
-     *
-     * @param band The one-based index of the band to which the data will be written. Band 1 is the first band.
-     * @param data A pointer to the memory containing the image data to be written.
-     * @param xPxlOff The horizontal pixel offset in the image where the data block starts.
-     * @param yPxlOff The vertical pixel offset in the image where the data block starts.
-     * @param xSizeOut The horizontal size of the output image data block to be written.
-     * @param ySizeOut The vertical size of the output image data block to be written.
-     * @param xSizeBuf The horizontal size of the provided data buffer.
-     * @param ySizeBuf The vertical size of the provided data buffer.
-     * @param inDataType The data type of the input image data, specified using KEADataType.
-     *
-     * @throws KEAIOException If the file is not open, the band index is invalid, pixel offsets are outside the image bounds,
-     *                        or the band dataset does not exist. Other errors related to I/O operations or metadata issues
-     *                        are also reported via this exception.
-     */
     void KEAImageIO::writeImageBlock2Band(
         uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff,
         uint64_t xSizeOut, uint64_t ySizeOut, uint64_t xSizeBuf, uint64_t ySizeBuf,
@@ -386,7 +349,7 @@ namespace kealib{
             {
                 auto imgBandDataset = this->keaImgFile->getDataSet(imageBandPath);
                 
-                writeImageToDataset(imgBandDataset, band, data, xPxlOff, yPxlOff, xSizeOut,
+                writeImageToDataset(imgBandDataset, data, xPxlOff, yPxlOff, xSizeOut,
                     ySizeOut, xSizeBuf, ySizeBuf, inDataType);
                 // Flushing the dataset
                 this->keaImgFile->flush();
@@ -410,8 +373,8 @@ namespace kealib{
         }
     }
     
-    void KEAImageIO::readImageFromDataset(const HighFive::DataSet &dataset, uint32_t band, 
-        void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn,
+    void KEAImageIO::readImageFromDataset(const HighFive::DataSet &dataset, 
+        uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn,
         uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType, 
         bool ismask)
     {
@@ -584,34 +547,6 @@ namespace kealib{
         
     }
 
-    /**
-     * Reads a block of image data for a specified band from the KEA image file.
-     *
-     * This method fetches a specified subset of image pixels for a particular band from the
-     * associated KEA image dataset and writes it to the provided buffer. The subset is defined
-     * by the spatial offsets and sizes. The method ensures the provided input parameters are valid
-     * and fall within the image dimensions. If the buffer size does not match the subset size, only
-     * the specified region within the image dimensions is processed.
-     *
-     * @param band       The band number to read from. Band numbers start at 1 and must not exceed
-     *                   the total number of bands in the image.
-     * @param data       A pointer to the buffer where the image data will be stored after reading.
-     *                   The buffer should have enough memory based on the subset size.
-     * @param xPxlOff    The horizontal pixel offset in the image from which the subset begins.
-     * @param yPxlOff    The vertical pixel offset in the image from which the subset begins.
-     * @param xSizeIn    The width of the subset to read, starting from xPxlOff.
-     * @param ySizeIn    The height of the subset to read, starting from yPxlOff.
-     * @param xSizeBuf   The width of the provided buffer where the data will be stored.
-     * @param ySizeBuf   The height of the provided buffer where the data will be stored.
-     * @param inDataType The data type of the pixel values specified as a KEADataType.
-     *                   This determines how to interpret the data while reading.
-     *
-     * @throws KEAIOException If the file is not open, if the band does not exist,
-     *                        if spatial offsets/sizes are out of bounds,
-     *                        or if the dataset does not exist.
-     * @throws HighFive::Exception If there are any HDF5-related errors during the dataset operations.
-     * @throws std::exception If any other unexpected errors are encountered.
-     */
     void KEAImageIO::readImageBlock2Band(
         uint32_t band, void *data, uint64_t xPxlOff, uint64_t yPxlOff, uint64_t xSizeIn,
         uint64_t ySizeIn, uint64_t xSizeBuf, uint64_t ySizeBuf, KEADataType inDataType
@@ -775,7 +710,7 @@ namespace kealib{
             {
                 auto imgBandDataset = this->keaImgFile->getDataSet(imageBandPath);
 
-                writeImageToDataset(imgBandDataset, band, data, xPxlOff, yPxlOff, xSizeOut,
+                writeImageToDataset(imgBandDataset, data, xPxlOff, yPxlOff, xSizeOut,
                     ySizeOut, xSizeBuf, ySizeBuf, inDataType);
                 // Flushing the dataset
                 this->keaImgFile->flush();
@@ -1807,21 +1742,6 @@ namespace kealib{
         return this->numImgBands;
     }
 
-    /**
-     * Retrieves the block size of an image band.
-     *
-     * This method returns the block size for a specific band in the KEA image.
-     * The block size refers to the dimensions used for storing blocks of image data
-     * within a band.
-     *
-     * @param band The band number for which the block size is to be retrieved.
-     *             Band indexing starts at 1. Providing a value of 0 or greater than
-     *             the total number of bands in the image will throw an exception.
-     * @return The block size of the specified band as an unsigned 32-bit integer.
-     * @throws KEAIOException If the image file is not open, the band index is invalid,
-     *                        the specific band dataset or block size attribute is missing,
-     *                        or if an error occurs while reading the necessary data.
-     */
     uint32_t KEAImageIO::getImageBlockSize(uint32_t band)
     {
         kealib::kea_lock lock(*this->m_mutex);
@@ -2332,7 +2252,7 @@ namespace kealib{
             if (this->keaImgFile->exist(overviewName))
             {
                 auto imgBandDataset = this->keaImgFile->getDataSet(overviewName);
-                writeImageToDataset(imgBandDataset, band, data, xPxlOff, yPxlOff, xSizeOut,
+                writeImageToDataset(imgBandDataset, data, xPxlOff, yPxlOff, xSizeOut,
                     ySizeOut, xSizeBuf, ySizeBuf, inDataType);
                 
                 // Flushing the dataset
@@ -2656,40 +2576,6 @@ namespace kealib{
         }
     }
 
-    /**
-     * Creates a new KEA image file and initializes its spatial metadata, global headers,
-     * global metadata, ground control points (GCPs), and specified image bands.
-     *
-     * This method constructs a HighFive::File object for the KEA image file, populates its
-     * headers with spatial information, file metadata, and other required attributes. It also creates
-     * the requested number of image bands and their associated datasets. Spatial information and metadata
-     * such as top-left coordinates, pixel resolution, rotation, and coordinate reference system can be
-     * specified or initialized with default values.
-     *
-     * @param fileName The name of the KEA image file to be created.
-     * @param dataType Data type of the image bands (e.g., integer, float).
-     * @param xSize The number of pixels along the X (horizontal) dimension of the image.
-     * @param ySize The number of pixels along the Y (vertical) dimension of the image.
-     * @param numImgBands The number of image bands to create in the KEA file.
-     * @param bandDescrips Optional vector containing descriptions for each band. If null, bands will have empty descriptions.
-     * @param spatialInfo Optional pointer to KEAImageSpatialInfo containing spatial metadata to be written to the file.
-     *                    If null, default values will be used.
-     * @param imageBlockSize The block size for dividing image band data into tiles.
-     * @param attBlockSize The block size for attribute data in the image bands.
-     * @param mdcElmts The number of metadata cache elements.
-     * @param rdccNElmts The number of elements in the raw data chunk cache.
-     * @param rdccNBytes The total size (in bytes) of the raw data chunk cache.
-     * @param rdccW0 The policy for evicting raw data chunks from the cache.
-     * @param sieveBuf The size of the sieve buffer (in bytes).
-     * @param metaBlockSize The size (in bytes) of blocks allocated for metadata.
-     * @param deflate The compression level to use (0 = no compression, 9 = maximum compression).
-     *
-     * @return A pointer to the created HighFive::File object representing the KEA image file.
-     *
-     * @throws KEAIOException If an error occurs during file creation, writing metadata, or initializing content.
-     * @throws HighFive::Exception If there is a failure within the HighFive library while creating or modifying the file.
-     * @throws std::exception For any other uncaught errors that occur during processing.
-     */
     HighFive::File *KEAImageIO::createKEAImage(
         const std::string &fileName, KEADataType dataType, uint32_t xSize,
         uint32_t ySize, uint32_t numImgBands, std::vector<std::string> *bandDescrips,
@@ -2881,28 +2767,6 @@ namespace kealib{
         return keaImgH5File;
     }
 
-    /**
-     * Opens a KEA HDF5 file for read-write access and returns a pointer to the file object.
-     *
-     * This method creates and initializes an instance of the HighFive::File class with read-write
-     * access mode. It optionally allows configuration of HDF5 file access properties, such as
-     * metadata cache settings, raw data chunk cache, and I/O performance parameters. If the file
-     * cannot be opened or any error occurs during initialization, this method throws an appropriate
-     * exception.
-     *
-     * @param fileName The path to the KEA HDF5 file to be opened.
-     * @param mdcElmts The number of elements in the metadata cache.
-     * @param rdccNElmts The number of elements in the raw data chunk cache.
-     * @param rdccNBytes The total size, in bytes, of the raw data chunk cache.
-     * @param rdccW0 The write mode fraction for the raw data chunk cache.
-     * @param sieveBuf The minimum size, in bytes, of the sieve buffer for data I/O.
-     * @param metaBlockSize The size, in bytes, of the metadata aggregation block.
-     *
-     * @return A pointer to the HighFive::File object representing the opened KEA file with read-write access.
-     *
-     * @throws KEAIOException If the file cannot be opened, does not exist, or any error occurs
-     *                        during the file initialization or access configuration.
-     */
     HighFive::File *KEAImageIO::openKeaH5RW(
         const std::string &fileName, int mdcElmts, hsize_t rdccNElmts,
         hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize
@@ -2938,28 +2802,6 @@ namespace kealib{
         return keaImgH5File;
     }
 
-    /**
-     * Opens a KEA HDF5 image file in read-only mode and returns a pointer to the file object.
-     *
-     * This method attempts to open the specified KEA image file in a read-only mode using the HighFive
-     * library. It initializes default file access properties and sets up the file structure while
-     * handling potential exceptions. File caching and property optimizations, such as metadata cache
-     * configuration or sieve buffer size, may be configured but are currently commented out.
-     *
-     * @param fileName The path to the KEA HDF5 image file that needs to be opened.
-     * @param mdcElmts Number of elements in the metadata cache (currently unused).
-     * @param rdccNElmts Number of elements in the raw data chunk cache (currently unused).
-     * @param rdccNBytes Total size of the raw data chunk cache in bytes (currently unused).
-     * @param rdccW0 The preemption policy value for raw data chunk cache (currently unused).
-     * @param sieveBuf Size of the data sieve buffer in bytes (currently unused).
-     * @param metaBlockSize Size of the metadata block allocation in bytes (currently unused).
-     *
-     * @return A pointer to a HighFive::File object representing the opened KEA HDF5 image file.
-     *         The file is opened in a read-only mode.
-     *
-     * @throws KEAIOException If the file is not a valid KEA file, the file does not exist,
-     *                        or any error occurs while opening the file or initializing the file properties.
-     */
     HighFive::File *KEAImageIO::openKeaH5RDOnly(
         const std::string &fileName, int mdcElmts, hsize_t rdccNElmts,
         hsize_t rdccNBytes, double rdccW0, hsize_t sieveBuf, hsize_t metaBlockSize,
@@ -3014,22 +2856,6 @@ namespace kealib{
         return keaImgH5File;
     }
 
-    /**
-     * Determines whether the specified file is a valid KEA image file.
-     *
-     * This method checks the provided file to verify if it complies with the KEA file format
-     * by inspecting key datasets in the HDF5 structure, including the file type and version metadata.
-     * The file is validated as a KEA image if the file type dataset contains "KEA" and the version is
-     * one of the supported versions (e.g., "1.0" or "1.1").
-     *
-     * @param fileName A string representing the path to the file being checked.
-     *                 The file must be accessible and of HDF5 format.
-     *
-     * @return True if the file is verified as a KEA image, otherwise False.
-     *
-     * @throws KEAIOException If the file cannot be opened, an error occurs during metadata reading,
-     *                        or a non-KEA related exception occurs.
-     */
     bool KEAImageIO::isKEAImage(const std::string &fileName)
     {
         bool keaImageFound = false;
@@ -3107,21 +2933,6 @@ namespace kealib{
         
     }
 
-    /**
-     * Adds a new image band to the KEA image file.
-     *
-     * This method creates a new image band with the specified data type, description, and block sizes,
-     * and appends it to the KEA file. It updates the number of image bands in the file's metadata and
-     * ensures the new band is properly added and initialized.
-     *
-     * @param dataType The data type of the new image band (e.g., integer, float, etc.).
-     * @param bandDescrip A description of the new image band, typically used as metadata.
-     * @param imageBlockSize The block size used for storing the image data in the file.
-     * @param attBlockSize The block size used for storing the attribute table data in the file.
-     * @param deflate The compression level (0 for no compression, higher values for increasing compression).
-     *
-     * @throws KEAIOException If the image file is not open or issues occur during the band addition process.
-     */
     void KEAImageIO::addImageBand(
         const KEADataType dataType, const std::string &bandDescrip,
         const uint32_t imageBlockSize, const uint32_t attBlockSize,
@@ -3159,18 +2970,6 @@ namespace kealib{
         this->keaImgFile->flush();
     }
 
-    /**
-     * Removes an image band from the KEA image file at the specified band index.
-     *
-     * This method deletes a specific image band from the KEA file, decrements the total
-     * number of image bands, updates the band count in the file metadata, and flushes
-     * the changes to the file. If the image file is not open, an exception is thrown.
-     *
-     * @param bandIndex The index of the image band to be removed. The index is 1-based.
-     *
-     * @throws KEAIOException If the image file is not open, or if errors occur while
-     *                         removing the image band or updating the metadata.
-     */
     void KEAImageIO::removeImageBand(const uint32_t bandIndex)
     {
         kealib::kea_lock lock(*this->m_mutex);
@@ -3195,24 +2994,6 @@ namespace kealib{
         this->keaImgFile->flush();
     }
 
-    /**
-     * Converts a KEA data type to the corresponding HDF5 standard data type.
-     *
-     * This method maps KEA-specific data types, represented by the KEADataType
-     * enumeration, to their equivalent HDF5 standard data types for usage within
-     * HDF5 data structures. Supported KEA data types include various integer,
-     * unsigned integer, and floating-point types. If an unrecognized data type
-     * is provided as input, an exception is thrown.
-     *
-     * @param dataType The KEADataType value representing the KEA data type
-     *                 to be converted.
-     *
-     * @return A HighFive::DataType object corresponding to the equivalent
-     *         HDF5 standard data type for the given KEA data type.
-     *
-     * @throws KEAIOException If the specified data type is not recognized among
-     *                        the defined KEA data types.
-     */
     HighFive::DataType KEAImageIO::convertDatatypeKeaToH5STD(const KEADataType dataType)
     {
         switch (dataType)
@@ -3242,20 +3023,6 @@ namespace kealib{
         }
     }
 
-    /**
-     * Converts a KEA data type to the corresponding HDF5 native data type.
-     *
-     * This method translates the specified KEADataType to its equivalent HighFive::DataType,
-     * enabling compatibility with HDF5 storage requirements. An exception is thrown if the
-     * provided KEA data type is not recognized or supported.
-     *
-     * @param dataType The KEADataType to be converted. This should correspond to one of the
-     *                 predefined KEA data types, such as kea_8int, kea_16uint, kea_32float, etc.
-     *
-     * @return The HighFive::DataType corresponding to the input KEADataType.
-     *
-     * @throws KEAIOException If the specified data type is not recognized as a valid KEA data type.
-     */
     HighFive::DataType KEAImageIO::convertDatatypeKeaToH5Native(
         const KEADataType dataType
     )
@@ -3287,21 +3054,6 @@ namespace kealib{
         }
     }
 
-    /**
-     * Converts a KEA image data type to its equivalent C++ standard string.
-     *
-     * This method maps KEA-specific data types to their corresponding standardized
-     * C++ string representation of primitive or numerical data types.
-     *
-     * @param dataType The KEADataType enumeration value representing the data type
-     *                 in the KEA image format that needs to be converted.
-     *
-     * @return A string representation of the C++ data type corresponding to the
-     *         provided KEADataType value.
-     *
-     * @throws KEAIOException If the provided KEADataType is not recognized or
-     *                        cannot be mapped to a compatible C++ data type.
-     */
     const std::string KEAImageIO::convertDatatypeKeaToCStdStr(
         const KEADataType dataType
     )
@@ -3333,26 +3085,6 @@ namespace kealib{
         }
     }
 
-    /**
-     * Adds a new image band to the specified KEA image file with the given parameters.
-     *
-     * This method creates a new HDF5 group and datasets within the KEA image file to represent an image band.
-     * Metadata and attributes such as the band description, block size, data type, band type, band usage,
-     * and other properties are also initialized. The method ensures proper dataset and attribute creation
-     * while supporting compression and chunking for efficient storage.
-     *
-     * @param keaImgH5File A pointer to the HighFive::File object representing the open KEA image file.
-     * @param dataType The data type for the image data within the band, specified as a KEADataType.
-     * @param xSize The width of the image band in pixels.
-     * @param ySize The height of the image band in pixels.
-     * @param bandIndex The 1-based index of the band being added to the file.
-     * @param bandDescripIn An optional description of the band. If empty, a default name is used.
-     * @param imageBlockSize The block size to use for chunking the image data. Adjusted if exceeding minimum dimension.
-     * @param attBlockSize The block size to use for attribute table chunking.
-     * @param deflate The compression level to use for deflating data (0-9, where higher values indicate stronger compression).
-     *
-     * @throws KEAIOException If an error occurs while creating groups/datasets, writing attributes, or accessing metadata.
-     */
     void KEAImageIO::addImageBandToFile(
         HighFive::File *keaImgH5File, const KEADataType dataType, const uint32_t xSize,
         const uint32_t ySize, const uint32_t bandIndex,
@@ -3518,23 +3250,6 @@ namespace kealib{
         }
     }
 
-    /**
-     * Removes a specified image band from the KEA image file and renames the remaining bands.
-     *
-     * This method deletes the dataset corresponding to the specified band index from the HDF5 file
-     * and shifts the remaining bands to close the gap in the sequential numbering. If the provided
-     * band index is invalid (i.e., less than 1 or greater than the total number of bands), an exception
-     * is thrown. It also handles potential exceptions from the HDF5 operations.
-     *
-     * @param keaImgH5File A pointer to the HighFive::File object representing the KEA image file.
-     *                     This file must have datasets corresponding to the image bands.
-     * @param bandIndex    The index of the image band to be removed. The band index must be greater
-     *                     than or equal to 1 and less than or equal to the total number of image bands.
-     * @param numImgBands  The total number of image bands currently present in the file.
-     *
-     * @throws KEAIOException If the band index is invalid or any errors occur during the HDF5 file operations,
-     *                        such as unlinking or renaming datasets.
-     */
     void KEAImageIO::removeImageBandFromFile(
         HighFive::File *keaImgH5File, const uint32_t bandIndex,
         const uint32_t numImgBands
@@ -3572,22 +3287,6 @@ namespace kealib{
         }
     }
 
-    /**
-     * Updates or creates the metadata entry for the number of image bands in the KEA image file.
-     *
-     * This method determines if the dataset corresponding to the number of image bands
-     * exists in the provided KEA HDF5 file. If it exists, the dataset is updated with the
-     * new value. Otherwise, a new dataset is created with the specified value. The method
-     * ensures the metadata is consistent and throws appropriate exceptions upon error.
-     *
-     * @param keaImgH5File A pointer to the HighFive::File object representing the KEA image file.
-     *                     This file must be an open HDF5 file capable of being read or written to.
-     * @param numImgBands The number of image bands to be set in the metadata. This value
-     *                    represents the updated or initial band count for the KEA file.
-     *
-     * @throws KEAIOException If there is an issue reading or writing the dataset, the file
-     *                        structure is invalid, or any other lower-level library exception occurs.
-     */
     void KEAImageIO::setNumImgBandsInFileMetadata(
         HighFive::File *keaImgH5File, const uint32_t numImgBands
     )
