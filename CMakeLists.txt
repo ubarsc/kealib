@@ -14,8 +14,8 @@
 ###############################################################################
 
 ###############################################################################
+cmake_minimum_required (VERSION 3.20)
 # Set Project name and version
-cmake_minimum_required (VERSION 3.10)
 if (POLICY CMP0018)
   # position independent code policy
   cmake_policy(SET CMP0018 NEW)
@@ -106,7 +106,7 @@ find_package(HighFive 3 REQUIRED)
 # required to get compilation on Windows
 find_package(Threads)
 # Needed for dependent option below
-find_package(GDAL)
+find_package(GDAL CONFIG REQUIRED)
 cmake_dependent_option(LIBKEA_WITH_GDAL  "Choose if .kea GDAL driver should be built" OFF "GDAL_FOUND" OFF)
 ###############################################################################
 
