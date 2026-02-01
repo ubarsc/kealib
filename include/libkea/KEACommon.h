@@ -110,6 +110,17 @@ namespace kealib{
     
     static const std::string KEA_ATT_STRING_FIELD( "STRING" );
     
+    static const std::string KEA_ATT_YEAR_FIELD( "YEAR" );
+    static const std::string KEA_ATT_MONTH_FIELD( "MONTH" );
+    static const std::string KEA_ATT_DAY_FIELD( "DAY" );
+    static const std::string KEA_ATT_HOUR_FIELD( "HOUR" );
+    static const std::string KEA_ATT_MINUTE_FIELD( "MINUTE" );
+    static const std::string KEA_ATT_SECOND_FIELD( "SECOND" );
+    static const std::string KEA_ATT_TIMEZONEHOUR_FIELD( "TIMEZONEHOUR" );
+    static const std::string KEA_ATT_TIMEZONEMINUTE_FIELD( "TIMEZONEMINUTE" );
+    static const std::string KEA_ATT_POSITIVETIMEZONE_FIELD( "POSITIVETIMEZONE" );
+    static const std::string KEA_ATT_ISVALID_FIELD( "ISVALID" );
+    
     static const std::string KEA_BANDNAME_OVERVIEWS( "/OVERVIEWS" );
     static const std::string KEA_OVERVIEWSNAME_OVERVIEW( "/OVERVIEWS/OVERVIEW" );
     

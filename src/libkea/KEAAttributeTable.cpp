@@ -139,9 +139,9 @@ namespace kealib{
         return value;
     }
     
-    struct tm KEAAttributeTable::getDateTimeField(size_t fid, const std::string &name) const
+    KEADateTime KEAAttributeTable::getDateTimeField(size_t fid, const std::string &name) const
     {
-        struct tm value = {0};
+        KEADateTime value = {0};
         try
         {
             KEAATTField field = this->getField(name);
@@ -202,7 +202,7 @@ namespace kealib{
         throw KEAATTException("Unimplemented");
     }
     
-    struct tm KEAAttributeTable::getDateTimeField(size_t fid, size_t colIdx) const
+    KEADateTime KEAAttributeTable::getDateTimeField(size_t fid, size_t colIdx) const
     {
         throw KEAATTException("Unimplemented");
     }
@@ -232,7 +232,7 @@ namespace kealib{
         throw KEAATTException("Unimplemented");
     }
     
-    void KEAAttributeTable::getDateTimeFields(size_t startfid, size_t len, size_t colIdx, struct tm *pBuffer) const
+    void KEAAttributeTable::getDateTimeFields(size_t startfid, size_t len, size_t colIdx, KEADateTime *pBuffer) const
     {
         throw KEAATTException("Unimplemented");
     }
@@ -267,7 +267,7 @@ namespace kealib{
         throw KEAATTException("Unimplemented");
     }
     
-    void KEAAttributeTable::setDateTimeField(size_t fid, size_t colIdx, const struct tm &value)
+    void KEAAttributeTable::setDateTimeField(size_t fid, size_t colIdx, const KEADateTime &value)
     {
         throw KEAATTException("Unimplemented");
     }
@@ -297,7 +297,7 @@ namespace kealib{
         throw KEAATTException("Unimplemented");
     }
 
-    void KEAAttributeTable::setDateTimeFields(size_t startfid, size_t len, size_t colIdx, struct tm *pBuffer)
+    void KEAAttributeTable::setDateTimeFields(size_t startfid, size_t len, size_t colIdx, KEADateTime *pBuffer)
     {
         throw KEAATTException("Unimplemented");
     }
@@ -587,7 +587,7 @@ namespace kealib{
         }
     }
     
-    void KEAAttributeTable::addAttDateTimeField(const std::string &name, const struct tm &val, const std::string &usage)
+    void KEAAttributeTable::addAttDateTimeField(const std::string &name, const KEADateTime &val, const std::string &usage)
     {
         throw KEAATTException("Unimplemented");
     }
@@ -641,7 +641,7 @@ namespace kealib{
             else if(inField->dataType == kea_att_datetime)
             {
                 inField->idx = numDatetimeFields;
-                struct tm val = {0};
+                KEADateTime val = {0};
                 this->addAttDateTimeField(inField->name, val, inField->usage);
             }
             else if(inField->dataType == kea_att_wkb)
@@ -685,7 +685,7 @@ namespace kealib{
         {
             feat->strFields->push_back("");
         }
-        feat->datetimeFields = new std::vector<struct tm>();
+        feat->datetimeFields = new std::vector<KEADateTime>();
         feat->neighbours = new std::vector<size_t>();
         feat->fid = 0;
         
@@ -742,7 +742,7 @@ namespace kealib{
                 }
                 else if((*iterField).dataType == kea_att_datetime)
                 {
-                    struct tm val = {0};
+                    KEADateTime val = {0};
                     pTo->addAttDateTimeField((*iterField).name, val, (*iterField).usage);
                 }
                 else if((*iterField).dataType == kea_att_wkb)
@@ -772,10 +772,10 @@ namespace kealib{
                 floatVals = new double[pTo->chunkSize];
             }
             std::vector<std::string> stringVals;
-            struct tm *datetimeVals = nullptr;
+            KEADateTime *datetimeVals = nullptr;
             if(pFrom->getNumDateTimeFields() > 0)
             {
-                datetimeVals = new struct tm[pTo->chunkSize];
+                datetimeVals = new KEADateTime[pTo->chunkSize];
             }
             
             bool hasNeighbours = true;
@@ -983,6 +983,29 @@ namespace kealib{
         {
             std::vector<HighFive::CompoundType::member_def> members;
             members.push_back(HighFive::CompoundType::member_def(KEA_ATT_STRING_FIELD, HighFive::VariableLengthStringType(), HOFFSET(KEAAttString, str)));
+            return HighFive::CompoundType(members);
+        }
+        catch( const HighFive::Exception &e)
+        {
+            throw kealib::KEAIOException(e.what());
+        }
+    }
+
+    HighFive::CompoundType KEAAttributeTable::createKeaDateTimeCompType()
+    {
+        try
+        {
+            std::vector<HighFive::CompoundType::member_def> members;
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_YEAR_FIELD, HighFive::AtomicType<uint16_t>(), HOFFSET(KEADateTime, year)));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_MONTH_FIELD, HighFive::AtomicType<uint8_t>(), HOFFSET(KEADateTime, month)));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_DAY_FIELD, HighFive::AtomicType<uint8_t>(), HOFFSET(KEADateTime, day)));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_HOUR_FIELD, HighFive::AtomicType<uint8_t>(), HOFFSET(KEADateTime, hour)));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_MINUTE_FIELD, HighFive::AtomicType<uint8_t>(), HOFFSET(KEADateTime, minute)));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_SECOND_FIELD, HighFive::AtomicType<float>(), HOFFSET(KEADateTime, second)));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_TIMEZONEHOUR_FIELD, HighFive::AtomicType<uint8_t>(), HOFFSET(KEADateTime, timezonehour)));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_TIMEZONEMINUTE_FIELD, HighFive::AtomicType<uint8_t>(), HOFFSET(KEADateTime, timezoneminute)));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_POSITIVETIMEZONE_FIELD, HighFive::AtomicType<bool>(), HOFFSET(KEADateTime, positivetimezone)));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_ISVALID_FIELD, HighFive::AtomicType<bool>(), HOFFSET(KEADateTime, isvalid)));
             return HighFive::CompoundType(members);
         }
         catch( const HighFive::Exception &e)
@@ -1291,7 +1314,7 @@ namespace kealib{
     }
 
     // for future versions of KEA
-    void KEAAttributeTable::addAttDateTimeField(KEAATTField field, const struct tm &val)
+    void KEAAttributeTable::addAttDateTimeField(KEAATTField field, const KEADateTime &val)
     {
         throw KEAATTException("Unimplemented");
     }
