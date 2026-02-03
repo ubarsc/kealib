@@ -99,16 +99,15 @@ namespace kealib{
     
     struct KEADateTime
     {
-        uint16_t year;
+        int16_t year;
         uint8_t month;
         uint8_t day;
         uint8_t hour;
         uint8_t minute;
         float second;
-        uint8_t timezonehour;
-        uint8_t timezoneminute;
-        bool positivetimezone;
-        bool isvalid;
+        int8_t timezonehourby4;
+        // timezonehour + 0, 0.25, 0.5 or 0.75 depending on whether minutes are 0, 15, 30 or 45, all multiplied by 4. 
+        // KEA_ATT_NULLTIMEZONE if not set.
     };
     
     class KEA_EXPORT KEAAttributeTable : public KEABase

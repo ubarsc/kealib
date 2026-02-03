@@ -996,16 +996,13 @@ namespace kealib{
         try
         {
             std::vector<HighFive::CompoundType::member_def> members;
-            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_YEAR_FIELD, HighFive::AtomicType<uint16_t>(), HOFFSET(KEADateTime, year)));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_YEAR_FIELD, HighFive::AtomicType<int16_t>(), HOFFSET(KEADateTime, year)));
             members.push_back(HighFive::CompoundType::member_def(KEA_ATT_MONTH_FIELD, HighFive::AtomicType<uint8_t>(), HOFFSET(KEADateTime, month)));
             members.push_back(HighFive::CompoundType::member_def(KEA_ATT_DAY_FIELD, HighFive::AtomicType<uint8_t>(), HOFFSET(KEADateTime, day)));
             members.push_back(HighFive::CompoundType::member_def(KEA_ATT_HOUR_FIELD, HighFive::AtomicType<uint8_t>(), HOFFSET(KEADateTime, hour)));
             members.push_back(HighFive::CompoundType::member_def(KEA_ATT_MINUTE_FIELD, HighFive::AtomicType<uint8_t>(), HOFFSET(KEADateTime, minute)));
             members.push_back(HighFive::CompoundType::member_def(KEA_ATT_SECOND_FIELD, HighFive::AtomicType<float>(), HOFFSET(KEADateTime, second)));
-            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_TIMEZONEHOUR_FIELD, HighFive::AtomicType<uint8_t>(), HOFFSET(KEADateTime, timezonehour)));
-            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_TIMEZONEMINUTE_FIELD, HighFive::AtomicType<uint8_t>(), HOFFSET(KEADateTime, timezoneminute)));
-            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_POSITIVETIMEZONE_FIELD, HighFive::AtomicType<bool>(), HOFFSET(KEADateTime, positivetimezone)));
-            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_ISVALID_FIELD, HighFive::AtomicType<bool>(), HOFFSET(KEADateTime, isvalid)));
+            members.push_back(HighFive::CompoundType::member_def(KEA_ATT_TIMEZONEHOURBY4_FIELD, HighFive::AtomicType<int8_t>(), HOFFSET(KEADateTime, timezonehourby4)));
             return HighFive::CompoundType(members);
         }
         catch( const HighFive::Exception &e)
