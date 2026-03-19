@@ -1835,7 +1835,7 @@ namespace kealib{
                 auto datasetAttSize = this->keaImgFile->getDataSet( imageBandPath + KEA_ATT_CHUNKSIZE_HEADER);
                 datasetAttSize.read(attChunkSize);
             } 
-            catch ( const H5::Exception &e) 
+            catch ( const HighFive::Exception &e) 
             {
                 throw KEAIOException("Could not get attribute table block size.");
             }            
@@ -2040,7 +2040,7 @@ namespace kealib{
             dataset.read(value);
             imgLayerClrInterp = (KEABandClrInterp)value;
         } 
-        catch ( const H5::Exception &e) 
+        catch ( const HighFive::Exception &e) 
         {
             //throw KEAIOException("The image band data type was not specified.");
             imgLayerClrInterp = kea_generic; // Field was not present within the file.

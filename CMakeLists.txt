@@ -106,7 +106,7 @@ find_package(HighFive 3 REQUIRED)
 # required to get compilation on Windows
 find_package(Threads)
 # Needed for dependent option below
-find_package(GDAL CONFIG REQUIRED)
+find_package(GDAL CONFIG)
 cmake_dependent_option(LIBKEA_WITH_GDAL  "Choose if .kea GDAL driver should be built" OFF "GDAL_FOUND" OFF)
 ###############################################################################
 

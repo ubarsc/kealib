@@ -1407,10 +1407,10 @@ namespace kealib{
             }
         }
         
-        if( H5Treclaim(mem_vlen_type, memspace_id, H5P_DEFAULT, neighbourVals) < 0 )
+        if( H5Dvlen_reclaim(mem_vlen_type, memspace_id, H5P_DEFAULT, neighbourVals) < 0 )
         {
     		H5Eprint(H5E_DEFAULT, stderr);
-        	throw KEAIOException("Error in H5Treclaim");
+        	throw KEAIOException("Error in H5Dvlen_reclaim");
         }
         free(neighbourVals);
         H5Tclose(mem_vlen_type);
