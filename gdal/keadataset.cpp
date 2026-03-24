@@ -30,6 +30,7 @@
 #include "keaband.h"
 #include "keadataset.h"
 #include "keacopy.h"
+#include <hdf5.h>
 #include "hdf5vfl.h"
 
 #include "libkea/KEACommon.h"
