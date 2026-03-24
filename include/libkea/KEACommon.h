@@ -40,8 +40,6 @@
 #include <memory>
 #include <mutex>
 
-#include <H5Cpp.h>
-
 #include <stdint.h>
 
 namespace kealib{
