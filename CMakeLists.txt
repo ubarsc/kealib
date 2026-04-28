@@ -56,6 +56,9 @@ set(LIBKEA_LIB_NAME kea)
 
 set(KEA_TEST_TYPES uint8_t int8_t uint16_t int16_t uint32_t int32_t uint64_t int64_t float double)
 
+# make sure we can get to our TransformVersion code
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 include(CMakeDependentOption)
 # CMake global option valiable
 option (BUILD_SHARED_LIBS "Build shared library" ON)
