@@ -41,12 +41,12 @@ namespace kealib
 	{
     public:
         KEAException() : exception() {msgs = "A KEAException has been created.";};
-        KEAException(const char *message) : exception() {msgs = std::string(message);};
-        KEAException(std::string message): exception() {msgs = message;};
+        KEAException(const char *message) noexcept : exception() {msgs = std::string(message);};
+        KEAException(std::string message) noexcept : exception() {msgs = message;};
         virtual ~KEAException() throw() {};
         virtual const char* what() const throw() {return msgs.c_str();}
-    protected:
-        std::string msgs;
+	protected:
+		std::string msgs;
 	};
     
     class KEA_EXPORT KEAIOException : public KEAException

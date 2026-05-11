@@ -35,7 +35,7 @@
 #include <string>
 #include <vector>
 
-#include <H5Cpp.h>
+#include <highfive/highfive.hpp>
 
 #include "libkea/KEACommon.h"
 #include "libkea/KEAException.h"
@@ -46,17 +46,7 @@ namespace kealib{
     class KEA_EXPORT KEAAttributeTableFile : public KEAAttributeTable
     {
     public:
-        KEAAttributeTableFile(H5::H5File *keaImgIn, const std::shared_ptr<kealib::kea_mutex>& mutex, const std::string &bandPathBaseIn, size_t numRowsIn, size_t chunkSizeIn, unsigned int deflateIn=KEA_DEFLATE);
-        
-        bool getBoolField(size_t fid, const std::string &name) const;
-        int64_t getIntField(size_t fid, const std::string &name) const;
-        double getFloatField(size_t fid, const std::string &name) const;
-        std::string getStringField(size_t fid, const std::string &name) const;
-
-        void setBoolField(size_t fid, const std::string &name, bool value);
-        void setIntField(size_t fid, const std::string &name, int64_t value);
-        void setFloatField(size_t fid, const std::string &name, double value);
-        void setStringField(size_t fid, const std::string &name, const std::string &value);
+        KEAAttributeTableFile(HighFive::File *keaImgIn, KEAAttributeTable *pBaseAtt, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int deflateIn=KEA_DEFLATE);
         
         bool getBoolField(size_t fid, size_t colIdx) const;
         int64_t getIntField(size_t fid, size_t colIdx) const;
@@ -82,8 +72,7 @@ namespace kealib{
 
         KEAATTFeature* getFeature(size_t fid) const;
         
-        size_t getSize() const;
-        
+        // called by base class implementations of addAttXXXField
         void addAttBoolField(KEAATTField field, bool val);
         void addAttIntField(KEAATTField field, int64_t val);
         void addAttFloatField(KEAATTField field, float val);
@@ -91,18 +80,18 @@ namespace kealib{
         
         void addRows(size_t numRows);
         
-        static KEAAttributeTable* createKeaAtt(H5::H5File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE);
-        void exportToKeaFile(H5::H5File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE);
+        static KEAAttributeTable* createKeaAtt(HighFive::File *keaImg, const std::shared_ptr<kealib::kea_mutex>& mutex, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE);
+        void exportToKeaFile(HighFive::File *keaImg, unsigned int band, unsigned int chunkSize=KEA_ATT_CHUNK_SIZE, unsigned int deflate=KEA_DEFLATE);
         
         ~KEAAttributeTableFile();
     protected:
-        size_t numRows;
-        size_t chunkSize;
         unsigned int deflate;
-        H5::H5File *keaImg;
-        std::string bandPathBase;
+        HighFive::File *keaImg;
+        KEAATTFeature *m_pFeature; // see GetFeature()
 
         void updateSizeHeader(hsize_t nbools, hsize_t nints, hsize_t nfloats, hsize_t nstrings);
+        void addAttField(KEAATTField field, const std::string &headerPath, const std::string &dataPath, 
+            unsigned int nfields, HighFive::DataType data_type, hid_t fill_type, const void *fill_value);
 };
     
 }

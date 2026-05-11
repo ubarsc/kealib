@@ -30,6 +30,7 @@
 #include "keaband.h"
 #include "keadataset.h"
 #include "keacopy.h"
+#include <hdf5.h>
 #include "hdf5vfl.h"
 
 #include "libkea/KEACommon.h"
@@ -42,6 +43,8 @@ GDALDataType KEA_to_GDAL_Type( kealib::KEADataType ekeaType )
     switch( ekeaType )
     {
         case kealib::kea_8int:
+            egdalType = GDT_Int8;
+            break;
         case kealib::kea_8uint:
             egdalType = GDT_Byte;
             break;
@@ -51,22 +54,18 @@ GDALDataType KEA_to_GDAL_Type( kealib::KEADataType ekeaType )
         case kealib::kea_32int:
             egdalType = GDT_Int32;
             break;
-#ifdef HAVE_64BITIMAGES
         case kealib::kea_64int:
             egdalType = GDT_Int64;
             break;
-#endif
         case kealib::kea_16uint:
             egdalType = GDT_UInt16;
             break;
         case kealib::kea_32uint:
             egdalType = GDT_UInt32;
             break;
-#ifdef HAVE_64BITIMAGES
         case kealib::kea_64uint:
             egdalType = GDT_UInt64;
             break;
-#endif
         case kealib::kea_32float:
             egdalType = GDT_Float32;
             break;
@@ -89,28 +88,27 @@ kealib::KEADataType GDAL_to_KEA_Type( GDALDataType egdalType )
         case GDT_Byte:
             ekeaType = kealib::kea_8uint;
             break;
+        case GDT_Int8:
+            ekeaType = kealib::kea_8int;
+            break;
         case GDT_Int16:
             ekeaType = kealib::kea_16int;
             break;
         case GDT_Int32:
             ekeaType = kealib::kea_32int;
             break;
-#ifdef HAVE_64BITIMAGES
         case GDT_Int64:
             ekeaType = kealib::kea_64int;
             break;
-#endif
         case GDT_UInt16:
             ekeaType = kealib::kea_16uint;
             break;
         case GDT_UInt32:
             ekeaType = kealib::kea_32uint;
             break;
-#ifdef HAVE_64BITIMAGES
         case GDT_UInt64:
             ekeaType = kealib::kea_64uint;
             break;
-#endif
         case GDT_Float32:
             ekeaType = kealib::kea_32float;
             break;
@@ -132,27 +130,14 @@ GDALDataset *KEADataset::Open( GDALOpenInfo * poOpenInfo )
         try
         {
             // try and open it in the appropriate mode
-            H5::H5File *pH5File;
+            HighFive::File *pH5File;
             if( poOpenInfo->eAccess == GA_ReadOnly )
             {
                 // use the virtual driver so we can open files using
                 // /vsicurl etc
-                // do this same as libkea
-                H5::FileAccPropList keaAccessPlist =
-                    H5::FileAccPropList(H5::FileAccPropList::DEFAULT);
-                keaAccessPlist.setCache(
-                    kealib::KEA_MDC_NELMTS, kealib::KEA_RDCC_NELMTS,
-                    kealib::KEA_RDCC_NBYTES, kealib::KEA_RDCC_W0);
-                keaAccessPlist.setSieveBufSize(kealib::KEA_SIEVE_BUF);
-                hsize_t blockSize = kealib::KEA_META_BLOCKSIZE;
-                keaAccessPlist.setMetaBlockSize(blockSize);
-                // but set the driver
-                keaAccessPlist.setDriver(HDF5VFLGetFileDriver(), nullptr);
-
-                const H5std_string keaImgFilePath(poOpenInfo->pszFilename);
-                pH5File = new H5::H5File(keaImgFilePath, H5F_ACC_RDONLY,
-                                         H5::FileCreatPropList::DEFAULT,
-                                         keaAccessPlist);
+                pH5File = kealib::KEAImageIO::openKeaH5RDOnly( poOpenInfo->pszFilename,
+                    kealib::KEA_MDC_NELMTS, kealib::KEA_RDCC_NELMTS, kealib::KEA_RDCC_NBYTES, kealib::KEA_RDCC_W0, 
+                    kealib::KEA_SIEVE_BUF, kealib::KEA_META_BLOCKSIZE, HDF5VFLGetFileDriver(), nullptr);
             }
             else
             {
@@ -293,7 +278,7 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
     try
     {
         // now create it
-        H5::H5File *keaImgH5File = kealib::KEAImageIO::createKEAImage( pszFilename,
+        HighFive::File *keaImgH5File = kealib::KEAImageIO::createKEAImage( pszFilename,
                                                     GDAL_to_KEA_Type( eType ),
                                                     nXSize, nYSize, nBands,
                                                     nullptr, nullptr, nimageblockSize, 
@@ -402,12 +387,14 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
     int nXSize = pSrcDs->GetRasterXSize();
     int nYSize = pSrcDs->GetRasterYSize();
     int nBands = pSrcDs->GetRasterCount();
-    GDALDataType eType = pSrcDs->GetRasterBand(1)->GetRasterDataType();
+    GDALDataType eType = (nBands == 0)
+                             ? GDT_Unknown
+                             : pSrcDs->GetRasterBand(1)->GetRasterDataType();
 
     try
     {
         // now create it
-        H5::H5File *keaImgH5File = kealib::KEAImageIO::createKEAImage( pszFilename,
+        HighFive::File *keaImgH5File = kealib::KEAImageIO::createKEAImage( pszFilename,
                                                     GDAL_to_KEA_Type( eType ),
                                                     nXSize, nYSize, nBands,
                                                     nullptr, nullptr, nimageblockSize, 
@@ -422,7 +409,7 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
         pImageIO->openKEAImageHeader( keaImgH5File );
 
         // copy file
-        if( !CopyFile( pSrcDs, pImageIO, pfnProgress, pProgressData) )
+        if( !KEACopyFile( pSrcDs, pImageIO, pfnProgress, pProgressData) )
         {
             delete pImageIO;
             return nullptr;
@@ -435,6 +422,7 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
         }
         catch (const kealib::KEAIOException &e)
         {
+            fprintf(stderr, "error closing\n");
         }
         delete pImageIO;
 
@@ -469,10 +457,11 @@ GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrc
 }
 
 // constructor
-KEADataset::KEADataset( H5::H5File *keaImgH5File, GDALAccess eAccess )
+KEADataset::KEADataset( HighFive::File *keaImgH5File, GDALAccess eAccess )
 {
     this->m_hMutex = CPLCreateMutex();
     CPLReleaseMutex( this->m_hMutex );
+    m_papszMetadataList = nullptr;
     try
     {
         // create the image IO and initilize the refcount
@@ -502,7 +491,6 @@ KEADataset::KEADataset( H5::H5File *keaImgH5File, GDALAccess eAccess )
         }
 
         // read in the metadata
-        m_papszMetadataList = nullptr;
         this->UpdateMetadataList();
 
         // nullptr until we read them in 
@@ -658,7 +646,6 @@ CPLErr KEADataset::SetGeoTransform (double *padfTransform )
         return CE_Failure;
     }
 }
-
 #endif
 
 const OGRSpatialReference* KEADataset::GetSpatialRef() const
@@ -719,15 +706,9 @@ void * KEADataset::GetInternalHandle(const char *)
 
 // this is called by GDALDataset::BuildOverviews. we implement this function to support
 // building of overviews
-#ifdef HAVE_OVERVIEWOPTIONS
 CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, const int *panOverviewList, 
                                     int nListBands, const int *panBandList, GDALProgressFunc pfnProgress, 
                                     void *pProgressData, CSLConstList papszOptions)
-#else
-CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, int *panOverviewList, 
-                                    int nListBands, int *panBandList, GDALProgressFunc pfnProgress, 
-                                    void *pProgressData)
-#endif
 {
     // go through the list of bands that have been passed in
     int nCurrentBand, nOK = 1;
@@ -742,13 +723,8 @@ CPLErr KEADataset::IBuildOverviews(const char *pszResampling, int nOverviews, in
 
         // get GDAL to do the hard work. It will calculate the overviews and write them
         // back into the objects
-#ifdef HAVE_OVERVIEWOPTIONS
         if( GDALRegenerateOverviewsEx( (GDALRasterBandH)pBand, nOverviews, (GDALRasterBandH*)pBand->GetOverviewList(),
                                     pszResampling, pfnProgress, pProgressData, papszOptions) != CE_None )
-#else
-        if( GDALRegenerateOverviews( (GDALRasterBandH)pBand, nOverviews, (GDALRasterBandH*)pBand->GetOverviewList(),
-                                    pszResampling, pfnProgress, pProgressData ) != CE_None )
-#endif
         {
             nOK = 0;
         }

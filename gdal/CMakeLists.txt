@@ -1,4 +1,5 @@
-cmake_minimum_required (VERSION 3.5)
+cmake_minimum_required (VERSION 3.20)
+
 set(CMAKE_CXX_STANDARD 17)
 ###############################################################################
 # set file locations
@@ -57,19 +58,19 @@ if(NOT KEA_PLUGIN_OUTOFTREE)
     add_dependencies(${LIBKEA_GDAL_DRIVER} ${LIBKEA_LIB_NAME})
 endif()
 
-find_package(GDAL REQUIRED)
+# minimum version 3.6
+find_package(GDAL 3.6 CONFIG REQUIRED)
 # Need to link to HDF5 also
-find_package(HDF5 COMPONENTS C CXX REQUIRED)
+find_package(HDF5 COMPONENTS C REQUIRED)
 if(KEA_PLUGIN_OUTOFTREE)
     if(MSVC)
-        target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} ${HDF5_LIBRARIES} ${LIBKEA_LIB_PATH}/libkea.lib)
+        target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC GDAL::GDAL ${HDF5_LIBRARIES} ${LIBKEA_LIB_PATH}/libkea.lib)
     else()
-        target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} ${HDF5_LIBRARIES} -L${LIBKEA_LIB_PATH} -lkea)
+        target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC GDAL::GDAL ${HDF5_LIBRARIES} -L${LIBKEA_LIB_PATH} -lkea)
     endif()
 else()
-    target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC ${GDAL_LIBRARY} ${HDF5_LIBRARIES} PRIVATE Kealib)
+    target_link_libraries(${LIBKEA_GDAL_DRIVER} PUBLIC GDAL::GDAL ${HDF5_LIBRARIES} PRIVATE Kealib)
 endif()
-include_directories(${GDAL_INCLUDE_DIR})
 include_directories(${LIBKEA_HEADERS_DIR})
 ###############################################################################
 

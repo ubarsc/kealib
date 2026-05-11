@@ -28,4 +28,4 @@
  */
 
 
-bool CopyFile( GDALDataset *pDataset, kealib::KEAImageIO *pImageIO, GDALProgressFunc pfnProgress, void *pProgressData );
+bool KEACopyFile( GDALDataset *pDataset, kealib::KEAImageIO *pImageIO, GDALProgressFunc pfnProgress, void *pProgressData );

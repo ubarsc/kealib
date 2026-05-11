@@ -36,19 +36,29 @@
 
 // Support functions for CreateCopy()
 
-// Copies GDAL Band to KEA Band if nOverview == -1
+const int COPY_OVERVIEW_NONE = -1;
+const int COPY_MASK = -2;
+
+// Copies GDAL Band to KEA Band if nOverview == COPY_OVERVIEW_NONE
+// copies mask to KEA Band if nOVerview == COPY_MASK
 // Otherwise it is assumed we are writing to the specified overview
-bool CopyRasterData( GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand, int nOverview, int nTotalBands, GDALProgressFunc pfnProgress, void *pProgressData)
+bool KEACopyRasterData( GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand, int nOverview, int nTotalBands, GDALProgressFunc pfnProgress, void *pProgressData)
 {
     // get some info
-    kealib::KEADataType eKeaType = pImageIO->getImageBandDataType(nBand);
+    kealib::KEADataType eKeaType = kealib::kea_8uint;
+    GDALDataType eGDALType = GDT_Byte;
+    // mask is always 8 bit in KEA, otherise same as band
+    if( nBand != COPY_MASK )
+    {
+        eKeaType = pImageIO->getImageBandDataType(nBand);
+        eGDALType = pBand->GetRasterDataType();
+    }
     unsigned int nBlockSize;
-    if( nOverview == -1 )
+    if( (nOverview == COPY_OVERVIEW_NONE ) || (nOverview == COPY_MASK) )
         nBlockSize = pImageIO->getImageBlockSize( nBand );
     else
         nBlockSize = pImageIO->getOverviewBlockSize(nBand, nOverview);
-
-    GDALDataType eGDALType = pBand->GetRasterDataType();
+        
     unsigned int nXSize = pBand->GetXSize();
     unsigned int nYSize = pBand->GetYSize();
 
@@ -83,18 +93,20 @@ bool CopyRasterData( GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nB
             // read in from GDAL
             if( pBand->RasterIO( GF_Read, nX, nY, nxsize, nysize, pData, nxsize, nysize, eGDALType, nPixelSize, nPixelSize * nBlockSize) != CE_None )
             {
-                CPLError( CE_Failure, CPLE_AppDefined, "Unable to read blcok at %d %d\n", nX, nY );
+                CPLError( CE_Failure, CPLE_AppDefined, "Unable to read block at %d %d\n", nX, nY );
                 return false;
             }
             // write out to KEA
-            if( nOverview == -1 )
+            if( nOverview == COPY_OVERVIEW_NONE )
                 pImageIO->writeImageBlock2Band( nBand, pData, nX, nY, nxsize, nysize, nBlockSize, nBlockSize, eKeaType);
+            else if( nOverview == COPY_MASK )
+                pImageIO->writeImageBlock2BandMask( nBand, pData, nX, nY, nxsize, nysize, nBlockSize, nBlockSize, eKeaType);
             else
                 pImageIO->writeToOverview( nBand, nOverview, pData,  nX, nY, nxsize, nysize, nBlockSize, nBlockSize, eKeaType);
 
             // progress
             nBlocksComplete++;
-            if( nOverview == -1 )
+            if( nOverview >= 0 )
             {
                 double dFraction = (((double)nBlocksComplete / (double)nTotalBlocks) / (double)nTotalBands) + ((double)(nBand-1) * (1.0 / (double)nTotalBands));
                 if( dFraction != dLastFraction )
@@ -115,7 +127,7 @@ bool CopyRasterData( GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nB
 }
 
 // copies the raster attribute table
-void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
+void KEACopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
 {
     const GDALRasterAttributeTable *gdalAtt = pBand->GetDefaultRAT();
     if((gdalAtt != nullptr) && (gdalAtt->GetRowCount() > 0))
@@ -230,9 +242,7 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
                     case kealib::kea_att_int:
                         ((GDALRasterAttributeTable*)gdalAtt)->ValuesIO(GF_Read, nj, ni, nLength, pnIntBuffer);
                         for( int i = 0; i < nLength; i++ )
-                        {
                             pnInt64Buffer[i] = pnIntBuffer[i];
-                        }
                         keaAtt->setIntFields(ni, nLength, field->idx, pnInt64Buffer);
                         break;
                     case kealib::kea_att_float:
@@ -280,7 +290,7 @@ void CopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
 // copies the metadata
 // pass nBand == -1 to copy a dataset's metadata
 // or band index to copy a band's metadata
-void CopyMetadata( GDALMajorObject *pObject, kealib::KEAImageIO *pImageIO, int nBand)
+void KEACopyMetadata( GDALMajorObject *pObject, kealib::KEAImageIO *pImageIO, int nBand)
 {
     char **ppszMetadata = pObject->GetMetadata();
     if( ppszMetadata != nullptr )
@@ -323,14 +333,14 @@ void CopyMetadata( GDALMajorObject *pObject, kealib::KEAImageIO *pImageIO, int n
 }
 
 // copies the description over
-void CopyDescription(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
+void KEACopyDescription(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
 {
     const char *pszDesc = pBand->GetDescription();
     pImageIO->setImageBandDescription(nBand, pszDesc);
 }
 
 // copies the no data value accross
-void CopyNoData(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
+void KEACopyNoData(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
 {
     int bSuccess = 0;
     double dNoData = pBand->GetNoDataValue(&bSuccess);
@@ -340,10 +350,94 @@ void CopyNoData(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
     }
 }
 
-bool CopyBand( GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand, int nTotalbands, GDALProgressFunc pfnProgress, void *pProgressData)
+bool KEACopyMaskBand(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand, int nTotalbands, GDALProgressFunc pfnProgress, void *pProgressData)
+{
+    // TODO: check this correct
+    int nMaskFlags = pBand->GetMaskFlags();
+    if( (nMaskFlags != GMF_ALL_VALID) && (nMaskFlags != GMF_NODATA))
+    {
+        GDALRasterBand *pMask = pBand->GetMaskBand();
+        pImageIO->createMask(nBand, kealib::KEA_DEFLATE);
+
+        if( !KEACopyRasterData( pMask, pImageIO, nBand, COPY_MASK, nTotalbands, pfnProgress, pProgressData) )
+            return false;
+	}
+    return true;
+}
+
+void KEACopyColorInterpretation(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
+{
+    GDALColorInterp egdalinterp = pBand->GetColorInterpretation();
+    kealib::KEABandClrInterp ekeainterp;
+    switch(egdalinterp)
+    {
+        case GCI_GrayIndex:
+            ekeainterp = kealib::kea_greyindex;
+            break;
+        case GCI_PaletteIndex:
+            ekeainterp = kealib::kea_paletteindex;
+            break;
+        case GCI_RedBand:
+            ekeainterp = kealib::kea_redband;
+            break;
+        case GCI_GreenBand:
+            ekeainterp = kealib::kea_greenband;
+            break;
+        case GCI_BlueBand:
+            ekeainterp = kealib::kea_blueband;
+            break;
+        case GCI_AlphaBand:
+            ekeainterp = kealib::kea_alphaband;
+            break;
+        case GCI_HueBand:
+            ekeainterp = kealib::kea_hueband;
+            break;
+        case GCI_SaturationBand:
+            ekeainterp = kealib::kea_saturationband;
+            break;
+        case GCI_LightnessBand:
+            ekeainterp = kealib::kea_lightnessband;
+            break;
+        case GCI_CyanBand:
+            ekeainterp = kealib::kea_cyanband;
+            break;
+        case GCI_MagentaBand:
+            ekeainterp = kealib::kea_magentaband;
+            break;
+        case GCI_YellowBand:
+            ekeainterp = kealib::kea_yellowband;
+            break;
+        case GCI_BlackBand:
+            ekeainterp = kealib::kea_blackband;
+            break;
+        case GCI_YCbCr_YBand:
+            ekeainterp = kealib::kea_ycbcr_yband;
+            break;
+        case GCI_YCbCr_CbBand:
+            ekeainterp = kealib::kea_ycbcr_cbband;
+            break;
+        case GCI_YCbCr_CrBand:
+            ekeainterp = kealib::kea_ycbcr_crband;
+            break;
+        default:
+            ekeainterp = kealib::kea_greyindex;
+            break;
+    }
+
+    try
+    {
+        pImageIO->setImageBandClrInterp(nBand, ekeainterp);
+    }
+    catch(const kealib::KEAException &e)
+    {
+        // do nothing? The docs say CE_Failure only if unsupporte by format
+    }
+}
+
+bool KEACopyBand( GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand, int nTotalbands, GDALProgressFunc pfnProgress, void *pProgressData)
 {
     // first copy the raster data over
-    if( !CopyRasterData( pBand, pImageIO, nBand, -1, nTotalbands, pfnProgress, pProgressData) )
+    if( !KEACopyRasterData( pBand, pImageIO, nBand, COPY_OVERVIEW_NONE, nTotalbands, pfnProgress, pProgressData) )
         return false;
 
     // are there any overviews?
@@ -354,26 +448,36 @@ bool CopyBand( GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand, i
         int nOverviewXSize = pOverview->GetXSize();
         int nOverviewYSize = pOverview->GetYSize();
         pImageIO->createOverview( nBand, nOverviewCount + 1, nOverviewXSize, nOverviewYSize);
-        if( !CopyRasterData( pOverview, pImageIO, nBand, nOverviewCount + 1, nTotalbands, pfnProgress, pProgressData) )
+        if( !KEACopyRasterData( pOverview, pImageIO, nBand, nOverviewCount + 1, nTotalbands, pfnProgress, pProgressData) )
             return false;
+    }
+    
+    // mask
+    if( !KEACopyMaskBand(pBand, pImageIO, nBand, nTotalbands, pfnProgress, pProgressData))
+    {
+        return false;
     }
 
     // now metadata 
-    CopyMetadata(pBand, pImageIO, nBand);
+    KEACopyMetadata(pBand, pImageIO, nBand);
 
     // and attributes
-    CopyRAT(pBand, pImageIO, nBand);
+    KEACopyRAT(pBand, pImageIO, nBand);
 
     // and description
-    CopyDescription(pBand, pImageIO, nBand);
+    KEACopyDescription(pBand, pImageIO, nBand);
 
     // and no data
-    CopyNoData(pBand, pImageIO, nBand);
+    KEACopyNoData(pBand, pImageIO, nBand);
+    
+    // color interp
+    KEACopyColorInterpretation(pBand, pImageIO, nBand);
+
 
     return true;
 }
 
-void CopySpatialInfo(GDALDataset *pDataset, kealib::KEAImageIO *pImageIO)
+void KEACopySpatialInfo(GDALDataset *pDataset, kealib::KEAImageIO *pImageIO)
 {
     kealib::KEAImageSpatialInfo *pSpatialInfo = pImageIO->getSpatialInfo();
 #ifdef HAVE_SETVALUE_CPLERR
@@ -381,7 +485,7 @@ void CopySpatialInfo(GDALDataset *pDataset, kealib::KEAImageIO *pImageIO)
 #else
     double gt[6];
 #endif
-    if( pDataset->GetGeoTransform(gt) == CE_None )
+    if (pDataset->GetGeoTransform(gt) == CE_None)
     {
         // convert back from GDAL's array format
         pSpatialInfo->tlX = gt[0];
@@ -399,7 +503,7 @@ void CopySpatialInfo(GDALDataset *pDataset, kealib::KEAImageIO *pImageIO)
 }
 
 // copies the GCP's accross
-void CopyGCPs(GDALDataset *pDataset, kealib::KEAImageIO *pImageIO)
+void KEACopyGCPs(GDALDataset *pDataset, kealib::KEAImageIO *pImageIO)
 {
     int nGCPs = pDataset->GetGCPCount();
 
@@ -439,25 +543,25 @@ void CopyGCPs(GDALDataset *pDataset, kealib::KEAImageIO *pImageIO)
 
 
 
-bool CopyFile( GDALDataset *pDataset, kealib::KEAImageIO *pImageIO, GDALProgressFunc pfnProgress, void *pProgressData )
+bool KEACopyFile( GDALDataset *pDataset, kealib::KEAImageIO *pImageIO, GDALProgressFunc pfnProgress, void *pProgressData )
 {
     // Main function - copies pDataset to pImageIO
 
     // copy accross the spatial info
-    CopySpatialInfo( pDataset, pImageIO);
+    KEACopySpatialInfo( pDataset, pImageIO);
 
     // dataset metadata
-    CopyMetadata(pDataset, pImageIO, -1);
+    KEACopyMetadata(pDataset, pImageIO, -1);
 
     // GCPs
-    CopyGCPs(pDataset, pImageIO);
+    KEACopyGCPs(pDataset, pImageIO);
     
     // now copy all the bands over
     int nBands = pDataset->GetRasterCount();
     for( int nBand = 0; nBand < nBands; nBand++ )
     {
         GDALRasterBand *pBand = pDataset->GetRasterBand(nBand + 1);
-        if( !CopyBand( pBand, pImageIO, nBand +1, nBands, pfnProgress, pProgressData ) )
+        if( !KEACopyBand( pBand, pImageIO, nBand +1, nBands, pfnProgress, pProgressData ) )
             return false;
     }
 

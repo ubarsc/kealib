@@ -28,7 +28,7 @@
  */
 
 #define GDAL_COMPILATION  // required or linkage confusion on Windows...
-#include "keaband.h" // for HAVE_64BITIMAGES
+#include "keaband.h"
 
 CPL_C_START
 void CPL_DLL GDALRegister_KEA(void);
@@ -52,9 +52,7 @@ void GDALRegister_KEA()
         poDriver->SetMetadataItem( GDAL_DMD_EXTENSION, "kea" );
         poDriver->SetMetadataItem( GDAL_DMD_CREATIONDATATYPES, 
             "Byte Int8 Int16 UInt16 Int32 UInt32 " 
-#ifdef HAVE_64BITIMAGES
             "Int64 UInt64 "
-#endif
             "Float32 Float64" );
         poDriver->SetMetadataItem( 
             GDAL_DMD_CREATIONOPTIONLIST, 
@@ -92,6 +90,12 @@ void GDALRegister_KEA()
         poDriver->SetMetadataItem(GDAL_DCAP_OPEN, "YES");
         poDriver->SetMetadataItem(GDAL_DCAP_CREATE, "YES");
         poDriver->SetMetadataItem(GDAL_DCAP_CREATECOPY, "YES");
+        poDriver->SetMetadataItem(GDAL_DCAP_UPDATE, "YES");
+        poDriver->SetMetadataItem(GDAL_DMD_UPDATE_ITEMS,
+                              "GeoTransform SRS GCPs NoData "
+                              "ColorInterpretation RasterValues "
+                              "DatasetMetadata BandMetadata");
+        poDriver->SetMetadataItem(GDAL_DMD_HELPTOPIC, "drivers/raster/kea.html");
     
         // pointer to open function
         poDriver->pfnOpen = KEADataset::Open;

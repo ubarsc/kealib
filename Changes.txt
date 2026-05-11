@@ -1,3 +1,13 @@
+2.0.0
+-----
+
+This is a major ABI breaking change.
+
+* Move to HighFive rather than the HDF5 C++ library which may be removed soon
+* Raster Attribute Table class hierachy changed - the base KEAAttributeTable class can now be instantiated and contains common functions for dervied classes
+* More complete testsuite. 
+* The old "kealib" cmake target has been finally removed. Use the "Kealib" one. 
+
 1.6.2
 -----
 
