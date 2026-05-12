@@ -199,7 +199,11 @@ int KEADataset::Identify( GDALOpenInfo * poOpenInfo )
 GDALDataset *KEADataset::Create( const char * pszFilename,
                                   int nXSize, int nYSize, int nBands,
                                   GDALDataType eType,
+#ifdef HAVE_METADATA_CSLCONST_LIST                                  
+                                  CSLConstList papszParmList  )
+#else
                                   char ** papszParmList  )
+#endif
 {
     GDALDriverH hDriver = GDALGetDriverByName( "KEA" );
     if( ( hDriver == nullptr ) || !GDALValidateCreationOptions( hDriver, papszParmList ) )
@@ -320,7 +324,12 @@ GDALDataset *KEADataset::Create( const char * pszFilename,
 }
 
 GDALDataset *KEADataset::CreateCopy( const char * pszFilename, GDALDataset *pSrcDs,
-                                int bStrict, char **  papszParmList, 
+                                int bStrict, 
+#ifdef HAVE_METADATA_CSLCONST_LIST
+                                CSLConstList papszParmList, 
+#else
+                                char **  papszParmList, 
+#endif
                                 GDALProgressFunc pfnProgress, void *pProgressData )
 {
     GDALDriverH hDriver = GDALGetDriverByName( "KEA" );
@@ -772,7 +781,11 @@ const char *KEADataset::GetMetadataItem (const char *pszName, const char *pszDom
 }
 
 // get the whole metadata as CSLStringList - note may be thread safety issues
-char **KEADataset::GetMetadata(const char *pszDomain)
+#ifdef HAVE_METADATA_CSLCONST_LIST
+CSLConstList KEADataset::GetMetadata(const char *pszDomain)
+#else
+char ** KEADataset::GetMetadata(const char *pszDomain)
+#endif
 { 
     // only deal with 'default' domain - no geolocation etc
     if( ( pszDomain != nullptr ) && ( *pszDomain != '\0' ) )
@@ -782,7 +795,11 @@ char **KEADataset::GetMetadata(const char *pszDomain)
 }
 
 // set the whole metadata as a CSLStringList
+#ifdef HAVE_METADATA_CSLCONST_LIST
+CPLErr KEADataset::SetMetadata(CSLConstList papszMetadata, const char *pszDomain)
+#else
 CPLErr KEADataset::SetMetadata(char **papszMetadata, const char *pszDomain)
+#endif
 {
     CPLMutexHolderD( &m_hMutex );
     // only deal with 'default' domain - no geolocation etc
@@ -815,7 +832,11 @@ CPLErr KEADataset::SetMetadata(char **papszMetadata, const char *pszDomain)
     return CE_None;
 }
 
+#ifdef HAVE_METADATA_CSLCONST_LIST
+CPLErr KEADataset::AddBand(GDALDataType eType, CSLConstList papszOptions)
+#else
 CPLErr KEADataset::AddBand(GDALDataType eType, char **papszOptions)
+#endif
 {
     // process any creation options in papszOptions
     unsigned int nimageBlockSize = kealib::KEA_IMAGE_CHUNK_SIZE;
