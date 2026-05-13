@@ -33,6 +33,7 @@
 #include "libkea/KEAImageIO.h"
 #include "libkea/KEAAttributeTable.h"
 #include "libkea/KEAAttributeTableInMem.h"
+#include "keaband.h"  // for HAVE_METADATA_CSLCONST_LIST
 
 // Support functions for CreateCopy()
 
@@ -292,7 +293,11 @@ void KEACopyRAT(GDALRasterBand *pBand, kealib::KEAImageIO *pImageIO, int nBand)
 // or band index to copy a band's metadata
 void KEACopyMetadata( GDALMajorObject *pObject, kealib::KEAImageIO *pImageIO, int nBand)
 {
+#ifdef HAVE_METADATA_CSLCONST_LIST
+    CSLConstList ppszMetadata = pObject->GetMetadata();
+#else
     char **ppszMetadata = pObject->GetMetadata();
+#endif
     if( ppszMetadata != nullptr )
     {
         char *pszName;

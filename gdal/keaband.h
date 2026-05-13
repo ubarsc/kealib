@@ -38,6 +38,12 @@
 #else
     #pragma message ("HAVE_SETVALUE_CPLERR not present")
 #endif
+#if (GDAL_VERSION_MAJOR > 3) || ((GDAL_VERSION_MAJOR == 3) && (GDAL_VERSION_MINOR >= 13))
+    #define HAVE_METADATA_CSLCONST_LIST
+    #pragma message ("defining HAVE_METADATA_CSLCONST_LIST")
+#else
+    #pragma message ("HAVE_METADATA_CSLCONST_LIST not present")
+#endif
 
 #include "keadataset.h"
 
@@ -77,8 +83,13 @@ public:
     // virtual methods for handling the metadata
     CPLErr SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain="") override;
     const char *GetMetadataItem (const char *pszName, const char *pszDomain="") override;
+#ifdef HAVE_METADATA_CSLCONST_LIST
+    CSLConstList GetMetadata(const char *pszDomain="") override;
+    CPLErr SetMetadata(CSLConstList papszMetadata, const char *pszDomain="") override;
+#else
     char **GetMetadata(const char *pszDomain="") override;
     CPLErr SetMetadata(char **papszMetadata, const char *pszDomain="") override;
+#endif
 
     // virtual methods for the no data value
     double GetNoDataValue(int *pbSuccess=nullptr) override;
