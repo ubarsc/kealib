@@ -7,6 +7,7 @@ This is a major ABI breaking change.
 * Raster Attribute Table class hierachy changed - the base KEAAttributeTable class can now be instantiated and contains common functions for dervied classes
 * More complete testsuite. 
 * The old "kealib" cmake target has been finally removed. Use the "Kealib" one. 
+* Update standalone GDAL driver for GDAL 3.12 and 3.13.
 
 1.6.2
 -----
