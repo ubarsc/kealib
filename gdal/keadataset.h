@@ -51,9 +51,18 @@ public:
     static GDALDataset *Create( const char * pszFilename,
                                   int nXSize, int nYSize, int nBands,
                                   GDALDataType eType,
+#ifdef HAVE_METADATA_CSLCONST_LIST
+                                  CSLConstList papszParmList );
+#else
                                   char **  papszParmList );
+#endif
     static GDALDataset *CreateCopy( const char * pszFilename, GDALDataset *pSrcDs,
-                                int bStrict, char **  papszParmList, 
+                                int bStrict, 
+#ifdef HAVE_METADATA_CSLCONST_LIST
+                                CSLConstList papszParmList,
+#else 
+                                char **  papszParmList,
+#endif 
                                 GDALProgressFunc pfnProgress, void *pProgressData );
 
     // virtual methods for dealing with transform and projection
@@ -75,11 +84,20 @@ public:
     CPLErr SetMetadataItem (const char *pszName, const char *pszValue, const char *pszDomain="") override;
     const char *GetMetadataItem (const char *pszName, const char *pszDomain="") override;
 
+#ifdef HAVE_METADATA_CSLCONST_LIST
+    CSLConstList GetMetadata(const char *pszDomain="") override;
+    CPLErr SetMetadata(CSLConstList papszMetadata, const char *pszDomain="") override;
+#else
     char **GetMetadata(const char *pszDomain="") override;
     CPLErr SetMetadata(char **papszMetadata, const char *pszDomain="") override;
-
+#endif
+    
     // virtual method for adding new image bands
+#ifdef HAVE_METADATA_CSLCONST_LIST
+    CPLErr AddBand(GDALDataType eType, CSLConstList papszOptions = NULL) override;
+#else    
     CPLErr AddBand(GDALDataType eType, char **papszOptions = NULL) override;
+#endif
     // removing image bands (only after GDAL 2.0)
     OGRErr DeleteLayer(int iLayer) override;
 

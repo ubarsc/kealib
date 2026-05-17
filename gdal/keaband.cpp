@@ -461,7 +461,11 @@ const char *KEARasterBand::GetMetadataItem (const char *pszName, const char *psz
 }
 
 // get all the metadata as a CSLStringList - not thread safe
+#ifdef HAVE_METADATA_CSLCONST_LIST
+CSLConstList KEARasterBand::GetMetadata(const char *pszDomain)
+#else
 char **KEARasterBand::GetMetadata(const char *pszDomain)
+#endif
 {
     // only deal with 'default' domain - no geolocation etc
     if( ( pszDomain != nullptr ) && ( *pszDomain != '\0' ) )
@@ -474,7 +478,11 @@ char **KEARasterBand::GetMetadata(const char *pszDomain)
 }
 
 // set the metadata as a CSLStringList
+#ifdef HAVE_METADATA_CSLCONST_LIST
+CPLErr KEARasterBand::SetMetadata(CSLConstList papszMetadata, const char *pszDomain)
+#else
 CPLErr KEARasterBand::SetMetadata(char **papszMetadata, const char *pszDomain)
+#endif
 {
     CPLMutexHolderD( &m_hMutex );
     // only deal with 'default' domain - no geolocation etc
