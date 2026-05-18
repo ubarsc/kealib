@@ -32,6 +32,7 @@
 #define KEACommon_H
 
 #include "libkea/kea_export.h"
+#include <highfive/highfive.hpp>
 
 #include <iostream>
 #include <sstream>
