@@ -61,7 +61,7 @@ endif()
 # minimum version 3.6 - version check in find_package doesn't always work well
 find_package(GDAL CONFIG REQUIRED)
 if( GDAL_VERSION VERSION_LESS "3.6.0")
-    message(FALAL_ERROR "GDAL Version ${GDAL_VERSION} found bit 3.6 required")
+    message(FALAL_ERROR "GDAL Version ${GDAL_VERSION} found but >= 3.6 required")
 endif()
 # Need to link to HDF5 also
 find_package(HDF5 COMPONENTS C REQUIRED)
