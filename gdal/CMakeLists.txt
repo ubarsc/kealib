@@ -58,8 +58,11 @@ if(NOT KEA_PLUGIN_OUTOFTREE)
     add_dependencies(${LIBKEA_GDAL_DRIVER} ${LIBKEA_LIB_NAME})
 endif()
 
-# minimum version 3.6
-find_package(GDAL 3.6 CONFIG REQUIRED)
+# minimum version 3.6 - version check in find_package doesn't always work well
+find_package(GDAL CONFIG REQUIRED)
+if( GDAL_VERSION VERSION_LESS "3.6.0")
+    message(FALAL_ERROR "GDAL Version ${GDAL_VERSION} found but >= 3.6 required")
+endif()
 # Need to link to HDF5 also
 find_package(HDF5 COMPONENTS C REQUIRED)
 if(KEA_PLUGIN_OUTOFTREE)
