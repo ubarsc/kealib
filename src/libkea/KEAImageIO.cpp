@@ -230,7 +230,7 @@ namespace kealib{
                 // so we need to write a smaller part of image data from a larger buffer
                 // This goes beyond what HighFive can currently do so we must resort
                 // to the C API. This is a rough port of what happens in the old Kealib.
-				HighFive::DataSpace dataSpace = HighFive::DataSpace({ySizeBuf, xSizeBuf});
+				HighFive::DataSpace dataSpace = HighFive::DataSpace({static_cast<size_t>(ySizeBuf), static_cast<size_t>(xSizeBuf)});
 				
 				// So the main trick here is that you can "select" on a dataspace (the buffer)
 				// with HDF5, but not HighFive (yet).
@@ -292,8 +292,8 @@ namespace kealib{
 			{
 			    // we are doing a partial write but not over the edge of the image
 			    // HighFive can handle this no problems
-				std::vector<size_t> startOffset = {yPxlOff, xPxlOff};
-				std::vector<size_t> bufSize = {ySizeBuf, xSizeBuf};
+				std::vector<size_t> startOffset = {static_cast<size_t>(yPxlOff), static_cast<size_t>(xPxlOff)};
+				std::vector<size_t> bufSize = {static_cast<size_t>(ySizeBuf), static_cast<size_t>(xSizeBuf)};
 				dataset.select(startOffset, bufSize).write_raw(
 					data,
 					imgBandDT
@@ -424,7 +424,7 @@ namespace kealib{
                 // so we need to read just image data but put it in a larger buffer.
                 // This goes beyond what HighFive can currently do so we must resort
                 // to the C API. This is a rough port of what happens in the old Kealib.
-				HighFive::DataSpace dataSpace = HighFive::DataSpace({ySizeBuf, xSizeBuf});
+				HighFive::DataSpace dataSpace = HighFive::DataSpace({static_cast<size_t>(ySizeBuf), static_cast<size_t>(xSizeBuf)});
 				
 				if(!ismask)
 				{
@@ -523,8 +523,8 @@ namespace kealib{
 			{
 			    // we are doing a partial read but not over the edge of the image
 			    // HighFive can handle this no problems
-				std::vector<size_t> startOffset = {yPxlOff, xPxlOff};
-				std::vector<size_t> bufSize = {ySizeBuf, xSizeBuf};
+				std::vector<size_t> startOffset = {static_cast<size_t>(yPxlOff), static_cast<size_t>(xPxlOff)};
+				std::vector<size_t> bufSize = {static_cast<size_t>(ySizeBuf), static_cast<size_t>(xSizeBuf)};
 				dataset.select(startOffset, bufSize).read_raw(
 					data,
 					imgBandDT
@@ -616,7 +616,7 @@ namespace kealib{
             uint32_t blockSize2Use = getImageBlockSize(band);
             try
             {
-                HighFive::DataSpace dataSpace = HighFive::DataSpace({spatialInfoFile->ySize, spatialInfoFile->xSize});
+                HighFive::DataSpace dataSpace = HighFive::DataSpace({static_cast<size_t>(spatialInfoFile->ySize), static_cast<size_t>(spatialInfoFile->xSize)});
     
                 HighFive::DataSetCreateProps imgBandDataSetProps;
                 imgBandDataSetProps.add(HighFive::Chunking(blockSize2Use, blockSize2Use));
@@ -2083,7 +2083,7 @@ namespace kealib{
         {
             KEADataType imgDataType = this->getImageBandDataType(band);
 
-            HighFive::DataSpace dataSpace = HighFive::DataSpace({ySize, xSize});
+            HighFive::DataSpace dataSpace = HighFive::DataSpace({static_cast<size_t>(ySize), static_cast<size_t>(xSize)});
             HighFive::DataType dataTypeH5 = convertDatatypeKeaToH5STD(imgDataType);
 
             HighFive::DataSetCreateProps imgBandDataSetProps;
