@@ -52,25 +52,26 @@ namespace kealib{
         int64_t getIntField(size_t fid, size_t colIdx) const;
         double getFloatField(size_t fid, size_t colIdx) const;
         std::string getStringField(size_t fid, size_t colIdx) const;
-        //KEADateTime getDateTimeField(size_t fid, size_t colIdx) const;
+        KEADateTime getDateTimeField(size_t fid, size_t colIdx) const;
 
         void getBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer) const;
         void getIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer) const;
         void getFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer) const;
         void getStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *psBuffer) const;
+        void getDateTimeFields(size_t startfid, size_t len, size_t colIdx, KEADateTime *pBuffer) const;
         void getNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const;
         
         void setBoolField(size_t fid, size_t colIdx, bool value);
         void setIntField(size_t fid, size_t colIdx, int64_t value);
         void setFloatField(size_t fid, size_t colIdx, double value);
-        //void setDateTimeField(size_t fid, size_t colIdx, const KEADateTime &value);
+        void setDateTimeField(size_t fid, size_t colIdx, const KEADateTime &value);
         void setStringField(size_t fid, size_t colIdx, const std::string &value);
 
         void setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer);
         void setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer);
         void setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer);
         void setStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *papszStrList);
-        //void setDateTimeFields(size_t startfid, size_t len, size_t colIdx, KEADateTime *pBuffer);
+        void setDateTimeFields(size_t startfid, size_t len, size_t colIdx, const KEADateTime *pBuffer);
         void setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours);
 
         KEAATTFeature* getFeature(size_t fid) const;
@@ -80,6 +81,7 @@ namespace kealib{
         void addAttIntField(KEAATTField field, int64_t val);
         void addAttFloatField(KEAATTField field, float val);
         void addAttStringField(KEAATTField field, const std::string &val);
+        void addAttDateTimeField(KEAATTField field, const KEADateTime &val);
         
         void addRows(size_t numRows);
         
@@ -92,7 +94,7 @@ namespace kealib{
         HighFive::File *keaImg;
         KEAATTFeature *m_pFeature; // see GetFeature()
 
-        void updateSizeHeader(hsize_t nbools, hsize_t nints, hsize_t nfloats, hsize_t nstrings);
+        void updateSizeHeader(hsize_t nbools, hsize_t nints, hsize_t nfloats, hsize_t nstrings, hsize_t ndatetimes);
         void addAttField(KEAATTField field, const std::string &headerPath, const std::string &dataPath, 
             unsigned int nfields, HighFive::DataType data_type, hid_t fill_type, const void *fill_value);
 };

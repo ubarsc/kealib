@@ -44,7 +44,7 @@ namespace kealib{
         numIntFields = pBaseAtt->getNumIntFields();
         numFloatFields = pBaseAtt->getNumFloatFields();
         numStringFields = pBaseAtt->getNumStringFields();
-        numDatetimeFields = pBaseAtt->getNumDateTimeFields();
+        numDateTimeFields = pBaseAtt->getNumDateTimeFields();
         bandPathBase = pBaseAtt->getBandPathBase();
         chunkSize = pBaseAtt->getChunkSize();
         for(size_t i = 0; i < pBaseAtt->getMaxGlobalColIdx(); i++)
@@ -461,7 +461,7 @@ namespace kealib{
         }
     }
 
-    void KEAAttributeTableInMem::setDateTimeFields(size_t startfid, size_t len, size_t colIdx, KEADateTime *pBuffer)
+    void KEAAttributeTableInMem::setDateTimeFields(size_t startfid, size_t len, size_t colIdx, const KEADateTime *pBuffer)
     {
         kealib::kea_lock lock(*this->m_mutex); 
         if((startfid+len) > attRows->size())
@@ -626,9 +626,9 @@ namespace kealib{
             }
             HighFive::DataSet datetimeDataset;
             KEADateTime *datetimeVals = nullptr;
-            if(pAtt->numDatetimeFields > 0 )
+            if(pAtt->numDateTimeFields > 0 )
             {
-                datetimeVals = new KEADateTime[pAtt->chunkSize * pAtt->numDatetimeFields];
+                datetimeVals = new KEADateTime[pAtt->chunkSize * pAtt->numDateTimeFields];
                 datetimeDataset = keaImg->getDataSet(pAtt->bandPathBase + KEA_ATT_DATETIME_DATA);
             }
             bool hasNeighbours = false;
@@ -682,10 +682,10 @@ namespace kealib{
                         stringDataset.select(startOffset, bufSize).read_raw(stringVals);
                     }
                     
-                    if(pAtt->numDatetimeFields > 0)
+                    if(pAtt->numDateTimeFields > 0)
                     {
                     	std::vector<size_t> startOffset = {rowOff, 0};
-    			        std::vector<size_t> bufSize = {pAtt->chunkSize, pAtt->numDatetimeFields};
+    			        std::vector<size_t> bufSize = {pAtt->chunkSize, pAtt->numDateTimeFields};
                         datetimeDataset.select(startOffset, bufSize).read_raw(datetimeVals);
                     }
                     
@@ -732,12 +732,12 @@ namespace kealib{
                             }
                         }
                         
-                        if(pAtt->numDatetimeFields > 0)
+                        if(pAtt->numDateTimeFields > 0)
                         {
-                            feat->datetimeFields->reserve(pAtt->numDatetimeFields);
-                            for(hsize_t j = 0; j < pAtt->numDatetimeFields; ++j)
+                            feat->datetimeFields->reserve(pAtt->numDateTimeFields);
+                            for(hsize_t j = 0; j < pAtt->numDateTimeFields; ++j)
                             {
-                                feat->datetimeFields->at(j) = datetimeVals[(i*pAtt->numDatetimeFields)+j];
+                                feat->datetimeFields->at(j) = datetimeVals[(i*pAtt->numDateTimeFields)+j];
                             }
                         }
 
@@ -791,10 +791,10 @@ namespace kealib{
                     stringDataset.select(startOffset, bufSize).read_raw(stringVals);
                 }
                 
-                if(pAtt->numDatetimeFields > 0)
+                if(pAtt->numDateTimeFields > 0)
                 {
 					std::vector<size_t> startOffset = {rowOff, 0};
-					std::vector<size_t> bufSize = {remainRows, pAtt->numDatetimeFields};
+					std::vector<size_t> bufSize = {remainRows, pAtt->numDateTimeFields};
                     datetimeDataset.select(startOffset, bufSize).read_raw(datetimeVals);
                 }
                 
@@ -841,12 +841,12 @@ namespace kealib{
                         }
                     }
 
-                    if(pAtt->numDatetimeFields > 0)
+                    if(pAtt->numDateTimeFields > 0)
                     {
-                        feat->datetimeFields->reserve(pAtt->numDatetimeFields);
-                        for(hsize_t j = 0; j < pAtt->numDatetimeFields; ++j)
+                        feat->datetimeFields->reserve(pAtt->numDateTimeFields);
+                        for(hsize_t j = 0; j < pAtt->numDateTimeFields; ++j)
                         {
-                            feat->datetimeFields->at(j) = datetimeVals[(i*pAtt->numDatetimeFields)+j];
+                            feat->datetimeFields->at(j) = datetimeVals[(i*pAtt->numDateTimeFields)+j];
                         }
                     }
                     
