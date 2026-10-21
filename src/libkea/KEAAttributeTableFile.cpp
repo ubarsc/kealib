@@ -928,7 +928,7 @@ namespace kealib{
         auto strTypeDateTime = this->createKeaDateTimeCompType();
 
         addAttField(field, bandPathBase + KEA_ATT_DATETIME_FIELDS_HEADER, bandPathBase + KEA_ATT_DATETIME_DATA, 
-             numStringFields + 1, strTypeDateTime, strTypeDateTime.getId(), &val);        
+             numDateTimeFields + 1, strTypeDateTime, strTypeDateTime.getId(), &val);        
     }
     
     void KEAAttributeTableFile::addAttField(KEAATTField field, const std::string &headerPath, const std::string &dataPath, 

@@ -946,6 +946,7 @@ namespace kealib{
         std::cout << "Number of Integer Fields: " << this->numIntFields << std::endl;
         std::cout << "Number of Float Fields: " << this->numFloatFields << std::endl;
         std::cout << "Number of String Fields: " << this->numStringFields << std::endl;
+        std::cout << "Number of DateTime Fields: " << this->numDateTimeFields << std::endl;
         
         std::cout << "Fields:\n";
         for(auto iterField = fields->begin(); iterField != fields->end(); ++iterField)
@@ -1300,7 +1301,7 @@ namespace kealib{
             // READ DATETIME HEADERS
             // if they exist - cope with older kea format where they aren't there
             pAtt->numDateTimeFields = 0;
-            if((attSize.size() > 4) && (attSize[5] > 0))
+            if((attSize.size() > 5) && (attSize[5] > 0))
             {
                 pAtt->numDateTimeFields = attSize[5];
                 try

@@ -217,6 +217,55 @@ bool compareRatConstantString(std::vector<std::string> *psBuffer, const std::str
     return true;
 }
 
+bool compareRatConstantDataTime(const kealib::KEADateTime *pBuffer, uint64_t size, const kealib::KEADateTime &val)
+{
+    for( uint64_t i = 0; i < size; i++ )
+    {
+         const kealib::KEADateTime *pItem = &pBuffer[i];
+         if( (pItem->year != val.year ) ||
+            (pItem->month != val.month) ||
+            (pItem->day != val.day) ||
+            (pItem->hour != val.hour) ||
+            (pItem->minute != val.minute) ||
+            (pItem->second != val.second) ||
+            (pItem->timezonehourby4 != val.timezonehourby4) )
+         {
+             return false;
+         }
+    }
+    return true;
+}
+
+void createRatDataForDateTime(kealib::KEADateTime *pBuffer, uint64_t size)
+{
+    for( uint64_t i = 0; i < size; i++)
+    {
+        kealib::KEADateTime *pItem = &pBuffer[i];
+        if( i == 0)
+        {
+            // make first one not set
+            pItem->year = 0;
+            pItem->month = 0;
+            pItem->day = 0;
+            pItem->hour = 0;
+            pItem->minute = 0;
+            pItem->second = 0;
+            pItem->timezonehourby4 = kealib::KEA_ATT_NULLTIMEZONE;
+        }
+        else
+        {
+            pItem->year = i;
+            pItem->month = i + 1;
+            pItem->day = i + 2;
+            pItem->hour = i + 3;
+            pItem->minute = i + 4;
+            pItem->second = i + 5;
+            pItem->timezonehourby4 = 0;
+        }
+    }
+}
+
+
 bool compareRatDataString(std::vector<std::string> *psBuffer1, std::vector<std::string> *psBuffer2)
 {
     if( psBuffer1->size() != psBuffer2->size())

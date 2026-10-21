@@ -3217,6 +3217,8 @@ namespace kealib{
 
 
             // SET ATTRIBUTE TABLE SIZE
+            // NOTE we are not adding space for datetime and wkb yet by default.
+            // they will be added if needed
             std::vector<uint64_t> attSize = {0, 0, 0, 0, 0};
             auto attSizeDataset = keaImgH5File->createDataSet<uint64_t>(
                 (bandName + KEA_ATT_SIZE_HEADER),
