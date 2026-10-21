@@ -474,6 +474,7 @@ int main()
                 
                 std::cout << "doing feature check" << std::endl;
                 kealib::KEAATTFeature* pFeature = rat->getFeature(9);
+                std::cout << "got feature" << std::endl;
                 if( pFeature->boolFields->at(0) != boolBuffer[9])
                 {
                     std::cout << "error with bool feature" << std::endl;
@@ -492,6 +493,11 @@ int main()
                 if( pFeature->strFields->at(0) != stringBuffer[9])
                 {
                     std::cout << "error with string feature" << std::endl;
+                    return 1;
+                }
+                if( !compareRatConstantDataTime(&pDTBuffer[9], 1, pFeature->datetimeFields->at(0)))
+                {
+                    std::cout << "error with datetime feature" << std::endl;
                     return 1;
                 }
             }

@@ -37,16 +37,22 @@ kealib::KEAImageSpatialInfo getSpatialInfo(double version);
 kealib::KEADataType CTypeStringToKEAType(const std::string &s);
 std::vector<kealib::KEAImageGCP*>* getGCPData();
 void freeGCPData(std::vector<kealib::KEAImageGCP*> *pGCPS);
+
 bool compareRatConstantString(std::vector<std::string> *psBuffer, const std::string &val);
-bool compareRatConstantDataTime(const kealib::KEADateTime *pBuffer, uint64_t size, const kealib::KEADateTime &val);
 void createRatDataForString(std::vector<std::string> *psBuffer);
-void createRatDataForDateTime(kealib::KEADateTime *pBuffer, uint64_t size);
 bool compareRatDataString(std::vector<std::string> *psBuffer1, std::vector<std::string> *psBuffer2);
 bool compareRatDataStringSubset(std::vector<std::string> *psBuffer1, std::vector<std::string> *psBuffer2, uint64_t subsetoffset);
+
+bool compareRatConstantDataTime(const kealib::KEADateTime *pBuffer, uint64_t size, const kealib::KEADateTime &val);
+void createRatDataForDateTime(kealib::KEADateTime *pBuffer, uint64_t size);
+bool compareRatDataDateTime(const kealib::KEADateTime *pBuffer1, const kealib::KEADateTime *pBuffer2, uint64_t size);
+bool compareRatDataDateTimeSubset(const kealib::KEADateTime *pBuffer1, const kealib::KEADateTime *pBuffer2, uint64_t size, uint64_t subsetoffset);
+
 void clearNeighbours(std::vector<std::vector<size_t>* > *neighbours);
 void createNeighbours(size_t len, std::vector<std::vector<size_t>* > *neighbours);
 bool compareNeighbours(std::vector<std::vector<size_t>* > *neighbours1, std::vector<std::vector<size_t>* > *neighbours2);
 bool compareNeighboursSubset(std::vector<std::vector<size_t>* > *neighbours1, size_t offset, std::vector<std::vector<size_t>* > *neighbours2);
+
 void dumpAttField(const kealib::KEAATTField &field);
 
 template <typename T>

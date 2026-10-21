@@ -714,6 +714,11 @@ namespace kealib{
             feat->strFields->push_back("");
         }
         feat->datetimeFields = new std::vector<KEADateTime>();
+        KEADateTime dt = {0};
+        for(size_t i = 0; i < this->numDateTimeFields; ++i)
+        {
+            feat->datetimeFields->push_back(dt);
+        }
         feat->neighbours = new std::vector<size_t>();
         feat->fid = 0;
         

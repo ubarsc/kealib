@@ -449,7 +449,7 @@ int main()
                 std::cout << "Testing RAT type " << rat_type << " for band " << band_num << std::endl; 
                 auto *rat1 = io.getAttributeTable(rat_type, band_num);
                 
-                if( rat1->getMaxGlobalColIdx() != 6)
+                if( rat1->getMaxGlobalColIdx() != 7)
                 {
                     std::cout << "wrong number of global idx" << std::endl;
                     return 1;
@@ -502,6 +502,14 @@ int main()
                     (sKEAField.idx != 0) || (sKEAField.usage != "fourth") || (sKEAField.colNum != 5))
                 {
                     std::cout << "sixth field info wrong" << std::endl;
+                    dumpAttField(sKEAField);
+                    return 1;
+                }
+                sKEAField = rat1->getField(6);
+                if( (sKEAField.name != "FirstDateTime") || (sKEAField.dataType != kealib::kea_att_datetime) ||
+                    (sKEAField.idx != 0) || (sKEAField.usage != "fifth") || (sKEAField.colNum != 6))
+                {
+                    std::cout << "seventh field info wrong" << std::endl;
                     dumpAttField(sKEAField);
                     return 1;
                 }
@@ -573,6 +581,24 @@ int main()
                     return 1;
                 }
                 
+                std::cout << "reading datetime col" << std::endl;
+                kealib::KEADateTime dtFields[RAT_SIZE];
+                kealib::KEADateTime dtFieldsTruth[RAT_SIZE];
+                createRatDataForDateTime(dtFieldsTruth, RAT_SIZE);
+                
+                rat1->getDateTimeFields(0, RAT_SIZE, 0, dtFields);
+                if( !compareRatDataDateTime(dtFields, dtFieldsTruth, RAT_SIZE))
+                {
+                    return 1;
+                }
+        
+                std::cout << "Reading datetime subset" << std::endl;
+                rat1->getDateTimeFields(101, 21, 0, dtFields);
+                if( !compareRatDataDateTimeSubset(dtFieldsTruth, dtFields, 21, 101))
+                {
+                    return 1;
+                }
+
                 std::cout << "Reading neighbours" << std::endl;
                 std::vector<std::vector<size_t>* > neighbours;
                 rat1->getNeighbours(0, RAT_SIZE, &neighbours);

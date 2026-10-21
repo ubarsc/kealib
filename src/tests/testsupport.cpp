@@ -265,6 +265,46 @@ void createRatDataForDateTime(kealib::KEADateTime *pBuffer, uint64_t size)
     }
 }
 
+bool compareRatDataDateTime(const kealib::KEADateTime *pBuffer1, const kealib::KEADateTime *pBuffer2, uint64_t size)
+{
+    for( uint64_t i = 0; i < size; i++ )
+    {
+         const kealib::KEADateTime *pItem1 = &pBuffer1[i];
+         const kealib::KEADateTime *pItem2 = &pBuffer2[i];
+         if( (pItem1->year != pItem2->year ) ||
+            (pItem1->month != pItem2->month) ||
+            (pItem1->day != pItem2->day) ||
+            (pItem1->hour != pItem2->hour) ||
+            (pItem1->minute != pItem2->minute) ||
+            (pItem1->second != pItem2->second) ||
+            (pItem1->timezonehourby4 != pItem2->timezonehourby4) )
+         {
+             return false;
+         }
+    }
+    return true;
+    
+}
+
+bool compareRatDataDateTimeSubset(const kealib::KEADateTime *pBuffer1, const kealib::KEADateTime *pBuffer2, uint64_t size, uint64_t subsetoffset)
+{
+    for( uint64_t i = 0; i < size; i++)
+    {
+         const kealib::KEADateTime *pItem1 = &pBuffer1[subsetoffset + i];
+         const kealib::KEADateTime *pItem2 = &pBuffer2[i];
+         if( (pItem1->year != pItem2->year ) ||
+            (pItem1->month != pItem2->month) ||
+            (pItem1->day != pItem2->day) ||
+            (pItem1->hour != pItem2->hour) ||
+            (pItem1->minute != pItem2->minute) ||
+            (pItem1->second != pItem2->second) ||
+            (pItem1->timezonehourby4 != pItem2->timezonehourby4) )
+         {
+             return false;
+         }
+    }
+    return true;
+}
 
 bool compareRatDataString(std::vector<std::string> *psBuffer1, std::vector<std::string> *psBuffer2)
 {
