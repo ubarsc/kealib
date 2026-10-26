@@ -692,7 +692,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField,
                     float integer_part;
                     float decimal_part = std::modf(f, &integer_part);
                     psDateTime[i].nTimeZoneHour = integer_part;
-                    psDateTime[i].nTimeZoneMinute = decimal_part * 60;
+                    psDateTime[i].nTimeZoneMinute = std::round(decimal_part * 60);
                     psDateTime[i].bPositiveTimeZone = true;
                 }
             }
@@ -719,7 +719,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField,
                 pBuffer[i].second = pGDAL_DT->fSecond;
                 if( pGDAL_DT->bPositiveTimeZone )
                 {
-                    pBuffer[i].timezonehourby4 = (float(pGDAL_DT->nTimeZoneHour) + (float(pGDAL_DT->nTimeZoneMinute) / 60)) * 4;
+                    pBuffer[i].timezonehourby4 = std::round((float(pGDAL_DT->nTimeZoneHour) + (float(pGDAL_DT->nTimeZoneMinute) / 60)) * 4);
                 }
                 else
                 {
