@@ -694,7 +694,7 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField,
                     float integer_part;
                     float decimal_part = std::modf(f, &integer_part);
                     psDateTime[i].nTimeZoneHour = std::abs(integer_part);
-                    psDateTime[i].nTimeZoneMinute = std::round(decimal_part * 60);
+                    psDateTime[i].nTimeZoneMinute = std::abs(std::round(decimal_part * 60));
                     psDateTime[i].bPositiveTimeZone = f >= 0;
                 }
             }
@@ -720,14 +720,11 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField,
                 pBuffer[i].hour = pGDAL_DT->nHour;
                 pBuffer[i].minute = pGDAL_DT->nMinute;
                 pBuffer[i].second = pGDAL_DT->fSecond;
-                if( pGDAL_DT->bPositiveTimeZone )
-                {
-                    pBuffer[i].timezonehourby4 = std::round((float(pGDAL_DT->nTimeZoneHour) + (float(pGDAL_DT->nTimeZoneMinute) / 60)) * 4);
-                }
-                else
+                pBuffer[i].timezonehourby4 = std::round((float(pGDAL_DT->nTimeZoneHour) + (float(pGDAL_DT->nTimeZoneMinute) / 60)) * 4);
+                if( !pGDAL_DT->bPositiveTimeZone )
                 {
                     // negative timezone
-                    pBuffer[i].timezonehourby4 = -std::round((float(pGDAL_DT->nTimeZoneHour) + (float(pGDAL_DT->nTimeZoneMinute) / 60)) * 4);
+                    pBuffer[i].timezonehourby4 = -pBuffer[i].timezonehourby4;
                 }
             }
         }
