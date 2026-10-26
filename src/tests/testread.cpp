@@ -257,7 +257,7 @@ int main()
         {
             std::cout << "band metadata (" << *itr << ")" << std::endl;
         }
-        if( std::find(bandnames.begin(), bandnames.end(), "BandTest1") == names.end())
+        if( std::find(bandnames.begin(), bandnames.end(), std::string("BandTest1")) == names.end())
         {
             std::cout << "Can't find BandTest1 in image metadata" << std::endl;
             return 1;
