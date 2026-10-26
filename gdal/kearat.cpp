@@ -669,11 +669,13 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField,
             kealib::KEADateTime *pKEA_DT = &pBuffer[i];
             if( pKEA_DT->timezonehourby4 == kealib::KEA_ATT_NULLTIMEZONE )
             {
-                psDateTime[i] = {};
+                GDALRATDateTime dt_zero;  // default constructor zeros everything
+                psDateTime[i] = dt_zero;
                 psDateTime[i].bIsValid = false;
             }
             else
             {
+                psDateTime[i].bIsValid = true;
                 psDateTime[i].nYear = pKEA_DT->year;
                 psDateTime[i].nMonth = pKEA_DT->month;
                 psDateTime[i].nDay = pKEA_DT->day;
@@ -691,9 +693,9 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField,
                     float f = float(pKEA_DT->timezonehourby4) / 4;
                     float integer_part;
                     float decimal_part = std::modf(f, &integer_part);
-                    psDateTime[i].nTimeZoneHour = integer_part;
+                    psDateTime[i].nTimeZoneHour = std::abs(integer_part);
                     psDateTime[i].nTimeZoneMinute = std::round(decimal_part * 60);
-                    psDateTime[i].bPositiveTimeZone = true;
+                    psDateTime[i].bPositiveTimeZone = f >= 0;
                 }
             }
         }        
@@ -706,7 +708,8 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField,
             GDALRATDateTime *pGDAL_DT = &psDateTime[i];
             if( !pGDAL_DT->bIsValid )
             {
-                pBuffer[i] = {};
+                kealib::KEADateTime dt_zero = {0};
+                pBuffer[i] = dt_zero;
                 pBuffer[i].timezonehourby4 = kealib::KEA_ATT_NULLTIMEZONE;
             }
             else
@@ -723,7 +726,8 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField,
                 }
                 else
                 {
-                    pBuffer[i].timezonehourby4 = kealib::KEA_ATT_NULLTIMEZONE; 
+                    // negative timezone
+                    pBuffer[i].timezonehourby4 = -std::round((float(pGDAL_DT->nTimeZoneHour) + (float(pGDAL_DT->nTimeZoneMinute) / 60)) * 4);
                 }
             }
         }
