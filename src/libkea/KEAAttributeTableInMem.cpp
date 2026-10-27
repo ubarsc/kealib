@@ -398,7 +398,7 @@ namespace kealib{
         
         for( size_t n = 0; n < len; n++)
         {
-            attRows->at(n+startfid)->strFields->at(colIdx) = papszStrList->at(colIdx);
+            attRows->at(n+startfid)->strFields->at(colIdx) = papszStrList->at(n);
         }
     }
     
