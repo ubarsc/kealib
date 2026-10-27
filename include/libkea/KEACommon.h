@@ -94,11 +94,13 @@ namespace kealib{
     static const std::string KEA_ATT_INT_DATA( "/ATT/DATA/INT" );
     static const std::string KEA_ATT_FLOAT_DATA( "/ATT/DATA/FLOAT" );
     static const std::string KEA_ATT_STRING_DATA( "/ATT/DATA/STRING" );
+    static const std::string KEA_ATT_DATETIME_DATA( "/ATT/DATA/DATETIME" );
     static const std::string KEA_ATT_NEIGHBOURS_DATA( "/ATT/NEIGHBOURS/NEIGHBOURS" );
     static const std::string KEA_ATT_BOOL_FIELDS_HEADER( "/ATT/HEADER/BOOL_FIELDS" );
     static const std::string KEA_ATT_INT_FIELDS_HEADER( "/ATT/HEADER/INT_FIELDS" );
     static const std::string KEA_ATT_FLOAT_FIELDS_HEADER( "/ATT/HEADER/FLOAT_FIELDS" );
     static const std::string KEA_ATT_STRING_FIELDS_HEADER( "/ATT/HEADER/STRING_FIELDS" );
+    static const std::string KEA_ATT_DATETIME_FIELDS_HEADER( "/ATT/HEADER/DATETIME_FIELDS" );
     static const std::string KEA_ATT_SIZE_HEADER( "/ATT/HEADER/SIZE" );
     static const std::string KEA_ATT_CHUNKSIZE_HEADER( "/ATT/HEADER/CHUNKSIZE" );
     

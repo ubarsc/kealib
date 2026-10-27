@@ -34,6 +34,7 @@
 #include <algorithm>
 
 HIGHFIVE_REGISTER_TYPE(kealib::KEAAttString, kealib::KEAAttributeTable::createKeaStringCompType)
+HIGHFIVE_REGISTER_TYPE(kealib::KEADateTime, kealib::KEAAttributeTable::createKeaDateTimeCompType)
 HIGHFIVE_REGISTER_TYPE(kealib::KEAAttributeIdx, kealib::KEAAttributeTable::createAttributeIdxCompType)
 
 namespace kealib{
@@ -47,6 +48,7 @@ namespace kealib{
         numIntFields = pBaseAtt->getNumIntFields();
         numFloatFields = pBaseAtt->getNumFloatFields();
         numStringFields = pBaseAtt->getNumStringFields();
+        numDateTimeFields = pBaseAtt->getNumDateTimeFields();
         bandPathBase = pBaseAtt->getBandPathBase();
         chunkSize = pBaseAtt->getChunkSize();
         deflate = deflateIn;
@@ -159,6 +161,24 @@ namespace kealib{
         sValue = pSBuffer->front();
         delete pSBuffer;
         return sValue;
+    }
+    
+    KEADateTime KEAAttributeTableFile::getDateTimeField(size_t fid, size_t colIdx) const
+    {
+        if(fid >= numRows)
+        {
+            std::string message = std::string("Requested feature (") + sizet2Str(fid) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        
+        if(colIdx >= numDateTimeFields)
+        {
+            std::string message = std::string("Requested DateTime column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        KEADateTime dt;
+        this->getDateTimeFields(fid, 1, colIdx, &dt);
+        return dt;
     }
     
     // RFC40
@@ -351,6 +371,50 @@ namespace kealib{
         }
     }
     
+    void KEAAttributeTableFile::getDateTimeFields(size_t startfid, size_t len, size_t colIdx, KEADateTime *pBuffer) const
+    {
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
+        if((startfid+len) > numRows)
+        {
+            std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        
+        if(colIdx >= numDateTimeFields)
+        {
+            std::string message = std::string("Requested DateTime column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        
+        try
+        {
+            auto datetimeDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_DATETIME_DATA);
+
+			std::vector<size_t> startOffset = {startfid, colIdx};
+			std::vector<size_t> bufSize = {len, 1};
+			
+            datetimeDataset.select(startOffset, bufSize).read_raw(pBuffer);
+        }
+        catch(const HighFive::Exception &e)
+        {
+            throw KEAATTException(e.what());
+        }
+        catch (const KEAATTException &e)
+        {
+            throw e;
+        }
+        catch (const KEAIOException &e)
+        {
+            throw KEAATTException(e.what());
+        }
+        catch(const std::exception &e)
+        {
+            throw KEAATTException(e.what());
+        }
+    }
+    
+    
     void KEAAttributeTableFile::getNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours) const
     {
         try
@@ -446,6 +510,22 @@ namespace kealib{
         data->push_back(value);
         this->setStringFields(fid, 1, colIdx, data);
         delete data;
+    }
+    
+    void KEAAttributeTableFile::setDateTimeField(size_t fid, size_t colIdx, const KEADateTime &value)
+    {
+        if(fid >= numRows)
+        {
+            std::string message = std::string("Requested feature (") + sizet2Str(fid) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        
+        if(colIdx >= numDateTimeFields)
+        {
+            std::string message = std::string("Requested DateTime column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        this->setDateTimeFields(fid, 1, colIdx, &value);
     }
     
     // RFC40
@@ -644,6 +724,50 @@ namespace kealib{
         }
     }
     
+    void KEAAttributeTableFile::setDateTimeFields(size_t startfid, size_t len, size_t colIdx, const KEADateTime *pBuffer)
+    {
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
+        if((startfid+len) > numRows)
+        {
+            std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        
+        if(colIdx >= numDateTimeFields)
+        {
+            std::string message = std::string("Requested DateTime column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+
+        try
+        {
+            auto stringDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_DATETIME_DATA);
+
+			std::vector<size_t> startOffset = {startfid, colIdx};
+			std::vector<size_t> bufSize = {len, 1};
+            
+            stringDataset.select(startOffset, bufSize).write_raw(pBuffer);
+            keaImg->flush();
+        }
+        catch(const HighFive::Exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
+        catch (const KEAATTException &e)
+        {
+            throw e;
+        }
+        catch (const KEAIOException &e)
+        {
+            throw e;
+        }
+        catch(const std::exception &e)
+        {
+            throw KEAIOException(e.what());
+        }
+    }
+        
     void KEAAttributeTableFile::setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours)
     {
         try
@@ -703,7 +827,7 @@ namespace kealib{
         {
             m_pFeature->strFields->at(i) = getStringField(fid, i);
         }
-        for( size_t i = 0; i < numDatetimeFields; i++)
+        for( size_t i = 0; i < numDateTimeFields; i++)
         {
             m_pFeature->datetimeFields->at(i) = getDateTimeField(fid, i);
         }
@@ -716,7 +840,7 @@ namespace kealib{
         return m_pFeature;
     }
     
-    void KEAAttributeTableFile::updateSizeHeader(hsize_t nbools, hsize_t nints, hsize_t nfloats, hsize_t nstrings)
+    void KEAAttributeTableFile::updateSizeHeader(hsize_t nbools, hsize_t nints, hsize_t nfloats, hsize_t nstrings, hsize_t ndatetimes)
     {
         try
         {
@@ -724,12 +848,13 @@ namespace kealib{
             KEAStackPrintState printState;
             // WRITE THE ATT SIZE USED TO THE FILE.
             
-            std::vector<uint64_t> attSize(5);
+            std::vector<uint64_t> attSize(6);
             attSize[0] = this->numRows;
             attSize[1] = nbools;
             attSize[2] = nints;
             attSize[3] = nfloats;
             attSize[4] = nstrings;
+            attSize[5] = ndatetimes;
             auto attSizeDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_SIZE_HEADER);
             attSizeDataset.write(attSize);
             
@@ -747,7 +872,7 @@ namespace kealib{
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
-        updateSizeHeader(numBoolFields+1, numIntFields, numFloatFields, numStringFields);
+        updateSizeHeader(numBoolFields+1, numIntFields, numFloatFields, numStringFields, numDateTimeFields);
 
         int fill = val? 1:0;
 
@@ -760,7 +885,7 @@ namespace kealib{
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
-        updateSizeHeader(numBoolFields, numIntFields+1, numFloatFields, numStringFields);
+        updateSizeHeader(numBoolFields, numIntFields+1, numFloatFields, numStringFields, numDateTimeFields);
 
         addAttField(field, bandPathBase + KEA_ATT_INT_FIELDS_HEADER, bandPathBase + KEA_ATT_INT_DATA, 
              numIntFields + 1, HighFive::AtomicType<int64_t>(), H5T_NATIVE_INT64, &val);        
@@ -771,7 +896,7 @@ namespace kealib{
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
-        updateSizeHeader(numBoolFields, numIntFields, numFloatFields+1, numStringFields);
+        updateSizeHeader(numBoolFields, numIntFields, numFloatFields+1, numStringFields, numDateTimeFields);
 
         addAttField(field, bandPathBase + KEA_ATT_FLOAT_FIELDS_HEADER, bandPathBase + KEA_ATT_FLOAT_DATA, 
              numFloatFields + 1, HighFive::AtomicType<double>(), H5T_NATIVE_FLOAT, &val);        
@@ -782,7 +907,7 @@ namespace kealib{
         kealib::kea_lock lock(*this->m_mutex); 
         KEAStackPrintState printState;
         // field already been inserted into this->fields by base class
-        updateSizeHeader(numBoolFields, numIntFields, numFloatFields, numStringFields + 1);
+        updateSizeHeader(numBoolFields, numIntFields, numFloatFields, numStringFields + 1, numDateTimeFields);
         
         auto strTypeMem = this->createKeaStringCompType();
 
@@ -791,6 +916,19 @@ namespace kealib{
         
         addAttField(field, bandPathBase + KEA_ATT_STRING_FIELDS_HEADER, bandPathBase + KEA_ATT_STRING_DATA, 
              numStringFields + 1, strTypeMem, strTypeMem.getId(), &fillValueStr);        
+    }
+    
+    void KEAAttributeTableFile::addAttDateTimeField(KEAATTField field, const KEADateTime &val)
+    {
+        kealib::kea_lock lock(*this->m_mutex); 
+        KEAStackPrintState printState;
+        // field already been inserted into this->fields by base class
+        updateSizeHeader(numBoolFields, numIntFields, numFloatFields, numStringFields, numDateTimeFields + 1);
+        
+        auto strTypeDateTime = this->createKeaDateTimeCompType();
+
+        addAttField(field, bandPathBase + KEA_ATT_DATETIME_FIELDS_HEADER, bandPathBase + KEA_ATT_DATETIME_DATA, 
+             numDateTimeFields + 1, strTypeDateTime, strTypeDateTime.getId(), &val);        
     }
     
     void KEAAttributeTableFile::addAttField(KEAATTField field, const std::string &headerPath, const std::string &dataPath, 
@@ -908,7 +1046,7 @@ namespace kealib{
             KEAStackPrintState printState;
             // update header
             numRows += numRowsIn;
-            updateSizeHeader(numBoolFields, numIntFields, numFloatFields, numStringFields);
+            updateSizeHeader(numBoolFields, numIntFields, numFloatFields, numStringFields, numDateTimeFields);
             
             // extend the various data tables if they exist
             std::vector<size_t> extendDatasetTo = {this->numRows, 0};
@@ -949,6 +1087,17 @@ namespace kealib{
             {
                 auto stringDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_STRING_DATA);
                 extendDatasetTo[1] = this->numStringFields;
+                stringDataset.resize(extendDatasetTo);
+            }
+            catch(const HighFive::Exception &e)
+            {
+                // can't exist
+            }
+
+            try
+            {
+                auto stringDataset = keaImg->getDataSet(bandPathBase + KEA_ATT_DATETIME_DATA);
+                extendDatasetTo[1] = this->numDateTimeFields;
                 stringDataset.resize(extendDatasetTo);
             }
             catch(const HighFive::Exception &e)

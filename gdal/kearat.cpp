@@ -252,6 +252,9 @@ GDALRATFieldType KEARasterAttributeTable::GetTypeOfCol( int nCol ) const
         case kealib::kea_att_string:
             eGDALType = GFT_String;
             break;
+        case kealib::kea_att_datetime:
+            eGDALType = GFT_DateTime;
+            break;
         default:
             eGDALType = GFT_Integer;
             break;
@@ -615,8 +618,135 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField,
                                          int iStartRow, int iLength,
                                          GDALRATDateTime *psDateTime)
 {
-    return ValuesIODateTimeFromIntoString(eRWFlag, iField, iStartRow, iLength,
-                                          psDateTime);
+    CPLMutexHolderD(&m_hMutex);
+    fprintf(stderr, "KEARasterAttributeTable::ValuesIO\n");
+
+    if (iField < 0 || iField >= (int)m_aoFields.size())
+    {
+        CPLError(CE_Failure, CPLE_AppDefined, "iField (%d) out of range.",
+                 iField);
+
+        return CE_Failure;
+    }
+
+    if (iStartRow < 0 || (iStartRow + iLength) > (int)m_poKEATable->getSize())
+    {
+        CPLError(CE_Failure, CPLE_AppDefined,
+                 "iStartRow (%d) + iLength(%d) out of range.", iStartRow,
+                 iLength);
+
+        return CE_Failure;
+    }
+
+    if (m_aoFields[iField].dataType != kealib::kea_att_datetime)
+    {
+        CPLError(CE_Failure, CPLE_AppDefined, "iField (%d) is not a datetime field",
+                 iField);
+
+        return CE_Failure;
+    }
+    
+    // now allocate memory for converting between GDALRATDateTime and KEADateTime
+    kealib::KEADateTime *pBuffer = (kealib::KEADateTime*)VSI_MALLOC2_VERBOSE(
+            iLength, sizeof(kealib::KEADateTime));
+            
+    if (eRWFlag == GF_Read)
+    {
+        try
+        {
+            m_poKEATable->getDateTimeFields(
+                        iStartRow, iLength, m_aoFields[iField].idx, pBuffer);
+
+        }
+        catch (kealib::KEAException &e)
+        {
+            CPLError(CE_Failure, CPLE_AppDefined,
+                     "Failed to read/write attribute table: %s", e.what());
+            return CE_Failure;
+        }
+        for(int i = 0; i < iLength; i++)
+        {
+            kealib::KEADateTime *pKEA_DT = &pBuffer[i];
+            if( pKEA_DT->timezonehourby4 == kealib::KEA_ATT_NULLTIMEZONE )
+            {
+                GDALRATDateTime dt_zero;  // default constructor zeros everything
+                psDateTime[i] = dt_zero;
+                psDateTime[i].bIsValid = false;
+            }
+            else
+            {
+                psDateTime[i].bIsValid = true;
+                psDateTime[i].nYear = pKEA_DT->year;
+                psDateTime[i].nMonth = pKEA_DT->month;
+                psDateTime[i].nDay = pKEA_DT->day;
+                psDateTime[i].nHour = pKEA_DT->hour;
+                psDateTime[i].nMinute = pKEA_DT->minute;
+                psDateTime[i].fSecond = pKEA_DT->second;
+                if( pKEA_DT->timezonehourby4 == kealib::KEA_ATT_NULLTIMEZONE )
+                {
+                    psDateTime[i].nTimeZoneHour = 0;
+                    psDateTime[i].nTimeZoneMinute = 0;
+                    psDateTime[i].bPositiveTimeZone = false;
+                }
+                else
+                {
+                    float f = float(pKEA_DT->timezonehourby4) / 4;
+                    float integer_part;
+                    float decimal_part = std::modf(f, &integer_part);
+                    psDateTime[i].nTimeZoneHour = std::abs(integer_part);
+                    psDateTime[i].nTimeZoneMinute = std::abs(std::round(decimal_part * 60));
+                    psDateTime[i].bPositiveTimeZone = f >= 0;
+                }
+            }
+        }        
+    }
+    else
+    {    
+        fprintf(stderr, "about to call convert\n");
+        for(int i = 0; i < iLength; i++)
+        {
+            GDALRATDateTime *pGDAL_DT = &psDateTime[i];
+            if( !pGDAL_DT->bIsValid )
+            {
+                kealib::KEADateTime dt_zero = {0};
+                pBuffer[i] = dt_zero;
+                pBuffer[i].timezonehourby4 = kealib::KEA_ATT_NULLTIMEZONE;
+            }
+            else
+            {
+                pBuffer[i].year = pGDAL_DT->nYear;
+                pBuffer[i].month = pGDAL_DT->nMonth;
+                pBuffer[i].day = pGDAL_DT->nDay;
+                pBuffer[i].hour = pGDAL_DT->nHour;
+                pBuffer[i].minute = pGDAL_DT->nMinute;
+                pBuffer[i].second = pGDAL_DT->fSecond;
+                pBuffer[i].timezonehourby4 = std::round((float(pGDAL_DT->nTimeZoneHour) + (float(pGDAL_DT->nTimeZoneMinute) / 60)) * 4);
+                if( !pGDAL_DT->bPositiveTimeZone )
+                {
+                    // negative timezone
+                    pBuffer[i].timezonehourby4 = -pBuffer[i].timezonehourby4;
+                }
+            }
+        }
+        fprintf(stderr, "about to call kealib\n");
+        
+        try
+        {
+            m_poKEATable->setDateTimeFields(
+                        iStartRow, iLength, m_aoFields[iField].idx, pBuffer);
+
+        }
+        catch (kealib::KEAException &e)
+        {
+            CPLError(CE_Failure, CPLE_AppDefined,
+                     "Failed to read/write attribute table: %s", e.what());
+            return CE_Failure;
+        }
+
+    }
+    
+    CPLFree(pBuffer);
+    return CE_None;
 }
 
 CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField,
@@ -1192,6 +1322,8 @@ CPLErr KEARasterAttributeTable::CreateColumn( const char *pszFieldName,
             break;
     }
 
+
+    fprintf(stderr, "adding column\n");
     try
     {
         if(eFieldType == GFT_Integer)
@@ -1202,9 +1334,19 @@ CPLErr KEARasterAttributeTable::CreateColumn( const char *pszFieldName,
         {
             m_poKEATable->addAttFloatField(pszFieldName, 0, strUsage);
         }
-        else
+        else if(eFieldType == GFT_String)
         {
             m_poKEATable->addAttStringField(pszFieldName, "", strUsage);
+        }
+        else if(eFieldType == GFT_DateTime)
+        {
+            kealib::KEADateTime dtFill = {0};
+            m_poKEATable->addAttDateTimeField(pszFieldName, dtFill, strUsage);
+        }
+        else
+        {
+            CPLError( CE_Failure, CPLE_AppDefined, "Unknown column type %d", eFieldType);
+            return CE_Failure;
         }
 
         // assume we can just grab this now
