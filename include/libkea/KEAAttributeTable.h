@@ -154,7 +154,7 @@ namespace kealib{
         virtual void setIntFields(size_t startfid, size_t len, size_t colIdx, int64_t *pnBuffer);
         virtual void setFloatFields(size_t startfid, size_t len, size_t colIdx, double *pfBuffer);
         virtual void setStringFields(size_t startfid, size_t len, size_t colIdx, std::vector<std::string> *papszStrList);
-        virtual void setDateTimeFields(size_t startfid, size_t len, size_t colIdx, KEADateTime *pBuffer);
+        virtual void setDateTimeFields(size_t startfid, size_t len, size_t colIdx, const KEADateTime *pBuffer);
         virtual void setWKBFields(size_t startfid, size_t len, size_t colIdx, uint8_t **ppabyWKB, size_t *pnWKBSize);
         virtual void setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours);
         
@@ -226,7 +226,7 @@ namespace kealib{
         size_t numIntFields;
         size_t numFloatFields;
         size_t numStringFields;
-        size_t numDatetimeFields;
+        size_t numDateTimeFields;
         size_t numWKBFields;
         size_t numOfCols;
         size_t numRows;

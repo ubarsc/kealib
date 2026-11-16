@@ -317,6 +317,9 @@ int main()
         }
         rat1->addAttFloatField("FirstFloat", 3.1, "third");
         rat1->addAttStringField("FirstString", "hello", "fourth");
+        kealib::KEADateTime dtFill = {0};
+        dtFill.year = 2026;
+        rat1->addAttDateTimeField("FirstDateTime", dtFill, "fifth");
         rat1->printAttributeTableHeaderInfo();
         
         std::cout << "created columns" << std::endl;
@@ -355,6 +358,14 @@ int main()
             return 1;
         }
         
+        std::cout << "checking datetime fill" << std::endl;
+        kealib::KEADateTime *pDTBuffer = new kealib::KEADateTime[RAT_SIZE];
+        rat1->getDateTimeFields(0, RAT_SIZE, 0, pDTBuffer);
+        if( !compareRatConstantDataTime(pDTBuffer, RAT_SIZE, dtFill) )
+        {
+            return 1;
+        }
+        
         std::cout << "writing bool col" << std::endl;
         createRatDataForType<bool>(boolBuffer, RAT_SIZE);
         rat1->setBoolFields(0, RAT_SIZE, 0, boolBuffer);
@@ -377,6 +388,10 @@ int main()
         std::cout << "writing string col" << std::endl;
         createRatDataForString(&stringBuffer);
         rat1->setStringFields(0, RAT_SIZE, 0, &stringBuffer);
+        
+        std::cout << "writing datetime col" << std::endl;
+        createRatDataForDateTime(pDTBuffer, RAT_SIZE);
+        rat1->setDateTimeFields(0, RAT_SIZE, 0, pDTBuffer);
         
         std::cout << "writing neighbours" << std::endl;
         std::vector<std::vector<size_t>* > neighbours;
@@ -451,8 +466,15 @@ int main()
                 }
                 rat->setStringField(8, 0, stringBuffer[8]);
                 
+                if( !compareRatConstantDataTime(&pDTBuffer[4], 1, rat->getDateTimeField(4, 0)))
+                {
+                    std::cout << "datetime field not read correctly" << std::endl;
+                    return 1;
+                }
+                
                 std::cout << "doing feature check" << std::endl;
                 kealib::KEAATTFeature* pFeature = rat->getFeature(9);
+                std::cout << "got feature" << std::endl;
                 if( pFeature->boolFields->at(0) != boolBuffer[9])
                 {
                     std::cout << "error with bool feature" << std::endl;
@@ -471,6 +493,11 @@ int main()
                 if( pFeature->strFields->at(0) != stringBuffer[9])
                 {
                     std::cout << "error with string feature" << std::endl;
+                    return 1;
+                }
+                if( !compareRatConstantDataTime(&pDTBuffer[9], 1, pFeature->datetimeFields->at(0)))
+                {
+                    std::cout << "error with datetime feature" << std::endl;
                     return 1;
                 }
             }

@@ -42,7 +42,7 @@ namespace kealib{
         numIntFields = 0;
         numFloatFields = 0;
         numStringFields = 0;
-        numDatetimeFields = 0;
+        numDateTimeFields = 0;
         numWKBFields = 0;
         numOfCols = 0;
         numRows = 0;
@@ -297,7 +297,7 @@ namespace kealib{
         throw KEAATTException("Unimplemented");
     }
 
-    void KEAAttributeTable::setDateTimeFields(size_t startfid, size_t len, size_t colIdx, KEADateTime *pBuffer)
+    void KEAAttributeTable::setDateTimeFields(size_t startfid, size_t len, size_t colIdx, const KEADateTime *pBuffer)
     {
         throw KEAATTException("Unimplemented");
     }
@@ -417,7 +417,7 @@ namespace kealib{
     
     size_t KEAAttributeTable::getNumDateTimeFields() const
     {
-        return this->numDatetimeFields;
+        return this->numDateTimeFields;
     }
 
     size_t KEAAttributeTable::getNumWKBFields() const
@@ -589,7 +589,35 @@ namespace kealib{
     
     void KEAAttributeTable::addAttDateTimeField(const std::string &name, const KEADateTime &val, const std::string &usage)
     {
-        throw KEAATTException("Unimplemented");
+        try 
+        {
+            // Check whether the name already exists. Names need to be unique.
+            if(fields->count(name) > 0)
+            {
+                std::string message = std::string("Field \'") + name + std::string("\' is already within the attribute table.");
+                throw KEAATTException(message);
+            }
+            
+            // Create Field
+            KEAATTField nField;
+            nField.name = name;
+            nField.dataType = kea_att_datetime;
+            nField.idx = numDateTimeFields;
+            nField.usage = usage;
+            nField.colNum = numOfCols;
+            
+            // Get the implementation to created the new field
+            this->addAttDateTimeField(nField, val);
+            
+            // If no exception thrown added to header.
+            fields->insert(std::pair<std::string, KEAATTField>(name, nField));
+            ++numDateTimeFields;
+            ++numOfCols;
+        }
+        catch (const KEAATTException &e)
+        {
+            throw e;
+        }
     }
     
     void KEAAttributeTable::addAttWKBField(const std::string &name, uint8_t *pData, size_t wkbsize, const std::string &usage)
@@ -640,7 +668,7 @@ namespace kealib{
             }
             else if(inField->dataType == kea_att_datetime)
             {
-                inField->idx = numDatetimeFields;
+                inField->idx = numDateTimeFields;
                 KEADateTime val = {0};
                 this->addAttDateTimeField(inField->name, val, inField->usage);
             }
@@ -686,6 +714,11 @@ namespace kealib{
             feat->strFields->push_back("");
         }
         feat->datetimeFields = new std::vector<KEADateTime>();
+        KEADateTime dt = {0};
+        for(size_t i = 0; i < this->numDateTimeFields; ++i)
+        {
+            feat->datetimeFields->push_back(dt);
+        }
         feat->neighbours = new std::vector<size_t>();
         feat->fid = 0;
         
@@ -918,6 +951,7 @@ namespace kealib{
         std::cout << "Number of Integer Fields: " << this->numIntFields << std::endl;
         std::cout << "Number of Float Fields: " << this->numFloatFields << std::endl;
         std::cout << "Number of String Fields: " << this->numStringFields << std::endl;
+        std::cout << "Number of DateTime Fields: " << this->numDateTimeFields << std::endl;
         
         std::cout << "Fields:\n";
         for(auto iterField = fields->begin(); iterField != fields->end(); ++iterField)
@@ -1057,7 +1091,7 @@ namespace kealib{
             pAtt->chunkSize = chunkSize;
             
             // READ TABLE HEADERS
-            auto fieldCompTypeMem = KEAAttributeTable::createAttributeIdxCompType();
+            // auto fieldCompTypeMem = KEAAttributeTable::createAttributeIdxCompType();
             
             bool firstColNum = true;
             
@@ -1269,6 +1303,58 @@ namespace kealib{
                 }
             }
             
+            // READ DATETIME HEADERS
+            // if they exist - cope with older kea format where they aren't there
+            pAtt->numDateTimeFields = 0;
+            if((attSize.size() > 5) && (attSize[5] > 0))
+            {
+                pAtt->numDateTimeFields = attSize[5];
+                try
+                {
+                    auto datetimeFieldsDataset = keaImg->getDataSet( bandPathBase + KEA_ATT_DATETIME_FIELDS_HEADER );
+                    KEAAttributeIdx *inFields = new KEAAttributeIdx[pAtt->numDateTimeFields];
+                    datetimeFieldsDataset.read_raw(inFields);
+                    
+                    KEAATTField field;
+                    for(unsigned int i = 0; i < pAtt->numDateTimeFields; ++i)
+                    {
+                        field = KEAATTField();
+                        field.name = std::string(inFields[i].name);
+                        free(inFields[i].name);
+                        field.dataType = kea_att_datetime;
+                        field.idx = inFields[i].idx;
+                        field.usage = std::string(inFields[i].usage);
+                        free(inFields[i].usage);
+                        field.colNum = inFields[i].colNum;
+                        
+                        if(firstColNum)
+                        {
+                            // TODO: can this be made clearer?
+                            if(field.colNum == 0)
+                            {
+                                pAtt->numOfCols = 1;
+                            }
+                            else
+                            {
+                                pAtt->numOfCols = field.colNum + 1;
+                            }
+                            firstColNum = false;
+                        }
+                        else if(field.colNum >= pAtt->numOfCols)
+                        {
+                            pAtt->numOfCols = field.colNum + 1;
+                        }
+                        
+                        pAtt->fields->insert(std::pair<std::string, KEAATTField>(field.name, field));
+                    }
+                    
+                    delete[] inFields;
+                }
+                catch( const HighFive::Exception &e )
+                {
+                    throw KEAIOException(e.what());
+                }
+            }
         }
         catch(const HighFive::Exception &e)
         {
@@ -1310,7 +1396,6 @@ namespace kealib{
         throw KEAATTException("Unimplemented");
     }
 
-    // for future versions of KEA
     void KEAAttributeTable::addAttDateTimeField(KEAATTField field, const KEADateTime &val)
     {
         throw KEAATTException("Unimplemented");

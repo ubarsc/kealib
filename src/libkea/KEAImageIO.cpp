@@ -3217,7 +3217,7 @@ namespace kealib{
 
 
             // SET ATTRIBUTE TABLE SIZE
-            std::vector<uint64_t> attSize = {0, 0, 0, 0, 0};
+            std::vector<uint64_t> attSize = {0, 0, 0, 0, 0, 0};
             auto attSizeDataset = keaImgH5File->createDataSet<uint64_t>(
                 (bandName + KEA_ATT_SIZE_HEADER),
                 HighFive::DataSpace::From(attSize)

@@ -32,6 +32,7 @@
 #include <string.h>
 
 HIGHFIVE_REGISTER_TYPE(kealib::KEAAttString, kealib::KEAAttributeTable::createKeaStringCompType)
+HIGHFIVE_REGISTER_TYPE(kealib::KEADateTime, kealib::KEAAttributeTable::createKeaDateTimeCompType)
 
 namespace kealib{
     
@@ -43,6 +44,7 @@ namespace kealib{
         numIntFields = pBaseAtt->getNumIntFields();
         numFloatFields = pBaseAtt->getNumFloatFields();
         numStringFields = pBaseAtt->getNumStringFields();
+        numDateTimeFields = pBaseAtt->getNumDateTimeFields();
         bandPathBase = pBaseAtt->getBandPathBase();
         chunkSize = pBaseAtt->getChunkSize();
         for(size_t i = 0; i < pBaseAtt->getMaxGlobalColIdx(); i++)
@@ -124,6 +126,24 @@ namespace kealib{
         }
         
         return attRows->at(fid)->strFields->at(colIdx);
+    }
+
+    KEADateTime KEAAttributeTableInMem::getDateTimeField(size_t fid, size_t colIdx) const
+    {
+        kealib::kea_lock lock(*this->m_mutex); 
+        if(fid >= attRows->size())
+        {
+            std::string message = std::string("Requested feature (") + sizet2Str(fid) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        
+        if(colIdx >= attRows->at(fid)->datetimeFields->size())
+        {
+            std::string message = std::string("Requested string column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        
+        return attRows->at(fid)->datetimeFields->at(colIdx);
     }
     
     // RFC40
@@ -210,6 +230,27 @@ namespace kealib{
         for(size_t n = 0; n < len; n++)
         {
             psBuffer->push_back(std::string(attRows->at(n+startfid)->strFields->at(colIdx).c_str()));
+        }
+    }
+    
+    void KEAAttributeTableInMem::getDateTimeFields(size_t startfid, size_t len, size_t colIdx, KEADateTime *pBuffer) const
+    {
+        kealib::kea_lock lock(*this->m_mutex); 
+        if((startfid+len) > attRows->size())
+        {
+            std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        
+        if(colIdx >= attRows->at(startfid)->datetimeFields->size())
+        {
+            std::string message = std::string("Requested string column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        
+        for(size_t n = 0; n < len; n++)
+        {
+            pBuffer[n] = attRows->at(n+startfid)->datetimeFields->at(colIdx);
         }
     }
     
@@ -312,6 +353,24 @@ namespace kealib{
         attRows->at(fid)->strFields->at(colIdx) = value;
     }
 
+    void KEAAttributeTableInMem::setDateTimeField(size_t fid, size_t colIdx, const KEADateTime &value)
+    {
+        kealib::kea_lock lock(*this->m_mutex); 
+        if(fid >= attRows->size())
+        {
+            std::string message = std::string("Requested feature (") + sizet2Str(fid) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        
+        if(colIdx >= attRows->at(fid)->datetimeFields->size())
+        {
+            std::string message = std::string("Requested string column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        
+        attRows->at(fid)->datetimeFields->at(colIdx) = value;
+    }
+
     // RFC40
     void KEAAttributeTableInMem::setBoolFields(size_t startfid, size_t len, size_t colIdx, bool *pbBuffer)
     {
@@ -401,6 +460,27 @@ namespace kealib{
             attRows->at(n+startfid)->strFields->at(colIdx) = papszStrList->at(n);
         }
     }
+
+    void KEAAttributeTableInMem::setDateTimeFields(size_t startfid, size_t len, size_t colIdx, const KEADateTime *pBuffer)
+    {
+        kealib::kea_lock lock(*this->m_mutex); 
+        if((startfid+len) > attRows->size())
+        {
+            std::string message = std::string("Requested feature (") + sizet2Str(startfid+len) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        
+        if(colIdx >= attRows->at(startfid)->datetimeFields->size())
+        {
+            std::string message = std::string("Requested string column (") + sizet2Str(colIdx) + std::string(") is not within the table.");
+            throw KEAATTException(message);
+        }
+        
+        for( size_t n = 0; n < len; n++)
+        {
+            attRows->at(n+startfid)->datetimeFields->at(colIdx) = pBuffer[n];
+        }
+    }
     
     void KEAAttributeTableInMem::setNeighbours(size_t startfid, size_t len, std::vector<std::vector<size_t>* > *neighbours)
     {
@@ -470,6 +550,15 @@ namespace kealib{
             (*iterFeat)->strFields->push_back(val);
         }
     }
+
+    void KEAAttributeTableInMem::addAttDateTimeField(KEAATTField field, const KEADateTime &val)
+    {
+        kealib::kea_lock lock(*this->m_mutex); 
+        for(auto iterFeat = attRows->begin(); iterFeat != attRows->end(); ++iterFeat)
+        {
+            (*iterFeat)->datetimeFields->push_back(val);
+        }
+    }
     
     void KEAAttributeTableInMem::addRows(size_t numRows)
     {        
@@ -535,6 +624,13 @@ namespace kealib{
                 stringVals = new KEAAttString[pAtt->chunkSize * pAtt->numStringFields];
                 stringDataset = keaImg->getDataSet(pAtt->bandPathBase + KEA_ATT_STRING_DATA);
             }
+            HighFive::DataSet datetimeDataset;
+            KEADateTime *datetimeVals = nullptr;
+            if(pAtt->numDateTimeFields > 0 )
+            {
+                datetimeVals = new KEADateTime[pAtt->chunkSize * pAtt->numDateTimeFields];
+                datetimeDataset = keaImg->getDataSet(pAtt->bandPathBase + KEA_ATT_DATETIME_DATA);
+            }
             bool hasNeighbours = false;
             HighFive::DataSet neighboursDataset;
             auto neighboursDatasetName = pAtt->bandPathBase + KEA_ATT_NEIGHBOURS_DATA;
@@ -586,6 +682,13 @@ namespace kealib{
                         stringDataset.select(startOffset, bufSize).read_raw(stringVals);
                     }
                     
+                    if(pAtt->numDateTimeFields > 0)
+                    {
+                    	std::vector<size_t> startOffset = {rowOff, 0};
+    			        std::vector<size_t> bufSize = {pAtt->chunkSize, pAtt->numDateTimeFields};
+                        datetimeDataset.select(startOffset, bufSize).read_raw(datetimeVals);
+                    }
+                    
                     // Write data into KEAATTFeatures
                     for(size_t i = 0; i < pAtt->chunkSize; ++i)
                     {
@@ -626,6 +729,15 @@ namespace kealib{
                             {
                                 feat->strFields->at(j) = std::string(stringVals[(i*pAtt->numStringFields)+j].str);
                                 free(stringVals[(i*pAtt->numStringFields)+j].str);
+                            }
+                        }
+                        
+                        if(pAtt->numDateTimeFields > 0)
+                        {
+                            feat->datetimeFields->reserve(pAtt->numDateTimeFields);
+                            for(hsize_t j = 0; j < pAtt->numDateTimeFields; ++j)
+                            {
+                                feat->datetimeFields->at(j) = datetimeVals[(i*pAtt->numDateTimeFields)+j];
                             }
                         }
 
@@ -679,6 +791,13 @@ namespace kealib{
                     stringDataset.select(startOffset, bufSize).read_raw(stringVals);
                 }
                 
+                if(pAtt->numDateTimeFields > 0)
+                {
+					std::vector<size_t> startOffset = {rowOff, 0};
+					std::vector<size_t> bufSize = {remainRows, pAtt->numDateTimeFields};
+                    datetimeDataset.select(startOffset, bufSize).read_raw(datetimeVals);
+                }
+                
                 // Write data into KEAATTFeatures
                 for(size_t i = 0; i < remainRows; ++i)
                 {
@@ -721,6 +840,15 @@ namespace kealib{
                             free(stringVals[(i*pAtt->numStringFields)+j].str);
                         }
                     }
+
+                    if(pAtt->numDateTimeFields > 0)
+                    {
+                        feat->datetimeFields->reserve(pAtt->numDateTimeFields);
+                        for(hsize_t j = 0; j < pAtt->numDateTimeFields; ++j)
+                        {
+                            feat->datetimeFields->at(j) = datetimeVals[(i*pAtt->numDateTimeFields)+j];
+                        }
+                    }
                     
                     if(hasNeighbours)
                     {
@@ -735,6 +863,7 @@ namespace kealib{
             delete[] intVals;
             delete[] floatVals;
             delete[] stringVals;
+            delete[] datetimeVals;
             for(auto iterNeigh = neighbours.begin(); iterNeigh != neighbours.end(); ++iterNeigh)
             {
                 delete *iterNeigh;
