@@ -75,7 +75,8 @@ add_executable(testseg testseg.cpp)
 target_link_libraries(testseg PRIVATE Kealib::Kealib)
 
 # custom install step to create .pyc files
-install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} -m compileall ${PYKEA_INSTALL_DIR})")
+file(TO_CMAKE_PATH "${Python_EXECUTABLE}" Python_EXECUTABLE_CMAKE_PATH)
+install(CODE "execute_process(COMMAND \"${Python_EXECUTABLE_CMAKE_PATH}\" -m compileall \"${PYKEA_INSTALL_DIR}\")")
 
 enable_testing()
 add_test(NAME testpython COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testpython.py)
