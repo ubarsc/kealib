@@ -619,7 +619,6 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField,
                                          GDALRATDateTime *psDateTime)
 {
     CPLMutexHolderD(&m_hMutex);
-    fprintf(stderr, "KEARasterAttributeTable::ValuesIO\n");
 
     if (iField < 0 || iField >= (int)m_aoFields.size())
     {
@@ -702,7 +701,6 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField,
     }
     else
     {    
-        fprintf(stderr, "about to call convert\n");
         for(int i = 0; i < iLength; i++)
         {
             GDALRATDateTime *pGDAL_DT = &psDateTime[i];
@@ -728,7 +726,6 @@ CPLErr KEARasterAttributeTable::ValuesIO(GDALRWFlag eRWFlag, int iField,
                 }
             }
         }
-        fprintf(stderr, "about to call kealib\n");
         
         try
         {
@@ -1322,8 +1319,6 @@ CPLErr KEARasterAttributeTable::CreateColumn( const char *pszFieldName,
             break;
     }
 
-
-    fprintf(stderr, "adding column\n");
     try
     {
         if(eFieldType == GFT_Integer)
