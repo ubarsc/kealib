@@ -43,7 +43,7 @@ jobs:
           destination: 'docs_r/'
           source: 'docs/'
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: 'docs_r/'
       - name: Deploy to GitHub Pages
